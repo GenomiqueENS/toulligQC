@@ -131,9 +131,13 @@ This file must be organized as following:
 [config]
 
 fast5.directory=/home/ferrato/shares-net/sequencages/nanopore/fast5/raw
+
 log.file=/home/ferrato/shares-net/sequencages/nanopore/albacore-logs
+
 bz2.fastq.directory=/home/ferrato/shares-net/sequencages/nanopore/fastq
+
 design_file=/home/ferrato/ownCloud/fast5_1D
+
 script_directory=$HOME/ownCloud/fast5_1D
 
 The [config] must not be modified because it's used by the scripts python. Always at the top of config file.
