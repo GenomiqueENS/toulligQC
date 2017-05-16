@@ -153,7 +153,7 @@ The program runs with the following command:
 
 name_sample: sample name of run (ex.20170328_FAF04250)
 
-Then a path at fast5 directory is asked: if you use Docker on the platform ibens you must go to /fast5_directory/ which corresponds to /home/ferrato/shares-net/sequencages/nanopore/fast5/raw path for my config file.
+Then a path at fast5 directory is asked: if you use Docker on the platform ibens you must put /fast5_directory which corresponds to /home/ferrato/shares-net/sequencages/nanopore/fast5/raw path for my config file then the remainder.
 
 Afterwards two directories are created:
 
