@@ -4,15 +4,17 @@ This program aims to analyse a minion run and to produce different statistics in
 
 # Table of content
 
-1.[basecalling_stat_plotter1D](#basecalling_stat_plotter1D)
+ 1.Python module
 
-2.[getter1D](#getter1D)
+* [basecalling_stat_plotter1D](#basecalling_stat_plotter1D)
 
-3.[fast5_data_extractor](#fast5_data_extractor)
+* [getter1D](#getter1D)
 
-4.[example](#example)
+* [fast5_data_extractor](#fast5_data_extractor)
 
-4.[requirements](#requirements)
+2.[example](#example)
+
+3.[requirements](#requirements)
 
 basecalling_stat_plotter1D
 ===========================
