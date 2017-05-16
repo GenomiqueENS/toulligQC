@@ -129,6 +129,7 @@ The config file must be modify according to your system. It's very important.
 This file must be organized as following:
 
 [config]
+
 fast5.directory=/home/ferrato/shares-net/sequencages/nanopore/fast5/raw
 log.file=/home/ferrato/shares-net/sequencages/nanopore/albacore-logs
 bz2.fastq.directory=/home/ferrato/shares-net/sequencages/nanopore/fastq
