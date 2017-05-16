@@ -10,6 +10,8 @@ toulligQC
 
 3.[fast5_data_extractor](#fast5_data_extractor)
 
+4.[example](#example)
+
 4.[requirements](#requirements)
 
 basecalling_stat_plotter1D
