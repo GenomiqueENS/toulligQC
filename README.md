@@ -34,48 +34,48 @@ Several python files are provided:
      Write the mean qscore extracted from the log file provided by albacore in the statistics files according to the barcodes
 
      date
-      Return the date of a Minion run from the log file provided by albacore in researching the date in the run id field
+      Returns the date of a Minion run from the log file provided by albacore in researching the date in the run id field
 
      stat_generation
-        Generate a dictionary of statistics such as quartile, std for the creation of a log file like aozan from the          summary log provided by albacore
+        Generates a dictionary of statistics such as quartile, std for the creation of a log file like aozan from the          summary log provided by albacore
 
     barcode_pie_chart
-        Plot the barcode pie chart from the selection of barcodes
+        Plots the barcode pie chart from the selection of barcodes
 
     reads_size_selection_barcode
-        Plot the histogram of reads size by bins of 100 for the barcode choosed from design file
+        Plots the histogram of reads size by bins of 100 for the barcode choosed from design file
 
     statistics_read_size
-        Get statistics on the fastq from the file containing the fastq bz2 files decompressed
+        Gets statistics on the fastq from the file containing the fastq bz2 files decompressed
 
     histogram_count_reads
-        Plot the histogram of count of different types of reads: template, complement, full_2D from albacore log file
+        Plots the histogram of count of different types of reads: template, complement, full_2D from albacore log file
 
     quality_reads_boxplot
-        Plot a boxplot of reads quality
+        Plots a boxplot of reads quality
 
     channel_count
-        Plot an histogram of channel count
+        Plots an histogram of channel count
 
     read_time
-        Plot an histogram of reads length
+        Plots an histogram of reads length
 
     minion_flowcell_layout
-        Represent the layout of a minion flowcell
+        Represents the layout of a minion flowcell
 
     plot_performance(pore_measure)
-        Plot the pore performance in terms of reads per pore
+        Plots the pore performance in terms of reads per pore
         parameters: pore_measure: reads number per pore
 
     get_selection
-       Return the selection of barcode from the design file
+       Returns the selection of barcode from the design file
 
     statistics_dataframe
         Presents statitstics retrieved from statistics files in the statistics directory for each barcode as a dataframe to make
         the reading easier.
 
     read_size_total
-       Plot an histogram of reads size by bins of 100 for all barcodes
+       Plots an histogram of reads size by bins of 100 for all barcodes
 
 
 ## 2)getter1D
@@ -84,45 +84,45 @@ This module provided informations about the minion runs and the fastq sequences
 
 ### get_MinknowVersion(h5py_file)
       parameter: fast5 file open with h5py
-      Get the Minknow version from fast5 file
+      Gets the Minknow version from fast5 file
 
 ### getFlowcellId(h5py_file)
       parameter: fast5 file open with h5py
-      Get the flowcell id from fast5 file
+      Gets the flowcell id from fast5 file
 
 ### get_Hostname(h5py_file)
       parameter: fast5 file open with h5py
-      Get the hostname from fast5 file
+      Gets the hostname from fast5 file
 
 ### getNumMinION(h5py_file)
       parameter: fast5 file open with h5py
-      Get the number of Minion run
+      Gets the number of Minion run
 
 ### getProtocolRunId(h5py_file)
       parameter: fast5 file open with h5py
-      Get the run id protocol from fast5 file
+      Gets the run id protocol from fast5 file
 
 ### get_barcode()
       parameter: fast5 file open with h5py
-      Get the barcode from a file given in input
+      Gets the barcode from a file given in input
 
 ### get_fastq(selection)
       parameter: fast5 file open with h5py
-      Get the fastq sequence
+      Gets the fastq sequence
 
 ## 3)fast5_data_extractor
 
 ### fast5_data_extractor(fast5_file_directory)
-      Create a dataframe from collections of fast5 files
+      Creates a dataframe from collections of fast5 files
       param fast5_file_directory: directory where fast5 files are stored
       return : tuple with different informations about fast5 files
 
 ### write_data(tuple_array)
       parameter: tuple array containing informations about the fast5 files
-      Write data in a tsv file
+      Writes data in a tsv file
 
 ### read_data(data_file)
-      Read the file created previously
+      Reads the file created previously
 
 example
 ==========
