@@ -16,8 +16,11 @@ This program aims to analyse a minion run and to produce different statistics in
 
 3.[requirements](#requirements)
 
-basecalling_stat_plotter1D
-===========================
+Python module
+==============
+
+# 1)basecalling_stat_plotter1D
+
 
 This module provides support for create a report as a word document and a pdf file in the images directory. Files containing statistics for each barcode is provided in the statistics directory.
 
@@ -74,8 +77,7 @@ Several python files are provided:
        Plot an histogram of reads size by bins of 100 for all barcodes
 
 
-getter1D
-=========
+# 2)getter1D
 
 This module provided informations about the minion runs and the fastq sequences
 
@@ -107,8 +109,7 @@ This module provided informations about the minion runs and the fastq sequences
       parameter: fast5 file open with h5py
       Get the fastq sequence
 
-fast5_data_extractor
-=====================
+# 3)fast5_data_extractor
 
 ### fast5_data_extractor(fast5_file_directory)
       Create a dataframe from collections of fast5 files
