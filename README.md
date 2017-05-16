@@ -1,6 +1,6 @@
 toulligQC
 ==========
-
+This program aims to analyse a minion run and to produce different statistics in the form of graphs and statistics files.
 
 # Table of content
 
