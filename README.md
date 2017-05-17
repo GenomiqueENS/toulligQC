@@ -32,25 +32,25 @@ Several python files are provided:
 
  #### class basecalling_stat_plotter1D
  
-   returns a set of graphs and statistics for the creation of report as well as statistics for the statistics files.
-
+   Plots different graphs for exploitation of minion runs from Albacore file log
+      
       barcode_meanqscore
-     Write the mean qscore extracted from the log file provided by albacore in the statistics files according to the barcodes
+     Writes the mean qscore extracted from the log file provided by albacore
 
      run_date
-      Returns the date of a Minion run from the log file provided by albacore in researching the date in the run id field
+      Returns the date of a Minion run from the log file provided by albacore
 
      stat_generation
-        Generates a dictionary of statistics such as quartile, std for the creation of a log file like aozan from the          summary log provided by albacore
+        Generates a dictionary of statistics such as quartile, the standard deviation for the creation of a log file from the log file provided by Albacore
 
     barcode_percentage_pie_chart
-        Plots the barcode pie chart from the selection of barcodes
+        Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
 
     reads_size_selection_barcode
         Plots the histogram of reads size by bins of 100 for the barcode choosed from design file
 
     barcode_read_length_histogram
-        Gets statistics on the fastq from the file containing the fastq bz2 files decompressed
+        Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file.
 
     read_count_histogram
         Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
@@ -59,7 +59,7 @@ Several python files are provided:
         Plots a boxplot of reads quality
 
     channel_count_histogram
-        Plots an histogram of the channel count according to the channel numbe
+        Plots an histogram of the channel count according to the channel number
 
     read_number_run
         Plots the reads produced along the run against the time(in hour)
