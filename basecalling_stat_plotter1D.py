@@ -20,12 +20,12 @@ class basecalling_stat_plotter1D:
         self.sequencing_summary = pd.read_csv(path_sequencing_summary, sep="\t")
         self.channel = self.sequencing_summary['channel']
         self.sequencing_summary[self.sequencing_summary == 0] = np.nan
-        self.selection = getter1D.get_barcode()
+        self.selection = getter1D.get_Barcodes()
         self.selection_original = self.selection
         self.fast5_tot = len(self.sequencing_summary)
         self.pdf = pdf
         self.selection.sort()
-        self.fastq_length_array = getter1D.get_fastq(self.selection, run_name)
+        self.fastq_length_array = getter1D.get_FastqSeq(self.selection, run_name)
 
     def barcode_meanqscore(self):
         """
