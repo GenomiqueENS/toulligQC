@@ -151,9 +151,13 @@ An important thing is that the barcodes must be written with BC followed by two 
 This file must be in the following form with these names:
 
 [config]
+
 fast5.directory=path to our fast5 directory
+
 log.file= path to our log file
+
 bz2.fastq.directory=path to fastq files in the form of bz2 files
+
 design_file=path to design file
 
 The first line is important for the python script because they use a parser in order to parse the configuration file and mustn't be modified
