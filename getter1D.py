@@ -18,7 +18,7 @@ configFilePath = r'config2.txt'
 configParser.read(configFilePath)
 
 
-def get_MinknowVersion:
+def get_MinknowVersion(h5py_file):
     """
     Gets the Minknow version from fast5 file
     """
@@ -27,7 +27,7 @@ def get_MinknowVersion:
     return version_d['version']
 #print(get_MinknowVersion())
 
-def get_FlowcellId:
+def get_FlowcellId(h5py_file):
     """
     Gets the flowcell id from fast5 file
     """
@@ -35,7 +35,7 @@ def get_FlowcellId:
     flowcell_id_dico = {key: value.decode('utf-8') for key, value in flowcell_id}
     return flowcell_id_dico['flow_cell_id']
 
-def get_Hostname:
+def get_Hostname(h5py_file):
     """
     Gets the hostname from fast5 file
     """
@@ -43,7 +43,7 @@ def get_Hostname:
     host_name_dico = {key: value.decode('utf-8') for key, value in host_name}
     return host_name_dico['hostname']
 
-def get_MinIONRunId:
+def get_MinIONRunId(h5py_file):
     """
     Gets the id of Minion run
     """
@@ -51,7 +51,7 @@ def get_MinIONRunId:
     numMinION_dico = {key: value.decode('utf-8') for key, value in numMinION}
     return numMinION_dico['device_id']
 
-def get_ProtocolRunId:
+def get_ProtocolRunId(h5py_file):
     """
     Gets the run id protocol from fast 5 file
     """
