@@ -2,7 +2,7 @@ import os
 
 def log_file1D(fast5_data , basecall_stat):
     """
-    Create a log file like aozan where different information are printed
+    Create a log file like where different information about the minion run are printed
     """
 
     version, flowcell_id, hostname, numMinion, run_id = fast5_data
@@ -48,7 +48,6 @@ def log_file1D(fast5_data , basecall_stat):
 
         for index, element in basecall_stat.statistics_read_size().iteritems():
             file_data.write("Read.fastq.length.{}={}\n".format(index, element))
-#log_file1D("/home/ferrato/shares-net/sequencages/nanopore/test_alabacore/save/workspace", "/home/ferrato/shares-net/sequencages/nanopore/test_alabacore/save/sequencing_summary.txt")
 
 
 
