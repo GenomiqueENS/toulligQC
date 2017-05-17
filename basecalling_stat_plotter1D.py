@@ -13,7 +13,7 @@ import os
 
 class basecalling_stat_plotter1D:
     """
-    Plot different graphs for exploitation of minion runs from Albacore file log
+    Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
     def __init__(self, path_sequencing_summary, pdf, run_name):
@@ -28,7 +28,6 @@ class basecalling_stat_plotter1D:
         self.fastq_length_array = getter1D.get_fastq(self.selection, run_name)
 
     def meanqscore_barcode(self):
-        print('Commence')
         dataframe_meanqscore_barcode = self.sequencing_summary[['mean_qscore_template','barcode_arrangement']]
         barcode_selection = dataframe_meanqscore_barcode[dataframe_meanqscore_barcode['barcode_arrangement'].isin(self.selection)]
 
@@ -44,7 +43,7 @@ class basecalling_stat_plotter1D:
 
     def date(self):
         """
-        Get the date of Mimion run
+        Gets the date of Mimion run
         """
         filename = self.sequencing_summary['filename']
         for index, file in enumerate(filename):
@@ -55,7 +54,7 @@ class basecalling_stat_plotter1D:
 
     def stat_generation(self):
         """
-        Generate a dictionary of statistics such as quartile, std for the creation of a log file like aozan from the summary log provided by Albacore
+        Generates a dictionary of statistics such as quartile, std for the creation of a log file like aozan from the summary log provided by Albacore
         """
         num_called_template = self.sequencing_summary['num_called_template']
         mean_qscore_template = self.sequencing_summary['mean_qscore_template']
@@ -65,7 +64,7 @@ class basecalling_stat_plotter1D:
 
     def barcode_pie_chart(self):
         """
-        Plot the barcode pie chart from the selection of barcodes
+        Plots the barcode pie chart from the selection of barcodes
         """
         # Ne doit pas excéder 10
 
@@ -80,7 +79,7 @@ class basecalling_stat_plotter1D:
         count1 = barcode.value_counts()
         count = count1.sort_index()[self.selection]
         unclassified = sum(count1[~count1.index.isin(self.selection)])
-        ##ATTENTION à placer aprés l'opération
+        ##Watch out must be placed after the operation
         self.selection.append("unclassified")
         ##
         count['unclassified'] = unclassified
@@ -110,7 +109,7 @@ class basecalling_stat_plotter1D:
     #Launch after barcode pie chart because of self.selection
     def reads_size_selection_barcode(self):
         """
-        Plot the histogram of reads size by bins of 100
+        Plots the histogram of reads size by bins of 100
         """
         if self.fastq_length_array == []:
             print('There is a mistake')
@@ -126,13 +125,13 @@ class basecalling_stat_plotter1D:
 
     def counter(self):
         """
-        Paricipate to the count df nucleotide(A,T,C,G)" \
+        Paricipates to the count df nucleotide(A,T,C,G)" \
         """
         return self.counter_template, self.total_nucs_template
 
     def statistics_read_size(self):
         """
-        Get statistics from the file containing the fastq bz2 files decompressed
+        Gets statistics from the file containing the fastq bz2 files decompressed
         """
         series_read_size = pd.Series(self.fastq_length_array)
         statistics = pd.Series.describe(series_read_size)
@@ -141,7 +140,7 @@ class basecalling_stat_plotter1D:
 
     def histogram_count_reads(self):
         """
-        Plot the histogram of count of different types of reads: template, complement, full_2D from albacore log file
+        Plots the histogram of count of different types of reads: template, complement, full_2D from albacore log file
         """
 
         # Count of fast5 total
@@ -163,13 +162,10 @@ class basecalling_stat_plotter1D:
         plt.savefig('images/image1.png')
         self.pdf.savefig()
         plt.close()
-        # self.pdf.savefig()
-        #self.pdf.savefig()
-
 
     def quality_reads_boxplot(self):
         """
-        Plot a boxplot of reads quality
+        Plots a boxplot of reads quality
         """
         dataframe = self.sequencing_summary.loc[:, ["mean_qscore_template"]]
         sns.boxplot(data=dataframe)
@@ -183,7 +179,7 @@ class basecalling_stat_plotter1D:
 
     def channel_count(self):
         """
-        Plot an histogram of channel count
+        Plots an histogram of channel count
         """
         fig, ax = plt.subplots()
         ax.hist(self.sequencing_summary['channel'], edgecolor='black',  bins=range(min(self.sequencing_summary['channel']), max(self.sequencing_summary['channel']) + 64, 64))
@@ -198,7 +194,7 @@ class basecalling_stat_plotter1D:
 
     def read_time(self):
         """
-        Plot an histogram of reads length
+        Plots an histogram of reads length
         """
         start_time = self.sequencing_summary["start_time"] / 3600
         time_sort = sorted(start_time)
@@ -212,7 +208,7 @@ class basecalling_stat_plotter1D:
 
     def minion_flowcell_layout(self):
         """
-        Represent the layout of a minion flowcell
+        Represents the layout of a minion flowcell
         """
         seeds = [125, 121, 117, 113, 109, 105, 101, 97,
                  93, 89, 85, 81, 77, 73, 69, 65,
@@ -228,7 +224,7 @@ class basecalling_stat_plotter1D:
 
     def plot_performance(self, pore_measure):
         """
-        Plot the pore performance in terms of reads per pore
+        Plots the pore performance in terms of reads per pore
         @:param pore_measure: reads number per pore
         """
         flowcell_layout = self.minion_flowcell_layout()
@@ -267,6 +263,9 @@ class basecalling_stat_plotter1D:
         return self.selection
 
     def statistics_dataframe(self):
+        """
+        Creates a dataframe containing statistics about different barcodes used
+        """
         df = pd.DataFrame(columns=self.selection)
         for barcode in self.selection[:-1]:
             dico = {}
@@ -276,20 +275,6 @@ class basecalling_stat_plotter1D:
                 dico[key.strip()] = value.strip()
             file.close()
             df[barcode] = pd.Series(dico)
-        print(df)
         df.to_csv('/home/ferrato/ownCloud/fast5_1D/dataframe.csv', header=self.selection_original,index=list(df.index), sep='\t')
 
 
-    def read_size_total(self):
-        plt.hist(self.sequencing_summary['sequence_length_template'], edgecolor="#E6E6E6", color="#EE6666", bins=range(min(self.sequencing_summary['sequence_length_template']), max(self.sequencing_summary['sequence_length_template']) + 100, 100))
-        plt.xlim(0,6000)
-        plt.xlabel("fastq size for all barcodes")
-        plt.ylabel("Count")
-        plt.savefig('images/image8.png')
-        self.pdf.savefig()
-        plt.close()
-
-#b = basecalling_stat_plotter1D('/home/ferrato/shares-net/sequencages/nanopore/albacore-logs/FAF04250_20170328/sequencing_summary.txt')
-#print(b.selection)
-#/home/ferrato/ownCloud/fast5_1D/texte_sequence.txt
-#/home/ferrato/shares-net/sequencages/nanopore/albacore-logs/FAF04250_20170328/sequencing_summary.txt
