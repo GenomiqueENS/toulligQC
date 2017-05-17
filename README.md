@@ -133,25 +133,21 @@ example
 
 First of all a set of files are required before the python scripts run:
 
-        * a design file named design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
+* a design file named design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
 
-  index | Reads | Description | Date | FastqFormat | RepTechGrou
+index | Reads | Description | Date | FastqFormat | RepTechGrou
 ------- | ------- | ------------- | -------- | -------------- | ---------------
  2015341_BC01 | dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 |  WT1_BC01 | 2017-01-24 | fastq-sanger | WT1_BC01
 
-First Header | Second Header
------------- | -------------
-Content from cell 1 | Content from cell 2
-Content in the first column | Content in the second column
+   
+    An important thing is that the barcodes must be written with BC followed by two digits (BC01, BC02,....,BC80)
 
-        An important thing is that the barcodes must be written with BC followed by two digits (BC01, BC02,....,BC80)
+* a configuration file: this file includes the path at your different files. These files numbered four in the following order:
 
-        * a configuration file: this file includes the path at your different files. These files numbered four in the following order:
-
-                * the directory where the fast5 are holded
-                * the file where the Albacore log is placed
-                * the directory where the fastq are located in the form of bz2 files
-                * the design file mentioned above
+ * the directory where the fast5 are holded
+ * the file where the Albacore log is placed
+ * the directory where the fastq are located in the form of bz2 files
+ * the design file mentioned above
 
 This file must be in the following form with these names:
 
