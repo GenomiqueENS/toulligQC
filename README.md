@@ -97,7 +97,7 @@ This module provided informations about the minion runs and the fastq sequences.
 ### get_ProtocolRunId
       Gets the run id protocol from fast5 file
 
-### get_barcode()
+### get_Barcodes()
       Gets the barcode from a file given in input
 
 ### get_fastq(selection)
