@@ -18,50 +18,50 @@ configFilePath = r'config2.txt'
 configParser.read(configFilePath)
 
 
-def get_MinknowVersion(h5py_file):
+def get_MinknowVersion:
     """
-    Get the Minknow version from fast5 file
+    Gets the Minknow version from fast5 file
     """
     version = list(h5py_file['/UniqueGlobalKey/tracking_id'].attrs.items())
     version_d = {key: value.decode('utf-8') for key, value in version}
     return version_d['version']
 #print(get_MinknowVersion())
 
-def getFlowcellId(h5py_file):
+def get_FlowcellId:
     """
-    Get the flowcell id from fast5 file
+    Gets the flowcell id from fast5 file
     """
     flowcell_id = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
     flowcell_id_dico = {key: value.decode('utf-8') for key, value in flowcell_id}
     return flowcell_id_dico['flow_cell_id']
 
-def get_Hostname(h5py_file):
+def get_Hostname:
     """
-    Get the hostname from fast5 file
+    Gets the hostname from fast5 file
     """
     host_name = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
     host_name_dico = {key: value.decode('utf-8') for key, value in host_name}
     return host_name_dico['hostname']
 
-def getNumMinION(h5py_file):
+def get_MinIONRunId:
     """
-    Get the number of Minion run
+    Gets the id of Minion run
     """
     numMinION = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
     numMinION_dico = {key: value.decode('utf-8') for key, value in numMinION}
     return numMinION_dico['device_id']
 
-def getProtocolRunId(h5py_file):
+def get_ProtocolRunId:
     """
-    Get the run id protocol from fast 5 file
+    Gets the run id protocol from fast 5 file
     """
     protocol_run_id =  list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
     protocol_run_id_dico = {key: value.decode('utf-8') for key, value in protocol_run_id}
     return protocol_run_id_dico['protocol_run_id']
 
-def get_barcode():
+def get_Barcodes():
     """
-    Get the barcode from a file given in input
+    Gets the barcode from a file given in input
     """
     barcode_file = configParser.get('config', 'design_file')+"design.csv"
     #barcode_file = input('Enter the name of the file where the barcode is stored:')
@@ -80,9 +80,9 @@ def get_barcode():
 
 
 #selection : barcode name list
-def get_fastq(selection, run_name):
+def get_FastqSeq(selection, run_name):
     """
-    Get the fastq sequence
+    Gets the fastq sequence for a selection of barcodes
     """
 
     path_bz2_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
