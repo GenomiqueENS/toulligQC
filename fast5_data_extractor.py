@@ -8,10 +8,11 @@ import getter1D
 
 
 def fast5_data_extractor(fast5_file_directory):
-    """Create a dataframe from collections of fast5 files
-        :param fast5_file_directory: directory where fast5 files are stored
-        :return : tuple with different informations about fast5 files
-        """
+    """
+    Creates a dataframe from a collection of fast5 files. 
+    Needs the fast5 file directory as input (where fast5 files are stored) and returns a tuple with a set of information
+    about the fast5 files.
+    """
 
     for fast5_file in glob.glob("{}/*.fast5".format(fast5_file_directory)):
 
@@ -42,9 +43,10 @@ def fast5_data_extractor(fast5_file_directory):
     return tuple_log_file
 
 
-def write_data(tuple_array):
+def write_fast5_data_to_tsv(tuple_array):
     """
-    Write data in a tsv file
+    Writes the data related to the fast5 files in a tsv file from the tuple array created by the fast5_data_extractor
+    function 
     """
     with open('fast5_file.tsv', 'w') as tsvfile:
         writer = csv.writer(tsvfile, delimiter='\t')
@@ -53,9 +55,9 @@ def write_data(tuple_array):
             writer.writerow(row)
 
 
-def read_data(data_file):
+def read_fast5_data_from_tsv(data_file):
     """
-    Read the file created previously
+    Reads the tsv file containing the fast5 file data created previously by the write_data
     """
     with open(data_file) as tsvfile:
         reader = csv.reader(tsvfile, delimiter='\t')
