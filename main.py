@@ -54,7 +54,7 @@ channel_count = basecalling.channel
 total_number_reads_per_pore = pd.value_counts(channel_count)
 basecalling.plot_performance(total_number_reads_per_pore)
 basecalling.occupancy_pore()
-basecalling.reads_size_selection_barcode()
+basecalling.barcode_read_length_histogram()
 pdf.close()
 
 
@@ -73,7 +73,7 @@ with open('result.pdf', 'wb') as fout:
     merger.write(fout)
 
 
-docxs.docxs(basecalling.selection,basecalling.date(), flowcell_id)
+docxs.docxs(basecalling.selection,basecalling.run_date(), flowcell_id)
 basecalling.statistics_dataframe()
 
 
