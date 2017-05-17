@@ -1,6 +1,10 @@
 toulligQC
 ==========
-This program aims to analyse a minion run and to produce different statistics in the form of graphs and statistics files.
+This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not.
+It requires a design file describing the barcodes used if the run was barcoded.
+It partly relies on log file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
+This program will produce a set of graphs and statistic files
+
 
 # Table of content
 
