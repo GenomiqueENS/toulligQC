@@ -139,8 +139,7 @@ index | Reads | Description | Date | FastqFormat | RepTechGrou
 ------- | ------- | ------------- | -------- | -------------- | ---------------
  2015341_BC01 | dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 |  WT1_BC01 | 2017-01-24 | fastq-sanger | WT1_BC01
 
-   
-    An important thing is that the barcodes must be written with BC followed by two digits (BC01, BC02,....,BC80)
+An important thing is that the barcodes must be written with BC followed by two digits (BC01, BC02,....,BC80)
 
 * a configuration file: this file includes the path at your different files. These files numbered four in the following order:
 
