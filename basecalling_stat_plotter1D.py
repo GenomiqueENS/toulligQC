@@ -270,7 +270,8 @@ class basecalling_stat_plotter1D:
 
     def statistics_dataframe(self):
         """
-        Creates a dataframe containing statistics about different barcodes used
+        Returns the statistics retrieved from the statistics files in the statistics directory for each barcode as a dataframe to make
+        the reading easier.
         """
         df = pd.DataFrame(columns=self.selection)
         for barcode in self.selection[:-1]:
