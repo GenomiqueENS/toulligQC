@@ -32,20 +32,20 @@ flowcell_id, *_ = fast5_data
 
 #Histogram of read counts according to the type read
 
-basecalling.histogram_count_reads()
+basecalling.read_count_histogram()
 
 #Phred score according to the read type
-basecalling.quality_reads_boxplot()
+basecalling.read_quality_boxplot()
 
 
 #Channel counts
-basecalling.channel_count()
+basecalling.channel_count_histogram()
 
 #Pie chart representing barcodes
-basecalling.barcode_pie_chart()
+basecalling.barcode_percentage_pie_chart()
 
 #Curve representing the number of reads produced along the runtime
-basecalling.read_time()
+basecalling.read_number_run()
 
 #Representation of the channels occupation.
 #The frame represents the flowcell containing 512 channels
