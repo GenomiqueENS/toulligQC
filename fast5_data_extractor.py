@@ -22,16 +22,16 @@ def fast5_data_extractor(fast5_file_directory):
             version = getter1D.get_MinknowVersion(h5py_file)
 
             # flowcell_id
-            flowcell_id = getter1D.getFlowcellId(h5py_file)
+            flowcell_id = getter1D.get_FlowcellId(h5py_file)
 
             # hostname
             hostname = getter1D.get_Hostname(h5py_file)
 
             # numMinion
-            numMinion = getter1D.getNumMinION(h5py_file)
+            numMinion = getter1D.get_MinIONRunId(h5py_file)
 
             # run_id
-            run_id = getter1D.getProtocolRunId(h5py_file)
+            run_id = getter1D.get_ProtocolRunId(h5py_file)
 
         except:
             continue
