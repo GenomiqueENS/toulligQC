@@ -27,7 +27,10 @@ class basecalling_stat_plotter1D:
         self.selection.sort()
         self.fastq_length_array = getter1D.get_fastq(self.selection, run_name)
 
-    def meanqscore_barcode(self):
+    def barcode_meanqscore(self):
+        """
+        Writes the mean qscore extracted from the log file provided by albacore
+        """
         dataframe_meanqscore_barcode = self.sequencing_summary[['mean_qscore_template','barcode_arrangement']]
         barcode_selection = dataframe_meanqscore_barcode[dataframe_meanqscore_barcode['barcode_arrangement'].isin(self.selection)]
 
@@ -41,9 +44,9 @@ class basecalling_stat_plotter1D:
             print('fini')
 
 
-    def date(self):
+    def run_date(self):
         """
-        Gets the date of Mimion run
+        Returns the date of a Minion run from the log file provided by albacore
         """
         filename = self.sequencing_summary['filename']
         for index, file in enumerate(filename):
@@ -54,7 +57,7 @@ class basecalling_stat_plotter1D:
 
     def stat_generation(self):
         """
-        Generates a dictionary of statistics such as quartile, std for the creation of a log file like aozan from the summary log provided by Albacore
+        Generates a dictionary of statistics such as quartile, the standard deviation for the creation of a log file from the log file provided by Albacore
         """
         num_called_template = self.sequencing_summary['num_called_template']
         mean_qscore_template = self.sequencing_summary['mean_qscore_template']
@@ -62,9 +65,9 @@ class basecalling_stat_plotter1D:
         statistics_mean_qscore_template = pd.DataFrame.describe(mean_qscore_template).drop("count")
         return statistics_num_called_template, statistics_mean_qscore_template
 
-    def barcode_pie_chart(self):
+    def barcode_percentage_pie_chart(self):
         """
-        Plots the barcode pie chart from the selection of barcodes
+        Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
         """
         # Ne doit pas excéder 10
 
@@ -107,9 +110,9 @@ class basecalling_stat_plotter1D:
 
 
     #Launch after barcode pie chart because of self.selection
-    def reads_size_selection_barcode(self):
+    def barcode_read_length_histogram(self):
         """
-        Plots the histogram of reads size by bins of 100
+        Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file.
         """
         if self.fastq_length_array == []:
             print('There is a mistake')
@@ -138,9 +141,9 @@ class basecalling_stat_plotter1D:
         return statistics
 
 
-    def histogram_count_reads(self):
+    def read_count_histogram(self):
         """
-        Plots the histogram of count of different types of reads: template, complement, full_2D from albacore log file
+        Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
         """
 
         # Count of fast5 total
@@ -163,7 +166,7 @@ class basecalling_stat_plotter1D:
         self.pdf.savefig()
         plt.close()
 
-    def quality_reads_boxplot(self):
+    def read_quality_boxplot(self):
         """
         Plots a boxplot of reads quality
         """
@@ -177,9 +180,9 @@ class basecalling_stat_plotter1D:
 
 
 
-    def channel_count(self):
+    def channel_count_histogram(self):
         """
-        Plots an histogram of channel count
+        Plots an histogram of the channel count according to the channel number
         """
         fig, ax = plt.subplots()
         ax.hist(self.sequencing_summary['channel'], edgecolor='black',  bins=range(min(self.sequencing_summary['channel']), max(self.sequencing_summary['channel']) + 64, 64))
@@ -192,9 +195,9 @@ class basecalling_stat_plotter1D:
 
 
 
-    def read_time(self):
+    def read_number_run(self):
         """
-        Plots an histogram of reads length
+        Plots the reads produced along the run against the time(in hour)
         """
         start_time = self.sequencing_summary["start_time"] / 3600
         time_sort = sorted(start_time)
@@ -224,7 +227,7 @@ class basecalling_stat_plotter1D:
 
     def plot_performance(self, pore_measure):
         """
-        Plots the pore performance in terms of reads per pore
+        Plots the channels occupancy by the reads
         @:param pore_measure: reads number per pore
         """
         flowcell_layout = self.minion_flowcell_layout()
@@ -259,7 +262,10 @@ class basecalling_stat_plotter1D:
         Series = pd.DataFrame.describe(total_number_reads_per_pore)
         return pd.Series.to_dict(Series)
 
-    def get_selection(self):
+    def get_barcode_selection(self):
+        """
+        Returns the selection of barcodes used from the design file.
+        """
         return self.selection
 
     def statistics_dataframe(self):
