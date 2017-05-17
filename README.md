@@ -121,6 +121,21 @@ about the fast5 files.
 
 example
 ==========
+For the platform:
+
+The use of shell script is necessary so as to translate the path contained in the configuration file in the true paths corresponding with the server.
+For example /home/toto/ in import/rhodos11
+
+This shell script creates another configuration file named docker_config which musn't be modified.
+
+When the shell scripts is runned, it runs docker.
+
+A few rules must be respected when you use this shell scripts:
+
+* modify the file1 and the file2 variables according to your system but don't modify the end of these two variables. Always put config.txt and docker_config.txt
+* a file named docker_config.txt is created. Don't modify it.
+
+In the general case:
 
 First of all a set of files are required before the python scripts run:
 
@@ -173,22 +188,7 @@ If you use docker you must launch  the program like that:
 
         docker build -t genomicpariscentre/toulligQC .
         docker run -ti -v mountpoint ... genomicpariscentre/toulligQC bash
-
-
-For the platform:
-
-The use of shell script is necessary so as to translate the path contained in the configuration file in the true paths corresponding with the server.
-For example /home/toto/ in import/rhodos11
-
-This shell script creates another configuration file named docker_config which musn't be modified.
-
-When the shell scripts is runned, it runs docker.
-
-A few rules must be respected when you use this shell scripts:
-
-* don't put / to the end of each line
-* modify the file1 and the file2 variables according to your system but don't modify the end of these two variables. Always put config.txt and docker_config.txt
-* a file named docker_config.txt is created. Don't modify it.                                                                                                                       
+                                                                                                                     
 
 requirements
 ===============
