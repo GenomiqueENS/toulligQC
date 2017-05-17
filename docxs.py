@@ -1,6 +1,8 @@
+"""
+Creates a report in the form of a docx file for a minion run
+"""
+
 import docx
-#'
-###############directory /home/ferrato/ownCloud/Documents/fast5_1D/images###################
 
 def docxs(selection_barcode,date, flowcell_id):
     doc = docx.Document()
