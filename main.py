@@ -15,16 +15,17 @@ run_name = sys.argv[1]
 
 
 configParser = configparser.ConfigParser()
-try:
-    configFilePath = r'docker_config.txt'
-except:
-    cinfigFilePath = r'config.txt'
-    
-configParser.read(configFilePath)
 #configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
 fast5_directory = input('path to fast5 files:')
-basecall_log =configParser.get('config', 'log.file')+run_name+'/sequencing_summary.txt'
 
+try:
+    configFilePath = r'docker_config.txt'
+    configParser.read(configFilePath)
+    basecall_log =configParser.get('config', 'log.file')+run_name+'/sequencing_summary.txt'
+except:
+    configFilePath = r'config.txt'
+    configParser.read(configFilePath)
+    basecall_log = configParser.get('config', 'log.file') + run_name + '/sequencing_summary.txt'
 
 fast5_data = fast5_data_extractor.fast5_data_extractor(fast5_directory)
 basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log,pdf, run_name)
