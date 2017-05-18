@@ -154,7 +154,7 @@ An important thing is that the barcodes must be written with BC followed by two 
  * the directory where the fast5 are holded
  * the file where the Albacore log is placed
  * the directory where the fastq are located in the form of bz2 files
- * the design file mentioned above
+ * the directory where the design file mentioned above is located
 
 This file must be in the following form with these names:
 
@@ -166,7 +166,7 @@ log.file= path to our log file
 
 bz2.fastq.directory=path to fastq files in the form of bz2 files
 
-design_file=path to design file
+design_file=path to design file directory
 
 The first line is important for the python script because they use a parser in order to parse the configuration file and mustn't be modified
 
