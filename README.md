@@ -128,7 +128,7 @@ For example /home/toto/ in import/rhodos11
 
 You must modified the paths contained in the config_file and docker_config_file variables according to your configuration.
 
-This shell script creates another configuration file named docker_config which musn't be modified.
+This shell script creates another configuration file named docker_config.txt which musn't be modified.
 The shell script must be in the directory where the scripts are.
 When the shell scripts is runned, it runs docker.
 
