@@ -14,7 +14,11 @@ import configparser
 
 
 configParser = configparser.ConfigParser()
-configFilePath = r'config2.txt'
+try:
+    configFilePath = r'docker_config.txt'
+except:
+    configFilePath = r'config.txt'
+    
 configParser.read(configFilePath)
 
 
