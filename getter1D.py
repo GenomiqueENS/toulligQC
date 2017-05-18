@@ -12,16 +12,6 @@ import pandas as pd
 import configparser
 
 
-
-configParser = configparser.ConfigParser()
-try:
-    configFilePath = r'docker_config.txt'
-except:
-    configFilePath = r'config.txt'
-    
-configParser.read(configFilePath)
-
-
 def get_MinknowVersion(h5py_file):
     """
     Gets the Minknow version from fast5 file
@@ -67,8 +57,19 @@ def get_Barcodes():
     """
     Gets the barcode from a file given in input
     """
-    barcode_file = configParser.get('config', 'design_file')+"design.csv"
-    #barcode_file = input('Enter the name of the file where the barcode is stored:')
+    
+    configParser = configparser.ConfigParser()
+
+    try:
+        configFilePath = r'docker_config.txt'
+        configParser.read(configFilePath)
+        barcode_file = configParser.get('config', 'design_file') + "design.csv"
+
+    except:
+        configFilePath = r'config.txt'
+        configParser.read(configFilePath)
+        barcode_file = configParser.get('config', 'design_file') + "design.csv"
+        
     set_doublon = set()
 
     with open(barcode_file) as csvfile:
