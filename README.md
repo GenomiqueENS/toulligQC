@@ -34,11 +34,11 @@ Several python files are provided:
  
    Plots different graphs for exploitation of minion runs from Albacore file log
       
-      barcode_meanqscore
-     Writes the mean qscore extracted from the log file provided by albacore
+     barcode_meanqscore
+        Writes the mean qscore extracted from the log file provided by albacore
 
      run_date
-      Returns the date of a Minion run from the log file provided by albacore
+        Returns the date of a Minion run from the log file provided by albacore
 
      stat_generation
         Generates a dictionary of statistics such as quartile, the standard deviation for the creation of a log file from the log file provided by Albacore
@@ -69,7 +69,6 @@ Several python files are provided:
 
     plot_performance(pore_measure)
         Plots the channels occupancy by the reads
-        parameters: pore_measure: reads number per pore
 
     get_barcode_selection
        Returns the selection of barcode from the design file
