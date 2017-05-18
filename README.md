@@ -123,15 +123,17 @@ example
 ==========
 For the platform:
 
-The use of shell script is necessary so as to translate the path contained in the configuration file in the true paths corresponding with the server.
+The use of a shell script is necessary so as to translate the path contained in the configuration file in the true paths corresponding with the server.
 For example /home/toto/ in import/rhodos11
 
-This shell script creates another configuration file named docker_config which musn't be modified.
+You must modified the paths contained in the config_file and docker_config_file variables according to your configuration.
 
+This shell script creates another configuration file named docker_config which musn't be modified.
+The shell script must be in the directory where the scripts are.
 When the shell scripts is runned, it runs docker.
 
 A few rules must be respected when you use this shell scripts:
-
+* a / symbol must be present at the end of each line including a path. 
 * modify the file1 and the file2 variables according to your system but don't modify the end of these two variables. Always put config.txt and docker_config.txt
 * a file named docker_config.txt is created. Don't modify it.
 
@@ -139,7 +141,7 @@ In the general case:
 
 First of all a set of files are required before the python scripts run:
 
-* a design file named design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
+* a design file named imperatively design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
 
 index | Reads | Description | Date | FastqFormat | RepTechGrou
 ------- | ------- | ------------- | -------- | -------------- | ---------------
