@@ -89,6 +89,8 @@ def get_FastqSeq(selection, run_name):
     """
     Gets the fastq sequence for a selection of barcodes
     """
+    configParser = configparser.ConfigParser()
+
     try:
         configFilePath = r'docker_config.txt'
         configParser.read(configFilePath)
