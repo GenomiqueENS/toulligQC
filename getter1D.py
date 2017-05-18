@@ -63,12 +63,12 @@ def get_Barcodes():
     try:
         configFilePath = r'docker_config.txt'
         configParser.read(configFilePath)
-        barcode_file = configParser.get('config', 'design_file') + "design.csv"
+        barcode_file = configParser.get('config', 'design_file_directory') + "design.csv"
 
     except:
         configFilePath = r'config.txt'
         configParser.read(configFilePath)
-        barcode_file = configParser.get('config', 'design_file') + "design.csv"
+        barcode_file = configParser.get('config', 'design_file_directory') + "design.csv"
         
     set_doublon = set()
 
