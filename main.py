@@ -15,7 +15,11 @@ run_name = sys.argv[1]
 
 
 configParser = configparser.ConfigParser()
-configFilePath = r'config2.txt'
+try:
+    configFilePath = r'docker_config.txt'
+except:
+    cinfigFilePath = r'config.txt'
+    
 configParser.read(configFilePath)
 #configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
 fast5_directory = input('path to fast5 files:')
