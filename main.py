@@ -8,7 +8,8 @@ import pandas as pd
 import fast5_data_extractor
 import docxs
 import configparser
-
+import log_file1D
+import os
 pdf = PdfPages('Rapport_pdf.pdf')
 
 run_name = sys.argv[1]
@@ -16,20 +17,26 @@ run_name = sys.argv[1]
 
 configParser = configparser.ConfigParser()
 #configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
-fast5_directory = input('path to fast5 files:')
-
+bz2_file_path = input('path to bz2 fast5 files:')
+barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
+question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
+if question == 'y':
+    file_list = input('Enter your list files separated by a space:')
+    file_list = file_list.split(" ")
+else:
+    file_list = 'None'
 try:
     configFilePath = r'docker_config.txt'
     configParser.read(configFilePath)
-    basecall_log =configParser.get('config', 'log.file')+run_name+'/sequencing_summary.txt'
+    basecall_log = configParser.get('config', 'log.file')+run_name+'/sequencing_summary.txt'
 except:
     configFilePath = r'config.txt'
     configParser.read(configFilePath)
     basecall_log = configParser.get('config', 'log.file') + run_name + '/sequencing_summary.txt'
 
-fast5_data = fast5_data_extractor.fast5_data_extractor(fast5_directory)
-basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log,pdf, run_name)
 
+fast5_data = fast5_data_extractor.fast5_data_extractor(bz2_file_path)
+basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log,pdf, run_name, barcode_present, file_list)
 
 #Date and flowcell id
 
@@ -46,11 +53,14 @@ basecalling.read_quality_boxplot()
 #Channel counts
 basecalling.channel_count_histogram()
 
-#Pie chart representing barcodes
-basecalling.barcode_percentage_pie_chart()
-
 #Curve representing the number of reads produced along the runtime
 basecalling.read_number_run()
+
+if barcode_present == 'y':
+    # Pie chart representing barcodes
+    basecalling.barcode_percentage_pie_chart()
+
+basecalling.read_length_histogram()
 
 #Representation of the channels occupation.
 #The frame represents the flowcell containing 512 channels
@@ -59,9 +69,8 @@ channel_count = basecalling.channel
 total_number_reads_per_pore = pd.value_counts(channel_count)
 basecalling.plot_performance(total_number_reads_per_pore)
 basecalling.occupancy_pore()
-basecalling.barcode_read_length_histogram()
-pdf.close()
 
+pdf.close()
 
 
 input1 = open("Rapport_pdf.pdf", "rb")
@@ -77,8 +86,11 @@ for pdf in pdfs:
 with open('result.pdf', 'wb') as fout:
     merger.write(fout)
 
+if barcode_present == 'y':
+    docxs.docxs(basecalling.selection,basecalling.run_date(), flowcell_id, barcode_present)
+    basecalling.statistics_dataframe()
+else:
+    docxs.docxs('', basecalling.run_date(), flowcell_id, barcode_present)
 
-docxs.docxs(basecalling.selection,basecalling.run_date(), flowcell_id)
-basecalling.statistics_dataframe()
-
-
+if barcode_present == 'n':
+    log_file1D.log_file1D(fast5_data, basecalling)
