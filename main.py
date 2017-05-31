@@ -82,14 +82,3 @@ docxs.docxs(basecalling.selection,basecalling.run_date(), flowcell_id)
 basecalling.statistics_dataframe()
 
 
-#import log_file1D
-#log_file1D.log_file1D(fast5_data, basecalling)
-
-
-
-#/home/ferrato/shares-net/sequencages/nanopore/albacore-logs/FAF04250_20170328/sequencing_summary.txt
-#/home/ferrato/shares-net/sequencages/nanopore/test_alabacore/save/workspace
-
-#/home/ferrato/Documents/text.txt
-#/home/ferrato/shares-net/sequencages/nanopore/fastq/FAF04250_20170328
-#/home/ferrato/ownCloud/Documents/fast5_1D/design.csv
