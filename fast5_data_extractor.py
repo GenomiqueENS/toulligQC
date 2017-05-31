@@ -19,17 +19,6 @@ def fast5_data_extractor(fast5_file_directory):
     fast5_file = glob.glob('*.fast5')[0]
     h5py_file = h5py.File(fast5_file)
 
-    #extract fast5 file from tar file
-   # tar_archive = tarfile.open(fast5_file)
-   # tar_archive.next()
-   # tar_archive.extract(tar_archive.next())
-
-    #for fil in os.listdir():
-#	if fil.startswith('201'):
-#	    for root, dirs, files in os.walk(fil)
-#		for file in files:
-#		    if file.startswith('dna'):
-#			h5py_file = h5py.File(os.path.join(root, file))
 
     # version
     version = getter1D.get_MinknowVersion(h5py_file)
