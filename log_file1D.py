@@ -16,7 +16,7 @@ def log_file1D(fast5_data , basecall_stat):
 
     occupancy_pore = basecall_stat.occupancy_pore()
 
-    completeName = os.path.join('/home/ferrato/Documents/fast5', "fichier_aozan.txt")
+    completeName = os.path.join('statistics/', "run_statistics_file.txt")
 
     with open(completeName, 'w') as file_data:
 
@@ -48,6 +48,4 @@ def log_file1D(fast5_data , basecall_stat):
 
         for index, element in basecall_stat.statistics_read_size().iteritems():
             file_data.write("Read.fastq.length.{}={}\n".format(index, element))
-
-
 
