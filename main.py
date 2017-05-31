@@ -17,11 +17,11 @@ run_name = sys.argv[1]
 
 configParser = configparser.ConfigParser()
 #configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
-bz2_file_path = input('path to bz2 fast5 files:')
+bz2_file_path = input('Path to bz2 fast5 files:')
 barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
 question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
 if question == 'y':
-    file_list = input('Enter your list files separated by a space:')
+    file_list = input('Enter your file (or file list) separated by a space:')
     file_list = file_list.split(" ")
 else:
     file_list = 'None'
