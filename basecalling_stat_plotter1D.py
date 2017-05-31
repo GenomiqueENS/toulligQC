@@ -16,25 +16,32 @@ class basecalling_stat_plotter1D:
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, pdf, run_name):
-        self.sequencing_summary = pd.read_csv(path_sequencing_summary, sep="\t")
-        self.channel = self.sequencing_summary['channel']
-        self.sequencing_summary[self.sequencing_summary == 0] = np.nan
-        self.selection = getter1D.get_Barcodes()
-        self.selection_original = self.selection
-        self.fast5_tot = len(self.sequencing_summary)
-        self.pdf = pdf
-        self.selection.sort()
-        self.fastq_length_array = getter1D.get_FastqSeq(self.selection, run_name)
+    def __init__(self, path_sequencing_summary, pdf, run_name, barcode_present, file_list='None'):
+        self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
+        self.channel = self.albacore_log['channel']
+        self.albacore_log[self.albacore_log == 0] = np.nan
+
+        if barcode_present == 'y':
+            self.barcode_selection = getter1D.get_Barcodes()
+            self.barcode_selection_original = self.barcode_selection
+            self.fast5_tot = len(self.albacore_log)
+            self.pdf = pdf
+            self.barcode_selection.sort()
+            self.fastq_length_array = getter1D.get_FastqSeq(self.barcode_selection, run_name, barcode_present, file_list)
+
+        else:
+            self.fast5_tot = len(self.albacore_log)
+            self.pdf = pdf
+            self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = getter1D.get_FastqSeq('', run_name, barcode_present, file_list)
 
     def barcode_meanqscore(self):
         """
         Writes the mean qscore extracted from the log file provided by albacore
         """
-        dataframe_meanqscore_barcode = self.sequencing_summary[['mean_qscore_template','barcode_arrangement']]
-        barcode_selection = dataframe_meanqscore_barcode[dataframe_meanqscore_barcode['barcode_arrangement'].isin(self.selection)]
+        barcode_meanqscore_dataframe = self.albacore_log[['mean_qscore_template','barcode_arrangement']]
+        barcode_selection = barcode_meanqscore_dataframe[barcode_meanqscore_dataframe['barcode_arrangement'].isin(self.barcode_selection)]
 
-        for barcode in self.selection:
+        for barcode in self.barcode_selection:
             meanq_score = barcode_selection[barcode_selection['barcode_arrangement'] == barcode].mean()
             meanq_score = meanq_score.tolist()[0]
             completeName = os.path.join('statistics/', barcode)
@@ -48,9 +55,9 @@ class basecalling_stat_plotter1D:
         """
         Returns the date of a Minion run from the log file provided by albacore
         """
-        filename = self.sequencing_summary['filename']
+        filename = self.albacore_log['filename']
         for index, file in enumerate(filename):
-            exp = self.sequencing_summary['filename'][index]
+            exp = self.albacore_log['filename'][index]
             break
         m = re.search(r'(_(\d+)_)', exp)
         return m.group(2)
@@ -59,8 +66,8 @@ class basecalling_stat_plotter1D:
         """
         Generates a dictionary of statistics such as quartile, the standard deviation for the creation of a log file from the log file provided by Albacore
         """
-        num_called_template = self.sequencing_summary['num_called_template']
-        mean_qscore_template = self.sequencing_summary['mean_qscore_template']
+        num_called_template = self.albacore_log['num_called_template']
+        mean_qscore_template = self.albacore_log['mean_qscore_template']
         statistics_num_called_template = pd.DataFrame.describe(num_called_template).drop("count")
         statistics_mean_qscore_template = pd.DataFrame.describe(mean_qscore_template).drop("count")
         return statistics_num_called_template, statistics_mean_qscore_template
@@ -71,29 +78,29 @@ class basecalling_stat_plotter1D:
         """
         # Ne doit pas excéder 10
 
-        for element in self.selection:
+        for element in self.barcode_selection:
 
 
-            if all(self.sequencing_summary['barcode_arrangement'] != element):
+            if all(self.albacore_log['barcode_arrangement'] != element):
                 print("The barcode {} doesn't exist".format(element))
                 return False
 
-        barcode = self.sequencing_summary['barcode_arrangement']
+        barcode = self.albacore_log['barcode_arrangement']
         count1 = barcode.value_counts()
-        count = count1.sort_index()[self.selection]
-        unclassified = sum(count1[~count1.index.isin(self.selection)])
+        count = count1.sort_index()[self.barcode_selection]
+        unclassified = sum(count1[~count1.index.isin(self.barcode_selection)])
         ##Watch out must be placed after the operation
-        self.selection.append("unclassified")
+        self.barcode_selection.append("unclassified")
         ##
         count['unclassified'] = unclassified
         total = sum(count1)
 
-        cs = cm.Paired(np.arange(len(self.selection)) / len(self.selection))
+        cs = cm.Paired(np.arange(len(self.barcode_selection)) / len(self.barcode_selection))
 
         sizes = [(100 * chiffre) / total for chiffre in count.values]
-        if len(self.selection) <= 10:
+        if len(self.barcode_selection) <= 10:
             fig1, ax1 = plt.subplots()
-            ax1.pie(sizes, labels=self.selection, autopct='%1.1f%%', startangle=90, colors=cs)
+            ax1.pie(sizes, labels=self.barcode_selection, autopct='%1.1f%%', startangle=90, colors=cs)
             ax1.axis('equal')
 
         else:
@@ -102,17 +109,17 @@ class basecalling_stat_plotter1D:
             length = np.arange(0, len(count))
             ax1.bar(length, count, color=cs)
             ax1.set_xticks(length)
-            ax1.set_xticklabels(self.selection)
+            ax1.set_xticklabels(self.barcode_selection)
 
         plt.savefig('images/image5.png')
         self.pdf.savefig()
         plt.close()
 
 
-    #Launch after barcode pie chart because of self.selection
-    def barcode_read_length_histogram(self):
+    #Launch after barcode pie chart because of self.barcode_selection
+    def read_length_histogram(self):
         """
-        Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file.
+        Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
         """
         if self.fastq_length_array == []:
             print('There is a mistake')
@@ -130,7 +137,7 @@ class basecalling_stat_plotter1D:
         """
         Paricipates to the count df nucleotide(A,T,C,G)" \
         """
-        return self.counter_template, self.total_nucs_template
+        return self.template_nucleotide_counter, self.total_nucs_template
 
     def statistics_read_size(self):
         """
@@ -147,9 +154,9 @@ class basecalling_stat_plotter1D:
         """
 
         # Count of fast5 total
-        fast5tot = len(self.sequencing_summary)
+        fast5tot = len(self.albacore_log)
         # Count of template reads
-        template = len(self.sequencing_summary['num_called_template'].dropna())
+        template = len(self.albacore_log['num_called_template'].dropna())
 
          #Count of complement reads
         read_type = [fast5tot, template]
@@ -170,7 +177,7 @@ class basecalling_stat_plotter1D:
         """
         Plots a boxplot of reads quality
         """
-        dataframe = self.sequencing_summary.loc[:, ["mean_qscore_template"]]
+        dataframe = self.albacore_log.loc[:, ["mean_qscore_template"]]
         sns.boxplot(data=dataframe)
         plt.title('Boxplot of read quality')
         plt.ylabel('Phred score')
@@ -185,7 +192,7 @@ class basecalling_stat_plotter1D:
         Plots an histogram of the channel count according to the channel number
         """
         fig, ax = plt.subplots()
-        ax.hist(self.sequencing_summary['channel'], edgecolor='black',  bins=range(min(self.sequencing_summary['channel']), max(self.sequencing_summary['channel']) + 64, 64))
+        ax.hist(self.albacore_log['channel'], edgecolor='black',  bins=range(min(self.albacore_log['channel']), max(self.albacore_log['channel']) + 64, 64))
         ax.set_xlabel("Channel number")
         ax.set_ylabel("Count")
         ax.set_title("Channel counts")
@@ -199,9 +206,9 @@ class basecalling_stat_plotter1D:
         """
         Plots the reads produced along the run against the time(in hour)
         """
-        start_time = self.sequencing_summary["start_time"] / 3600
-        time_sort = sorted(start_time)
-        plt.scatter(time_sort, np.arange(len(time_sort)))
+        start_time = self.albacore_log["start_time"] / 3600
+        start_time_sorted = sorted(start_time)
+        plt.scatter(start_time_sorted, np.arange(len(start_time_sorted)))
         plt.ylabel("produced reads")
         plt.xlabel("hour")
         plt.title("Read produced along the run")
@@ -266,22 +273,22 @@ class basecalling_stat_plotter1D:
         """
         Returns the selection of barcodes used from the design file.
         """
-        return self.selection
+        return self.barcode_selection
 
     def statistics_dataframe(self):
         """
         Returns the statistics retrieved from the statistics files in the statistics directory for each barcode as a dataframe to make
         the reading easier.
         """
-        df = pd.DataFrame(columns=self.selection)
-        for barcode in self.selection[:-1]:
+        df = pd.DataFrame(columns=self.barcode_selection)
+        for selected_barcode in self.barcode_selection[:-1]:
             dico = {}
-            file = open('statistics/{}'.format(barcode),'r')
+            file = open('statistics/{}'.format(selected_barcode),'r')
             for line in file:
                 key, value = line.strip().split('=')
                 dico[key.strip()] = value.strip()
             file.close()
-            df[barcode] = pd.Series(dico)
+            df[selected_barcode] = pd.Series(dico)
         df.to_csv('/home/ferrato/ownCloud/fast5_1D/dataframe.csv', header=self.selection_original,index=list(df.index), sep='\t')
 
 
