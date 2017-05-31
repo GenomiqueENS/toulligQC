@@ -5,7 +5,9 @@ import numpy as np
 from collections import Counter
 import csv
 import getter1D
-
+import os
+import subprocess
+import tarfile
 
 def fast5_data_extractor(fast5_file_directory):
     """
@@ -14,29 +16,35 @@ def fast5_data_extractor(fast5_file_directory):
     about the fast5 files.
     """
 
-    for fast5_file in glob.glob("{}/*.fast5".format(fast5_file_directory)):
+    fast5_file = glob.glob('*.fast5')[0]
+    h5py_file = h5py.File(fast5_file)
 
-        try:
-            h5py_file = h5py.File(fast5_file)
-            # version
-            version = getter1D.get_MinknowVersion(h5py_file)
+    #extract fast5 file from tar file
+   # tar_archive = tarfile.open(fast5_file)
+   # tar_archive.next()
+   # tar_archive.extract(tar_archive.next())
 
-            # flowcell_id
-            flowcell_id = getter1D.get_FlowcellId(h5py_file)
+    #for fil in os.listdir():
+#	if fil.startswith('201'):
+#	    for root, dirs, files in os.walk(fil)
+#		for file in files:
+#		    if file.startswith('dna'):
+#			h5py_file = h5py.File(os.path.join(root, file))
 
-            # hostname
-            hostname = getter1D.get_Hostname(h5py_file)
+    # version
+    version = getter1D.get_MinknowVersion(h5py_file)
 
-            # numMinion
-            numMinion = getter1D.get_MinIONRunId(h5py_file)
+    # flowcell_id
+    flowcell_id = getter1D.get_FlowcellId(h5py_file)
 
-            # run_id
-            run_id = getter1D.get_ProtocolRunId(h5py_file)
+    # hostname
+    hostname = getter1D.get_Hostname(h5py_file)
 
-        except:
-            continue
+    # numMinion
+    numMinion = getter1D.get_MinIONRunId(h5py_file)
 
-        break
+    # run_id
+    run_id = getter1D.get_ProtocolRunId(h5py_file)
 
     tuple_log_file = (flowcell_id, version , hostname,numMinion,run_id)
 
