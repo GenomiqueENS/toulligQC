@@ -26,7 +26,7 @@ if question == 'y':
 else:
     file_list = 'None'
 try:
-    configFilePath = r'docker_config.txt'
+    configFilePath = r'/confogpass/docker_config.txt'
     configParser.read(configFilePath)
     basecall_log = configParser.get('config', 'log.file')+run_name+'/sequencing_summary.txt'
 except:
