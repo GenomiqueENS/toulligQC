@@ -78,7 +78,7 @@ def get_Barcodes(file_list=''):
         configParser = configparser.ConfigParser()
 
         try:
-            configFilePath = r'docker_config.txt'
+            configFilePath = r'/configpass/docker_config.txt'
             configParser.read(configFilePath)
             barcode_design_file = configParser.get('config', 'design_file_directory') + "design.csv"
 
@@ -109,7 +109,7 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
     configParser = configparser.ConfigParser()
 
     try:
-        configFilePath = r'docker_config.txt'
+        configFilePath = r'/configpass/docker_config.txt'
         configParser.read(configFilePath)
         path_bz2_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
 
