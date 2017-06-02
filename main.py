@@ -7,15 +7,14 @@ from PyPDF2 import PdfFileMerger
 import pandas as pd
 import fast5_data_extractor
 import docxs
-import configparser
 import log_file1D
 import os
-pdf = PdfPages('Rapport_pdf.pdf')
+
 
 run_name = sys.argv[1]
 
-
 configParser = configparser.ConfigParser()
+
 #configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
 bz2_file_path = input('Path to bz2 fast5 files:')
 barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
@@ -26,14 +25,19 @@ if question == 'y':
 else:
     file_list = 'None'
 try:
+    #In the docker image
     configFilePath = r'/configpass/docker_config.txt'
-    configParser.read(configFilePath)
-    basecall_log = configParser.get('config', 'log.file')+run_name+'/sequencing_summary.txt'
+    basecall_log = '/log.file/' +run_name+'/sequencing_summary.txt'
+    report_writing_directory = '/design.file.directory/'
+
 except:
     configFilePath = r'config.txt'
     configParser.read(configFilePath)
     basecall_log = configParser.get('config', 'log.file') + run_name + '/sequencing_summary.txt'
-
+    report_writing_directory = configParser.get('config', 'design.file.directory')
+    
+pdf_report = report_writing_directory+'Rapport_pdf.pdf'
+pdf = PdfPages(pdf_report)
 
 fast5_data = fast5_data_extractor.fast5_data_extractor(bz2_file_path)
 basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log,pdf, run_name, barcode_present, file_list)
@@ -82,8 +86,10 @@ merger = PdfFileMerger()
 
 for pdf in pdfs:
     merger.append(open(pdf, 'rb'))
+    
+result_pdf_path =os.path.join(report_writing_directory, 'result.pdf')
 
-with open('result.pdf', 'wb') as fout:
+with open(report_writing_directory, 'wb') as fout:
     merger.write(fout)
 
 if barcode_present == 'y':
