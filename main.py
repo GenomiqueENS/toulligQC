@@ -77,7 +77,7 @@ basecalling.occupancy_pore()
 pdf.close()
 
 
-input1 = open("Rapport_pdf.pdf", "rb")
+input1 = open(report_writing_directory, "rb")
 input2 = open("layout.pdf", "rb")
 
 pdfs = ["Rapport_pdf.pdf","layout.pdf"]
