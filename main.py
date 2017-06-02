@@ -77,19 +77,21 @@ basecalling.occupancy_pore()
 pdf.close()
 
 
-input1 = open(report_writing_directory, "rb")
+report_pdf_file = os.path.join(report_writing_directory, 'Rapport_pdf.pdf')
+
+input1 = open(report_pdf_file, "rb")
 input2 = open("layout.pdf", "rb")
 
-pdfs = ["Rapport_pdf.pdf","layout.pdf"]
+pdfs = [report_pdf_file,"layout.pdf"]
 
 merger = PdfFileMerger()
 
 for pdf in pdfs:
     merger.append(open(pdf, 'rb'))
     
-result_pdf_path =os.path.join(report_writing_directory, 'result.pdf')
+result_pdf_path =os.path.join(report_writing_directory, 'result.pdf')    
 
-with open(report_writing_directory, 'wb') as fout:
+with open(result_pdf_path, 'wb') as fout:
     merger.write(fout)
 
 if barcode_present == 'y':
