@@ -80,12 +80,12 @@ def get_Barcodes(file_list=''):
         try:
             configFilePath = r'/configpass/docker_config.txt'
             configParser.read(configFilePath)
-            barcode_design_file = configParser.get('config', 'design_file_directory') + "design.csv"
+            barcode_design_file = configParser.get('config', 'design.file.directory') + "design.csv"
 
         except:
             configFilePath = r'config.txt'
             configParser.read(configFilePath)
-            barcode_design_file = configParser.get('config', 'design_file_directory') + "design.csv"
+            barcode_design_file = configParser.get('config', 'design.file.directory') + "design.csv"
 
         barcode_set = set()
 
