@@ -15,7 +15,7 @@ def fast5_data_extractor(fast5_file_directory):
     Needs the fast5 file directory as input (where fast5 files are stored) and returns a tuple with a set of information
     about the fast5 files.
     """
-    docker_image="Do you use the docker image?(Answer y or n)"
+    docker_image=input("Do you use the docker image?(Answer y or n)")
     if docker_image == 'y':
         fast5_file = glob.glob('/design.file.directory/*.fast5')[0]
     else:
