@@ -4,6 +4,7 @@ Creates a report in the form of a docx file for a minion run
 
 import docx
 import os
+import configparser
 
 def docxs(selection_barcode,date, flowcell_id, barcode_present):
     
