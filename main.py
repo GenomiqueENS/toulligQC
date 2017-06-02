@@ -9,7 +9,7 @@ import fast5_data_extractor
 import docxs
 import log_file1D
 import os
-import ConfigParser
+import configparser
 
 run_name = sys.argv[1]
 
