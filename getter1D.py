@@ -80,7 +80,7 @@ def get_Barcodes(file_list=''):
         try:
             configFilePath = r'/configpass/docker_config.txt'
             configParser.read(configFilePath)
-            barcode_design_file = configParser.get('config', 'design.file.directory') + "design.csv"
+            barcode_design_file = "/design.file.directory/design.csv"
 
         except:
             configFilePath = r'config.txt'
@@ -111,7 +111,7 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
     try:
         configFilePath = r'/configpass/docker_config.txt'
         configParser.read(configFilePath)
-        path_bz2_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
+        path_bz2_directory = "/bz2.fastq.directory/" + run_name
 
 
     except:
@@ -120,7 +120,11 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
         path_bz2_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
 
     global_length_array = []
-    path_bz2_file = 'fastq_sequence.txt'
+    if configFilePath == r'/configpass/docker_config.txt':
+        path_bz2_file = '/design.file.directory/fastq_sequence.txt'
+    else:
+        path_bz2_file = 'fastq_sequence.txt'
+        
     # path_bz2_directory = input('path to bz2 directory:')
 
     if os.path.isfile(path_bz2_file):
@@ -165,8 +169,11 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
                             for template_nucleotide in seq:
                                 template_nucleotide_counter[template_nucleotide] += 1
                                 total_nucs_template += 1
-
-                    completeName = os.path.join('statistics/', selected_barcode)
+                    if configFilePath == r'/configpass/docker_config.txt':
+                        completeName = os.path.join('/design.file.directory/statistics/', selected_barcode)
+                    else:
+                        completeName = os.path.join('statistics/', selected_barcode)
+                        
                     barcode_file = open(completeName, 'w')
 
                     selected_barcode_fastq_size = pd.Series(selected_barcoded_sample_fastq_length_array)
@@ -214,8 +221,10 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
                                 for template_nucleotide in seq:
                                     template_nucleotide_counter[template_nucleotide] += 1
                                     total_nucs_template += 1
-
-                        completeName = os.path.join('statistics/', selected_barcode)
+                        if configFilePath == r'/configpass/docker_config.txt':
+                            completeName = os.path.join('/design.file.directory/statistics/', selected_barcode)
+                        else:
+                            completeName = os.path.join('statistics/', selected_barcode)
                         barcode_file = open(completeName, 'w')
 
                         selected_barcode_fastq_size = pd.Series(selected_barcoded_sample_fastq_length_array)
