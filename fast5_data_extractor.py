@@ -17,7 +17,7 @@ def fast5_data_extractor(fast5_file_directory):
     """
     docker_image="Do you use the docker image?(Answer y or n)"
     if docker_image == 'y':
-        fast5_file = glob.glob('/design_file_directory/*.fast5')[0]
+        fast5_file = glob.glob('/design.file.directory/*.fast5')[0]
     else:
         #Put the fast5 file in the actual directory
         fast5_file = glob.glob('*.fast5')[0]
