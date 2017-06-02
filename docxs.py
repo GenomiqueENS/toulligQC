@@ -3,8 +3,16 @@ Creates a report in the form of a docx file for a minion run
 """
 
 import docx
+import os
 
 def docxs(selection_barcode,date, flowcell_id, barcode_present):
+    
+    configParser = configparser.ConfigParser()
+    configFilePath = r'/configpass/docker_config.txt'
+    configParser.read(configFilePath)
+    report_writing_directory = configParser.get('config', 'design_file_directory')
+    os.chdir(report_writing_directory)
+    
     doc = docx.Document()
     doc.add_heading('Rapport run Minion\n', level=1)
     doc.add_paragraph('Flowcell id: '+flowcell_id)
