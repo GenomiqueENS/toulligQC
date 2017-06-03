@@ -60,13 +60,14 @@ def get_ProtocolRunId(h5py_file):
     return protocol_run_id_dico['protocol_run_id']
 
 
-def get_Barcodes(file_list=''):
+def get_Barcodes(selected_file_list=''):
     """
     Gets the barcode from a file given in input
     """
-    if file_list:
+    #delete barcode doublon in selected file list 
+    if selected_file_list:
         barcode_set = set()
-        for file in file_list:
+        for file in selected_file_list:
             pattern = re.search(r'barcode(\d{2})', file)
 
             if pattern:
@@ -91,16 +92,15 @@ def get_Barcodes(file_list=''):
             design_file = csv.reader(csvfile, delimiter='\t')
 
             for row in design_file:
-                pattern = re.search(r'BC(\d{2})', row[0])
+                pattern = re.search(r'BC(\d{2})', row[0]):
 
                 if pattern:
                     barcode = 'barcode{}'.format(pattern.group(1))
                     barcode_set.add(barcode)
         return list(barcode_set)
 
+def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected_file_list=''):
 
-# selection : barcode name list
-def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
     """
     Gets the fastq sequence for a barcode selection
     """
@@ -108,23 +108,26 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
 
     
     if os.path.isfile('/configpass/docker_config.txt'):
-        path_bz2_directory = "/bz2.fastq.directory/" + run_name
+        bz2_fastq_directory = "/bz2.fastq.directory/" + run_name
 
     else:
         configFilePath = r'config.txt'
         configParser.read(configFilePath)
-        path_bz2_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
+        bz2_fastq_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
 
     global_length_array = []
-    if configFilePath == r'/configpass/docker_config.txt':
-        path_bz2_file = '/design.file.directory/fastq_sequence.txt'
-    else:
-        path_bz2_file = 'fastq_sequence.txt'
-        
-    # path_bz2_directory = input('path to bz2 directory:')
 
-    if os.path.isfile(path_bz2_file):
-        open(path_bz2_file, 'w').close()
+    #fastq_sequence.txt represent the file where the fastq sequence extracted from bz2 files are written
+
+    if os.path.isfile('/configpass/docker_config.txt'): 
+        fastq_file = '/design.file.directory/fastq_sequence.txt'
+    else:
+        fastq_file = 'fastq_sequence.txt'
+        
+    # bz2_fastq_directory = input('path to bz2 directory:')
+
+    if os.path.isfile(fastq_file):
+        open(fastq_file, 'w').close()
 
     if not os.path.exists('images'):
         os.makedirs('images')
@@ -140,23 +143,26 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
         for file in os.listdir('statistics'):
             os.remove('statistics/' + file)
 
-    if barcode_present == 'y':
 
-        for bz2_file in glob.glob("{}/*.bz2".format(path_bz2_directory)):
+    #represent a directory including a set of files barcoded 
+
+    if not selected_file_list:
+
+        for bz2_fastq_file in glob.glob("{}/*.bz2".format(bz2_fastq_directory)):
 
             template_nucleotide_counter = Counter()
             total_nucs_template = 0
             selected_barcoded_sample_fastq_length_array = []
 
             for selected_barcode in barcode_selection:
-                if selected_barcode in bz2_file:
-                    print(bz2_file)
-                    uncompressedData = bz2.BZ2File(bz2_file, 'rb').read()
+                if selected_barcode in bz2_fastq_file:
+                    print(bz2_fastq_file)
+                    uncompressedData = bz2.BZ2File(bz2_fastq_file, 'rb').read()
                     uncomp = uncompressedData.decode('utf-8')
-                    file = open(path_bz2_file, 'w')
+                    file = open(fastq_file, 'w')
                     file.write(uncomp)
 
-                    with open(path_bz2_file) as in_handle:
+                    with open(fastq_file) as in_handle:
 
                         for title, seq, qual in FastqGeneralIterator(in_handle):
                             selected_barcoded_sample_fastq_length_array.append(len(seq))
@@ -193,22 +199,25 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
                     file.close()
         return global_length_array
 
-    elif file_list:
+
+    #represent selected file list with barcodes
+
+    else selected_file_list:
         if barcode_present == 'y':
             template_nucleotide_counter = Counter()
             total_nucs_template = 0
             selected_barcoded_sample_fastq_length_array = []
-            for file in file_list:
-                file = path_bz2_directory + '/' + file
+            for file in selected_file_list:
+                file = bz2_fastq_directory + '/' + file
                 for selected_barcode in barcode_selection:
                     if selected_barcode in file:
                         print(file)
                         uncompressedData = bz2.BZ2File(file, 'rb').read()
                         uncomp = uncompressedData.decode('utf-8')
-                        file = open(path_bz2_file, 'w')
+                        file = open(fastq_file, 'w')
                         file.write(uncomp)
 
-                        with open(path_bz2_file) as in_handle:
+                        with open(fastq_file) as in_handle:
 
                             for title, seq, qual in FastqGeneralIterator(in_handle):
                                 selected_barcoded_sample_fastq_length_array.append(len(seq))
@@ -244,41 +253,59 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
                         file.close()
             return global_length_array
 
-        else:
+def get_FastqSeq_without_barcode(run_name, selected_file_list=''):
+    """
+    Gets the fastq sequence
+    """
+    configParser = configparser.ConfigParser()
 
-            for file in file_list:
-                file = path_bz2_directory + '/' + file
-                template_nucleotide_counter = Counter()
-                total_nucs_template = 0
-
-                uncompressedData = bz2.BZ2File(file, 'rb').read()
-                uncomp = uncompressedData.decode('utf-8')
-                file = open(path_bz2_file, 'w')
-                file.write(uncomp)
-
-                with open(path_bz2_file) as in_handle:
-
-                    for title, seq, qual in FastqGeneralIterator(in_handle):
-                        global_length_array.append(len(seq))
-
-                        for template_nucleotide in seq:
-                            template_nucleotide_counter[template_nucleotide] += 1
-                            total_nucs_template += 1
-            return template_nucleotide_counter, total_nucs_template, global_length_array
-
+    
+    if os.path.isfile('/configpass/docker_config.txt'):
+        bz2_fastq_directory = "/bz2.fastq.directory/" + run_name
 
     else:
-        for bz2_file in glob.glob("{}/*.bz2".format(path_bz2_directory)):
+        configFilePath = r'config.txt'
+        configParser.read(configFilePath)
+        bz2_fastq_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
 
+    global_length_array = []
+    if configFilePath == r'/configpass/docker_config.txt':
+        fastq_file = '/design.file.directory/fastq_sequence.txt'
+    else:
+        fastq_file = 'fastq_sequence.txt'
+        
+    # bz2_fastq_directory = input('path to bz2 directory:')
+
+    if os.path.isfile(fastq_file):
+        open(fastq_file, 'w').close()
+
+    if not os.path.exists('images'):
+        os.makedirs('images')
+
+    if os.path.exists('images'):
+        for file in os.listdir('images'):
+            os.remove('images/' + file)
+
+    if not os.path.exists('statistics'):
+        os.makedirs('statistics')
+
+    if os.path.exists('statistics'):
+        for file in os.listdir('statistics'):
+            os.remove('statistics/' + file)
+    #selected file list without barcode
+    if selected_file_list:
+
+        for file in selected_file_list:
+            file = bz2_fastq_directory + '/' + file
             template_nucleotide_counter = Counter()
             total_nucs_template = 0
 
-            uncompressedData = bz2.BZ2File(bz2_file, 'rb').read()
+            uncompressedData = bz2.BZ2File(file, 'rb').read()
             uncomp = uncompressedData.decode('utf-8')
-            file = open(path_bz2_file, 'w')
+            file = open(fastq_file, 'w')
             file.write(uncomp)
 
-            with open(path_bz2_file) as in_handle:
+            with open(fastq_file) as in_handle:
 
                 for title, seq, qual in FastqGeneralIterator(in_handle):
                     global_length_array.append(len(seq))
@@ -288,6 +315,27 @@ def get_FastqSeq(barcode_selection, run_name, barcode_present, file_list=''):
                         total_nucs_template += 1
         return template_nucleotide_counter, total_nucs_template, global_length_array
 
+    #directory with samples without barcode(a set of files not selected)
+    else:
+        for bz2_fastq_file in glob.glob("{}/*.bz2".format(bz2_fastq_directory)):
+
+            template_nucleotide_counter = Counter()
+            total_nucs_template = 0
+
+            uncompressedData = bz2.BZ2File(bz2_fastq_file, 'rb').read()
+            uncomp = uncompressedData.decode('utf-8')
+            file = open(fastq_file, 'w')
+            file.write(uncomp)
+
+            with open(fastq_file) as in_handle:
+
+                for title, seq, qual in FastqGeneralIterator(in_handle):
+                    global_length_array.append(len(seq))
+
+                    for template_nucleotide in seq:
+                        template_nucleotide_counter[template_nucleotide] += 1
+                        total_nucs_template += 1
+        return template_nucleotide_counter, total_nucs_template, global_length_array
 
 
 
