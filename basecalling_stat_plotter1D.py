@@ -27,12 +27,12 @@ class basecalling_stat_plotter1D:
             self.fast5_tot = len(self.albacore_log)
             self.pdf = pdf
             self.barcode_selection.sort()
-            self.fastq_length_array = getter1D.get_FastqSeq(self.barcode_selection, run_name, barcode_present, file_list)
+            self.fastq_length_array = getter1D.get_FastqSeq_barcoded(self.barcode_selection, run_name, barcode_present, file_list)
 
         else:
             self.fast5_tot = len(self.albacore_log)
             self.pdf = pdf
-            self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = getter1D.get_FastqSeq('', run_name, barcode_present, file_list)
+            self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = getter1D.get_FastqSeq_without_barcode(run_name, file_list)
 
     def barcode_meanqscore(self):
         """
