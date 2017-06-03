@@ -19,21 +19,26 @@ configParser = configparser.ConfigParser()
 bz2_file_path = input('Path to bz2 fast5 files:')
 barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
 question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
+
 if question == 'y':
     file_list = input('Enter your file (or file list) separated by a space:')
     file_list = file_list.split(" ")
 else:
     file_list = 'None'
-try:
+
     #In the docker image
-    configFilePath = r'/configpass/docker_config.txt'
+if os.path.isfile('/configpass/docker_config.txt'):
     basecall_log = '/log.file/' +run_name+'/sequencing_summary.txt'
     report_writing_directory = '/design.file.directory/'
-
-except:
+else:
     configFilePath = r'config.txt'
     configParser.read(configFilePath)
-    basecall_log = configParser.get('config', 'log.file') + run_name + '/sequencing_summary.txt'
+    basecall_log = configParser.get('config', 'log.file') 
+    if basecall_log.endswith('/'):
+        basecall_log=basecall_log+run_name + '/sequencing_summary.txt'
+    else:
+        basecall_log=basecall_log+'/'+run_name + '/sequencing_summary.txt'
+
     report_writing_directory = configParser.get('config', 'design.file.directory')
     
 pdf_report = report_writing_directory+'Rapport_pdf.pdf'
