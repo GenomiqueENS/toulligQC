@@ -291,4 +291,3 @@ class basecalling_stat_plotter1D:
             df[selected_barcode] = pd.Series(dico)
         df.to_csv('/home/ferrato/ownCloud/fast5_1D/dataframe.csv', header=self.selection_original,index=list(df.index), sep='\t')
 
-
