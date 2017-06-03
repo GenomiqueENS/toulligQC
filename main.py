@@ -29,7 +29,7 @@ else:
     #In the docker image
 if os.path.isfile('/configpass/docker_config.txt'):
     basecall_log = '/log.file/' +run_name+'/sequencing_summary.txt'
-    report_writing_directory = '/design.file.directory/'
+    report_writing_directory = '/working.directory/'
 else:
     configFilePath = r'config.txt'
     configParser.read(configFilePath)
@@ -39,7 +39,7 @@ else:
     else:
         basecall_log=basecall_log+'/'+run_name + '/sequencing_summary.txt'
 
-    report_writing_directory = configParser.get('config', 'design.file.directory')
+    report_writing_directory = configParser.get('config', 'working.directory')
     
 pdf_report = report_writing_directory+'Rapport_pdf.pdf'
 pdf = PdfPages(pdf_report)
