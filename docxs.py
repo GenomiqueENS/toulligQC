@@ -10,11 +10,11 @@ def docxs(selection_barcode,date, flowcell_id, barcode_present):
     
     configParser = configparser.ConfigParser()
     if os.path.isfile('/configpass/docker_config.txt'):
-        report_writing_directory ='/design_file_directory/'
+        report_writing_directory ='/working.directory/'
     else:
         configFilePath = r'config.txt'
         configParser.read(configFilePath)
-        report_writing_directory = configParser.get('config', 'design_file_directory')
+        report_writing_directory = configParser.get('config', 'working.directory')
 
     os.chdir(report_writing_directory)
     doc = docx.Document()
