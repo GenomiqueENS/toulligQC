@@ -119,9 +119,9 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
         configParser.read(configFilePath)
         bz2_fastq_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
         if bz2_fastq_directory.endswith('/'):
-            bz2_fastq_directory = basecall_log+run_name + '/sequencing_summary.txt'
+            bz2_fastq_directory = bz2_fastq_directory+run_name
         else:
-            bz2_fastq_directory = basecall_log+'/'+run_name + '/sequencing_summary.txt'
+            bz2_fastq_directory = bz2_fastq_directory+'/'+run_name 
 
     global_length_array = []
 
