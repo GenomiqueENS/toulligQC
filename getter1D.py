@@ -128,7 +128,7 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
     #fastq_sequence.txt represent the file where the fastq sequence extracted from bz2 files are written
 
     if os.path.isfile('/configpass/docker_config.txt'): 
-        fastq_file = '/design.file.directory/fastq_sequence.txt'
+        fastq_file = '/working.directory/fastq_sequence.txt'
     else:
         fastq_file = 'fastq_sequence.txt'
         
@@ -181,7 +181,7 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
                                 total_nucs_template += 1
 
                     if os.path.isfile('/configpass/docker_config.txt'): 
-                        completeName = os.path.join('/design.file.directory/statistics/', selected_barcode)
+                        completeName = os.path.join('/working.directory/statistics/', selected_barcode)
                     else:
                         completeName = os.path.join('statistics/', selected_barcode)
                         
@@ -211,7 +211,7 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
 
     #represent selected file list with barcodes
 
-    else:
+    else selected_file_list:
         if barcode_present == 'y':
             template_nucleotide_counter = Counter()
             total_nucs_template = 0
@@ -237,7 +237,7 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
                                     total_nucs_template += 1
 
                         if os.path.isfile('/configpass/docker_config.txt'):
-                            completeName = os.path.join('/design.file.directory/statistics/', selected_barcode)
+                            completeName = os.path.join('/working.directory/statistics/', selected_barcode)
 
                         else:
                             completeName = os.path.join('statistics/', selected_barcode)
@@ -286,7 +286,7 @@ def get_FastqSeq_without_barcode(run_name, selected_file_list=''):
     global_length_array = []
 
     if os.path.isfile('/configpass/docker_config.txt'): 
-        fastq_file = '/design.file.directory/fastq_sequence.txt'
+        fastq_file = '/working.directory/fastq_sequence.txt'
     else:
         fastq_file = 'fastq_sequence.txt'
         
