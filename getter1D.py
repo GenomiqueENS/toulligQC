@@ -129,28 +129,48 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
 
     if os.path.isfile('/configpass/docker_config.txt'): 
         fastq_file = '/working.directory/fastq_sequence.txt'
+        
+        if os.path.isfile(fastq_file):
+            open(fastq_file, 'w').close()
+
+        if not os.path.exists('/working.directory/images'):
+            os.makedirs('/working.directory/images')
+
+        if os.path.exists('/working.directory/images'):
+            for file in os.listdir('/working.directory/images'):
+                os.remove('/working.directory/images/' + file)
+
+        if not os.path.exists('/working.directory/statistics'):
+            os.makedirs('/working.directory/statistics')
+
+        if os.path.exists('/working.directory/statistics'):
+            for file in os.listdir('/working.directory/statistics'):
+                os.remove('/working.directory/statistics/' + file)
+
     else:
         fastq_file = 'fastq_sequence.txt'
         
+        if os.path.isfile(fastq_file):
+            open(fastq_file, 'w').close()
+
+        if not os.path.exists('images'):
+            os.makedirs('images')
+
+        if os.path.exists('images'):
+            for file in os.listdir('images'):
+                os.remove('images/' + file)
+
+        if not os.path.exists('statistics'):
+            os.makedirs('statistics')
+
+        if os.path.exists('statistics'):
+            for file in os.listdir('statistics'):
+                os.remove('statistics/' + file)
+
+        
     # bz2_fastq_directory = input('path to bz2 directory:')
 
-    if os.path.isfile(fastq_file):
-        open(fastq_file, 'w').close()
-
-    if not os.path.exists('images'):
-        os.makedirs('images')
-
-    if os.path.exists('images'):
-        for file in os.listdir('images'):
-            os.remove('images/' + file)
-
-    if not os.path.exists('statistics'):
-        os.makedirs('statistics')
-
-    if os.path.exists('statistics'):
-        for file in os.listdir('statistics'):
-            os.remove('statistics/' + file)
-
+    
 
     #represent a directory including a set of files barcoded 
 
@@ -287,27 +307,44 @@ def get_FastqSeq_without_barcode(run_name, selected_file_list=''):
 
     if os.path.isfile('/configpass/docker_config.txt'): 
         fastq_file = '/working.directory/fastq_sequence.txt'
+        if os.path.isfile(fastq_file):
+            open(fastq_file, 'w').close()
+
+        if not os.path.exists('/working.directory/images'):
+            os.makedirs('/working.directory/images')
+
+        if os.path.exists('/working.directory/images'):
+            for file in os.listdir('/working.directory/images'):
+                os.remove('/working.directory/images/' + file)
+
+        if not os.path.exists('/working.directory/statistics'):
+            os.makedirs('/working.directory/statistics')
+
+        if os.path.exists('/working.directory/statistics'):
+            for file in os.listdir('/working.directory/statistics'):
+                os.remove('/working.directory/statistics/' + file)
     else:
         fastq_file = 'fastq_sequence.txt'
-        
-    # bz2_fastq_directory = input('path to bz2 directory:')
+        if os.path.isfile(fastq_file):
+            open(fastq_file, 'w').close()
 
-    if os.path.isfile(fastq_file):
-        open(fastq_file, 'w').close()
+        if not os.path.exists('images'):
+            os.makedirs('images')
 
-    if not os.path.exists('images'):
-        os.makedirs('images')
+        if os.path.exists('images'):
+            for file in os.listdir('images'):
+                os.remove('images/' + file)
 
-    if os.path.exists('images'):
-        for file in os.listdir('images'):
-            os.remove('images/' + file)
-
-    if not os.path.exists('statistics'):
-        os.makedirs('statistics')
+        if not os.path.exists('statistics'):
+            os.makedirs('statistics')
 
     if os.path.exists('statistics'):
         for file in os.listdir('statistics'):
             os.remove('statistics/' + file)
+        
+    # bz2_fastq_directory = input('path to bz2 directory:')
+
+    
     #selected file list without barcode
     if selected_file_list:
 
