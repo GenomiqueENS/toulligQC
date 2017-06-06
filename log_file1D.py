@@ -16,9 +16,9 @@ def log_file1D(fast5_data , basecall_stat):
 
     occupancy_pore = basecall_stat.occupancy_pore()
     if os.path.isfile('/configpass/docker_config.txt'):
-	completeName = os.path.join('/working.directory/statistics/', "run_statistics_file.txt")
-	else:
-	completeName = os.path.join('statistics/', "run_statistics_file.txt")
+        completeName = os.path.join('/working.directory/statistics/', "run_statistics_file.txt")
+    else:
+        completeName = os.path.join('statistics/', "run_statistics_file.txt")
 
     with open(completeName, 'w') as file_data:
 
