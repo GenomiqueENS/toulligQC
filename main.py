@@ -100,7 +100,7 @@ with open(result_pdf_path, 'wb') as fout:
     merger.write(fout)
 
 if barcode_present == 'y':
-    docxs.docxs(basecalling.selection,basecalling.run_date(), flowcell_id, barcode_present)
+    docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, barcode_present)
     basecalling.statistics_dataframe()
 else:
     docxs.docxs('', basecalling.run_date(), flowcell_id, barcode_present)
