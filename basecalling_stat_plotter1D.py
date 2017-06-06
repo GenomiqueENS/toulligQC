@@ -16,7 +16,7 @@ class basecalling_stat_plotter1D:
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, pdf, run_name, barcode_present, file_list='None'):
+    def __init__(self, path_sequencing_summary, pdf, run_name, barcode_present, file_list=''):
         self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
         self.channel = self.albacore_log['channel']
         self.albacore_log[self.albacore_log == 0] = np.nan
