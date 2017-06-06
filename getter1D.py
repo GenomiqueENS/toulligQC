@@ -211,7 +211,7 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
 
     #represent selected file list with barcodes
 
-    else selected_file_list:
+    else:
         if barcode_present == 'y':
             template_nucleotide_counter = Counter()
             total_nucs_template = 0
