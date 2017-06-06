@@ -30,6 +30,7 @@ else:
 if os.path.isfile('/configpass/docker_config.txt'):
     basecall_log = '/log.file/' +run_name+'/sequencing_summary.txt'
     report_writing_directory = '/working.directory/'
+    
 else:
     configFilePath = r'config.txt'
     configParser.read(configFilePath)
@@ -41,7 +42,11 @@ else:
 
     report_writing_directory = configParser.get('config', 'working.directory')
     
-pdf_report = report_writing_directory+'Rapport_pdf.pdf'
+    if report_writing_directory.endswith('/'):
+        pdf_report = report_writing_directory+'Rapport_pdf.pdf'
+    else:
+        pdf_report = report_writing_directory+'/Rapport_pdf.pdf'
+        
 pdf = PdfPages(pdf_report)
 
 fast5_data = fast5_data_extractor.fast5_data_extractor(bz2_file_path)
@@ -84,11 +89,10 @@ pdf.close()
 
 report_pdf_file = os.path.join(report_writing_directory, 'Rapport_pdf.pdf')
 
-input1 = open(report_pdf_file, "rb")
-input2 = open("layout.pdf", "rb")
-
-pdfs = [report_pdf_file,"layout.pdf"]
-
+if os.path.isfile('/configpass/docker_config.txt'):
+    pdfs = [report_pdf_file,"/scripts/toulligQC/layout.pdf"]
+else:
+    pdfs = [report_pdf_file,"layout.pdf"]
 merger = PdfFileMerger()
 
 for pdf in pdfs:
@@ -104,6 +108,4 @@ if barcode_present == 'y':
     basecalling.statistics_dataframe()
 else:
     docxs.docxs('', basecalling.run_date(), flowcell_id, barcode_present)
-
-if barcode_present == 'n':
     log_file1D.log_file1D(fast5_data, basecalling)
