@@ -117,7 +117,7 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
     else:
         configFilePath = r'config.txt'
         configParser.read(configFilePath)
-        bz2_fastq_directory = configParser.get('config', 'bz2.fastq.directory') + run_name
+        bz2_fastq_directory = configParser.get('config', 'bz2.fastq.directory')
         if bz2_fastq_directory.endswith('/'):
             bz2_fastq_directory = bz2_fastq_directory+run_name
         else:
