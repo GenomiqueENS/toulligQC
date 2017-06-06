@@ -110,8 +110,10 @@ class basecalling_stat_plotter1D:
             ax1.bar(length, count, color=cs)
             ax1.set_xticks(length)
             ax1.set_xticklabels(self.barcode_selection)
-
-        plt.savefig('images/image5.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image5.png')
+        else:
+            plt.savefig('images/image5.png')
         self.pdf.savefig()
         plt.close()
 
@@ -129,7 +131,10 @@ class basecalling_stat_plotter1D:
         plt.ylabel("Count")
         plt.xlim(0,6000)
         plt.title("reads size")
-        plt.savefig('images/image7.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image7.png')
+        else:
+            plt.savefig('images/image7.png')
         self.pdf.savefig()
         plt.close()
 
@@ -169,7 +174,10 @@ class basecalling_stat_plotter1D:
         plt.xlabel("read type")
         plt.ylabel("Counts")
         plt.title("Counts of read template")
-        plt.savefig('images/image1.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image1.png')
+        else:
+            plt.savefig('images/image1.png')
         self.pdf.savefig()
         plt.close()
 
@@ -181,7 +189,10 @@ class basecalling_stat_plotter1D:
         sns.boxplot(data=dataframe)
         plt.title('Boxplot of read quality')
         plt.ylabel('Phred score')
-        plt.savefig('images/image2.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image2.png')
+        else:
+            plt.savefig('images/image2.png')
         self.pdf.savefig()
         plt.close()
 
@@ -196,7 +207,10 @@ class basecalling_stat_plotter1D:
         ax.set_xlabel("Channel number")
         ax.set_ylabel("Count")
         ax.set_title("Channel counts")
-        plt.savefig('images/image3.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image3.png')
+        else:
+            plt.savefig('images/image3.png')
         self.pdf.savefig()
         plt.close()
 
@@ -212,7 +226,10 @@ class basecalling_stat_plotter1D:
         plt.ylabel("produced reads")
         plt.xlabel("hour")
         plt.title("Read produced along the run")
-        plt.savefig('images/image4.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image4.png')
+        else:
+            plt.savefig('images/image4.png')
         self.pdf.savefig()
         plt.close()
 
@@ -258,7 +275,10 @@ class basecalling_stat_plotter1D:
         plt.figure(figsize=(20, 10))
         sns.heatmap(d, annot=True, fmt="d", linewidths=.5, cmap="YlGnBu")
         plt.title('Channel occupancy')
-        plt.savefig('images/image6.png')
+        if os.path.isfile('/configpass/docker_config.txt'):
+            plt.savefig('/working.directory/images/image6.png')
+        else:
+            plt.savefig('images/image6.png')
         self.pdf.savefig()
         plt.close()
 
