@@ -24,7 +24,7 @@ if question == 'y':
     file_list = input('Enter your file (or file list) separated by a space:')
     file_list = file_list.split(" ")
 else:
-    file_list = 'None'
+    file_list = ''
 
     #In the docker image
 if os.path.isfile('/configpass/docker_config.txt'):
