@@ -96,7 +96,7 @@ def get_Barcodes(selected_file_list=''):
             design_file = csv.reader(csvfile, delimiter='\t')
 
             for row in design_file:
-                pattern = re.search(r'BC(\d{2})', row[0]):
+                pattern = re.search(r'BC(\d{2})', row[0])
 
                 if pattern:
                     barcode = 'barcode{}'.format(pattern.group(1))
