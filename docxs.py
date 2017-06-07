@@ -71,14 +71,14 @@ def docxs(selection_barcode,date, flowcell_id, barcode_present):
                 doc.add_picture('images/image_{}.png'.format(barcode_image), width=docx.shared.Inches(5), height=docx.shared.Cm(9))
 
     # height=docx.shared.Cm(4))
-    doc.paragraphs[0].runs[0].underline = True
-    doc.paragraphs[3].runs[0].underline = True
-    doc.paragraphs[5].runs[0].underline = True
-    doc.paragraphs[7].runs[0].underline = True
-    doc.paragraphs[9].runs[0].underline = True
-    doc.paragraphs[11].runs[0].underline = True
-    doc.paragraphs[13].runs[0].underline = True
-    doc.paragraphs[15].runs[0].underline = True
-    doc.paragraphs[17].runs[0].underline = True
+            doc.paragraphs[0].runs[0].underline = True
+            doc.paragraphs[3].runs[0].underline = True
+            doc.paragraphs[5].runs[0].underline = True
+            doc.paragraphs[7].runs[0].underline = True
+            doc.paragraphs[9].runs[0].underline = True
+            doc.paragraphs[11].runs[0].underline = True
+            doc.paragraphs[13].runs[0].underline = True
+            doc.paragraphs[15].runs[0].underline = True
+            doc.paragraphs[17].runs[0].underline = True
     doc.save('Rapport.docx')
 
