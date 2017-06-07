@@ -223,8 +223,13 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
 
                     plt.boxplot(selected_barcoded_sample_fastq_length_array, showfliers=False)
                     plt.title('Read length boxplot for {}'.format(selected_barcode))
-                    plt.savefig('images/image_{}.png'.format(selected_barcode))
-                    plt.close()
+                    if os.path.isfile('/configpass/docker_config.txt'):
+                        plt.savefig('/working.directory/images/image_{}.png'.format(selected_barcode))
+                        plt.close()
+                    else:
+                        plt.savefig('images/image_{}.png'.format(selected_barcode))
+                        plt.close()
+                        
                     file.close()
         return global_length_array
 
@@ -279,8 +284,12 @@ def get_FastqSeq_barcoded(barcode_selection, run_name, barcode_present, selected
 
                         plt.boxplot(selected_barcoded_sample_fastq_length_array, showfliers=False)
                         plt.title('Read length boxplot for {}'.format(selected_barcode))
-                        plt.savefig('images/image_{}.png'.format(selected_barcode))
-                        plt.close()
+                        if os.path.isfile('/configpass/docker_config.txt'):
+                            plt.savefig('/working.directory/images/image_{}.png'.format(selected_barcode))
+                            plt.close()
+                        else:
+                            plt.savefig('images/image_{}.png'.format(selected_barcode))
+                            plt.close()
                         file.close()
             return global_length_array
 
