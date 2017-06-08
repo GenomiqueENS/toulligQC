@@ -127,10 +127,10 @@ class basecalling_stat_plotter1D:
             print('There is a mistake')
             return False
         plt.hist(self.fastq_length_array, edgecolor="#E6E6E6", color="#EE6666", bins=range(min(self.fastq_length_array), max(self.fastq_length_array) + 100, 100))
-        plt.xlabel("fastq size for barcode selection")
+        plt.xlabel("fastq size(pb)")
         plt.ylabel("Count")
         plt.xlim(0,6000)
-        plt.title("reads size")
+        plt.title("read size")
         if os.path.isfile('/configpass/docker_config.txt'):
             plt.savefig('/working.directory/images/image7.png')
         else:
