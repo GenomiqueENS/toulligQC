@@ -30,4 +30,4 @@ do
 done
 
 
-docker run -ti --rm -v ${path[1]}:${path[1]} -v ${path[2]}:${path[2]} -v ${path[3]}:${path[3]} -v ${path[4]}:${path[4]} genomicpariscentre/toulligqc
+docker run -ti --rm -v ${path[1]}:${path[1]} -v ${path[2]}:${path[2]} -v ${path[3]}:${path[3]} -v ${path[4]}:${path[4]} -v ${path[5]}:${path[5]} genomicpariscentre/toulligqc

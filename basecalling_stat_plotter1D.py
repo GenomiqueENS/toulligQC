@@ -8,31 +8,33 @@ import matplotlib.pyplot as plt
 import re
 import getter1D
 import os
-
-
+import fastq
+import parser
 
 class basecalling_stat_plotter1D:
     """
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, pdf, run_name, barcode_present, file_list=''):
+    def __init__(self, path_sequencing_summary, pdf, barcode_present, file_list=''):
         self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
         self.channel = self.albacore_log['channel']
         self.albacore_log[self.albacore_log == 0] = np.nan
-
-        if barcode_present == 'y':
-            self.barcode_selection = getter1D.get_Barcodes()
+        fastq_object = fastq.fastq()
+        self.dico_path = parser.file_path_initialization()
+        self.result_directory = self.dico_path['result_directory']
+        if barcode_present:
+            self.barcode_selection = getter1D.get_barcode()
             self.barcode_selection_original = self.barcode_selection
             self.fast5_tot = len(self.albacore_log)
             self.pdf = pdf
             self.barcode_selection.sort()
-            self.fastq_length_array = getter1D.get_FastqSeq_barcoded(self.barcode_selection, run_name, barcode_present, file_list)
+            self.fastq_length_array = fastq_object.get_fastq_barcoded(self.barcode_selection)
 
         else:
             self.fast5_tot = len(self.albacore_log)
             self.pdf = pdf
-            self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = getter1D.get_FastqSeq_without_barcode(run_name, file_list)
+            self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = fastq_object.get_fastq_without_barcode()
 
     def barcode_meanqscore(self):
         """
@@ -80,7 +82,6 @@ class basecalling_stat_plotter1D:
 
         for element in self.barcode_selection:
 
-
             if all(self.albacore_log['barcode_arrangement'] != element):
                 print("The barcode {} doesn't exist".format(element))
                 return False
@@ -110,10 +111,8 @@ class basecalling_stat_plotter1D:
             ax1.bar(length, count, color=cs)
             ax1.set_xticks(length)
             ax1.set_xticklabels(self.barcode_selection)
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image5.png')
-        else:
-            plt.savefig('images/image5.png')
+
+        plt.savefig(self.result_directory+'images/image5.png')
         self.pdf.savefig()
         plt.close()
 
@@ -131,10 +130,7 @@ class basecalling_stat_plotter1D:
         plt.ylabel("Count")
         plt.xlim(0,6000)
         plt.title("read size")
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image7.png')
-        else:
-            plt.savefig('images/image7.png')
+        plt.savefig(self.result_directory + 'images/image7.png')
         self.pdf.savefig()
         plt.close()
 
@@ -174,10 +170,8 @@ class basecalling_stat_plotter1D:
         plt.xlabel("read type")
         plt.ylabel("Counts")
         plt.title("Counts of read template")
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image1.png')
-        else:
-            plt.savefig('images/image1.png')
+
+        plt.savefig(self.result_directory+'images/image1.png')
         self.pdf.savefig()
         plt.close()
 
@@ -189,10 +183,8 @@ class basecalling_stat_plotter1D:
         sns.boxplot(data=dataframe)
         plt.title('Boxplot of read quality')
         plt.ylabel('Phred score')
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image2.png')
-        else:
-            plt.savefig('images/image2.png')
+
+        plt.savefig(self.result_directory+'images/image2.png')
         self.pdf.savefig()
         plt.close()
 
@@ -207,10 +199,8 @@ class basecalling_stat_plotter1D:
         ax.set_xlabel("Channel number")
         ax.set_ylabel("Count")
         ax.set_title("Channel counts")
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image3.png')
-        else:
-            plt.savefig('images/image3.png')
+
+        plt.savefig(self.result_directory+'images/image3.png')
         self.pdf.savefig()
         plt.close()
 
@@ -226,10 +216,8 @@ class basecalling_stat_plotter1D:
         plt.ylabel("produced reads")
         plt.xlabel("hour")
         plt.title("Read produced along the run")
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image4.png')
-        else:
-            plt.savefig('images/image4.png')
+
+        plt.savefig(self.result_directory+'images/image4.png')
         self.pdf.savefig()
         plt.close()
 
@@ -275,10 +263,8 @@ class basecalling_stat_plotter1D:
         plt.figure(figsize=(20, 10))
         sns.heatmap(d, annot=True, fmt="d", linewidths=.5, cmap="YlGnBu")
         plt.title('Channel occupancy')
-        if os.path.isfile('/configpass/docker_config.txt'):
-            plt.savefig('/working.directory/images/image6.png')
-        else:
-            plt.savefig('images/image6.png')
+
+        plt.savefig(self.result_directory+'images/image6.png')
         self.pdf.savefig()
         plt.close()
 
@@ -303,11 +289,11 @@ class basecalling_stat_plotter1D:
         df = pd.DataFrame(columns=self.barcode_selection)
         for selected_barcode in self.barcode_selection[:-1]:
             dico = {}
-            file = open('statistics/{}'.format(selected_barcode),'r')
+            file = open(self.result_directory+'statistics/{}'.format(selected_barcode),'r')
             for line in file:
                 key, value = line.strip().split('=')
                 dico[key.strip()] = value.strip()
             file.close()
             df[selected_barcode] = pd.Series(dico)
-        df.to_csv('/home/ferrato/ownCloud/fast5_1D/dataframe.csv', header=self.selection_original,index=list(df.index), sep='\t')
+        df.to_csv(self.result_directory+'dataframe.csv', header=self.barcode_selection_original,index=list(df.index), sep='\t')
 

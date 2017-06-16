@@ -8,19 +8,20 @@ import getter1D
 import os
 import subprocess
 import tarfile
-
+import parser
 def fast5_data_extractor(fast5_file_directory):
     """
     Creates a dataframe from a collection of fast5 files. 
     Needs the fast5 file directory as input (where fast5 files are stored) and returns a tuple with a set of information
     about the fast5 files.
     """
-    
-    if os.path.isfile('/configpass/docker_config.txt'): 
+    run_name,selected_file,is_docker,is_barcode = parser.get_args()
+    dico_path = parser.file_path_initialization()
+    if is_docker:
         fast5_file = glob.glob('/design.file.directory/*.fast5')[0]
     else:
         #Put the fast5 file in the actual directory
-        fast5_file = glob.glob('*.fast5')[0]
+        fast5_file = glob.glob(dico_path['design_file_directory']+'*.fast5')[0]
     h5py_file = h5py.File(fast5_file)
 
 

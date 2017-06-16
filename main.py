@@ -1,56 +1,34 @@
+from PyPDF2 import PdfFileMerger
 import matplotlib
 matplotlib.use('Agg')
 import basecalling_stat_plotter1D
 from matplotlib.backends.backend_pdf import PdfPages
-import sys
-from PyPDF2 import PdfFileMerger
 import pandas as pd
 import fast5_data_extractor
 import docxs
 import log_file1D
 import os
-import configparser
+import parser
 
-run_name = sys.argv[1]
+run_name, selected_file, is_docker, is_barcode = parser.get_args()
+ 
+dico_path = parser.file_path_initialization()
+pdf_report = dico_path['result_directory']
 
-configParser = configparser.ConfigParser()
+fast5_directory = input('path to fast5 files:')
+basecall_log = dico_path['basecall_log'] +run_name+'/sequencing_summary.txt'
 
 #configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
 bz2_file_path = input('Path to bz2 fast5 files:')
-barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
-question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
+###########barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
+###########question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
 
-if question == 'y':
-    file_list = input('Enter your file (or file list) separated by a space:')
-    file_list = file_list.split(" ")
-else:
-    file_list = ''
-
-    #In the docker image
-if os.path.isfile('/configpass/docker_config.txt'):
-    basecall_log = '/log.file/' +run_name+'/sequencing_summary.txt'
-    report_writing_directory = '/working.directory/'
-    pdf_report = report_writing_directory+'Rapport_pdf.pdf'
-else:
-    configFilePath = r'config.txt'
-    configParser.read(configFilePath)
-    basecall_log = configParser.get('config', 'log.file') 
-    if basecall_log.endswith('/'):
-        basecall_log=basecall_log+run_name + '/sequencing_summary.txt'
-    else:
-        basecall_log=basecall_log+'/'+run_name + '/sequencing_summary.txt'
-
-    report_writing_directory = configParser.get('config', 'working.directory')
-    
-    if report_writing_directory.endswith('/'):
-        pdf_report = report_writing_directory+'Rapport_pdf.pdf'
-    else:
-        pdf_report = report_writing_directory+'/Rapport_pdf.pdf'
-        
+report_writing_directory = dico_path['result_directory']
+pdf_report = report_writing_directory+'Rapport_pdf.pdf'
 pdf = PdfPages(pdf_report)
 
 fast5_data = fast5_data_extractor.fast5_data_extractor(bz2_file_path)
-basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log,pdf, run_name, barcode_present, file_list)
+basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log, pdf, is_barcode, selected_file)
 
 #Date and flowcell id
 
@@ -70,7 +48,7 @@ basecalling.channel_count_histogram()
 #Curve representing the number of reads produced along the runtime
 basecalling.read_number_run()
 
-if barcode_present == 'y':
+if is_barcode:
     # Pie chart representing barcodes
     basecalling.barcode_percentage_pie_chart()
 
@@ -89,10 +67,11 @@ pdf.close()
 
 report_pdf_file = os.path.join(report_writing_directory, 'Rapport_pdf.pdf')
 
-if os.path.isfile('/configpass/docker_config.txt'):
+if is_docker:
     pdfs = [report_pdf_file,"/scripts/toulligQC/layout.pdf"]
 else:
     pdfs = [report_pdf_file,"layout.pdf"]
+
 merger = PdfFileMerger()
 
 for pdf in pdfs:
@@ -103,9 +82,14 @@ result_pdf_path =os.path.join(report_writing_directory, 'result.pdf')
 with open(result_pdf_path, 'wb') as fout:
     merger.write(fout)
 
-if barcode_present == 'y':
-    docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, barcode_present)
+
+
+if is_barcode:
+    docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, is_barcode)
     basecalling.statistics_dataframe()
 else:
-    docxs.docxs('', basecalling.run_date(), flowcell_id, barcode_present)
     log_file1D.log_file1D(fast5_data, basecalling)
+    docxs.docxs('', basecalling.run_date(), flowcell_id, is_barcode)
+
+
+
