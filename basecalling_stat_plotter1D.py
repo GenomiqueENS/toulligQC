@@ -11,6 +11,7 @@ import os
 import fastq
 import parser
 
+
 class basecalling_stat_plotter1D:
     """
     Plots different graphs for exploitation of minion runs from Albacore file log
@@ -19,21 +20,21 @@ class basecalling_stat_plotter1D:
     def __init__(self, path_sequencing_summary, pdf, barcode_present, file_list=''):
         self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
         self.channel = self.albacore_log['channel']
+        self.sequence_length_template = self.albacore_log['sequence_length_template']
         self.albacore_log[self.albacore_log == 0] = np.nan
-        fastq_object = fastq.fastq()
+        fastq_object = fastq.fastq(pdf)
         self.dico_path = parser.file_path_initialization()
         self.result_directory = self.dico_path['result_directory']
+        self.fast5_tot = len(self.albacore_log)
+        self.pdf = pdf
         if barcode_present:
             self.barcode_selection = getter1D.get_barcode()
             self.barcode_selection_original = self.barcode_selection
-            self.fast5_tot = len(self.albacore_log)
-            self.pdf = pdf
             self.barcode_selection.sort()
             self.fastq_length_array = fastq_object.get_fastq_barcoded(self.barcode_selection)
 
         else:
-            self.fast5_tot = len(self.albacore_log)
-            self.pdf = pdf
+
             self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = fastq_object.get_fastq_without_barcode()
 
     def barcode_meanqscore(self):
@@ -112,25 +113,41 @@ class basecalling_stat_plotter1D:
             ax1.set_xticks(length)
             ax1.set_xticklabels(self.barcode_selection)
 
-        plt.savefig(self.result_directory+'images/image5.png')
+        plt.savefig(self.result_directory+'images/barcode_percentage_pie_chart.png')
         self.pdf.savefig()
         plt.close()
 
 
     #Launch after barcode pie chart because of self.barcode_selection
+
+    def safe_log(self,x):
+        if x <= 0:
+            return 0
+        return np.log2(x)
+
     def read_length_histogram(self):
         """
         Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
         """
-        if self.fastq_length_array == []:
-            print('There is a mistake')
-            return False
-        plt.hist(self.fastq_length_array, edgecolor="#E6E6E6", color="#EE6666", bins=range(min(self.fastq_length_array), max(self.fastq_length_array) + 100, 100))
-        plt.xlabel("fastq size(pb)")
-        plt.ylabel("Count")
-        plt.xlim(0,6000)
-        plt.title("read size")
-        plt.savefig(self.result_directory + 'images/image7.png')
+
+        MIN, MAX = min(self.sequence_length_template), max(self.sequence_length_template)
+        fig = plt.figure(figsize=(20, 10))
+        ax = fig.add_subplot(111)
+        n, bins, patches = ax.hist(self.sequence_length_template,edgecolor ='black', bins= 2**np.linspace(self.safe_log(MIN), self.safe_log(MAX),30))
+        ax.set_xscale('log',basex=2)
+        ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.1f'))
+        median = pd.Series.median(self.sequence_length_template)
+        sigma = pd.Series.std(self.sequence_length_template)
+        plt.text(0.8, 0.9,'median=%.1f\nσ=%.1f'%(median,sigma),ha='center',va='center',transform=ax.transAxes,bbox={'facecolor':'white','alpha':0.5,'pad':5})
+        ax.set_xticks(bins)
+
+        for tick in ax.xaxis.get_major_ticks():
+            #tick.label.set_fontsize(8)
+            tick.label.set_rotation('vertical')
+        ax.set_xlabel('Read size(in pb)')
+        ax.set_ylabel('Read number')
+        ax.set_title('Read size histogram')
+        plt.savefig(self.result_directory + 'images/read_length_histogram.png')
         self.pdf.savefig()
         plt.close()
 
@@ -148,6 +165,25 @@ class basecalling_stat_plotter1D:
         statistics = pd.Series.describe(series_read_size)
         return statistics
 
+    def phred_score_frequency(self):
+        albacore_log = self.albacore_log.dropna()
+        sns.distplot(albacore_log['mean_qscore_template'], bins=15, color='green', hist_kws=dict(edgecolor="k", linewidth=1))
+        plt.xlabel("mean_qscore")
+        plt.ylabel("Frequency")
+        plt.title("Phred score frequency")
+        plt.savefig(self.result_directory + 'images/phred_score_frequency.png')
+        self.pdf.savefig()
+        plt.close()
+
+    def scatterplot(self):
+        albacore_log = self.albacore_log.dropna()
+        plt.scatter(x = albacore_log['sequence_length_template'], y = albacore_log['mean_qscore_template'])
+        plt.xlabel("sequence_length_template")
+        plt.ylabel("mean_qscore_template")
+        plt.title("Relation between the sequence length template and the mean qscore template")
+        plt.savefig(self.result_directory + 'images/scatter_plot.png')
+        self.pdf.savefig()
+        plt.close()
 
     def read_count_histogram(self):
         """
@@ -171,7 +207,7 @@ class basecalling_stat_plotter1D:
         plt.ylabel("Counts")
         plt.title("Counts of read template")
 
-        plt.savefig(self.result_directory+'images/image1.png')
+        plt.savefig(self.result_directory+'images/read_count_histogram.png')
         self.pdf.savefig()
         plt.close()
 
@@ -184,7 +220,7 @@ class basecalling_stat_plotter1D:
         plt.title('Boxplot of read quality')
         plt.ylabel('Phred score')
 
-        plt.savefig(self.result_directory+'images/image2.png')
+        plt.savefig(self.result_directory+'images/read_quality_boxplot.png')
         self.pdf.savefig()
         plt.close()
 
@@ -200,7 +236,7 @@ class basecalling_stat_plotter1D:
         ax.set_ylabel("Count")
         ax.set_title("Channel counts")
 
-        plt.savefig(self.result_directory+'images/image3.png')
+        plt.savefig(self.result_directory+'images/channel_count_histogram.png')
         self.pdf.savefig()
         plt.close()
 
@@ -217,7 +253,7 @@ class basecalling_stat_plotter1D:
         plt.xlabel("hour")
         plt.title("Read produced along the run")
 
-        plt.savefig(self.result_directory+'images/image4.png')
+        plt.savefig(self.result_directory+'images/read_number_run.png')
         self.pdf.savefig()
         plt.close()
 
@@ -261,10 +297,10 @@ class basecalling_stat_plotter1D:
 
         d = df.pivot("rownum", "colnum", "tot_reads")
         plt.figure(figsize=(20, 10))
-        sns.heatmap(d, annot=True, fmt="d", linewidths=.5, cmap="YlGnBu")
+        sns.heatmap(d, fmt="d", linewidths=.5, cmap="YlGnBu")
         plt.title('Channel occupancy')
 
-        plt.savefig(self.result_directory+'images/image6.png')
+        plt.savefig(self.result_directory+'images/channel_occupancy.png')
         self.pdf.savefig()
         plt.close()
 
@@ -296,4 +332,7 @@ class basecalling_stat_plotter1D:
             file.close()
             df[selected_barcode] = pd.Series(dico)
         df.to_csv(self.result_directory+'dataframe.csv', header=self.barcode_selection_original,index=list(df.index), sep='\t')
+
+
+
 

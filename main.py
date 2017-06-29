@@ -9,6 +9,8 @@ import docxs
 import log_file1D
 import os
 import parser
+import html_report
+import shutil
 
 run_name, selected_file, is_docker, is_barcode = parser.get_args()
  
@@ -18,16 +20,22 @@ pdf_report = dico_path['result_directory']
 fast5_directory = input('path to fast5 files:')
 basecall_log = dico_path['basecall_log'] +run_name+'/sequencing_summary.txt'
 
-#configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
-bz2_file_path = input('Path to bz2 fast5 files:')
-###########barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
-###########question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
 
-report_writing_directory = dico_path['result_directory']
-pdf_report = report_writing_directory+'Rapport_pdf.pdf'
+# configParser.get('ferrato-config', 'fast5.directory')+'raw/'+run_name+'/0'
+#bz2_file_path = input('Path to bz2 fast5 files:')
+########### barcode_present = input('Did you use barcodes ? Answer by y(yes) or n(no):')
+########### question = input('Must the analysis performed on specific bz2 file ? Answer by y(yes) or n(no):')
+
+result_directory = dico_path['result_directory']
+if os.path.isdir(result_directory):
+    shutil.rmtree(result_directory)
+    os.makedirs(result_directory)
+else:
+    os.makedirs(result_directory)
+pdf_report = result_directory+'Rapport_pdf.pdf'
 pdf = PdfPages(pdf_report)
 
-fast5_data = fast5_data_extractor.fast5_data_extractor(bz2_file_path)
+fast5_data = fast5_data_extractor.fast5_data_extractor(fast5_directory)
 basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log, pdf, is_barcode, selected_file)
 
 #Date and flowcell id
@@ -62,26 +70,32 @@ total_number_reads_per_pore = pd.value_counts(channel_count)
 basecalling.plot_performance(total_number_reads_per_pore)
 basecalling.occupancy_pore()
 
+basecalling.phred_score_frequency()
+basecalling.scatterplot()
+
 pdf.close()
 
 
-report_pdf_file = os.path.join(report_writing_directory, 'Rapport_pdf.pdf')
+report_pdf_file = os.path.join(result_directory, 'Rapport_pdf.pdf')
 
 if is_docker:
     pdfs = [report_pdf_file,"/scripts/toulligQC/layout.pdf"]
+    layout = "/scripts/toulligQC/layout.pdf"
 else:
     pdfs = [report_pdf_file,"layout.pdf"]
+    layout = "layout.pdf"
 
 merger = PdfFileMerger()
 
 for pdf in pdfs:
     merger.append(open(pdf, 'rb'))
     
-result_pdf_path =os.path.join(report_writing_directory, 'result.pdf')    
+result_pdf_path =os.path.join(result_directory, 'result.pdf')    
 
 with open(result_pdf_path, 'wb') as fout:
     merger.write(fout)
 
+html_report.html_report(result_directory, basecalling.run_date(), flowcell_id, is_barcode,layout)
 
 
 if is_barcode:

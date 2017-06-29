@@ -1,5 +1,7 @@
 import argparse
 import configparser
+import os
+import shutil
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -34,6 +36,8 @@ def file_path_initialization():
            continue
         else:
             dico_path[key] = value+'/'
+
+    dico_path['result_directory'] = dico_path['result_directory']+run_name+'/'
 
     return dico_path
 

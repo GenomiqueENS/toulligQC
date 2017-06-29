@@ -17,11 +17,10 @@ def fast5_data_extractor(fast5_file_directory):
     """
     run_name,selected_file,is_docker,is_barcode = parser.get_args()
     dico_path = parser.file_path_initialization()
-    if is_docker:
-        fast5_file = glob.glob('/design.file.directory/*.fast5')[0]
-    else:
-        #Put the fast5 file in the actual directory
-        fast5_file = glob.glob(dico_path['design_file_directory']+'*.fast5')[0]
+    fast5_file = glob.glob(dico_path['design_file_directory']+'*.fast5')[0]
+    if not fast5_file:
+        print('Pas de fichier fast5')
+        return 0
     h5py_file = h5py.File(fast5_file)
 
 
