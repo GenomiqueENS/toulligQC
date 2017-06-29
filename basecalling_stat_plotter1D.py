@@ -11,10 +11,6 @@ import os
 import fastq
 import parser
 
-<<<<<<< HEAD
-
-=======
->>>>>>> ec4abdf6d90b44a0d25a1fb2ad9ed395081a19f6
 class basecalling_stat_plotter1D:
     """
     Plots different graphs for exploitation of minion runs from Albacore file log

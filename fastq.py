@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 from collections import Counter
 import pandas as pd
 import bz2
-<<<<<<< HEAD
 import seaborn as sns
 import numpy as np
 
@@ -138,9 +137,9 @@ class fastq():
                     self.bz2_decompression(bz2_fastq_file)
                     total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
 
-            else:
-                for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_directory)):
-                    self.barcoded_fastq_informations(selected_barcode)
+            #else:
+             #   for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_directory)):
+              #      self.barcoded_fastq_informations(selected_barcode)
         else:
             for selected_file in self.selected_file_list:
                 selected_file = self.fastq_directory + '/' + selected_file
