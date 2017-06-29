@@ -15,7 +15,7 @@ class fastq():
         self.global_length_array = []
         self.run_name, self.selected_file_list, _, self.is_barcode = parser.get_args()
         self.path_dico = parser.file_path_initialization()
-        self.fastq_file = 'fastq_sequence.txt'
+        self.fastq_file = self.path_dico['result_directory']+'fastq_sequence.txt'
         self.result_directory = self.path_dico['result_directory']
         self.fastq_directory = self.path_dico['fastq_directory']+self.run_name
         self.image_directory = self.result_directory+'images/'
