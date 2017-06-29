@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from collections import Counter
 import pandas as pd
 import bz2
+<<<<<<< HEAD
 import seaborn as sns
 import numpy as np
 
@@ -41,6 +42,7 @@ class fastq():
         #if os.path.exists(self.statistic_directory):
         #    for file in os.listdir(self.statistic_directory):
         #        os.remove(self.statistic_directory+file)
+
 
     def bz2_decompression(self, bz2_fastq_file):
         print(bz2_fastq_file)
@@ -89,6 +91,7 @@ class fastq():
         barcode_file.close()
         self.dico[selected_barcode] = barcode_length_array
         #self.selection_global.append(barcode_length_array)
+
 
     def get_fastq_barcoded(self, selection):
         """

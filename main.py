@@ -85,6 +85,8 @@ else:
     pdfs = [report_pdf_file,"layout.pdf"]
     layout = "layout.pdf"
 
+
+
 merger = PdfFileMerger()
 
 for pdf in pdfs:

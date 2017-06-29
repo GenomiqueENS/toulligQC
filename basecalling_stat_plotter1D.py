@@ -11,7 +11,10 @@ import os
 import fastq
 import parser
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ec4abdf6d90b44a0d25a1fb2ad9ed395081a19f6
 class basecalling_stat_plotter1D:
     """
     Plots different graphs for exploitation of minion runs from Albacore file log
@@ -34,7 +37,6 @@ class basecalling_stat_plotter1D:
             self.fastq_length_array = fastq_object.get_fastq_barcoded(self.barcode_selection)
 
         else:
-
             self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = fastq_object.get_fastq_without_barcode()
 
     def barcode_meanqscore(self):
@@ -206,7 +208,6 @@ class basecalling_stat_plotter1D:
         plt.xlabel("read type")
         plt.ylabel("Counts")
         plt.title("Counts of read template")
-
         plt.savefig(self.result_directory+'images/read_count_histogram.png')
         self.pdf.savefig()
         plt.close()
@@ -219,7 +220,6 @@ class basecalling_stat_plotter1D:
         sns.boxplot(data=dataframe)
         plt.title('Boxplot of read quality')
         plt.ylabel('Phred score')
-
         plt.savefig(self.result_directory+'images/read_quality_boxplot.png')
         self.pdf.savefig()
         plt.close()
@@ -332,7 +332,4 @@ class basecalling_stat_plotter1D:
             file.close()
             df[selected_barcode] = pd.Series(dico)
         df.to_csv(self.result_directory+'dataframe.csv', header=self.barcode_selection_original,index=list(df.index), sep='\t')
-
-
-
 

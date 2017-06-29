@@ -44,7 +44,6 @@ def docxs(selection_barcode,date, flowcell_id, barcode_present):
        # for barcode_image in selection_barcode:
         #    doc.add_picture('images/image_{}.png'.format(barcode_image), width=docx.shared.Inches(5), height=docx.shared.Cm(9))
 
-# height=docx.shared.Cm(4))
         doc.paragraphs[0].runs[0].underline = True
         doc.paragraphs[3].runs[0].underline = True
         doc.paragraphs[5].runs[0].underline = True

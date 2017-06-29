@@ -21,6 +21,7 @@ def fast5_data_extractor(fast5_file_directory):
     if not fast5_file:
         print('Pas de fichier fast5')
         return 0
+
     h5py_file = h5py.File(fast5_file)
 
 
