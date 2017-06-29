@@ -21,7 +21,7 @@ def get_args():
 def file_path_initialization():
     dico_path = {}
     run_name,selected_file,_ ,is_barcode = get_args()
-    configFilePath = r'config.txt'
+    configFilePath = r'/import/pontos06/analyses/toulligQC/config.txt'
 
     config = configparser.ConfigParser()
     config.read(configFilePath)
