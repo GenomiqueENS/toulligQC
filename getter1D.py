@@ -1,5 +1,3 @@
-from Bio.SeqIO.QualityIO import FastqGeneralIterator
-
 import csv
 import re
 import matplotlib
