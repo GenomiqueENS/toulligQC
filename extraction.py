@@ -5,7 +5,8 @@ import io
 
 def fast5_tar_bz2_extraction(file,result_directory):
     tar_bz2 = tarfile.open(file, 'r:bz2')
-    for member in tar_bz2.getmembers():
+    while True:
+        member = tar_bz2.next()
         if member.name.endswith('.fast5'):
             tar_bz2.extract(member, path=result_directory)
             break
@@ -14,15 +15,12 @@ def fast5_tar_bz2_extraction(file,result_directory):
 def fast5_tar_gz_extraction(file, result_directory):
     tar_gz = tarfile.open(file, 'r:gz')
     for member in tar_gz.getmembers():
-        if member.name.endswith('.fast5'):
-            tar_gz.extract(member, path=result_directory)
-            break
+        while True:
+            member = tar_gz.next()
+            if member.name.endswith('.fast5'):
+                tar_gz.extract(member, path=result_directory)
+                break
     return member.name
-
-
-
-
-
 
 
 #A voir s'il y a plus d'extensions à gérer
