@@ -16,24 +16,24 @@ class basecalling_stat_plotter1D:
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, pdf, barcode_present, file_list=''):
+    def __init__(self, path_sequencing_summary, pdf, barcode_present, result_directory, fastq_directory, dico_extension,design_file_directory = '', file_list=''):
+        
         self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
+        self.result_directory = result_directory
         self.channel = self.albacore_log['channel']
         self.sequence_length_template = self.albacore_log['sequence_length_template']
         self.albacore_log[self.albacore_log == 0] = np.nan
-        fastq_object = fastq.fastq(pdf)
-        self.dico_path = parser.file_path_initialization()
-        self.result_directory = self.dico_path['result_directory']
+        fastq_object = fastq.fastq(pdf, result_directory, fastq_directory, dico_extension)
         self.fast5_tot = len(self.albacore_log)
         self.pdf = pdf
         if barcode_present:
-            self.barcode_selection = getter1D.get_barcode()
+            self.barcode_selection = getter1D.get_barcode(design_file_directory)
             self.barcode_selection_original = self.barcode_selection
             self.barcode_selection.sort()
             self.fastq_length_array = fastq_object.get_fastq_barcoded(self.barcode_selection)
 
         else:
-            self.template_nucleotide_counter, self.total_nucs_template, self.fastq_length_array = fastq_object.get_fastq_without_barcode()
+            self.total_nucs_template, self.fastq_length_array,_ , self.template_nucleotide_counter = fastq_object.get_fastq_without_barcode()
 
     def barcode_meanqscore(self):
         """
@@ -220,8 +220,6 @@ class basecalling_stat_plotter1D:
         self.pdf.savefig()
         plt.close()
 
-
-
     def channel_count_histogram(self):
         """
         Plots an histogram of the channel count according to the channel number
@@ -235,8 +233,6 @@ class basecalling_stat_plotter1D:
         plt.savefig(self.result_directory+'images/channel_count_histogram.png')
         self.pdf.savefig()
         plt.close()
-
-
 
     def read_number_run(self):
         """
@@ -291,9 +287,9 @@ class basecalling_stat_plotter1D:
 
         df = pd.DataFrame(d)
 
-        d = df.pivot("rownum", "colnum", "tot_reads")
+        d = df.pivot("rownum", "colnum", "labels")
         plt.figure(figsize=(20, 10))
-        sns.heatmap(d, fmt="d", linewidths=.5, cmap="YlGnBu")
+        sns.heatmap(d, fmt="d", annot = True, linewidths=.5, cmap="YlGnBu")
         plt.title('Channel occupancy')
 
         plt.savefig(self.result_directory+'images/channel_occupancy.png')

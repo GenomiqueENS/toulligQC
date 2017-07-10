@@ -48,12 +48,11 @@ def get_ProtocolRunId(h5py_file):
     protocol_run_id_dico = {key: value.decode('utf-8') for key, value in protocol_run_id}
     return protocol_run_id_dico['protocol_run_id']
 
-def get_barcode():
+def get_barcode(design_file_directory):
     """
     Get the barcode from a file given in input
     """
-    dico_path = parser.file_path_initialization()
-    barcode_file = dico_path['design_file_directory']+"design.csv"
+    barcode_file = design_file_directory+"design.csv"
     #barcode_file = input('Enter the name of the file where the barcode is stored:')
     set_doublon = set()
 

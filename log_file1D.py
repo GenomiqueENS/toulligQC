@@ -1,13 +1,12 @@
 import os
 import parser
 
-def log_file1D(fast5_data , basecall_stat):
+def log_file1D(fast5_data , basecall_stat, result_directory):
     """
     Create a log file like where different information about the minion run are printed
     """
 
     version, flowcell_id, hostname, numMinion, run_id = fast5_data
-    dico_path = parser.file_path_initialization()
     #Retrieve the dataframe with statitstics such as the quartile or std
     #Retrieve the dictionary from albacore summary log
 
@@ -16,7 +15,7 @@ def log_file1D(fast5_data , basecall_stat):
     counter_template, total_nucleotide_template = basecall_stat.counter()
 
     occupancy_pore = basecall_stat.occupancy_pore()
-    completeName = os.path.join(dico_path['result_directory']+'statistics/', "run_statistics_file.txt")
+    completeName = os.path.join(result_directory+'statistics/', "run_statistics_file.txt")
 
 
     with open(completeName, 'w') as file_data:

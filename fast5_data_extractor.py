@@ -1,29 +1,32 @@
 import h5py
 import glob
-import numpy as np
-
-from collections import Counter
 import csv
 import getter1D
-import os
-import subprocess
-import tarfile
 import parser
-def fast5_data_extractor(fast5_file_directory):
+import extraction
+
+
+def fast5_data_extractor(fast5_file_directory, result_directory, dico_extension):
     """
     Creates a dataframe from a collection of fast5 files. 
     Needs the fast5 file directory as input (where fast5 files are stored) and returns a tuple with a set of information
     about the fast5 files.
     """
-    run_name,selected_file,is_docker,is_barcode = parser.get_args()
-    dico_path = parser.file_path_initialization()
-    fast5_file = glob.glob(dico_path['design_file_directory']+'*.fast5')[0]
-    if not fast5_file:
-        print('Pas de fichier fast5')
-        return 0
 
+    run_name, selected_file, is_docker, is_barcode = parser.get_args()
+    if dico_extension['fast5_file_extension'] == 'tar.bz2':
+        tar_bz2_file = fast5_file_directory + run_name + ".tar.bz2"
+        fast5_file = result_directory + extraction.fast5_tar_bz2_extraction(tar_bz2_file, result_directory)
+
+    elif dico_extension['fast5_file_extension'] == 'tar.gz':
+        tar_gz_file = fast5_file_directory + run_name + ".tar.bz2"
+        fast5_file = result_directory + extraction.fast5_tar_gz_extraction(tar_gz_file, result_directory)
+
+    else:
+        fast5_file = glob.glob(fast5_file_directory+"*.fast5")[0]
+
+    print(fast5_file)
     h5py_file = h5py.File(fast5_file)
-
 
     # version
     version = getter1D.get_MinknowVersion(h5py_file)
@@ -66,3 +69,25 @@ def read_fast5_data_from_tsv(data_file):
         return reader
         for row in reader:
             print(', '.join(row))
+
+
+#bz2_fast5_file = bz2_fast5_file_directory + run_name + ".tar.bz2"
+ #   print(bz2_fast5_file)
+  #  p1 = Popen(['tar', '-tf', bz2_fast5_file], stdout=PIPE)
+ #   p2 = Popen(["grep", '-e', '\.fast5$'], stdin=p1.stdout, stdout=PIPE)
+  #  p1.stdout.close()
+   # p3 = Popen(["head", '-n', '1'], stdin=p2.stdout, stdout=PIPE)
+#    p2.stdout.close()
+ #   output = p3.communicate()[0].decode().rstrip('\n')
+  #  Popen('tar -xf {} --occurrence {} -O > {}fast5_file.fast5'.format(bz2_fast5_file, output, result_directory),
+   #            shell=True)
+
+
+    #run_name,selected_file,is_docker,is_barcode = parser.get_args()
+#    fast5_file = result_directory+'fast5_file.fast5'
+
+#    if not fast5_file:
+ #       print('Pas de fichier fast5')
+  #      return 0
+
+#    return fast5_file
