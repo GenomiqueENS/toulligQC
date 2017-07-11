@@ -44,14 +44,14 @@ Install all dependencies indicated below.
 
 Requirements:
 =============
-To run ToulligQC without Docker, you need to install the following software:
-matplotlib
-h5py
-pandas
-seaborn
-numpy
-PyPDF2
-csv
+To run ToulligQC without Docker, you need to install the following software:<br/>
+matplotlib<br/>
+h5py<br/>
+pandas<br/>
+seaborn<br/>
+numpy<br/>
+PyPDF2<br/>
+csv<br/>
 python-docx
 
 On Debian/Ubuntu, you can install requirements  using the 'apt-get' command, here is an example:
