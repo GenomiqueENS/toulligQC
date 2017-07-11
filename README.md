@@ -26,7 +26,7 @@ An example is provided thereafter.
 
 Installation
 =============
-##Option1 : Installation using Docker
+## Option1 : Installation using Docker
 
 ToulligQC and its dependancies are available throw Docker images. 
 You can use a Docker image with Aozan and all its optional dependencies 
@@ -35,7 +35,7 @@ You can use a Docker image with ToulligQC and all its optional dependencies  ins
 A shell script called read_file.sh is provided which make mounting automatic with the configuration file.
 Ce script prend les noms de fichiers indiqués dans le fichier de configuration et les traduit en leur vrai nom dans le cas où l’on utilise des liens symboliques puis il monte ces mêmes fichiers dans le contenair de Docker.
  
-##Option2 : Local installation 
+## Option2 : Local installation 
 This option is also suitable if you are interested in further developping the package, but requires a little bit more hands-on.
 Clone the repository locally 
 git clone https://github.com/GenomicParisCentre/toulligQC.git
@@ -62,14 +62,9 @@ The directory where the files are presented must be in the following form :
 for fast5 directory the fast5 file must be named with the run name given in the argument line. For example FAF042450.fast5 or FAF04250.tar.gz for the run name argument FAF04250
 for fastq file we must have a directory after the fastq directory named with the same run name that in the fast5 file above. This one is essential for the using of barcode because we have a fastq file for each barcode. We can have for example ten files in the fastq directory. 
 
-* a design file named imperatively design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
-
-index | Reads | Description | Date | FastqFormat | RepTechGrou
-------- | ------- | ------------- | -------- | -------------- | ---------------
- 2015341_BC01 | dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 |  WT1_BC01 | 2017-01-24 | fastq-sanger | WT1_BC01
-
 Launching ToulligQC
 =========================
+
 A set of option are available :
 python3 main.py -h
 optional arguments:
@@ -83,8 +78,10 @@ The run name correspond to this is indicated before the extension file for fastq
 For example if you have FAF2056.tar.bz2 the run name correspond to FAF0256 and not FAF0256.tar.bz2.
 You run ToulligQC as follows :
 python3 main.py -n run name with n argument mandatory.
+
 Usage example
 ========================
+
 Here I will provide a complete example.
 Our run calls FAF04250.
 The fast5 files and fastq files calls FAF04250.tar.bz2 and FAF04250.fastq.bz2.
