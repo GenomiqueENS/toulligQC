@@ -1,144 +1,66 @@
-toulligQC
-==========
-This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not.
-It requires a design file describing the barcodes used if the run was barcoded.
-It partly relies on log file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
-This program will produce a set of graphs and statistic files
+ToulligQC
+=========
+This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not. It requires a design file describing the barcodes used if the run was barcoded. It partly relies on log file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore. This program will produce a set of graphs and statistic files in the form of pdf, html and docx report.
+ToulligQC accept different formats: bz2, tar.bz2, fastq and fast5
+First of all a set of files are required before the programm runs:
+-a configuration file that must be in the following form :
+[config] 
+fast5.directory=path to our fast5 directory 
+log.file= path to our log file
+fastq.directory=path to fastq files in the form of bz2 files
+design_file_directory=path to design file directory
 
+[extension]
+fast5.file.extension=tar.bz2
+fastq.file.extension=bz2 
 
-# Table of content
+Warnings : The fast5 and fastq files must be present just after the directory indicated in the configuration file. The directory indicated must not contained another directory containing the files.
 
- 1.Python module
+All that is before the equal sign must be conserved along with [config] and [extension]. For the rest you can indicate the path toward your files. Only the design_file_directory can be ommited if you didn’t use the barcodes.
+In extension you must indicate the extension used for your file. For the moment the type of extension are supported are:
+for fast5 file : tar.gz, tar.bz2, fast5
+for fastq file : bz2, fastq
+- a design_file if you used the barcodes. This one must be named design.csv and describes the different sample barcoded. Only the first column is important because it must contain the barcodes number that you used in the form of BC followed by two digits. For example BC01, BC11. The rest of files may be modified at your convenience.
 
-  * [basecalling_stat_plotter1D](#basecalling_stat_plotter1D)
+An example is provided thereafter.
 
-  * [getter1D](#getter1D)
+Installation
+=============
+##Option1 : Installation using Docker
 
-  * [fast5_data_extractor](#fast5_data_extractor)
-
-2.[example](#example)
-
-3.[requirements](#requirements)
-
-Python module
-==============
-
-## 1)basecalling_stat_plotter1D
-
-
-This module provides support for create a report as a word document and a pdf file in the images directory. Files containing statistics for each barcode is provided in the statistics directory.
-
-Several python files are provided:
-
- #### class basecalling_stat_plotter1D
+ToulligQC and its dependancies are available throw Docker images. 
+You can use a Docker image with Aozan and all its optional dependencies 
+To see how install docker on your system, go to the Docker website. Even if Docker can run in virtual machines in Windows or macOS, we recommand to only run ToulligQC on a Linux host.
+You can use a Docker image with ToulligQC and all its optional dependencies  instead of installating manually ToulligQC. This image is named genomicpariscentre/aozan:2.0. When you use this Docker image you need to mount all the required directories by Aozan in the Docker container.
+A shell script called read_file.sh is provided which make mounting automatic with the configuration file.
+Ce script prend les noms de fichiers indiqués dans le fichier de configuration et les traduit en leur vrai nom dans le cas où l’on utilise des liens symboliques puis il monte ces mêmes fichiers dans le contenair de Docker.
  
-   Plots different graphs for exploitation of minion runs from Albacore file log
-      
-     barcode_meanqscore
-        Writes the mean qscore extracted from the log file provided by albacore
+##Option2 : Local installation 
+This option is also suitable if you are interested in further developping the package, but requires a little bit more hands-on.
+Clone the repository locally 
+git clone https://github.com/GenomicParisCentre/toulligQC.git
+Install all dependencies indicated below.
 
-     run_date
-        Returns the date of a Minion run from the log file provided by albacore
+Requirements:
+=============
+To run ToulligQC, you need to install the following software:
+matplotlib 
+h5py 
+pandas 
+seaborn 
+numpy 
+PyPDF2 
+csv 
+python-docx
 
-     stat_generation
-        Generates a dictionary of statistics such as quartile, the standard deviation for the creation of a log file from the log file provided by Albacore
+On Debian/Ubuntu, you can install requirements  using the 'apt-get' command, here is an example:
+$sudo apt-get install matplotlib
 
-    barcode_percentage_pie_chart
-        Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
-
-    reads_size_selection_barcode
-        Plots the histogram of reads size by bins of 100 for the barcode choosed from design file
-
-    barcode_read_length_histogram
-        Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file.
-
-    read_count_histogram
-        Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
-
-    read_quality_boxplot
-        Plots a boxplot of reads quality
-
-    channel_count_histogram
-        Plots an histogram of the channel count according to the channel number
-
-    read_number_run
-        Plots the reads produced along the run against the time(in hour)
-
-    minion_flowcell_layout
-        Represents the layout of a minion flowcell
-
-    plot_performance(pore_measure)
-        Plots the channels occupancy by the reads
-
-    get_barcode_selection
-       Returns the selection of barcode from the design file
-
-    statistics_dataframe
-        Presents statitstics retrieved from statistics files in the statistics directory for each barcode as a dataframe to make the reading easier.
-
-
-## 2)getter1D
-
-This module provided informations about the minion runs and the fastq sequences. The five first methods take a h5py file as an argument.
-
-### get_MinknowVersion
-      Gets the Minknow version from fast5 file
-
-### get_FlowcellId
-      Gets the flowcell id from fast5 file
-
-### get_Hostname
-      Gets the hostname from fast5 file
-
-### get_NumMinION
-      Gets the number of Minion run
-
-### get_ProtocolRunId
-      Gets the run id protocol from fast5 file
-
-### get_Barcodes()
-      Gets the barcode from a file given in input
-
-### get_fastq(selection)
-      Gets the fastq sequence
-
-## 3)fast5_data_extractor
-Creates a dataframe from a collection of fast5 files. 
-Needs the fast5 file directory as input (where fast5 files are stored) and returns a tuple with a set of information
-about the fast5 files.
-
-### fast5_data_extractor(fast5_file_directory)
-      Creates a dataframe from collections of fast5 files
-      return : tuple with different informations about fast5 files
-
-### write_data(tuple_array)
-    Writes the data related to the fast5 files in a tsv file from the tuple array created by the fast5_data_extractor
-    function 
-
-### read_data(data_file)
-    Reads the tsv file containing the fast5 file data created previously by the write_data
-
-example
-==========
-For the platform:
-
-The use of a shell script is necessary so as to translate the path contained in the configuration file in the true paths corresponding with the server.
-For example /home/toto/ in import/rhodos11
-
-You must modified the paths contained in the config_file and docker_config_file variables according to your configuration.
-
-This shell script creates another configuration file named docker_config.txt which musn't be modified.
-The shell script must be in the directory where the scripts are.
-When the shell scripts is runned, it runs docker.
-
-A few rules must be respected when you use this shell scripts:
-* a / symbol must be present at the end of each line including a path. 
-* modify the file1 and the file2 variables according to your system but don't modify the end of these two variables. Always put config.txt and docker_config.txt
-* a file named docker_config.txt is created. Don't modify it.
-
-In the general case:
-
-First of all a set of files are required before the python scripts run:
+Organisation of your directory
+===============================
+The directory where the files are presented must be in the following form :
+for fast5 directory the fast5 file must be named with the run name given in the argument line. For example FAF042450.fast5 or FAF04250.tar.gz for the run name argument FAF04250
+for fastq file we must have a directory after the fastq directory named with the same run name that in the fast5 file above. This one is essential for the using of barcode because we have a fastq file for each barcode. We can have for example ten files in the fastq directory. 
 
 * a design file named imperatively design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
 
@@ -146,68 +68,62 @@ index | Reads | Description | Date | FastqFormat | RepTechGrou
 ------- | ------- | ------------- | -------- | -------------- | ---------------
  2015341_BC01 | dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 |  WT1_BC01 | 2017-01-24 | fastq-sanger | WT1_BC01
 
-An important thing is that the barcodes must be written with BC followed by two digits (BC01, BC02,....,BC80)
+Launching ToulligQC
+=========================
+A set of option are available :
+python3 main.py -h
+optional arguments:
+  -h, --help          	Show this help message and exit
+  -n RUN_NAME 	Run name
+  -d                          	Docker usage
+  -b                        	Barcode usage
+  -s ARG [ARG ...], --arg ARG [ARG …]   Selected files
 
-* a configuration file: this file includes the path at your different files. These files numbered four in the following order:
-
- * the directory where the fast5 are holded
- * the file where the Albacore log is placed
- * the directory where the fastq are located in the form of bz2 files
- * the directory where the design file mentioned above is located
-
-This file must be in the following form with these names imperatively:
-
-[config]
-
-fast5.directory=path to our fast5 directory
-
-log.file= path to our log file
-
-bz2.fastq.directory=path to fastq files in the form of bz2 files
-
+The run name correspond to this is indicated before the extension file for fastq and fast5 files.
+For example if you have FAF2056.tar.bz2 the run name correspond to FAF0256 and not FAF0256.tar.bz2.
+You run ToulligQC as follows :
+python3 main.py -n run name with n argument mandatory.
+Usage example
+========================
+Here I will provide a complete example.
+Our run calls FAF04250.
+The fast5 files and fastq files calls FAF04250.tar.bz2 and FAF04250.fastq.bz2.
+First of all, we need a configuration file :
+[config] 
+fast5.directory=path to our fast5 directory containing the fast5 files
+log.file= path to our log file containing the fastq files
+fastq.directory=path to fastq files in the form of bz2 files
 design_file_directory=path to design file directory
 
-The first line is important for the python script because they use a parser in order to parse the configuration file and mustn't be modified
+[extension]
+fast5.file.extension=tar.bz2
+fastq.file.extension=bz2 
 
-Once the files described above are ready an placed in the dcripts directory, we can launch the programm by means of the following command :
-        * python3 main.py name_sample * where name sample represents the Minion run's sample name.
+The design file directory being optional if you don’t use the barcodes.
+Then a design file if we use the barcodes named imperatively design.csv which describes the different sample barcoded. It's only the first column which is important. The rest of files may be modified at your convenience. An example might be:
+
+index | Reads | Description | Date | FastqFormat | RepTechGrou
+------- | ------- | ------------- | -------- | -------------- | ---------------
+ 2015341_BC01 | dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 |  WT1_BC01 | 2017-01-24 | fastq-sanger | WT1_BC01
 
 
-Afterwards two directories are created:
+After you must modify the read_file.sh script with the path toward your config file for the two first line.
+ sed '/^$/d' /import/config.txt > /import/conf.txt
+config_file=/import/conf.txt
+For these two lines you must indicate the path toward your config file for the first line before the >     
+token. Then you must indicate the path where your configuration file is with another name than your configuration file. 
 
-   * statistics containing statistics for each barcode
-   * images containing the images generated by the script. It will serve to create the report.
+After that, we launch the script.
+Without barcode and  without docker
+python3 main.py -n 20170104FAF04250
+With barcodes :
+python3 main.py -n 20170104FAF04250 -b
+With docker :
+python3 main.py -n  20170104FAF04250 -d
+With docker and barcodes :
+python3 main.py -n  20170104FAF04250 -b  -d
 
-Then two files are also created:
-
-  *  a report .docx containing a set of graphs generated by the script
-  *  a pdf file which contains the different graph in the case of some figures will be unreadable or not present in the docx
-
-A file named layout.pdf is necessary. That file represent the layout of a minion flowcell. It must be in the directory where the script is executed. This latter is present in the git directory.
-
-If you use docker you must launch  the program like that:
-
-        docker build -t genomicpariscentre/toulligQC .
-        docker run -ti -v mountpoint ... genomicpariscentre/toulligQC bash
-                                                                                                                     
-
-requirements
-===============
-
-Some modules needed be installed in order to the script is executed:
-
-* matplotlib
-* h5py
-* pandas
-* seaborn
-* numpy
-* PyPDF2
-* csv
-* python-docx
-* biopython
-
-This script is written in python3 and not in python2.
-
-A docker file was created containing these modules with the correct version of python.
-
-A config file was created which must be modified according to the configuration of its system.
+Here the run name is  20170104FAF04250. So just after the fastq directory another directory called  20170104FAF04250 must be created which will contain the fastq files with extension indicated in the config file without the point at the beginning(bz2 and not .bz2)
+For the fast5 file ……..(to see).
+The program generates a set of graphs and statistics. More precisely we have got 8 graphs or 7 graphs without barcode. Moreover either a global statistics file is yielded or a statistic file by barcode if barcodes are used.
+ToulligQC yield a report in the form of a html, pdf or docx file.
