@@ -12,7 +12,7 @@ class fastq():
     def __init__(self, pdf, result_directory, fastq_directory, dico_extension):
         self.pdf = pdf
         self.global_length_array = []
-        self.run_name, self.selected_file_list, _, self.is_barcode = parser.get_args()
+        self.run_name, _, self.is_barcode, _ = parser.get_args()
         self.fastq_file = ''
         self.result_directory = result_directory
         # A voir pour le run_name si il faut l'indiquer dans le fichier config ou pas.

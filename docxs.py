@@ -4,12 +4,9 @@ Creates a report in the form of a docx file for a minion run
 
 import docx
 
-def docxs(selection_barcode,date, flowcell_id, barcode_present, is_docker, result_directory,design_file_directory = ''):
+def docxs(selection_barcode,date, flowcell_id, barcode_present, result_directory,design_file_directory = ''):
     report_writing_directory = result_directory
-    if is_docker:
-        design_file_directory = '/scripts/toulligQC/'
-    else:
-        design_file_directory = design_file_directory
+    print(report_writing_directory)
 
     ##### Watch out change in the directory#####
     doc = docx.Document()

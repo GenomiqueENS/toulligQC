@@ -1,7 +1,8 @@
 ToulligQC
 =========
 This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not. It requires a design file describing the barcodes used if the run was barcoded. It partly relies on log file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore. This program will produce a set of graphs and statistic files in the form of pdf, html and docx report.
-ToulligQC accept different formats: bz2, tar.bz2, fastq and fast5
+ToulligQC accept different formats: bz2, tar.bz2, fastq and fast5.
+
 First of all a set of files are required before the programm runs:
 -a configuration file that must be in the following form :
 
@@ -30,16 +31,17 @@ Installation
 ## Option1 : Installation using Docker
 
 ToulligQC and its dependancies are available throw Docker images.
-You can use a Docker image with Aozan and all its optional dependencies
+You can use a Docker image with ToulligQC and all its optional dependencies
 To see how install docker on your system, go to the Docker website. Even if Docker can run in virtual machines in Windows or macOS, we recommand to only run ToulligQC on a Linux host.
-You can use a Docker image with ToulligQC and all its optional dependencies  instead of installating manually ToulligQC. This image is named genomicpariscentre/aozan:2.0. When you use this Docker image you need to mount all the required directories by Aozan in the Docker container.
+You can use a Docker image with ToulligQC and all its optional dependencies  instead of installating manually ToulligQC. This image is named genomicpariscentre/toulligqc. When you use this Docker image you need to mount all the required directories by Aozan in the Docker container.
 A shell script called read_file.sh is provided which make mounting automatic with the configuration file.
-Ce script prend les noms de fichiers indiqués dans le fichier de configuration et les traduit en leur vrai nom dans le cas où l’on utilise des liens symboliques puis il monte ces mêmes fichiers dans le contenair de Docker.
+THis script take the file name precised in the configuration file and translates them in their true name in the case where we use symbolic links then it mounts these files in the Docker container.
+
 
 ## Option2 : Local installation 
 This option is also suitable if you are interested in further developping the package, but requires a little bit more hands-on.
 Clone the repository locally
-git clone https://github.com/GenomicParisCentre/toulligQC.git
+git clone https://github.com/GenomicParisCentre/toulligQC.git<br/>
 Install all dependencies indicated below.
 
 Requirements:
@@ -59,21 +61,31 @@ $sudo apt-get install matplotlib
 
 Organisation of your directory
 ===============================
+
 The directory where the files are presented must be in the following form :
-for fast5 directory the fast5 file must be named with the run name given in the argument line. For example FAF042450.fast5 or FAF04250.tar.gz for the run name argument FAF04250
-for fastq file we must have a directory after the fastq directory named with the same run name that in the fast5 file above. This one is essential for the using of barcode because we have a fastq file for each barcode. We can have for example ten files in the fastq directory.
+for fast5 directory the fast5 file must be named with the run name given in the argument line. 
+
+For example FAF042450.fast5 or FAF04250.tar.gz for the run name argument FAF04250.
+For fastq file we must have a directory after the fastq directory named with the same run name that in the fast5 file above. This one is essential for the using of barcode because we have a fastq file for each barcode. We can have for example ten files in the fastq directory.
 
 Launching ToulligQC
 =========================
 
 A set of option are available :
 python3 main.py -h
-optional arguments:
-  -h, --help            Show this help message and exit
-  -n RUN_NAME   Run name
-  -d                            Docker usage
-  -b                            Barcode usage
-  -s ARG [ARG ...], --arg ARG [ARG …]   Selected files
+
+usage: main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f ARG [ARG ...]]
+
+optional arguments:<br/>
+  -h, --help            					     show this help message and exit<br/>
+  -n RUN_NAME, --run_name 						RUN_NAME
+                        						<br/>
+  -b, --barcode         						Barcode usage<br/>
+  -c CONFIG_FILE, --config_file CONFIG_FILE     Configuration file<br/>
+  -f ARG [ARG ...], --arg ARG [ARG ...]
+                        						Path to directory without config file in the same order that the config
+                                                file<br/>
+
 
 The run name correspond to this is indicated before the extension file for fastq and fast5 files.
 For example if you have FAF2056.tar.bz2 the run name correspond to FAF0256 and not FAF0256.tar.bz2.
@@ -111,19 +123,16 @@ After you must modify the read_file.sh script with the path toward your config f
 sed '/^$/d' /import/config.txt > /import/conf.txt<br/>
 config_file=/import/conf.txt
 
-For these two lines you must indicate the path toward your config file for the first line before the >
-token. Then you must indicate the path where your configuration file is with another name than your configuration file.
+For these two lines you must indicate the path toward your config file for the first line before the > without delete sed command.
+Then you must indicate the path where your configuration file is with another name than your configuration file.
 
 After that, we launch the script.
 
-Without barcode and  without docker <br/>
- python3 main.py -n 20170104FAF04250
+Without barcode <br/>
+ python3 main.py -n 20170104FAF04250 -c /home/config.txt
 
 With barcodes <br/>
-python3 main.py -n 20170104FAF04250 -b
-
-With docker<br/>
-python3 main.py -n  20170104FAF04250 -d
+python3 main.py -n 20170104FAF04250 -b -c /home/config.txt
 
 
 Here the run name is 20170104FAF04250.
@@ -136,4 +145,5 @@ For the fast5 file the folder tree looks like to this:<br/> fast5_directory/file
 
 The program generates a set of graphs and statistics. More precisely we have got 8 graphs or 7 graphs without barcode. Moreover either a global statistics file is yielded or a statistic file by barcode if barcodes are used.
 ToulligQC yield a report in the form of a html, pdf or docx file.
+
 

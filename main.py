@@ -10,18 +10,21 @@ import os
 import parser
 import html_report
 import shutil
+import sys
 
-run_name, selected_file, is_docker, is_barcode = parser.get_args()
-
-config_file = input('Where is the config file? (put the absolute path): ')
-dico_path = parser.file_path_initialization(config_file)
+run_name, config_file, is_barcode, file_list = parser.get_args()
+dico_path = parser.config_file_initialization(config_file, is_barcode, run_name, file_list)
+if not dico_path:
+    sys.exit("Error, dico_path is empty")
 
 result_directory        = dico_path['result_directory']
 basecall_log            = dico_path['basecall_log'] 
 fastq_directory         = dico_path['fastq_directory'] 
 fast5_directory         = dico_path['fast5_directory']
 
-dico_extension = parser.extension(config_file)
+print(result_directory)
+
+dico_extension = parser.extension(config_file, file_list)
 fast5_file_extension = dico_extension['fast5_file_extension']
 fastq_file_extension = dico_extension['fastq_file_extension']
 
@@ -42,7 +45,7 @@ pdf_report = result_directory+'Rapport_pdf.pdf'
 pdf = PdfPages(pdf_report)
 
 
-basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log, pdf, is_barcode,result_directory, fastq_directory, dico_extension, design_file_directory,  selected_file)
+basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log, pdf, is_barcode,result_directory, fastq_directory, dico_extension, design_file_directory,  file_list)
 fast5_data = fast5_data_extractor.fast5_data_extractor(fast5_directory, result_directory, dico_extension)
 
 #Date and flowcell id
@@ -83,11 +86,11 @@ report_pdf_file = os.path.join(result_directory, 'Rapport_pdf.pdf')
 html_report.html_report(result_directory, basecalling.run_date(), flowcell_id, is_barcode)
 
 if is_barcode:
-    docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, is_barcode, is_docker, result_directory, design_file_directory)
+    docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, is_barcode, result_directory, design_file_directory)
     basecalling.statistics_dataframe()
 else:
     log_file1D.log_file1D(fast5_data, basecalling, result_directory)
-    docxs.docxs('', basecalling.run_date(), flowcell_id, is_barcode, is_docker, result_directory)
+    docxs.docxs('', basecalling.run_date(), flowcell_id, is_barcode, result_directory)
 
 
 

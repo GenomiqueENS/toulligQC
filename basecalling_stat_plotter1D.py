@@ -287,9 +287,10 @@ class basecalling_stat_plotter1D:
 
         df = pd.DataFrame(d)
 
-        d = df.pivot("rownum", "colnum", "labels")
+        d = df.pivot("rownum", "colnum", "tot_reads")
+        d2 = df.pivot("rownum", "colnum","labels")
         plt.figure(figsize=(20, 10))
-        sns.heatmap(d, fmt="d", annot = True, linewidths=.5, cmap="YlGnBu")
+        sns.heatmap(d, fmt="", annot = d2, linewidths=.5, cmap="YlGnBu")
         plt.title('Channel occupancy')
 
         plt.savefig(self.result_directory+'images/channel_occupancy.png')
