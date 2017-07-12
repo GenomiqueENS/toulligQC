@@ -3,8 +3,8 @@ ToulligQC
 This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not. It requires a design file describing the barcodes used if the run was barcoded. It partly relies on log file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore. This program will produce a set of graphs and statistic files in the form of pdf, html and docx report.
 ToulligQC accept different formats: bz2, tar.bz2, fastq and fast5.
 
-First of all a set of files are required before the programm runs:
--a configuration file that must be in the following form :
+First of all a set of files are required before the programm runs:<br/>
+-a configuration file that must be in the following form with the same order in the variables:<br/>
 
 [config]<br/>
 fast5.directory=path to our fast5 directory<br/>
