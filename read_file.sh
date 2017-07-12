@@ -2,7 +2,7 @@ sed '/^$/d' /import/pontos06/analyses/toulligQC/config.txt > /import/pontos06/an
 config_file=/import/pontos06/analyses/toulligQC/conf.txt
 index=0
 boolean=False
-
+design_presence=False
 for line in $(cut -f2 -d = "${config_file}");
 
 do
@@ -37,6 +37,10 @@ do
   if [[ $line =~ config ]]; then
     echo -e [config] > "${config_file}"
     i=$(expr $i+1)
+
+  elif [[ $line =~ design\.file\.directory ]];then
+	   design_presence=True
+
  elif [[ $line =~ \[extension\] ]]; then
    echo -e [extension] >> "${config_file}"
    i=$(expr $i+1)
@@ -46,4 +50,9 @@ do
   fi
 done
 
-docker run -ti --rm -v ${path[1]}:${path[1]} -v ${path[2]}:${path[2]} -v ${path[3]}:${path[3]} -v ${path[4]}:${path[4]} -v $(pwd):$(pwd) -v ${path[5]}:${path[5]} -u $(id -u):$(id -g) genomicpariscentre/toulligqc 
+if [ $design_presence = False ]; then
+	docker run -ti --rm -v ${path[1]}:${path[1]} -v ${path[2]}:${path[2]} -v ${path[3]}:${path[3]} -v ${path[4]}:${path[4]} -v $(pwd):$(pwd) -u $(id -u):$(id -g) genomicpariscentre/toulligqc
+else
+	docker run -ti --rm -v ${path[1]}:${path[1]} -v ${path[2]}:${path[2]} -v ${path[3]}:${path[3]} -v ${path[4]}:${path[4]} -v $(pwd):$(pwd) -v ${path[5]}:${path[5]} -u $(id -u):$(id -g) genomicpariscentre/toulligqc
+
+fi	
