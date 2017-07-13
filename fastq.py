@@ -124,32 +124,15 @@ class fastq():
         Gets the fastq sequence
         """
         self.get_fastq_configuration()
-        if not self.selected_file_list:
-            if glob.glob("{}/*.bz2".format(self.fastq_directory)):
-                for bz2_fastq_file in glob.glob("{}/*.bz2".format(self.fastq_directory)):
-                    self.fastq_file = bz2_fastq_file
-                    total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
-            else:
-                for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_directory)):
-                    self.fastq_file = open(fastq_files, 'r')
-                    total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
-            return total_nucs_template, self.global_length_array, _, template_nucleotide_counter
 
-#        else:
- #           for selected_file in self.selected_file_list:
-  #              if glob.glob("{}/*.bz2".format(self.fastq_directory)):
-   #                 selected_file = self.fastq_directory + '/' + selected_file
-    #                self.bz2_decompression(selected_file)
-     #               total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
-      #              dico[selected_file] = [total_nucs_template, self.global_length_array, template_nucleotide_counter]
-                    #réinitialisation
-       #             self.global_length_array = []
+        if glob.glob("{}/*.bz2".format(self.fastq_directory)):
+            for bz2_fastq_file in glob.glob("{}/*.bz2".format(self.fastq_directory)):
+                self.fastq_file = bz2_fastq_file
+                total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
+        else:
+            for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_directory)):
+                self.fastq_file = open(fastq_files, 'r')
+                total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
+        return total_nucs_template, self.global_length_array, _, template_nucleotide_counter
 
-#                else:
- #                   self.fastq_file = open(selected_file, 'r')
-  #                  total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self.fastq_metrics()
-   #                 dico[selected_file] = [total_nucs_template, self.global_length_array, template_nucleotide_counter]
-    #                self.global_length_array = []
-
-#            return dico
 
