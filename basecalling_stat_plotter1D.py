@@ -22,7 +22,10 @@ class basecalling_stat_plotter1D:
         self.result_directory = result_directory
         self.channel = self.albacore_log['channel']
         self.sequence_length_template = self.albacore_log['sequence_length_template']
-        self.albacore_log[self.albacore_log == 0] = np.nan
+        self.null_event = self.albacore_log[self.albacore_log['num_events']==0]
+        #self.albacore_log = self.albacore_log[self.albacore_log == 0] = np.nan
+        self.albacore_log = self.albacore.replace([np.inf, -np.inf], 0)
+        self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
         fastq_object = fastq.fastq(pdf, result_directory, fastq_directory, dico_extension)
         self.fast5_tot = len(self.albacore_log)
         self.pdf = pdf
@@ -100,7 +103,7 @@ class basecalling_stat_plotter1D:
         sizes = [(100 * chiffre) / total for chiffre in count.values]
         if len(self.barcode_selection) <= 10:
             fig1, ax1 = plt.subplots()
-            ax1.pie(sizes, labels=self.barcode_selection, autopct='%1.1f%%', startangle=90, colors=cs)
+            ax1.pie(sizes, labels=self.barcode_selection, autopct='%.4f', startangle=90, colors=cs)
             ax1.axis('equal')
 
         else:
@@ -164,7 +167,6 @@ class basecalling_stat_plotter1D:
         return statistics
 
     def phred_score_frequency(self):
-        albacore_log = self.albacore_log.dropna()
         sns.distplot(albacore_log['mean_qscore_template'], bins=15, color='green', hist_kws=dict(edgecolor="k", linewidth=1))
         plt.xlabel("mean_qscore")
         plt.ylabel("Frequency")
@@ -174,7 +176,6 @@ class basecalling_stat_plotter1D:
         plt.close()
 
     def scatterplot(self):
-        albacore_log = self.albacore_log.dropna()
         plt.scatter(x = albacore_log['sequence_length_template'], y = albacore_log['mean_qscore_template'])
         plt.xlabel("sequence_length_template")
         plt.ylabel("mean_qscore_template")
