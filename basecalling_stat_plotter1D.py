@@ -24,7 +24,7 @@ class basecalling_stat_plotter1D:
         self.sequence_length_template = self.albacore_log['sequence_length_template']
         self.null_event = self.albacore_log[self.albacore_log['num_events']==0]
         #self.albacore_log = self.albacore_log[self.albacore_log == 0] = np.nan
-        self.albacore_log = self.albacore.replace([np.inf, -np.inf], 0)
+        self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
         self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
         fastq_object = fastq.fastq(pdf, result_directory, fastq_directory, dico_extension)
         self.fast5_tot = len(self.albacore_log)
