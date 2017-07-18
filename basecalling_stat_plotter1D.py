@@ -167,7 +167,7 @@ class basecalling_stat_plotter1D:
         return statistics
 
     def phred_score_frequency(self):
-        sns.distplot(albacore_log['mean_qscore_template'], bins=15, color='green', hist_kws=dict(edgecolor="k", linewidth=1))
+        sns.distplot(self.albacore_log['mean_qscore_template'], bins=15, color='green', hist_kws=dict(edgecolor="k", linewidth=1))
         plt.xlabel("mean_qscore")
         plt.ylabel("Frequency")
         plt.title("Phred score frequency")
@@ -176,7 +176,7 @@ class basecalling_stat_plotter1D:
         plt.close()
 
     def scatterplot(self):
-        plt.scatter(x = albacore_log['sequence_length_template'], y = albacore_log['mean_qscore_template'])
+        plt.scatter(x = self.albacore_log['sequence_length_template'], y = self.albacore_log['mean_qscore_template'])
         plt.xlabel("sequence_length_template")
         plt.ylabel("mean_qscore_template")
         plt.title("Relation between the sequence length template and the mean qscore template")
