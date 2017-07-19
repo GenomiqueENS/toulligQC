@@ -79,6 +79,7 @@ basecalling.occupancy_pore()
 
 basecalling.phred_score_frequency()
 basecalling.scatterplot()
+basecalling.barcoded_phred_score_frequency()
 
 pdf.close()
 
