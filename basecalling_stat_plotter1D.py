@@ -59,10 +59,7 @@ class basecalling_stat_plotter1D:
         """
         Returns the date of a Minion run from the log file provided by albacore
         """
-        filename = self.albacore_log['filename']
-        for index, file in enumerate(filename):
-            exp = self.albacore_log['filename'][index]
-            break
+        exp = self.albacore_log['filename'].iloc[0]
         m = re.search(r'(_(\d+)_)', exp)
         return m.group(2)
 
@@ -327,3 +324,13 @@ class basecalling_stat_plotter1D:
             df[selected_barcode] = pd.Series(dico)
         df.to_csv(self.result_directory+'dataframe.csv', header=self.barcode_selection_original,index=list(df.index), sep='\t')
 
+    def barcoded_phred_score_frequency(self):
+        dico = {}
+        for barcode in self.barcode_selection[:-1]:
+            barcode_selected_phred_score_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+            dico[barcode] = barcode_selected_phred_score_dataframe['mean_qscore_template']
+        barcode_selection_phred_scrore_dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in dico.items()]))
+        sns.boxplot(data= barcode_selection_phred_scrore_dataframe, showfliers=False)
+        plt.savefig(self.result_directory + 'images/barcode_phred_score_boxplot.png')
+        self.pdf.savefig()
+        plt.close()

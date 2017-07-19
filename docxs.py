@@ -35,6 +35,9 @@ def docxs(selection_barcode,date, flowcell_id, barcode_present, result_directory
         selection_barcode = selection_barcode[:-1]
         doc.add_paragraph('Read length boxplots')
         doc.add_picture(report_writing_directory+'images/barcode_total.png',width=docx.shared.Inches(5), height=docx.shared.Cm(9))
+        doc.add_paragraph('Boxplots of phred score distribution by barcode')
+        doc.add_picture(report_writing_directory+"images/barcode_phred_score_boxplot.png",width=docx.shared.Inches(5), height=docx.shared.Cm(9))
+
        # for barcode_image in selection_barcode:
         #    doc.add_picture('images/image_{}.png'.format(barcode_image), width=docx.shared.Inches(5), height=docx.shared.Cm(9))
 
@@ -48,5 +51,6 @@ def docxs(selection_barcode,date, flowcell_id, barcode_present, result_directory
         doc.paragraphs[15].runs[0].underline = True
         doc.paragraphs[17].runs[0].underline = True
         doc.paragraphs[19].runs[0].underline = True
+        doc.paragraphs[21].runs[0].underline = True
     doc.save(result_directory+'Rapport.docx')
 

@@ -11,7 +11,7 @@ def html_report(result_directory, run_date, flowcell_id, is_barcode):
     barcode_total = image_directory+"barcode_total.png"
     scatterplot = image_directory+"scatter_plot.png"
     phred_score_frequency = image_directory+"phred_score_frequency.png"
-
+    barcode_phred_score_boxplot = image_directory+"barcode_phred_score_boxplot.png"
     message1 = """
     <!DOCTYPE html>
     <html>
@@ -48,9 +48,11 @@ def html_report(result_directory, run_date, flowcell_id, is_barcode):
             <img src="{}" alt="Barcode pie chart", width=600, height=400>
             <h3>Barcode read length boxplot</h3>
             <img src="{}" alt="Barcode read length boxplot", width=600, height=300>
+            <h3>Boxplot of phred score distribution by barcode</h3>
+            <img src="{}" alt="Barcode read length boxplot", width=600, height=300>
         </body>
         </html>
-        """.format(barcode_pie_chart,barcode_total)
+        """.format(barcode_pie_chart,barcode_total,barcode_phred_score_boxplot)
     else:
         message2 = """</body>
         </html>

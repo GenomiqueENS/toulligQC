@@ -7,7 +7,7 @@ import bz2
 import seaborn as sns
 import io
 import parser
-
+import numpy as np
 class fastq():
     def __init__(self, pdf, result_directory, fastq_directory, dico_extension):
         self.pdf = pdf
@@ -33,8 +33,8 @@ class fastq():
         barcode_length_array = []
         variable = ''
         if self.dico_extension['fastq_file_extension'] == 'bz2':
-            with bz2.BZ2File(self.fastq_file, 'rb') as input:
-                with io.TextIOWrapper(input, encoding='utf-8') as bz2_fastq_file:
+            with bz2.BZ2File(self.fastq_file, 'rb') as inputo:
+                with io.TextIOWrapper(inputo, encoding='utf-8') as bz2_fastq_file:
                     for line in bz2_fastq_file:
                         counter += 1
 
@@ -42,12 +42,11 @@ class fastq():
                             variable += line.strip()
                             self.global_length_array.append(len(line))
 
-                        if self.is_barcode:
-                            barcode_length_array.append(len(line))
+                            if self.is_barcode:
+                                barcode_length_array.append(len(line))
 
                         if counter == 4:
                             counter = 0
-
         else:
             with open(self.fastq_file, 'r') as fastq_file:
                 for line in fastq_file:
@@ -74,10 +73,8 @@ class fastq():
         barcode_file = open(completeName, 'w')
         series_read_size = pd.Series(barcode_length_array)
         selected_barcode_fastq_size_statistics = pd.Series.describe(series_read_size)
-
         for index, value in selected_barcode_fastq_size_statistics.iteritems():
             barcode_file.write("Read.fastq.length.{}={}\n".format(index, value))
-
         for nucleotide, count in template_nucleotide_counter.items():
             barcode_file.write("nucleotide.{}.template={}\n".format(nucleotide, count))
             if nucleotide == 'total':
