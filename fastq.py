@@ -20,7 +20,6 @@ class fastq():
         self.image_directory = self.result_directory+'images/'
         self.statistic_directory = self.result_directory+'statistics/'
         self.selection_global = []
-        #self.dico = {}
         self.dico_extension = dico_extension
 
     def get_fastq_configuration(self):
@@ -97,8 +96,6 @@ class fastq():
                     if selected_barcode in bz2_fastq_file:
                         self.fastq_file = bz2_fastq_file
                         self.barcoded_fastq_informations(selected_barcode)
-
-
 
         else:
             for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_directory)):

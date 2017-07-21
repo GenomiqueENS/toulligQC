@@ -37,7 +37,7 @@ pdf_report = dico_path['result_directory']
 basecall_log = dico_path['basecall_log'] +run_name+'/sequencing_summary.txt'
 
 if os.path.isdir(result_directory):
-    shutil.rmtree(result_directory)
+    shutil.rmtree(result_directory, ignore_errors=True)
     os.makedirs(result_directory)
 else:
     os.makedirs(result_directory)
