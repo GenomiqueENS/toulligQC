@@ -4,7 +4,7 @@ import basecalling_stat_plotter1D
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import fast5_data_extractor
-import docxs
+#import docxs
 import log_file1D
 import os
 import parser
@@ -66,7 +66,8 @@ basecalling.read_number_run()
 if is_barcode:
     # Pie chart representing barcodes
     basecalling.barcode_percentage_pie_chart()
-
+    basecalling.barcode_length_boxplot()
+    basecalling.barcoded_phred_score_frequency()
 basecalling.read_length_histogram()
 
 #Representation of the channels occupation.
@@ -79,7 +80,7 @@ basecalling.occupancy_pore()
 
 basecalling.phred_score_frequency()
 basecalling.scatterplot()
-basecalling.barcoded_phred_score_frequency()
+
 
 pdf.close()
 
@@ -87,11 +88,11 @@ report_pdf_file = os.path.join(result_directory, 'Rapport_pdf.pdf')
 html_report.html_report(result_directory, basecalling.run_date(), flowcell_id, is_barcode)
 
 if is_barcode:
-    docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, is_barcode, result_directory, design_file_directory)
+    #docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, is_barcode, result_directory, design_file_directory)
     basecalling.statistics_dataframe()
 else:
     log_file1D.log_file1D(fast5_data, basecalling, result_directory)
-    docxs.docxs('', basecalling.run_date(), flowcell_id, is_barcode, result_directory)
+    #docxs.docxs('', basecalling.run_date(), flowcell_id, is_barcode, result_directory)
 
 
 

@@ -20,7 +20,7 @@ class fastq():
         self.image_directory = self.result_directory+'images/'
         self.statistic_directory = self.result_directory+'statistics/'
         self.selection_global = []
-        self.dico = {}
+        #self.dico = {}
         self.dico_extension = dico_extension
 
     def get_fastq_configuration(self):
@@ -73,16 +73,18 @@ class fastq():
         barcode_file = open(completeName, 'w')
         series_read_size = pd.Series(barcode_length_array)
         selected_barcode_fastq_size_statistics = pd.Series.describe(series_read_size)
+
         for index, value in selected_barcode_fastq_size_statistics.iteritems():
-            barcode_file.write("Read.fastq.length.{}={}\n".format(index, value))
+            print(type(value))
+            barcode_file.write("Read.fastq.length.{}={}\n".format(index, np.round(value, decimals=2)))
         for nucleotide, count in template_nucleotide_counter.items():
-            barcode_file.write("nucleotide.{}.template={}\n".format(nucleotide, count))
+            barcode_file.write("nucleotide.{}.template={}\n".format(nucleotide, np.round(value, decimals=2)))
             if nucleotide == 'total':
                 continue
             calcul = float(count) / float(total_nucs_template)
-            barcode_file.write("nucleotide.{}.proportion={}\n".format(nucleotide, calcul))
+            barcode_file.write("nucleotide.{}.proportion={}\n".format(nucleotide,  np.round(calcul, decimals=2)))
         barcode_file.close()
-        self.dico[selected_barcode] = barcode_length_array
+        #self.dico[selected_barcode] = barcode_length_array
 
     def get_fastq_barcoded(self, selection):
         """
@@ -96,16 +98,7 @@ class fastq():
                         self.fastq_file = bz2_fastq_file
                         self.barcoded_fastq_informations(selected_barcode)
 
-            mpl_fig = plt.figure()
-            ax = mpl_fig.add_subplot(111)
-            df = pd.DataFrame(dict([(k,pd.Series(v)) for k,v in self.dico.items()]))
-            sns.boxplot(data = df,showfliers=False)
-            plt.xlabel('Barcodes')
-            plt.ylabel('Read size(in pb)')
-            plt.title('Read size for each barcode')
-            plt.savefig(self.image_directory+'barcode_total.png')
-            self.pdf.savefig()
-            plt.close()
+
 
         else:
             for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_directory)):

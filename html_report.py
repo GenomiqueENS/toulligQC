@@ -8,7 +8,7 @@ def html_report(result_directory, run_date, flowcell_id, is_barcode):
     read_length = image_directory+"read_length_histogram.png"
     channel_occupancy = image_directory+"channel_occupancy.png"
     barcode_pie_chart = image_directory+"barcode_percentage_pie_chart.png"
-    barcode_total = image_directory+"barcode_total.png"
+    barcode_length_boxplot = image_directory+'barcode_length_boxplot.png'
     scatterplot = image_directory+"scatter_plot.png"
     phred_score_frequency = image_directory+"phred_score_frequency.png"
     barcode_phred_score_boxplot = image_directory+"barcode_phred_score_boxplot.png"
@@ -45,14 +45,15 @@ def html_report(result_directory, run_date, flowcell_id, is_barcode):
             """.format(flowcell_id, run_date, read_count, read_length, phred_score, channel_count, read_number, channel_occupancy, phred_score_frequency, scatterplot)
     if is_barcode:
         message2 = """<h3>Barcode pie chart</h3>
-            <img src="{}" alt="Barcode pie chart", width=600, height=400>
-            <h3>Barcode read length boxplot</h3>
-            <img src="{}" alt="Barcode read length boxplot", width=600, height=300>
+            <img src="{0}" alt="Barcode pie chart", width=600, height=400>
+            <h3>Boxplot of read length distribution for each barcode</h3>
+            <img src="{1}" alt="Barcode read length boxplot", width=600, height=300>
             <h3>Boxplot of phred score distribution by barcode</h3>
-            <img src="{}" alt="Barcode read length boxplot", width=600, height=300>
+            <img src="{2}" alt="Barcode read length boxplot", width=600, height=300>
         </body>
         </html>
-        """.format(barcode_pie_chart,barcode_total,barcode_phred_score_boxplot)
+        """.format(barcode_pie_chart, barcode_length_boxplot, barcode_phred_score_boxplot)
+
     else:
         message2 = """</body>
         </html>

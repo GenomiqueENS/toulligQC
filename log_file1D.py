@@ -1,5 +1,6 @@
 import os
 import parser
+import numpy as np
 
 def log_file1D(fast5_data , basecall_stat, result_directory):
     """
@@ -24,14 +25,14 @@ def log_file1D(fast5_data , basecall_stat, result_directory):
             file_data.write("num.called.template.{}={}\n".format(index, element))
 
         for index, element in num_called_template.iteritems():
-            file_data.write("mean.qscore.template.{}={}\n".format(index, element))
+            file_data.write("mean.qscore.template.{}={}\n".format(index, np.round(element, decimals=2)))
 
         for nucleotide, count in counter_template.items():
             file_data.write("nucleotide.{}.template={}\n".format(nucleotide,count))
             if nucleotide == 'total':
                 continue
             calcul = float(count) / float(total_nucleotide_template)
-            file_data.write("nucleotide.{}.proportion={}\n".format(nucleotide, calcul))
+            file_data.write("nucleotide.{}.proportion={}\n".format(nucleotide, np.round(calcul, decimals=2)))
 
 
         file_data.write("total.number.of.sequence={}\n".format(basecall_stat.fast5_tot))
@@ -47,4 +48,4 @@ def log_file1D(fast5_data , basecall_stat, result_directory):
         file_data.write(("run.id={}\n".format(run_id)))
 
         for index, element in basecall_stat.statistics_read_size().iteritems():
-            file_data.write("Read.fastq.length.{}={}\n".format(index, element))
+            file_data.write("Read.fastq.length.{}={}\n".format(index, np.round(element, decimals=2)))

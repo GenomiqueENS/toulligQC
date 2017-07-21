@@ -70,24 +70,3 @@ def read_fast5_data_from_tsv(data_file):
         for row in reader:
             print(', '.join(row))
 
-
-#bz2_fast5_file = bz2_fast5_file_directory + run_name + ".tar.bz2"
- #   print(bz2_fast5_file)
-  #  p1 = Popen(['tar', '-tf', bz2_fast5_file], stdout=PIPE)
- #   p2 = Popen(["grep", '-e', '\.fast5$'], stdin=p1.stdout, stdout=PIPE)
-  #  p1.stdout.close()
-   # p3 = Popen(["head", '-n', '1'], stdin=p2.stdout, stdout=PIPE)
-#    p2.stdout.close()
- #   output = p3.communicate()[0].decode().rstrip('\n')
-  #  Popen('tar -xf {} --occurrence {} -O > {}fast5_file.fast5'.format(bz2_fast5_file, output, result_directory),
-   #            shell=True)
-
-
-    #run_name,selected_file,is_docker,is_barcode = parser.get_args()
-#    fast5_file = result_directory+'fast5_file.fast5'
-
-#    if not fast5_file:
- #       print('Pas de fichier fast5')
-  #      return 0
-
-#    return fast5_file

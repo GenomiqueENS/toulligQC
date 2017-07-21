@@ -34,7 +34,7 @@ class basecalling_stat_plotter1D:
             self.barcode_selection_original = self.barcode_selection
             self.barcode_selection.sort()
             self.fastq_length_array = fastq_object.get_fastq_barcoded(self.barcode_selection)
-
+            print(self.barcode_selection)
         else:
             self.total_nucs_template, self.fastq_length_array,_ , self.template_nucleotide_counter = fastq_object.get_fastq_without_barcode()
 
@@ -313,7 +313,7 @@ class basecalling_stat_plotter1D:
         Returns the statistics retrieved from the statistics files in the statistics directory for each barcode as a dataframe to make
         the reading easier.
         """
-        df = pd.DataFrame(columns=self.barcode_selection)
+        df = pd.DataFrame(columns=self.barcode_selection[:-1])
         for selected_barcode in self.barcode_selection[:-1]:
             dico = {}
             file = open(self.result_directory+'statistics/{}'.format(selected_barcode),'r')
@@ -322,7 +322,20 @@ class basecalling_stat_plotter1D:
                 dico[key.strip()] = value.strip()
             file.close()
             df[selected_barcode] = pd.Series(dico)
-        df.to_csv(self.result_directory+'dataframe.csv', header=self.barcode_selection_original,index=list(df.index), sep='\t')
+        df.to_csv(self.result_directory+'dataframe.csv', header=self.barcode_selection[:-1],index=list(df.index), sep='\t')
+
+    def barcode_length_boxplot(self):
+        dico = {}
+        for barcode in self.barcode_selection[:-1]:
+            barcode_selected_phred_score_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+            dico[barcode] = barcode_selected_phred_score_dataframe['sequence_length_template']
+            barcode_selection_phred_scrore_dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in dico.items()]))
+        sns.boxplot(data=barcode_selection_phred_scrore_dataframe, showfliers=False)
+        plt.xlabel('Barcodes')
+        plt.ylabel('Read size(in pb)')
+        plt.title('Read size distribution for each barcode')
+        plt.savefig(self.result_directory + 'images/barcode_length_boxplot.png')
+        plt.close()
 
     def barcoded_phred_score_frequency(self):
         dico = {}
@@ -331,6 +344,11 @@ class basecalling_stat_plotter1D:
             dico[barcode] = barcode_selected_phred_score_dataframe['mean_qscore_template']
         barcode_selection_phred_scrore_dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in dico.items()]))
         sns.boxplot(data= barcode_selection_phred_scrore_dataframe, showfliers=False)
+        plt.xlabel('Barcodes')
+        plt.ylabel('Phred score')
+        plt.title('Phred score distribution for each barcode')
         plt.savefig(self.result_directory + 'images/barcode_phred_score_boxplot.png')
         self.pdf.savefig()
         plt.close()
+
+
