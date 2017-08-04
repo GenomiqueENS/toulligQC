@@ -45,8 +45,14 @@ pdf_report = result_directory+'Rapport_pdf.pdf'
 pdf = PdfPages(pdf_report)
 
 
-basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log, pdf, is_barcode,result_directory, fastq_directory, dico_extension, design_file_directory,  file_list)
+
+
 fast5_data = fast5_data_extractor.fast5_data_extractor(fast5_directory, result_directory, dico_extension)
+basecalling = basecalling_stat_plotter1D.basecalling_stat_plotter1D(basecall_log, pdf, is_barcode,result_directory, fastq_directory, dico_extension, fast5_data, design_file_directory,  file_list)
+#basecalling.statistics_dictionnary()
+
+
+
 
 #Date and flowcell id
 flowcell_id, *_ = fast5_data

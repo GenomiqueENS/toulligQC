@@ -8,8 +8,10 @@ import seaborn as sns
 import io
 import parser
 import numpy as np
+
 class fastq():
     def __init__(self, pdf, result_directory, fastq_directory, dico_extension):
+        self.global_dico = {}
         self.pdf = pdf
         self.global_length_array = []
         self.run_name, _, self.is_barcode, _ = parser.get_args()
@@ -67,12 +69,15 @@ class fastq():
         return total_nucs_template, self.global_length_array,barcode_length_array, template_nucleotide_counter
 
     def barcoded_fastq_informations(self, selected_barcode= ''):
+
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter = self.fastq_metrics()
         completeName = os.path.join(self.statistic_directory, selected_barcode)
         barcode_file = open(completeName, 'w')
         series_read_size = pd.Series(barcode_length_array)
         selected_barcode_fastq_size_statistics = pd.Series.describe(series_read_size)
-
+        self.global_dico['fastq_size_'+selected_barcode] = barcode_length_array
+        self.global_dico['nucleotide_count_'+selected_barcode] = template_nucleotide_counter
+        self.global_dico['total_nucleotide_'+selected_barcode] = total_nucs_template
         for index, value in selected_barcode_fastq_size_statistics.iteritems():
             print(type(value))
             barcode_file.write("Read.fastq.length.{}={}\n".format(index, np.round(value, decimals=2)))
@@ -81,6 +86,7 @@ class fastq():
             if nucleotide == 'total':
                 continue
             calcul = float(count) / float(total_nucs_template)
+            calcul = calcul*100
             barcode_file.write("nucleotide.{}.proportion={}\n".format(nucleotide,  np.round(calcul, decimals=2)))
         barcode_file.close()
         #self.dico[selected_barcode] = barcode_length_array
@@ -104,7 +110,7 @@ class fastq():
                         self.fastq_file = open(fastq_files, 'r')
                         self.barcoded_fastq_informations(selected_barcode)
 
-        return self.global_length_array
+        return self.global_length_array, self.global_dico
 
     def get_fastq_without_barcode(self):
         """
