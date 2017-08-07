@@ -22,7 +22,6 @@ basecall_log            = dico_path['basecall_log']
 fastq_directory         = dico_path['fastq_directory'] 
 fast5_directory         = dico_path['fast5_directory']
 
-print(result_directory)
 
 dico_extension = parser.extension(config_file, file_list)
 fast5_file_extension = dico_extension['fast5_file_extension']
@@ -33,6 +32,7 @@ if is_barcode:
 else:
     design_file_directory = ''
 
+print(design_file_directory)
 pdf_report = dico_path['result_directory']
 basecall_log = dico_path['basecall_log'] +run_name+'/sequencing_summary.txt'
 
@@ -91,13 +91,14 @@ basecalling.scatterplot()
 pdf.close()
 
 report_pdf_file = os.path.join(result_directory, 'Rapport_pdf.pdf')
-html_report.html_report(result_directory, basecalling.run_date(), flowcell_id, is_barcode)
+html_report.html_report(result_directory, basecalling.run_date(), flowcell_id, is_barcode, basecalling.sequence_length_template)
 
 if is_barcode:
     #docxs.docxs(basecalling.barcode_selection,basecalling.run_date(), flowcell_id, is_barcode, result_directory, design_file_directory)
     basecalling.statistics_dataframe()
 else:
     log_file1D.log_file1D(fast5_data, basecalling, result_directory)
+    log_file1D.log_file_tsv(fast5_data, basecalling, result_directory)
     #docxs.docxs('', basecalling.run_date(), flowcell_id, is_barcode, result_directory)
 
 

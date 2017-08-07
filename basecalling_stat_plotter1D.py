@@ -10,7 +10,9 @@ import getter1D
 import os
 import fastq
 import csv
-import parser
+from matplotlib import gridspec
+
+from pandas.tools.plotting import table
 
 class basecalling_stat_plotter1D:
     """
@@ -22,6 +24,7 @@ class basecalling_stat_plotter1D:
 
         self.version, self.flowcell_id, self.hostname, self.numMinion, self.run_id = fast5_tuple
         self.global_dictionnary = {}
+        self.statistics_dictionnary = {}
         self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
         self.result_directory = result_directory
         self.channel = self.albacore_log['channel']
@@ -36,13 +39,31 @@ class basecalling_stat_plotter1D:
         if barcode_present:
 
             self.barcode_selection = getter1D.get_barcode(design_file_directory)
+            print(self.barcode_selection)
             self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
+            self.barcode_selection.append('unclassified')
             self.barcode_selection_original = self.barcode_selection
             self.barcode_selection.sort()
             self.fastq_length_array, self.global_dictionnary = fastq_object.get_fastq_barcoded(self.barcode_selection)
             print(self.barcode_selection)
         else:
-            self.total_nucs_template, self.fastq_length_array,_ , self.template_nucleotide_counter = fastq_object.get_fastq_without_barcode()
+            self.total_nucs_template, self.fastq_length_array,_ , self.template_nucleotide_counter \
+                = fastq_object.get_fastq_without_barcode()
+
+
+    def make_table(self, value, ax, metric_suppression = ''):
+
+        if metric_suppression:
+            the_table = table(ax, np.round(value.describe().drop(metric_suppression), 2), loc='center', )
+        else:
+            the_table = table(ax, np.round(value.describe(), 2), loc='center', )
+
+        ax.xaxis.set_visible(False)
+        ax.yaxis.set_visible(False)
+        ax.axis('off')
+
+        the_table.set_fontsize(12)
+        the_table.scale(1, 1)
 
     def barcode_meanqscore(self):
         """
@@ -58,7 +79,6 @@ class basecalling_stat_plotter1D:
             file = open(completeName,'a')
             file.write("mean.qscore.template={}\n".format(meanq_score))
             file.close()
-            print('fini')
 
 
     def run_date(self):
@@ -92,18 +112,13 @@ class basecalling_stat_plotter1D:
                 return False
 
         barcode = self.albacore_log['barcode_arrangement']
-        count1 = barcode.value_counts()
-        count = count1.sort_index()[self.barcode_selection]
-        unclassified = self.albacore_log['barcode_arrangement'].value_counts()['unclassified']
-        ##Watch out must be placed after the operation
-        self.barcode_selection.append("unclassified")
-        ##
-        count['unclassified'] = unclassified
-        total = sum(count1)
+        barcode_count = barcode.value_counts()
+        count_sorted = barcode_count.sort_index()[self.barcode_selection]
+        total = sum(count_sorted)
 
         cs = cm.Paired(np.arange(len(self.barcode_selection)) / len(self.barcode_selection))
 
-        sizes = [(100 * chiffre) / total for chiffre in count.values]
+        sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
         if len(self.barcode_selection) <= 10:
             fig1, ax1 = plt.subplots()
             ax1.pie(sizes, labels=self.barcode_selection, autopct='%.4f', startangle=90, colors=cs)
@@ -112,8 +127,8 @@ class basecalling_stat_plotter1D:
         else:
             fig = plt.figure(figsize=(20, 10))
             ax1 = fig.add_subplot(111)
-            length = np.arange(0, len(count))
-            ax1.bar(length, count, color=cs)
+            length = np.arange(0, len(barcode_count))
+            ax1.bar(length, barcode_count, color=cs)
             ax1.set_xticks(length)
             ax1.set_xticklabels(self.barcode_selection)
 
@@ -121,8 +136,6 @@ class basecalling_stat_plotter1D:
         self.pdf.savefig()
         plt.close()
 
-
-    #Launch after barcode pie chart because of self.barcode_selection
 
     def safe_log(self,x):
         if x <= 0:
@@ -135,14 +148,14 @@ class basecalling_stat_plotter1D:
         """
 
         MIN, MAX = min(self.sequence_length_template), max(self.sequence_length_template)
+
         fig = plt.figure(figsize=(20, 10))
-        ax = fig.add_subplot(111)
+        gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])
+        ax = plt.subplot(gs[0])
+
         n, bins, patches = ax.hist(self.sequence_length_template,edgecolor ='black', bins= 2**np.linspace(self.safe_log(MIN), self.safe_log(MAX),30))
         ax.set_xscale('log',basex=2)
         ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.1f'))
-        median = pd.Series.median(self.sequence_length_template)
-        sigma = pd.Series.std(self.sequence_length_template)
-        plt.text(0.8, 0.9,'median=%.1f\nσ=%.1f'%(median,sigma),ha='center',va='center',transform=ax.transAxes,bbox={'facecolor':'white','alpha':0.5,'pad':5})
         ax.set_xticks(bins)
 
         for tick in ax.xaxis.get_major_ticks():
@@ -151,6 +164,19 @@ class basecalling_stat_plotter1D:
         ax.set_xlabel('Read size(in pb)')
         ax.set_ylabel('Read number')
         ax.set_title('Read size histogram')
+
+        ax2 = plt.subplot(gs[1])
+
+        the_table = table(ax2, np.round(self.sequence_length_template.describe(), 2), loc='center')
+
+        ax2.xaxis.set_visible(False)
+        ax2.yaxis.set_visible(False)
+        ax2.axis('off')
+
+        the_table.set_fontsize(12)
+        the_table.scale(1, 2)
+
+        #self.make_table(self.sequence_length_template, fig)
         plt.savefig(self.result_directory + 'images/read_length_histogram.png')
         self.pdf.savefig()
         plt.close()
@@ -170,16 +196,31 @@ class basecalling_stat_plotter1D:
         return statistics
 
     def phred_score_frequency(self):
-        sns.distplot(self.albacore_log['mean_qscore_template'], bins=15, color='green', hist_kws=dict(edgecolor="k", linewidth=1))
+
+        figure = plt.figure(figsize=(8, 8))
+        gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+
+        sns.distplot(self.albacore_log['mean_qscore_template'], bins=15, color='green',
+                     hist_kws=dict(edgecolor="k", linewidth=1))
         plt.xlabel("mean_qscore")
         plt.ylabel("Frequency")
         plt.title("Phred score frequency")
+        rd = self.albacore_log['mean_qscore_template'].describe().drop('count').round(2).reset_index()
+
+        # A garder pour la longueur des reads
+        plt.axvline(x=self.albacore_log['mean_qscore_template'].describe()['50%'], color='green')
+
+        # plt.annotate('point offset from data',xy=(23, 67), xycoords='figure pixels')
+        ax2 = plt.subplot(gs[1])
+        self.make_table(rd, ax2, 'count')
         plt.savefig(self.result_directory + 'images/phred_score_frequency.png')
         self.pdf.savefig()
         plt.close()
 
     def scatterplot(self):
         plt.scatter(x = self.albacore_log['sequence_length_template'], y = self.albacore_log['mean_qscore_template'])
+        plt.xlim(0,100000)
         plt.xlabel("sequence_length_template")
         plt.ylabel("mean_qscore_template")
         plt.title("Relation between the sequence length template and the mean qscore template")
@@ -193,21 +234,33 @@ class basecalling_stat_plotter1D:
         """
 
         # Count of fast5 total
-        fast5tot = len(self.albacore_log)
+        fast5_raw = len(self.albacore_log['num_events'])
         # Count of template reads
-        template = len(self.albacore_log['num_called_template'].dropna())
+        fast5_template_basecalled = \
+            len(self.albacore_log['num_events'])-len(self.albacore_log[self.albacore_log['num_called_template']==0])
+        self.statistics_dictionnary['fast5_template_NOT_basecalled'] = \
+            self.albacore_log[self.albacore_log['num_called_template'] == 0]
+        self.statistics_dictionnary['fast5_template_NOT_basecalled_percentage'] = \
+            (len(self.albacore_log[self.albacore_log['num_called_template']==0]))/len(self.albacore_log['num_called_template'])*100
 
          #Count of complement reads
-        read_type = [fast5tot, template]
-        label = ("fast5tot", "template")
+        read_type = [fast5_raw, fast5_template_basecalled]
+        label = ("fast5_raw", "fast5_template_basecalled")
         nd = np.arange(len(read_type))
 
         # Histogram of differents reads count(template, complement, fast2D)
-        plt.bar(nd, read_type, align='center', color=["lightblue", "salmon"])
+        bars = plt.bar(nd, read_type, align='center', color=["lightblue", "salmon"])
         plt.xticks(nd, label)
         plt.xlabel("read type")
         plt.ylabel("Counts")
         plt.title("Counts of read template")
+
+        # Writing of a number above the bar
+
+        for bar in bars:
+            height = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
+
         plt.savefig(self.result_directory+'images/read_count_histogram.png')
         self.pdf.savefig()
         plt.close()
@@ -216,10 +269,18 @@ class basecalling_stat_plotter1D:
         """
         Plots a boxplot of reads quality
         """
+        figure = plt.figure(figsize=(8, 8))
+        gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+
         dataframe = self.albacore_log.loc[:, ["mean_qscore_template"]]
         sns.boxplot(data=dataframe)
         plt.title('Boxplot of read quality')
         plt.ylabel('Phred score')
+
+        ax2 = plt.subplot(gs[1])
+        self.make_table(dataframe, ax2, 'count')
+
         plt.savefig(self.result_directory+'images/read_quality_boxplot.png')
         self.pdf.savefig()
         plt.close()
@@ -391,6 +452,7 @@ class basecalling_stat_plotter1D:
             mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
             sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
             if barcode != 'unclassified':
+                print(self.global_dictionnary.keys())
                 sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
             if column == 0:
                 for i in range(8):
@@ -439,6 +501,9 @@ class basecalling_stat_plotter1D:
         with open(self.result_directory + 'dataframe.csv', 'a') as csv_file:
             writer = csv.writer(csv_file, delimiter='\t')
 
+            writer.writerow(['Number of reads:', len(self.sequence_length_template)])
+            writer.writerow('')
+
             writer.writerow(barcode_selection_matrix)
             for element in channel_occupancy_matrix:
                 writer.writerow(element)
@@ -463,28 +528,56 @@ class basecalling_stat_plotter1D:
             writer.writerows(general_information_list)
 
     def barcode_length_boxplot(self):
+        pattern = '(\d{2})'
         dico = {}
-        for barcode in self.barcode_selection[:-1]:
-            barcode_selected_phred_score_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
-            dico[barcode] = barcode_selected_phred_score_dataframe['sequence_length_template']
-            barcode_selection_phred_scrore_dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in dico.items()]))
-        sns.boxplot(data=barcode_selection_phred_scrore_dataframe, showfliers=False)
+
+
+        fig = plt.figure(figsize=(8, 8))
+        gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+
+
+        for barcode in self.barcode_selection:
+            barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+            match = re.search(pattern, barcode)
+            if match:
+                dico[match.group(0)] = barcode_selected_dataframe['sequence_length_template']
+            else:
+                dico['U'] = barcode_selected_dataframe['sequence_length_template']
+        barcode_selection_sequence_length_dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in dico.items()]))
+        sns.boxplot(data=barcode_selection_sequence_length_dataframe, showfliers=False)
         plt.xlabel('Barcodes')
         plt.ylabel('Read size(in pb)')
         plt.title('Read size distribution for each barcode')
+
+        ax2 = plt.subplot(gs[1])
+        self.make_table(barcode_selection_sequence_length_dataframe,ax2)
         plt.savefig(self.result_directory + 'images/barcode_length_boxplot.png')
         plt.close()
 
     def barcoded_phred_score_frequency(self):
         dico = {}
-        for barcode in self.barcode_selection[:-1]:
-            barcode_selected_phred_score_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
-            dico[barcode] = barcode_selected_phred_score_dataframe['mean_qscore_template']
+        pattern = '(\d{2})'
+
+        fig = plt.figure(figsize=(8, 8))
+        gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+
+        for barcode in self.barcode_selection:
+            barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+            match = re.search(pattern, barcode)
+            if match:
+                dico[match.group(0)] = barcode_selected_dataframe['mean_qscore_template']
+            else:
+                dico['U'] = barcode_selected_dataframe['mean_qscore_template']
         barcode_selection_phred_scrore_dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in dico.items()]))
         sns.boxplot(data= barcode_selection_phred_scrore_dataframe, showfliers=False)
         plt.xlabel('Barcodes')
         plt.ylabel('Phred score')
         plt.title('Phred score distribution for each barcode')
+
+        ax2 = plt.subplot(gs[1])
+        self.make_table(barcode_selection_phred_scrore_dataframe,ax2)
         plt.savefig(self.result_directory + 'images/barcode_phred_score_boxplot.png')
         self.pdf.savefig()
         plt.close()
