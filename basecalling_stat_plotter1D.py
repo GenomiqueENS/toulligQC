@@ -63,7 +63,7 @@ class basecalling_stat_plotter1D:
         ax.axis('off')
 
         the_table.set_fontsize(12)
-        the_table.scale(1, 1)
+        the_table.scale(1, 1.2)
 
     def barcode_meanqscore(self):
         """
