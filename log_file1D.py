@@ -1,16 +1,15 @@
 import os
-import parser
 import numpy as np
 import csv
 
 def log_file1D(fast5_data , basecall_stat, result_directory):
-    """
+    '''
     Create a log file like where different information about the minion run are printed
-    """
-
+    :param fast5_data: tuple containing informations from a raw FAST5 file
+    :param basecall_stat: basecalling_stat_plotter instance
+    :param result_directory: result directory
+    '''
     version, flowcell_id, hostname, numMinion, run_id = fast5_data
-    #Retrieve the dataframe with statitstics such as the quartile or std
-    #Retrieve the dictionary from albacore summary log
 
     num_called_template, mean_qscore_template = basecall_stat.stat_generation()
 
@@ -53,6 +52,12 @@ def log_file1D(fast5_data , basecall_stat, result_directory):
             file_data.write("Read.fastq.length.{}={}\n".format(index, np.round(element, decimals=2)))
 
 def log_file_tsv(fast5_data , basecall_stat, result_directory):
+    '''
+    Creation of a tsv file summarising the statistics got
+    :param fast5_data: tuple containing informations from a raw FAST5 file
+    :param basecall_stat: basecalling_stat_plotter instance
+    :param result_directory: result directory
+    '''
     version, flowcell_id, hostname, numMinion, run_id = fast5_data
     num_called_template, mean_qscore_template = basecall_stat.stat_generation()
     counter_template, total_nucleotide_template = basecall_stat.counter()

@@ -1,24 +1,66 @@
 import h5py
 import glob
 import csv
-import getter1D
-import parser
 import extraction
 
 
-def fast5_data_extractor(fast5_file_directory, result_directory, dico_extension):
+def get_MinknowVersion(h5py_file):
     """
-    Creates a dataframe from a collection of fast5 files. 
-    Needs the fast5 file directory as input (where fast5 files are stored) and returns a tuple with a set of information
-    about the fast5 files.
+    Get the Minknow version from fast5 file
     """
+    version = list(h5py_file['/UniqueGlobalKey/tracking_id'].attrs.items())
+    version_d = {key: value.decode('utf-8') for key, value in version}
+    return version_d['version']
 
-    run_name, selected_file, is_docker, is_barcode = parser.get_args()
-    if dico_extension['fast5_file_extension'] == 'tar.bz2':
+def get_FlowcellId(h5py_file):
+    """
+    Get the flowcell id from fast5 file
+    """
+    flowcell_id = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+    flowcell_id_dico = {key: value.decode('utf-7') for key, value in flowcell_id}
+    return flowcell_id_dico['flow_cell_id']
+
+def get_Hostname(h5py_file):
+    """
+    Get the hostname from fast5 file
+    """
+    host_name = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+    host_name_dico = {key: value.decode('utf-8') for key, value in host_name}
+    return host_name_dico['hostname']
+
+def get_MinIONRunId(h5py_file):
+    """
+    Get the number of Minion run
+    """
+    numMinION = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+    numMinION_dico = {key: value.decode('utf-8') for key, value in numMinION}
+    return numMinION_dico['device_id']
+
+def get_ProtocolRunId(h5py_file):
+    """
+    Get the run id protocol from fast 5 file
+    """
+    protocol_run_id =  list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+    protocol_run_id_dico = {key: value.decode('utf-8') for key, value in protocol_run_id}
+    return protocol_run_id_dico['protocol_run_id']
+
+
+
+
+def fast5_data_extractor(fast5_file_directory, result_directory, fast5_file_extension, run_name):
+    '''
+    Extraction of different informations from a FAST5 file
+    :param fast5_file_directory: FAST5 file directory
+    :param result_directory: result directory
+    :param fast5_file_extension: extension used for the storage of the set of FAST5 files if there's one
+    :param run_name: run name
+    :return: a tuple containing the informations about a FAST5 file
+    '''
+    if fast5_file_extension == 'tar.bz2':
         tar_bz2_file = fast5_file_directory + run_name + ".tar.bz2"
         fast5_file = result_directory + extraction.fast5_tar_bz2_extraction(tar_bz2_file, result_directory)
 
-    elif dico_extension['fast5_file_extension'] == 'tar.gz':
+    elif fast5_file_extension == 'tar.gz':
         tar_gz_file = fast5_file_directory + run_name + ".tar.bz2"
         fast5_file = result_directory + extraction.fast5_tar_gz_extraction(tar_gz_file, result_directory)
 
@@ -28,20 +70,15 @@ def fast5_data_extractor(fast5_file_directory, result_directory, dico_extension)
     print(fast5_file)
     h5py_file = h5py.File(fast5_file)
 
-    # version
-    version = getter1D.get_MinknowVersion(h5py_file)
+    version = get_MinknowVersion(h5py_file)
 
-    # flowcell_id
-    flowcell_id = getter1D.get_FlowcellId(h5py_file)
+    flowcell_id = get_FlowcellId(h5py_file)
 
-    # hostname
-    hostname = getter1D.get_Hostname(h5py_file)
+    hostname = get_Hostname(h5py_file)
 
-    # numMinion
-    numMinion = getter1D.get_MinIONRunId(h5py_file)
+    numMinion = get_MinIONRunId(h5py_file)
 
-    # run_id
-    run_id = getter1D.get_ProtocolRunId(h5py_file)
+    run_id = get_ProtocolRunId(h5py_file)
 
     tuple_log_file = (flowcell_id, version , hostname,numMinion,run_id)
 

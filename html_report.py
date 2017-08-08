@@ -1,4 +1,12 @@
 def html_report(result_directory, run_date, flowcell_id, is_barcode, sequence_length_template):
+    '''
+    Creation of a html report
+    :param result_directory: result directory
+    :param run_date: run date
+    :param flowcell_id: flowcell id
+    :param is_barcode: boolean indicated if we use the barcodes
+    :param sequence_length_template: sequence length template
+    '''
     image_directory = result_directory + 'images/'
     f = open(result_directory+'report.html', 'w')
     read_count = image_directory+"read_count_histogram.png"

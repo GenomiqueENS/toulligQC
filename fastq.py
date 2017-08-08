@@ -1,39 +1,41 @@
 import os
 import glob
-from matplotlib import pyplot as plt
 from collections import Counter
 import pandas as pd
 import bz2
-import seaborn as sns
 import io
-import parser
 import numpy as np
 
 class fastq():
-    def __init__(self, pdf, result_directory, fastq_directory, dico_extension):
+    def __init__(self, result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension):
         self.global_dico = {}
-        self.pdf = pdf
         self.global_length_array = []
-        self.run_name, _, self.is_barcode, _ = parser.get_args()
+        self.run_name,self.is_barcode = run_name, is_barcode
         self.fastq_file = ''
         self.result_directory = result_directory
-        # A voir pour le run_name si il faut l'indiquer dans le fichier config ou pas.
         self.fastq_directory = fastq_directory+self.run_name
         self.image_directory = self.result_directory+'images/'
         self.statistic_directory = self.result_directory+'statistics/'
         self.selection_global = []
-        self.dico_extension = dico_extension
+        self.fastq_file_extension = fastq_file_extension
 
     def get_fastq_configuration(self):
 
         os.makedirs(self.image_directory)
         os.makedirs(self.statistic_directory)
 
-    def fastq_metrics(self, file = ''):
+    def fastq_metrics(self):
+        '''
+        Determination of different metrics
+        :return: total nucleotides,
+        sequence length contained in the fastq file,
+        sequence length for each barcode sample,
+        counting of the nucleotide present in each barcode
+        '''
         counter = 0
         barcode_length_array = []
         variable = ''
-        if self.dico_extension['fastq_file_extension'] == 'bz2':
+        if self.fastq_file_extension == 'bz2':
             with bz2.BZ2File(self.fastq_file, 'rb') as inputo:
                 with io.TextIOWrapper(inputo, encoding='utf-8') as bz2_fastq_file:
                     for line in bz2_fastq_file:
@@ -69,7 +71,10 @@ class fastq():
         return total_nucs_template, self.global_length_array,barcode_length_array, template_nucleotide_counter
 
     def barcoded_fastq_informations(self, selected_barcode= ''):
-
+        '''
+        Get different information about fastq files
+        :param selected_barcode: barcode selection
+        '''
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter = self.fastq_metrics()
         completeName = os.path.join(self.statistic_directory, selected_barcode)
         barcode_file = open(completeName, 'w')
@@ -92,9 +97,12 @@ class fastq():
         #self.dico[selected_barcode] = barcode_length_array
 
     def get_fastq_barcoded(self, selection):
-        """
-        Get the fastq sequence
-        """
+        '''
+        Get informations about the barcoded fastq sequence
+        :param selection: barcode selection
+        :return: length of all sequences of a fastq barcoded file,
+        dictionary containing different information such as the nucleotide counting and other
+        '''
         self.get_fastq_configuration()
         if glob.glob("{}/*.bz2".format(self.fastq_directory)):
             for bz2_fastq_file in glob.glob("{}/*.bz2".format(self.fastq_directory)):
@@ -113,9 +121,12 @@ class fastq():
         return self.global_length_array, self.global_dico
 
     def get_fastq_without_barcode(self):
-        """
-        Gets the fastq sequence
-        """
+        '''
+        Gets informations about the fastq sequence not barcoded
+        :return: total nucleotides,
+        sequence length contained in the fastq file,
+        counting of the different nucleotide for the entire sample
+        '''
         self.get_fastq_configuration()
 
         if glob.glob("{}/*.bz2".format(self.fastq_directory)):
