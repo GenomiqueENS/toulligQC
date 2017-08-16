@@ -18,7 +18,7 @@ class basecalling_stat_plotter1D:
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, barcode_present, result_directory, fastq_directory, fast5_tuple, run_name, is_barcode, fastq_file_extension, barcode_selection = '' ):
+    def __init__(self, path_sequencing_summary, barcode_present, result_directory, fastq_directory, fast5_tuple, run_name, is_barcode, fastq_file_extension, config_file, barcode_selection = '' ):
 
 
         self.minknown_version, self.flowcell_id, self.hostname, self.numMinion, self.run_id = fast5_tuple
@@ -28,10 +28,11 @@ class basecalling_stat_plotter1D:
         self.result_directory = result_directory
         self.channel = self.albacore_log['channel']
         self.sequence_length_template = self.albacore_log['sequence_length_template']
+        print(self.sequence_length_template)
         self.null_event = self.albacore_log[self.albacore_log['num_events']==0]
         self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
         self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
-        fastq_object = fastq.fastq(result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension)
+        fastq_object = fastq.fastq(result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension, config_file)
         self.fast5_tot = len(self.albacore_log)
         if barcode_present:
 
@@ -149,13 +150,13 @@ class basecalling_stat_plotter1D:
         Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
         """
 
-        min, max = min(self.sequence_length_template), max(self.sequence_length_template)
+        minimum, maximum = min(self.sequence_length_template), max(self.sequence_length_template)
 
         fig = plt.figure(figsize=(20, 10))
         gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])
         ax = plt.subplot(gs[0])
 
-        n, bins, patches = ax.hist(self.sequence_length_template,edgecolor ='black', bins= 2**np.linspace(self.safe_log(min), self.safe_log(max),30))
+        n, bins, patches = ax.hist(self.sequence_length_template,edgecolor ='black', bins= 2**np.linspace(self.safe_log(minimum), self.safe_log(maximum),30))
         ax.set_xscale('log',basex=2)
         ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.1f'))
         ax.set_xticks(bins)

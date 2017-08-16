@@ -23,12 +23,11 @@ def fast5_tar_gz_extraction(tar_gz_file, result_directory):
     :return: a FAST5 file
     '''
     tar_gz = tarfile.open(tar_gz_file, 'r:gz')
-    for member in tar_gz.getmembers():
-        while True:
-            member = tar_gz.next()
-            if member.name.endswith('.fast5'):
-                tar_gz.extract(member, path=result_directory)
-                break
+    while True:
+        member = tar_gz.next()
+        if member.name.endswith('.fast5'):
+            tar_gz.extract(member, path=result_directory)
+            break
     return member.name
 
 

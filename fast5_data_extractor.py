@@ -4,7 +4,7 @@ import csv
 import extraction
 
 
-def get_MinknowVersion(h5py_file):
+def minknow_version(h5py_file):
     """
     Get the Minknow version from fast5 file
     """
@@ -12,7 +12,7 @@ def get_MinknowVersion(h5py_file):
     version_d = {key: value.decode('utf-8') for key, value in version}
     return version_d['version']
 
-def get_FlowcellId(h5py_file):
+def flowcell_id(h5py_file):
     """
     Get the flowcell id from fast5 file
     """
@@ -20,7 +20,7 @@ def get_FlowcellId(h5py_file):
     flowcell_id_dico = {key: value.decode('utf-7') for key, value in flowcell_id}
     return flowcell_id_dico['flow_cell_id']
 
-def get_Hostname(h5py_file):
+def hostname(h5py_file):
     """
     Get the hostname from fast5 file
     """
@@ -28,15 +28,15 @@ def get_Hostname(h5py_file):
     host_name_dico = {key: value.decode('utf-8') for key, value in host_name}
     return host_name_dico['hostname']
 
-def get_MinIONRunId(h5py_file):
+def minion_run_id(h5py_file):
     """
     Get the number of Minion run
     """
     numMinION = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-    numMinION_dico = {key: value.decode('utf-8') for key, value in numMinION}
-    return numMinION_dico['device_id']
+    minion_run_id_dico = {key: value.decode('utf-8') for key, value in numMinION}
+    return minion_run_id_dico['device_id']
 
-def get_ProtocolRunId(h5py_file):
+def protocol_run_id(h5py_file):
     """
     Get the run id protocol from fast 5 file
     """
@@ -47,40 +47,41 @@ def get_ProtocolRunId(h5py_file):
 
 
 
-def fast5_data_extractor(fast5_file_directory, result_directory, fast5_file_extension, run_name):
+def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, run_name, config_file = ''):
     '''
     Extraction of different informations from a FAST5 file
-    :param fast5_file_directory: FAST5 file directory
+    :param fast5_source: FAST5 file directory
     :param result_directory: result directory
     :param fast5_file_extension: extension used for the storage of the set of FAST5 files if there's one
     :param run_name: run name
     :return: a tuple containing the informations about a FAST5 file
     '''
+
     if fast5_file_extension == 'tar.bz2':
-        tar_bz2_file = fast5_file_directory + run_name + ".tar.bz2"
+        if config_file:
+            tar_bz2_file = fast5_source + run_name + ".tar.bz2"
+        else:
+            tar_bz2_file = fast5_source
+
         fast5_file = result_directory + extraction.fast5_tar_bz2_extraction(tar_bz2_file, result_directory)
 
     elif fast5_file_extension == 'tar.gz':
-        tar_gz_file = fast5_file_directory + run_name + ".tar.bz2"
+        if config_file:
+            tar_gz_file = fast5_source + run_name + ".tar.gz"
+        else:
+            tar_gz_file = fast5_source
         fast5_file = result_directory + extraction.fast5_tar_gz_extraction(tar_gz_file, result_directory)
 
-    else:
-        fast5_file = glob.glob(fast5_file_directory+"*.fast5")[0]
+    elif fast5_file_extension == 'fast5_directory':
+        fast5_file = glob.glob(fast5_source+"*.fast5")[0]
 
-    print(fast5_file)
+    else:
+        fast5_file = fast5_source
+
     h5py_file = h5py.File(fast5_file)
 
-    version = get_MinknowVersion(h5py_file)
-
-    flowcell_id = get_FlowcellId(h5py_file)
-
-    hostname = get_Hostname(h5py_file)
-
-    numMinion = get_MinIONRunId(h5py_file)
-
-    run_id = get_ProtocolRunId(h5py_file)
-
-    tuple_log_file = (flowcell_id, version , hostname,numMinion,run_id)
+    tuple_log_file = (flowcell_id(h5py_file), minknow_version(h5py_file), hostname(h5py_file), minion_run_id(h5py_file),\
+                      minion_run_id(h5py_file))
 
     return tuple_log_file
 
@@ -88,7 +89,7 @@ def fast5_data_extractor(fast5_file_directory, result_directory, fast5_file_exte
 def write_fast5_data_to_tsv(tuple_array):
     """
     Writes the data related to the fast5 files in a tsv file from the tuple array created by the fast5_data_extractor
-    function 
+    function
     """
     with open('fast5_file.tsv', 'w') as tsvfile:
         writer = csv.writer(tsvfile, delimiter='\t')
