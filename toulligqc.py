@@ -31,7 +31,7 @@ def get_args():
     '''
     parser = argparse.ArgumentParser()
     home_path = str(Path.home())
-    parser.add_argument("-n", "--run_name", action='store', dest="run_name", help="Run name",default=True)
+    parser.add_argument("-n", "--run_name", action='store', dest="run_name", help="Run name", required=True)
     parser.add_argument("-b","--barcoding", action='store_true',dest='is_barcode',help="Barcode usage",default=False)
     parser.add_argument("-c", "--config_file", action='store', dest='config_file', help="Path to the configuration file", default=home_path+'/.toulligqc/config.txt')
     parser.add_argument('-f','--fast5-source', action='store', dest='fast5_source', help='Fast5 file source',default='')
@@ -47,13 +47,17 @@ def get_args():
     fastq_source = argument_value.fastq_source
     run_name = argument_value.run_name
 
+
     if fast5_source and fastq_source:
         config_file_path = ''
     else:
         config_file_path = argument_value.config_file
+
     is_barcode = argument_value.is_barcode
     output_directory = argument_value.output_directory
     sample_sheet_source = argument_value.sample_sheet_source
+
+
     return run_name, config_file_path, is_barcode, fast5_source, fastq_source, albacore_summary_source, sample_sheet_source, output_directory
 
 
@@ -90,7 +94,7 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
             dico_path['fastq_source'] = config.get('config', 'fastq.directory')
             dico_path['fast5_source'] = config.get('config', 'fast5.directory')
         except:
-            print("error")
+            raise NoOptionError
             sys.exit(0)
 
         if is_barcode:
