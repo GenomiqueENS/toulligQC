@@ -28,7 +28,6 @@ class basecalling_stat_plotter1D:
         self.result_directory = result_directory
         self.channel = self.albacore_log['channel']
         self.sequence_length_template = self.albacore_log['sequence_length_template']
-        print(self.sequence_length_template)
         self.null_event = self.albacore_log[self.albacore_log['num_events']==0]
         self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
         self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
@@ -374,8 +373,6 @@ class basecalling_stat_plotter1D:
         nucleotide_count_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
         nucleotide_proportion_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
 
-        print(mean_qscore_matrix)
-        print(nucleotide_count_matrix[0][1])
 
         column = 0
         for index_barcode, barcode in enumerate(self.barcode_selection):
@@ -384,8 +381,6 @@ class basecalling_stat_plotter1D:
             mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
             sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
             sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
-            print(self.global_dictionnary['nucleotide_count_'+barcode])
-            print(sorted_list)
             if column == 0:
                 for i in range(8):
                     mean_qscore_matrix[i][column] = 'phred_score_' + mean_qscore_statistics.keys()[i]
@@ -432,8 +427,6 @@ class basecalling_stat_plotter1D:
         nucleotide_count_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
         nucleotide_proportion_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
 
-        print(mean_qscore_matrix)
-        print(nucleotide_count_matrix[0][1])
 
         column = 0
         for index_barcode, barcode in enumerate(self.barcode_selection):
@@ -442,7 +435,6 @@ class basecalling_stat_plotter1D:
             mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
             sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
             if barcode != 'unclassified':
-                print(self.global_dictionnary.keys())
                 sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
             if column == 0:
                 for i in range(8):

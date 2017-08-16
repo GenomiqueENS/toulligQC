@@ -71,7 +71,6 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
     configFilePath = config_file
     config = configparser.ConfigParser()
     config.read(configFilePath)
-    print('sss'+config_file)
 
     if fast5_source and fastq_source and albacore_summary_source:
         dico_path = {}
@@ -161,7 +160,6 @@ def extension(is_barcode, config_file = '', fast5_source = '', fastq_source = ''
             pattern = '\.(gz|bz2|zip)$'
             if re.search(pattern, fastq_source):
                 match = re.search(pattern, fastq_source)
-                print(match.groups()[0])
                 dico_extension['fastq_file_extension'] = match.groups()[0]
             
     elif config_file:
@@ -251,8 +249,6 @@ def main():
     result_directory = dico_path['result_directory']
     fastq_directory  = dico_path['fastq_source']
     fast5_directory  = dico_path['fast5_source']
-    print('coucou')
-    print(fastq_directory)
     if is_barcode:
         design_file = dico_path['design_file']
         barcode_selection = get_barcode(design_file)
