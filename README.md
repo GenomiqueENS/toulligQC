@@ -48,7 +48,7 @@ Example:<br>
  -v /path/to/fastq/directory
  -v /path/to/design/file/direcotory/
  -v /path/to/configuration/file/directory
- (-v /path/to/sequencing/summary/file) if not include in fastq file directory
+ (-v /path/to/sequencing/summary/file if not include in fastq file directory)
  toulligqc:latest `
  
  <a name="local-installation"></a>
@@ -59,7 +59,7 @@ This option is also suitable if you are interested in further developing the pac
 
 * **Requirements**
 
-To run ToulligQC without Docker, you need to install the following software:
+To run ToulligQC without Docker, you need to install the following softwares:
 * matplotlib
 * h5py
 * pandas
