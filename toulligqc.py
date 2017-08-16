@@ -84,10 +84,14 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
         configFilePath = config_file
         config = configparser.ConfigParser()
         config.read(configFilePath)
-        dico_path['result_directory'] = config.get('config', 'result.directory')
-        dico_path['basecall_log_source'] = config.get('config', 'albacore.summary.directory')
-        dico_path['fastq_source'] = config.get('config', 'fastq.directory')
-        dico_path['fast5_source'] = config.get('config', 'fast5.directory')
+        try:
+            dico_path['result_directory'] = config.get('config', 'result.directory')
+            dico_path['basecall_log_source'] = config.get('config', 'albacore.summary.directory')
+            dico_path['fastq_source'] = config.get('config', 'fastq.directory')
+            dico_path['fast5_source'] = config.get('config', 'fast5.directory')
+        except:
+            print("error")
+            sys.exit(0)
 
         if is_barcode:
             dico_path['design_file'] = config.get('config', 'design.file')
@@ -109,7 +113,9 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
         else:
             dico_path[key] = value + '/'
 
-    dico_path['result_directory'] = dico_path['result_directory'] + run_name + '/'
+    if not os.path.isdir(dico_path['result_directory']+run_name):
+        os.makedirs(dico_path['result_directory']+run_name)
+        dico_path['result_directory'] = dico_path['result_directory'] + run_name + '/'
 
     return dico_path
 
@@ -135,8 +141,7 @@ def extension(is_barcode, config_file = '', fast5_source = '', fastq_source = ''
 
         elif fast5_source.endswith('.tar.gz'):
             dico_extension['fast5_file_extension'] = 'tar.gz'
-#Si c'est un répertoire que fait-t-on ?
-            #A voir
+
         if os.path.isdir(fastq_source):
             fastq_directory = fastq_source
             if glob.glob(fastq_directory+'*.fastq'):
