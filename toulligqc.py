@@ -68,9 +68,6 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
     :return: Dictionary containing the file paths included into the configuration file
     """
     dico_path = {}
-    configFilePath = config_file
-    config = configparser.ConfigParser()
-    config.read(configFilePath)
 
     if fast5_source and fastq_source and albacore_summary_source:
         dico_path = {}
@@ -82,7 +79,11 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
         if is_barcode:
             dico_path['design_file'] = sample_sheet_source
 
+
     elif config_file:
+        configFilePath = config_file
+        config = configparser.ConfigParser()
+        config.read(configFilePath)
         dico_path['result_directory'] = config.get('config', 'result.directory')
         dico_path['basecall_log_source'] = config.get('config', 'albacore.summary.directory')
         dico_path['fastq_source'] = config.get('config', 'fastq.directory')
