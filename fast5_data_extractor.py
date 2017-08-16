@@ -2,6 +2,7 @@ import h5py
 import glob
 import csv
 import extraction
+import sys
 
 
 def minknow_version(h5py_file):
@@ -57,7 +58,7 @@ def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, r
     :return: a tuple containing the informations about a FAST5 file
     '''
 
-    if fast5_file_extension == 'tar.bz2':
+    if fast5_file_extension == 'tar.bz2' or fast5_file_extension == '.tar.bz2':
         if config_file:
             tar_bz2_file = fast5_source + run_name + ".tar.bz2"
         else:
@@ -65,7 +66,7 @@ def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, r
 
         fast5_file = result_directory + extraction.fast5_tar_bz2_extraction(tar_bz2_file, result_directory)
 
-    elif fast5_file_extension == 'tar.gz':
+    elif fast5_file_extension == 'tar.gz' or fast5_file_extension == '.tar.gz':
         if config_file:
             tar_gz_file = fast5_source + run_name + ".tar.gz"
         else:
@@ -73,11 +74,24 @@ def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, r
         fast5_file = result_directory + extraction.fast5_tar_gz_extraction(tar_gz_file, result_directory)
 
     elif fast5_file_extension == 'fast5_directory':
-        fast5_file = glob.glob(fast5_source+"*.fast5")[0]
 
-    else:
+        if glob.glob(fast5_source+ run_name + '/*.fast5'):
+            fast5_file = fast5_source+run_name+'.fast5'
+
+        elif glob.glob(fast5_source + '/*.tar.bz2'):
+            tar_bz2_file = fast5_source+run_name+'.tar.bz2'
+            fast5_file = result_directory + extraction.fast5_tar_bz2_extraction(tar_bz2_file, result_directory)
+
+        elif glob.glob(fast5_source + '/*.tar.gz'):
+            tar_gz_file = fast5_source+run_name+ '.tar.gz'
+            fast5_file = result_directory + extraction.fast5_tar_gz_extraction(tar_gz_file, result_directory)
+
+    elif fast5_file_extension == 'fast5' or '.fast5':
         fast5_file = fast5_source
 
+    else:
+        print('There is a problem with the fast5 file or the tar file')
+        sys.exit(0)
     h5py_file = h5py.File(fast5_file)
 
     tuple_log_file = (flowcell_id(h5py_file), minknow_version(h5py_file), hostname(h5py_file), minion_run_id(h5py_file),\
@@ -104,7 +118,6 @@ def read_fast5_data_from_tsv(data_file):
     """
     with open(data_file) as tsvfile:
         reader = csv.reader(tsvfile, delimiter='\t')
-        return reader
         for row in reader:
             print(', '.join(row))
 

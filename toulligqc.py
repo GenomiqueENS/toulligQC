@@ -4,7 +4,6 @@
 import matplotlib
 matplotlib.use('Agg')
 import basecalling_stat_plotter1D
-from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import fast5_data_extractor
 import log_file1D
@@ -19,8 +18,6 @@ import argparse
 from pathlib import Path
 import glob
 
-__all__ = ['main']
-
 def get_args():
     '''
     Parsing the command line
@@ -33,7 +30,7 @@ def get_args():
     home_path = str(Path.home())
     parser.add_argument("-n", "--run_name", action='store', dest="run_name", help="Run name", required=True)
     parser.add_argument("-b","--barcoding", action='store_true',dest='is_barcode',help="Barcode usage",default=False)
-    parser.add_argument("-c", "--config_file", action='store', dest='config_file', help="Path to the configuration file", default=home_path+'/.toulligqc/config.txt')
+    parser.add_argument("-c", "--config_file", action='store', dest='config_file', help="Path to the configuration file")
     parser.add_argument('-f','--fast5-source', action='store', dest='fast5_source', help='Fast5 file source',default='')
     parser.add_argument('-a','--albacore-summary-source', action='store', dest='albacore_summary_source', help='Albacore summary source', default='')
     parser.add_argument('-q','--fastq-source', action='store', dest='fastq_source', help='fastq file source', default='')
@@ -48,14 +45,44 @@ def get_args():
     run_name = argument_value.run_name
 
 
-    if fast5_source and fastq_source:
-        config_file_path = ''
-    else:
-        config_file_path = argument_value.config_file
-
     is_barcode = argument_value.is_barcode
     output_directory = argument_value.output_directory
     sample_sheet_source = argument_value.sample_sheet_source
+
+
+    if fast5_source and fastq_source and albacore_summary_source and sample_sheet_source and output_directory :
+        config_file_path = ''
+
+    else:
+        config_file_path = argument_value.config_file
+
+    if not config_file_path and not fast5_source and not fastq_source and not albacore_summary_source and not sample_sheet_source and not output_directory:
+        print('The configuration file is absent and other arguments too')
+        sys.exit(0)
+
+    if not config_file_path:
+
+        if not fast5_source:
+            print('The fast5 source argument is empty')
+            sys.exit(0)
+
+        elif not fastq_source:
+            print('The fastq source arugment is empty')
+            sys.exit(0)
+
+        elif not albacore_summary_source:
+            print('The albacore summary source argument is empty')
+            sys.exit(0)
+
+        elif not sample_sheet_source:
+            print('The sample sheet source argument is empty')
+            sys.exit(0)
+
+        elif not output_directory:
+            print('The output directory argument is empty')
+            sys.exit(0)
+        else:
+            pass
 
 
     return run_name, config_file_path, is_barcode, fast5_source, fastq_source, albacore_summary_source, sample_sheet_source, output_directory
@@ -88,21 +115,19 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
         configFilePath = config_file
         config = configparser.ConfigParser()
         config.read(configFilePath)
-        try:
-            dico_path['result_directory'] = config.get('config', 'result.directory')
-            dico_path['basecall_log_source'] = config.get('config', 'albacore.summary.directory')
-            dico_path['fastq_source'] = config.get('config', 'fastq.directory')
-            dico_path['fast5_source'] = config.get('config', 'fast5.directory')
-        except:
-            raise NoOptionError
-            sys.exit(0)
+
+        dico_path['result_directory'] = config.get('path', 'result.directory')
+        dico_path['basecall_log_source'] = config.get('path', 'albacore.summary.directory')
+        dico_path['fastq_source'] = config.get('path', 'fastq.directory')
+        dico_path['fast5_source'] = config.get('path', 'fast5.directory')
+
 
         if is_barcode:
-            dico_path['design_file'] = config.get('config', 'design.file')
+            dico_path['design_file'] = config.get('path', 'design.file')
 
     else:
         print('Error, not a config file')
-        return 0
+        sys.exit(0)
 
     if dico_path['result_directory'] == '':
         dico_path['result_directory'] = os.getcwd()
@@ -124,7 +149,7 @@ def config_file_initialization(is_barcode, run_name, config_file = '', fast5_sou
     return dico_path
 
 
-def extension(is_barcode, config_file = '', fast5_source = '', fastq_source = '', sample_sheet_source = '', albacore_summary_source = '', output_directory = ''):
+def extension(run_name, is_barcode, config_file = '', fast5_source = '', fastq_source = '', sample_sheet_source = '', albacore_summary_source = '', output_directory = ''):
     '''
     Creation of a dictionary containing the extension used for the fast5 and fastq files
     :param config_file: configuration file
@@ -137,30 +162,39 @@ def extension(is_barcode, config_file = '', fast5_source = '', fastq_source = ''
         if os.path.isdir(fast5_source):
             dico_extension['fast5_file_extension'] = 'fast5_directory'
 
+        elif fast5_source.endswith('.tar.gz'):
+            dico_extension['fast5_file_extension'] = 'tar.gz'
+
         elif fast5_source.endswith('.fast5'):
             dico_extension['fast5_file_extension'] = 'fast5'
 
         elif fast5_source.endswith('.tar.bz2'):
             dico_extension['fast5_file_extension'] = 'tar.bz2'
 
-        elif fast5_source.endswith('.tar.gz'):
-            dico_extension['fast5_file_extension'] = 'tar.gz'
+        else:
+            print('The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format)')
+            sys.exit(0)
 
         if os.path.isdir(fastq_source):
-            fastq_directory = fastq_source
-            if glob.glob(fastq_directory+'*.fastq'):
+            fastq_directory = fastq_source+run_name+'/'
+
+            if glob.glob(fastq_directory+'/*.fastq'):
                 dico_extension['fastq_file_extension'] = 'fastq'
 
-            elif glob.glob(fastq_directory+'*.fq'):
+            elif glob.glob(fastq_directory+'/*.fq'):
                 dico_extension['fastq_file_extension'] = 'fq'
 
-            elif glob.glob(fastq_directory+'*.gz'):
+            elif glob.glob(fastq_directory+'/*.gz'):
                 dico_extension['fastq_file_extension'] = 'gz'
 
-            elif glob.glob(fastq_directory+'*.bz2'):
+            elif glob.glob(fastq_directory+'/*.bz2'):
                 dico_extension['fastq_file_extension'] = 'bz2'
 
-        if fastq_source.endswith('.fastq'):
+            else:
+                print('The fastq source extension is not supported (fast5, tar.bz2 or tar.gz format)')
+                sys.exit(0)
+
+        elif fastq_source.endswith('.fastq'):
             dico_extension['fastq_file_extension'] = 'fastq'
 
         elif fastq_source.endswith('.fq'):
@@ -171,16 +205,32 @@ def extension(is_barcode, config_file = '', fast5_source = '', fastq_source = ''
             if re.search(pattern, fastq_source):
                 match = re.search(pattern, fastq_source)
                 dico_extension['fastq_file_extension'] = match.groups()[0]
-            
+
+        else:
+            print('The fastq source extension is not supported (fast5, bz2 or gz format)')
+            sys.exit(0)
+
     elif config_file:
         config = configparser.ConfigParser()
         config.read(config_file)
         dico_extension['fast5_file_extension'] = config.get('extension', 'fast5.file.extension')
         dico_extension['fastq_file_extension'] = config.get('extension', 'fastq.file.extension')
 
+        if dico_extension['fast5_file_extension'] != 'fast5' or dico_extension['fast5_file_extension'] != 'tar.bz2' or \
+            dico_extension['fast5_file_extension'] != 'tar.gz':
+
+            print('The fast5 source extension is not supported (fast5, tar.bz2 or tar.gz format) or delete the . in \
+                  front of the extension name(bz2 and not .bz2)')
+            sys.exit(0)
+
+        if dico_extension['fastq_file_extension'] != 'fastq' or dico_extension['fastq_file_extension'] != 'bz2' or \
+                dico_extension['fastq_file_extension'] != 'gz':
+            print('The fastq source extension is not supported (fast5, bz2 or gz format) or delete the . in \
+                  front of the extension name(bz2 and not .bz2)')
+            sys.exit(0)
     else:
         print('Pas de fichier source utilisé')
-        return 0
+        sys.exit(0)
 
     return dico_extension
 
@@ -231,6 +281,7 @@ def get_barcode(design_file):
     :return: sorted list containing the barcode indicated in the sample sheet
     '''
     barcode_file = design_file
+
     set_doublon = set()
 
     with open(barcode_file) as csvfile:
@@ -245,6 +296,7 @@ def get_barcode(design_file):
             if pattern:
                 barcode = 'barcode{}'.format(pattern.group(1))
                 set_doublon.add(barcode)
+
     return sorted(set_doublon)
 
 def main():
@@ -259,9 +311,14 @@ def main():
     result_directory = dico_path['result_directory']
     fastq_directory  = dico_path['fastq_source']
     fast5_directory  = dico_path['fast5_source']
+
     if is_barcode:
         design_file = dico_path['design_file']
         barcode_selection = get_barcode(design_file)
+
+        if barcode_selection == '':
+            print("Sample sheet is empty")
+            sys.exit(0)
     else:
         barcode_selection = ''
 
@@ -272,12 +329,12 @@ def main():
     if os.path.isdir(result_directory):
         shutil.rmtree(result_directory, ignore_errors=True)
         os.makedirs(result_directory)
-        
     else:
         os.makedirs(result_directory)
 
     #Determination of fast5 and fastq files extension
-    dico_extension = extension(is_barcode, config_file, fast5_source, fastq_source, sample_sheet_source, albacore_summary_source, output_directory)
+    dico_extension = extension(run_name, is_barcode, config_file, fast5_directory, fastq_directory, sample_sheet_source, albacore_summary_source, output_directory)
+    print(dico_extension)
     fast5_file_extension = dico_extension['fast5_file_extension']
     fastq_file_extension = dico_extension['fastq_file_extension']
 

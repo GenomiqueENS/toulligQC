@@ -14,10 +14,9 @@ class fastq():
         self.run_name,self.is_barcode = run_name, is_barcode
         self.fastq_file = ''
         self.result_directory = result_directory
-        if config_file:
+        if config_file or os.path.isdir(fastq_directory):
             self.fastq_directory = fastq_directory+self.run_name
-        else:
-            self.fastq_directory = fastq_directory
+
         self.image_directory = self.result_directory+'images/'
         self.statistic_directory = self.result_directory+'statistics/'
         self.selection_global = []
@@ -160,6 +159,7 @@ class fastq():
                         self.barcoded_fastq_informations(selected_barcode)
 
         return self.global_length_array, self.global_dico
+
 
     def get_fastq_without_barcode(self):
         '''
