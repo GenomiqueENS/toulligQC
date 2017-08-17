@@ -96,7 +96,7 @@ usage: `main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
   `-n RUN_NAME, --run_name RUN_NAME<br>
                         Run name`<br>
                         
-  `-b, --barcode         Barcode usage`<br>
+  `-b, --barcoding         Barcode usage`<br>
   
   `-c CONFIG_FILE, --config_file CONFIG_FILE`<br>
                         `Path to the configuration file`<br>
@@ -120,11 +120,11 @@ usage: `main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
  >>>
 Example with optional arguments:
 
-`$python3 toulligqc.py -n FAF0256 -b -c /path/to/configuration/file/`
+`$python3 toulligqc.py --run_name FAF0256 --barcoding -config_file /path/to/configuration/file/`
 
 Example with optional arguments but no config file:
 
-`$python3 toulligqc.py -n FAF0256 -b -f /path/to/fast5/source -a /path/to/albacore/summary/source -q /path/to/fastq/source -o /path/to/output/directory -s /path/to/sample/sheet`
+`$python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source -albacore_summary_source /path/to/albacore/summary/source --fastq_source /path/to/fastq/source --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet`
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
