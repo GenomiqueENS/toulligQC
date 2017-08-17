@@ -33,21 +33,21 @@ ToulligQC and its dependencies are available through a Docker image. To install 
 <a name="docker-image-recovery"></a>
 * ####  Docker image recovery
 An image of ToulligQC is hosted on the Docker hub on the genomicpariscentre repository(genomicpariscentre/toulligqc).
-` docker push`
+`$ docker pull genomicpariscentre/toulligqc:latest `
 <a name="launching-docker-image-with-a-shell-script"></a>
    * #### Launching docker image with a shell script
 A shell script called read_file.sh is provided to launch the image and mount  automatically the directories contained in the configuration file. 
 
 Example:<br>
-` ./read_file.sh /path/to/configuration/file `
+`$./read_file.sh /path/to/configuration/file `
 
 <a name="launching-docker-image-with-a-shell-script"></a>
 * ####  Launching Docker image with docker run
-`docker run -ti --rm  -v /path/to/result/directory/
+`$docker run -ti --rm  -v /path/to/result/directory/
  -v /path/to/fast5/directory
  -v /path/to/fastq/directory
- -v /path/to/design/file/direcotory/
- -v /path/to/configuration/file/directory
+ -v /path/to/design/file/
+ -v /path/to/configuration/file/
  (-v /path/to/sequencing/summary/file if not include in fastq file directory)
  toulligqc:latest `
  
@@ -55,7 +55,7 @@ Example:<br>
 #### 1.2 Local
 This option is also suitable if you are interested in further developing the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
 
-`git clone https://github.com/GenomicParisCentre/toulligQC.git`
+`$git clone https://github.com/GenomicParisCentre/toulligQC.git`
 
 * **Requirements**
 
@@ -68,7 +68,7 @@ To run ToulligQC without Docker, you need to install the following softwares:
 
 On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here is an example: 
 
-`$sudo apt-get install matplotlib`
+`$ sudo apt-get install matplotlib`
 
  If you have ananconda installed you have already these software installed excepted h5py.
 
@@ -117,11 +117,11 @@ usage: `main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
  >>>
 Example with optional arguments:
 
-`python3 toulligqc.py -n FAF0256 -b -c /path/to/configuration/file/`
+`$python3 toulligqc.py -n FAF0256 -b -c /path/to/configuration/file/`
 
 Example with optional arguments but no config file:
 
-`python3 toulligqc.py -n FAF0256 -b -f /path/to/fast5/source -a /path/to/albacore/summary/source -q /path/to/fastq/source -o /path/to/output/directory -s /path/to/sample/sheet`
+`$python3 toulligqc.py -n FAF0256 -b -f /path/to/fast5/source -a /path/to/albacore/summary/source -q /path/to/fastq/source -o /path/to/output/directory -s /path/to/sample/sheet`
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
