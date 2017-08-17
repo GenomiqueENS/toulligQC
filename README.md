@@ -54,7 +54,7 @@ Example:<br>
 `-v /path/to/configuration/file/`
  (-v /path/to/sequencing/summary/file if not include in fastq file directory)\
 
- toulligqc:latest `
+`toulligqc:latest `
  
  <a name="local-installation"></a>
 #### 1.2 Local
