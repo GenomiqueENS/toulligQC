@@ -68,7 +68,7 @@ To run ToulligQC without Docker, you need to install the following softwares:
 
 On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here is an example: 
 
-`$ sudo apt-get install matplotlib`
+`$sudo apt-get install matplotlib`
 
  If you have ananconda installed you have already these software installed excepted h5py.
 
@@ -85,8 +85,10 @@ Example:
 usage: `main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
                [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
                [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]`
+
                
-`optional arguments:`<br>
+`optional arguments:`
+
 
  ` -h, --help            show this help message and exit`<br>
  
