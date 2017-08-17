@@ -18,7 +18,7 @@ class basecalling_stat_plotter1D:
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, barcode_present, result_directory, fastq_directory, fast5_tuple, run_name, is_barcode, fastq_file_extension, config_file, barcode_selection = '' ):
+    def __init__(self, path_sequencing_summary, barcode_present, result_directory, fastq_directory, fast5_tuple, run_name, is_barcode, fastq_file_extension, barcode_selection = '' ):
 
 
         self.minknown_version, self.flowcell_id, self.hostname, self.numMinion, self.run_id = fast5_tuple
@@ -31,7 +31,7 @@ class basecalling_stat_plotter1D:
         self.null_event = self.albacore_log[self.albacore_log['num_events']==0]
         self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
         self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
-        fastq_object = fastq.fastq(result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension, config_file)
+        fastq_object = fastq.fastq(result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension)
         self.fast5_tot = len(self.albacore_log)
         if barcode_present:
 

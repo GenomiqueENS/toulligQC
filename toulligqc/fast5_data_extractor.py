@@ -48,7 +48,7 @@ def protocol_run_id(h5py_file):
 
 
 
-def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, run_name, config_file = ''):
+def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, run_name):
     '''
     Extraction of different informations from a FAST5 file
     :param fast5_source: FAST5 file directory
@@ -59,18 +59,13 @@ def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, r
     '''
 
     if fast5_file_extension == 'tar.bz2' or fast5_file_extension == '.tar.bz2':
-        if config_file:
-            tar_bz2_file = fast5_source + run_name + ".tar.bz2"
-        else:
-            tar_bz2_file = fast5_source
 
+        tar_bz2_file = fast5_source
         fast5_file = result_directory + extraction.fast5_tar_bz2_extraction(tar_bz2_file, result_directory)
 
     elif fast5_file_extension == 'tar.gz' or fast5_file_extension == '.tar.gz':
-        if config_file:
-            tar_gz_file = fast5_source + run_name + ".tar.gz"
-        else:
-            tar_gz_file = fast5_source
+
+        tar_gz_file = fast5_source
         fast5_file = result_directory + extraction.fast5_tar_gz_extraction(tar_gz_file, result_directory)
 
     elif fast5_file_extension == 'fast5_directory':
@@ -92,6 +87,7 @@ def fast5_data_extractor(fast5_source, result_directory, fast5_file_extension, r
     else:
         print('There is a problem with the fast5 file or the tar file')
         sys.exit(0)
+
     h5py_file = h5py.File(fast5_file)
 
     tuple_log_file = (flowcell_id(h5py_file), minknow_version(h5py_file), hostname(h5py_file), minion_run_id(h5py_file),\

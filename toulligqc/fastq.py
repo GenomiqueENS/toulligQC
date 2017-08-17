@@ -8,13 +8,13 @@ import numpy as np
 import gzip
 
 class fastq():
-    def __init__(self, result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension, config_file):
+    def __init__(self, result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension):
         self.global_dico = {}
         self.global_length_array = []
         self.run_name,self.is_barcode = run_name, is_barcode
         self.fastq_file = ''
         self.result_directory = result_directory
-        if config_file or os.path.isdir(fastq_directory):
+        if os.path.isdir(fastq_directory):
             self.fastq_directory = fastq_directory+self.run_name
 
         self.image_directory = self.result_directory+'images/'
