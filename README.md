@@ -82,6 +82,7 @@ On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here
 
 The run name is indicated before the file extension in the FAST5 and FASTQ files.
 Example:
+
 usage: `main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
                [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
                [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]`
