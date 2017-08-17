@@ -70,8 +70,6 @@ On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here
 
 `$sudo apt-get install matplotlib`
 
- If you have ananconda installed you have already these software installed excepted h5py.
-
 <a name="usage"></a>
 ## 2. Usage
 <a name="command-line"></a>
