@@ -122,8 +122,6 @@ def config_file_initialization(is_barcode, run_name, fast5_source='', fastq_sour
     :return: Dictionary containing the file paths included into the configuration file
     """
     dico_path = {}
-
-    dico_path = {}
     dico_path['fast5_source'] = fast5_source
     dico_path['basecall_log_source'] = albacore_summary_source
     dico_path['fastq_source'] = fastq_source
@@ -322,8 +320,7 @@ def main():
     if os.path.isdir(result_directory):
         shutil.rmtree(result_directory, ignore_errors=True)
         os.makedirs(result_directory)
-    else:
-        os.makedirs(result_directory)
+
 
     # Determination of fast5 and fastq files extension
     dico_extension = extension(run_name, is_barcode, fast5_directory, fastq_directory, sample_sheet_source,
