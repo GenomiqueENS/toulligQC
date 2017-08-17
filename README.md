@@ -151,7 +151,9 @@ A configuration file can be used, the required informations has to be defined as
 
 In the config part, the sample.sheet directory can be omitted if barcodes were not used in the run.
 In the extension part, you must indicate the extensions used for your files. The file types currently supported are:
+
 for FAST5 file : tar.gz, tar.bz2, fast5
+
 for FASTQ file : bz2, gz (?), fastq
 
 <a name="sample-sheet-for-barcoded-samples"></a>
