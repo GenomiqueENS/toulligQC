@@ -33,7 +33,7 @@ ToulligQC and its dependencies are available through a Docker image. To install 
 <a name="docker-image-recovery"></a>
 * ####  Docker image recovery
 An image of ToulligQC is hosted on the Docker hub on the genomicpariscentre repository(genomicpariscentre/toulligqc).
-`$ docker pull genomicpariscentre/toulligqc:latest `
+`$docker pull genomicpariscentre/toulligqc:latest `
 <a name="launching-docker-image-with-a-shell-script"></a>
    * #### Launching docker image with a shell script
 A shell script called read_file.sh is provided to launch the image and mount  automatically the directories contained in the configuration file. 
@@ -44,10 +44,10 @@ Example:<br>
 <a name="launching-docker-image-with-a-shell-script"></a>
 * ####  Launching Docker image with docker run
 `$docker run -ti --rm  -v /path/to/result/directory/
- -v /path/to/fast5/directory
- -v /path/to/fastq/directory
- -v /path/to/design/file/
- -v /path/to/configuration/file/
+ -v /path/to/fast5/directory\
+ -v /path/to/fastq/directory\
+ -v /path/to/design/file/\
+ -v /path/to/configuration/file/\
  (-v /path/to/sequencing/summary/file if not include in fastq file directory)
  toulligqc:latest `
  
@@ -122,7 +122,9 @@ Example with optional arguments:
 
 Example with optional arguments but no config file:
 
-`$python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source -albacore_summary_source /path/to/albacore/summary/source --fastq_source /path/to/fastq/source --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet`
+`$python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source \
+-albacore_summary_source /path/to/albacore/summary/source --fastq_source /path/to/fastq/source\
+ --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet`
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
