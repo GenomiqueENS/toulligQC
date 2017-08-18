@@ -60,8 +60,8 @@ setup(
     include_package_data=True,
 
     python_requires='>=3',
-    install_requires=['matplotlib==2.0.0', 'seaborn==0.7.1', 'h5py==2.6.0', \
-                      'pandas==0.19.2', 'numpy==1.11.3'],
+    install_requires=['matplotlib>=2.0,<2.1', 'seaborn>=0.7,<0.8', 'h5py>=2.7,<2.8', \
+                      'pandas>=0.19,<0.20', 'numpy>=1.12,<1.13'],
 
     entry_points={
         'console_scripts': [
