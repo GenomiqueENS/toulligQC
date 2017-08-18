@@ -45,17 +45,13 @@ Example:
 
 <a name="launching-docker-image-with-a-shell-script"></a>
 * ####  Launching Docker image with docker run
-```$ docker run -ti --rm  -v /path/to/result/directory/
 
--v /path/to/fast5/directory\
-
--v /path/to/fastq/directory\
-
--v /path/to/design/file/\
-
--v /path/to/configuration/file/
- (-v /path/to/sequencing/summary/file if not include in fastq file directory)\
-
+```$ docker run -ti --rm  -v /path/to/result/directory:/path/to/result/directory \
+-v /path/to/fast5/directory:/path/to/fast5/directory \
+-v /path/to/fastq/directory:/path/to/fastq/directory \
+-v /path/to/design/file/:/path/to/design/file/ \
+-v /path/to/configuration/file:/path/to/configuration/file \
+-v /path/to/sequencing/summary/file:/path/to/sequencing/summary/file \
 toulligqc:latest ```
  
  <a name="local-installation"></a>
@@ -90,35 +86,22 @@ Example:
 
 usage: ```main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
                [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
-               [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]`
+               [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]
 
                
 optional arguments:
 
 
   -h, --help            show this help message and exit
- 
-  -n RUN_NAME, --run_name RUN_NAME
-                        Run name
-                        
-  -b, --barcoding         Barcode usage
-  
-  -c CONFIG_FILE, --config_file CONFIG_FILE
-                        Path to the configuration file
-                        
+  -n RUN_NAME, --run_name RUN_NAME Run name                        
+  -b, --barcoding         Barcode usage 
+  -c CONFIG_FILE, --config_file CONFIG_FILE  Path to the configuration file
   -f FAST5_SOURCE, --fast5-source FAST5_SOURCE
                         Fast5 file source
-                        
-  -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source ALBACORE_SUMMARY_SOURCE Albacore summary source
-  
-  -q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE
-                        fastq file source
-                        
-  -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY
-                        output directory
-                        
-  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE
-                        Sample sheet source```
+  -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source ALBACORE_SUMMARY_SOURCE Albacore summary source 
+  -q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE fastq file source                   
+  -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY  output directory
+  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE Sample sheet source```
                        
  <a name="example"></a>
  * #### Example
@@ -140,28 +123,13 @@ A configuration file can be used, the required informations has to be defined as
 
 ```[config]
 
-fast5.directory=/path/to/fast5/directory/ (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
-
-albacore.summary.directory=/path/to/albacore/sequencing/summary/directory/or/file
-
-result.directory =/path/to/result/directory/(directory where the results are stored)
-
-fastq.directory=/path/to/fastq/directory/ (containing either FASTQ or FASTQ.bz2 files)
-
-design.file=/path/to/sample/sheet
-
-[extension]
-
-fast5.file.extension=tar.bz2
-
-fastq.file.extension=bz2```
+fast5_source=/path/to/fast5/directory/ (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
+albacore_summary_source=/path/to/albacore/sequencing/summary/directory/or/file
+output =/path/to/result/directory/(directory where the results are stored)
+fastq_source=/path/to/fastq/directory/ (containing either FASTQ or FASTQ.bz2 files)
+sample_sheet_file=/path/to/sample/sheet```
 
 In the config part, the sample.sheet directory can be omitted if barcodes were not used in the run.
-In the extension part, you must indicate the extensions used for your files. The file types currently supported are:
-
-for FAST5 file : tar.gz, tar.bz2, fast5
-
-for FASTQ file : bz2, gz (?), fastq
 
 <a name="sample-sheet-for-barcoded-samples"></a>
 ### 2.3 Sample sheet
