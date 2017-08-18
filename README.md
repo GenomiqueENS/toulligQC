@@ -86,14 +86,14 @@ On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here
 The run name is indicated before the file extension in the FAST5 and FASTQ files.
 Example:
 
-usage: ```
+usage:
+```
 main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
                [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
                [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]
 
                
 optional arguments:
-
 
   -h, --help            show this help message and exit
   -n RUN_NAME, --run_name RUN_NAME Run name                        
@@ -105,11 +105,12 @@ optional arguments:
   -q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE fastq file source                   
   -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY  output directory
   -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE Sample sheet source
+
 ```
                        
  <a name="example"></a>
  * #### Example
- >>>
+  
 Example with optional arguments:
 
 ```$ python3 toulligqc.py --run_name FAF0256 --barcoding -config_file /path/to/configuration/file/```
@@ -130,11 +131,11 @@ A configuration file can be used, the required informations has to be defined as
 ```
 [config]
 
-fast5_source=/path/to/fast5/directory/ (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
+fast5_source=/path/to/fast5/directory/or/file (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
 albacore_summary_source=/path/to/albacore/sequencing/summary/directory/or/file
 output =/path/to/result/directory/(directory where the results are stored)
-fastq_source=/path/to/fastq/directory/ (containing either FASTQ or FASTQ.bz2 files)
-sample_sheet_file=/path/to/sample/sheet
+fastq_source=/path/to/fastq/directory/or/file 
+sample_sheet_file=/path/to/sample/sheet/file
 ```
 
 In the config part, the sample.sheet directory can be omitted if barcodes were not used in the run.
@@ -152,5 +153,6 @@ index | Reads |
 
 ## 3.Output
 We can see a report example in the git repository.
+
 
 
