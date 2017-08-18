@@ -33,34 +33,36 @@ ToulligQC and its dependencies are available through a Docker image. To install 
 <a name="docker-image-recovery"></a>
 * ####  Docker image recovery
 An image of ToulligQC is hosted on the Docker hub on the genomicpariscentre repository(genomicpariscentre/toulligqc).
-`$docker pull genomicpariscentre/toulligqc:latest `
+
+```$ docker pull genomicpariscentre/toulligqc:latest ```
+
 <a name="launching-docker-image-with-a-shell-script"></a>
    * #### Launching docker image with a shell script
 A shell script called read_file.sh is provided to launch the image and mount  automatically the directories contained in the configuration file. 
 
-Example:<br>
-`$./read_file.sh /path/to/configuration/file `
+Example:
+```$ ./read_file.sh /path/to/configuration/file ```
 
 <a name="launching-docker-image-with-a-shell-script"></a>
 * ####  Launching Docker image with docker run
-`$docker run -ti --rm  -v /path/to/result/directory/`
+```$ docker run -ti --rm  -v /path/to/result/directory/
 
-`-v /path/to/fast5/directory\`
+-v /path/to/fast5/directory\
 
-`-v /path/to/fastq/directory\`
+-v /path/to/fastq/directory\
 
-`-v /path/to/design/file/\`
+-v /path/to/design/file/\
 
-`-v /path/to/configuration/file/`
+-v /path/to/configuration/file/
  (-v /path/to/sequencing/summary/file if not include in fastq file directory)\
 
-`toulligqc:latest `
+toulligqc:latest ```
  
  <a name="local-installation"></a>
 #### 1.2 Local
 This option is also suitable if you are interested in further developing the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
 
-`$git clone https://github.com/GenomicParisCentre/toulligQC.git`
+```$ git clone https://github.com/GenomicParisCentre/toulligQC.git```
 
 * **Requirements**
 
@@ -73,7 +75,7 @@ To run ToulligQC without Docker, you need to install the following softwares:
 
 On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here is an example: 
 
-`$sudo apt-get install matplotlib`
+```$ sudo apt-get install matplotlib```
 
 <a name="usage"></a>
 ## 2. Usage
@@ -86,73 +88,73 @@ On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here
 The run name is indicated before the file extension in the FAST5 and FASTQ files.
 Example:
 
-usage: `main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
+usage: ```main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
                [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
                [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]`
 
                
-`optional arguments:`
+optional arguments:
 
 
- ` -h, --help            show this help message and exit`<br>
+  -h, --help            show this help message and exit
  
-  `-n RUN_NAME, --run_name RUN_NAME<br>
-                        Run name`<br>
+  -n RUN_NAME, --run_name RUN_NAME
+                        Run name
                         
-  `-b, --barcoding         Barcode usage`<br>
+  -b, --barcoding         Barcode usage
   
-  `-c CONFIG_FILE, --config_file CONFIG_FILE`<br>
-                        `Path to the configuration file`<br>
+  -c CONFIG_FILE, --config_file CONFIG_FILE
+                        Path to the configuration file
                         
-  `-f FAST5_SOURCE, --fast5-source FAST5_SOURCE
-                        Fast5 file source`<br>
+  -f FAST5_SOURCE, --fast5-source FAST5_SOURCE
+                        Fast5 file source
                         
-  `-a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source ALBACORE_SUMMARY_SOURCE Albacore summary source`<br>
+  -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source ALBACORE_SUMMARY_SOURCE Albacore summary source
   
-  `-q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE
-                        fastq file source`<br>
+  -q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE
+                        fastq file source
                         
-  `-o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY
-                        output directory`<br>
+  -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY
+                        output directory
                         
-  `-s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE
-                        Sample sheet source`<br>
+  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE
+                        Sample sheet source```
                        
  <a name="example"></a>
  * #### Example
  >>>
 Example with optional arguments:
 
-`$python3 toulligqc.py --run_name FAF0256 --barcoding -config_file /path/to/configuration/file/`
+```$ python3 toulligqc.py --run_name FAF0256 --barcoding -config_file /path/to/configuration/file/```
 
 Example with optional arguments but no config file:
 
-`$python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source \
+```$ python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source \
 -albacore_summary_source /path/to/albacore/summary/source --fastq_source /path/to/fastq/source\
- --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet`
+ --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet```
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
 
 A configuration file can be used, the required informations has to be defined as following in the same order :
 
-`[config]`
+```[config]
 
-`fast5.directory=/path/to/fast5/directory/ (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)`
+fast5.directory=/path/to/fast5/directory/ (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
 
-`albacore.summary.directory=/path/to/albacore/sequencing/summary/directory/or/file`
+albacore.summary.directory=/path/to/albacore/sequencing/summary/directory/or/file
 
-`result.directory =/path/to/result/directory/(directory where the results are stored)`
+result.directory =/path/to/result/directory/(directory where the results are stored)
 
-`fastq.directory=/path/to/fastq/directory/` (containing either FASTQ or FASTQ.bz2 files)
+fastq.directory=/path/to/fastq/directory/ (containing either FASTQ or FASTQ.bz2 files)
 
-`design.file=/path/to/sample/sheet`
+design.file=/path/to/sample/sheet
 
-`[extension]`
+[extension]
 
-`fast5.file.extension=tar.bz2`
+fast5.file.extension=tar.bz2
 
-`fastq.file.extension=bz2`
+fastq.file.extension=bz2```
 
 In the config part, the sample.sheet directory can be omitted if barcodes were not used in the run.
 In the extension part, you must indicate the extensions used for your files. The file types currently supported are:
