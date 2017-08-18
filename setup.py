@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-version_py = os.path.join(os.path.dirname(__file__), 'poretools', 'version.py')
+version_py = os.path.join(os.path.dirname(__file__), 'toulligqc', 'version.py')
 version = open(version_py).read().strip().split('=')[-1].replace('"', '')\
     .strip()
 
@@ -20,14 +20,14 @@ here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
-
+print(version)
 setup(
     name='toulligqc',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.0',
+    version=version,
 
     description='A data analysis tool of MinION runs',
     long_description=long_description,
@@ -65,6 +65,11 @@ setup(
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=['toulligqc'],
+#find_packages(exclude=['docs', 'test_data']),
+    package_dir={'toulligqc': "toulligqc"},
+    package_data={'toulligqc': []},
+    zip_safe=False,
+    include_package_data=True,
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
