@@ -7,7 +7,7 @@ from matplotlib import cm
 import matplotlib.pyplot as plt
 import re
 import os
-import fastq
+from toulligqc import fastq
 import csv
 from matplotlib import gridspec
 

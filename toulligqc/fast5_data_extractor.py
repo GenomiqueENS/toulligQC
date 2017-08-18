@@ -1,7 +1,7 @@
 import h5py
 import glob
 import csv
-import extraction
+from toulligqc import extraction
 import sys
 
 

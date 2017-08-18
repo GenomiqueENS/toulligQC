@@ -2,22 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import matplotlib
-
 matplotlib.use('Agg')
-import basecalling_stat_plotter1D
-import pandas as pd
-import fast5_data_extractor
-import log_file1D
-import os
-import html_report
 import shutil
 import sys
 import csv
 import re
 import configparser
 import argparse
-from pathlib import Path
 import glob
+import pandas as pd
+import os
+from toulligqc import basecalling_stat_plotter1D
+from toulligqc import fast5_data_extractor
+from toulligqc import log_file1D
+from toulligqc import html_report
+from toulligqc import version
 
 
 def get_args():
@@ -72,7 +71,7 @@ def get_args():
                         help='Sample sheet source')
     parser.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Barcode usage",
                         default=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version=version.__version__)
 
     argument_value = parser.parse_args(remaining_argv)
     fast5_source = argument_value.fast5_source
@@ -141,9 +140,17 @@ def config_file_initialization(is_barcode, run_name, fast5_source='', fastq_sour
         else:
             dico_path[key] = value + '/'
 
-    if not os.path.isdir(dico_path['result_directory'] + run_name):
+    if not os.path.isdir(dico_path['result_directory']):
+        os.makedirs(dico_path['result_directory'])
+
+    if os.path.isdir(dico_path['result_directory'] + run_name):
+        shutil.rmtree(dico_path['result_directory'] + run_name, ignore_errors=True)
         os.makedirs(dico_path['result_directory'] + run_name)
-        dico_path['result_directory'] = dico_path['result_directory'] + run_name + '/'
+
+    else:
+        os.makedirs(dico_path['result_directory'] + run_name)
+
+    dico_path['result_directory'] = dico_path['result_directory'] + run_name + '/'
 
     return dico_path
 
@@ -316,10 +323,6 @@ def main():
 
     if os.path.isdir(dico_path['basecall_log_source']):
         albacore_summary_source = dico_path['basecall_log_source'] + run_name + '/sequencing_summary.txt'
-
-    if os.path.isdir(result_directory):
-        shutil.rmtree(result_directory, ignore_errors=True)
-        os.makedirs(result_directory)
 
 
     # Determination of fast5 and fastq files extension
