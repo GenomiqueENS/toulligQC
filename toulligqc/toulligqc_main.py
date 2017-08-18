@@ -354,4 +354,5 @@ def main():
     statistics_log_file(fast5_data, basecalling, result_directory, is_barcode)
 
 
-main()
+if __name__ == "__main__":
+    main()

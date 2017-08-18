@@ -34,6 +34,7 @@ class basecalling_stat_plotter1D:
         self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
         fastq_object = fastq.fastq(result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension)
         self.fast5_tot = len(self.albacore_log)
+        self.my_dpi = 100
         if barcode_present:
 
             self.barcode_selection = barcode_selection
@@ -74,6 +75,7 @@ class basecalling_stat_plotter1D:
         """
         Writes the mean qscore extracted from the log file provided by albacore
         """
+
         barcode_meanqscore_dataframe = self.albacore_log[['mean_qscore_template','barcode_arrangement']]
         barcode_selection = barcode_meanqscore_dataframe[barcode_meanqscore_dataframe['barcode_arrangement'].isin(self.barcode_selection)]
 
@@ -108,7 +110,7 @@ class basecalling_stat_plotter1D:
         """
         Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
         """
-
+        plt.figure(figsize=(800 / self.my_dpi, 800 / self.my_dpi), dpi=self.my_dpi)
         for element in self.barcode_selection:
 
             if all(self.albacore_log['barcode_arrangement'] != element):
@@ -157,8 +159,8 @@ class basecalling_stat_plotter1D:
 
         minimum, maximum = min(self.sequence_length_template), max(self.sequence_length_template)
 
-        fig = plt.figure(figsize=(20, 10))
-        gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])
+        fig = plt.figure(figsize=(14, 8), dpi=self.my_dpi)
+        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
         ax = plt.subplot(gs[0])
 
         n, bins, patches = ax.hist(self.sequence_length_template,edgecolor ='black', bins= 2**np.linspace(self.safe_log(minimum), self.safe_log(maximum),30))
@@ -181,7 +183,7 @@ class basecalling_stat_plotter1D:
         ax2.axis('off')
 
         the_table.set_fontsize(12)
-        the_table.scale(1, 2)
+        the_table.scale(1, 1)
 
         plt.savefig(self.result_directory + 'images/read_length_histogram.png')
         plt.close()
@@ -204,7 +206,7 @@ class basecalling_stat_plotter1D:
         '''
         Plot the distribution of the phred score
         '''
-        figure = plt.figure(figsize=(8, 8))
+        plt.figure(figsize=(800 / self.my_dpi, 8), dpi=self.my_dpi)
         gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
         ax = plt.subplot(gs[0])
 
@@ -226,6 +228,7 @@ class basecalling_stat_plotter1D:
         '''
         Plot the scatter plot representing the relation between the phred score and the sequence length
         '''
+        plt.figure(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
         plt.scatter(x = self.albacore_log['sequence_length_template'], y = self.albacore_log['mean_qscore_template'])
         plt.xlim(0,100000)
         plt.xlabel("sequence_length_template")
@@ -238,7 +241,7 @@ class basecalling_stat_plotter1D:
         """
         Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
         """
-
+        plt.figure(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
         fast5_raw = len(self.albacore_log['num_events'])
         fast5_template_basecalled = \
             len(self.albacore_log['num_events'])-len(self.albacore_log[self.albacore_log['num_called_template']==0])
@@ -269,7 +272,7 @@ class basecalling_stat_plotter1D:
         """
         Plots a boxplot of reads quality
         """
-        figure = plt.figure(figsize=(8, 8))
+        plt.figure(figsize=(1200 / self.my_dpi,8), dpi=self.my_dpi)
         gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
         ax = plt.subplot(gs[0])
 
@@ -288,12 +291,11 @@ class basecalling_stat_plotter1D:
         """
         Plots an histogram of the channel count according to the channel number
         """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
         ax.hist(self.albacore_log['channel'], edgecolor='black',  bins=range(min(self.albacore_log['channel']), max(self.albacore_log['channel']) + 64, 64))
         ax.set_xlabel("Channel number")
         ax.set_ylabel("Count")
         ax.set_title("Channel counts")
-
         plt.savefig(self.result_directory+'images/channel_count_histogram.png')
         plt.close()
 
@@ -301,6 +303,7 @@ class basecalling_stat_plotter1D:
         """
         Plots the reads produced along the run against the time(in hour)
         """
+        plt.figure(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
         start_time = self.albacore_log["start_time"] / 3600
         start_time_sorted = sorted(start_time)
         plt.scatter(start_time_sorted, np.arange(len(start_time_sorted)))
@@ -350,8 +353,8 @@ class basecalling_stat_plotter1D:
 
         d = df.pivot("rownum", "colnum", "tot_reads")
         d2 = df.pivot("rownum", "colnum","labels")
-        plt.figure(figsize=(20, 10))
-        sns.heatmap(d, fmt="", annot = d2, linewidths=.5, cmap="YlGnBu")
+        plt.figure(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
+        sns.heatmap(d, fmt="", annot = d2, linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7})
         plt.title('Channel occupancy')
 
         plt.savefig(self.result_directory+'images/channel_occupancy.png')
@@ -523,7 +526,7 @@ class basecalling_stat_plotter1D:
         dico = {}
 
 
-        fig = plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
         gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
         ax = plt.subplot(gs[0])
 
@@ -553,7 +556,7 @@ class basecalling_stat_plotter1D:
         dico = {}
         pattern = '(\d{2})'
 
-        fig = plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(1200 / self.my_dpi, 8), dpi=self.my_dpi)
         gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
         ax = plt.subplot(gs[0])
 
