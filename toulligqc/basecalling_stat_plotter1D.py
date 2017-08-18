@@ -10,6 +10,7 @@ import os
 from toulligqc import fastq
 import csv
 from matplotlib import gridspec
+import sys
 
 from pandas.tools.plotting import table
 
@@ -36,9 +37,14 @@ class basecalling_stat_plotter1D:
         if barcode_present:
 
             self.barcode_selection = barcode_selection
-            self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
-            self.barcode_selection.append('unclassified')
+            try:
+                self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
+            except:
+                print('You put the barcode argument but no barcode is present in your sequencing summary file')
+                sys.exit(0)
             self.fastq_length_array, self.global_dictionnary = fastq_object.get_fastq_barcoded(self.barcode_selection)
+            self.barcode_selection.append('unclassified')
+
         else:
             self.total_nucs_template, self.fastq_length_array,_ , self.template_nucleotide_counter \
                 = fastq_object.get_fastq_without_barcode()

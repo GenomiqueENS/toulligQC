@@ -40,8 +40,8 @@ setup(
     author_email='ferrato@biologie-ens.fr',
 
     # Choose your license
-    license='MIT',
-
+    license='GPL V3',
+    plateformes = 'ALL',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -51,12 +51,13 @@ setup(
         'Topic :: Software Development :: Build Tools',
 
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GPL V3',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 
     # What does your project relate to?
@@ -80,7 +81,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     python_requires='>=3',
-    install_requires=['matplotlib', 'seaborn', 'h5py', 'pandas', 'numpy'],
+    install_requires=['matplotlib==2.0.0', 'seaborn==0.7.1', 'h5py==2.6.0', 'pandas==0.19.2', 'numpy==1.11.3'],
 
 
     # If there are data files included in your packages that need to be

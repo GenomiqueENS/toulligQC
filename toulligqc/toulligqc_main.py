@@ -40,7 +40,7 @@ def get_args():
         "albacore_summary.source": "no albacore summary source",
         "fastq_source": "no fastq source",
         "output": "no output",
-        "sample_sheet_source": "no sample sheet source"
+        "sample_sheet_file": "no sample sheet source"
     }
 
     if args.conf_file:
@@ -65,15 +65,16 @@ def get_args():
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
                         help='Albacore summary source')
-    parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='fastq file source')
-    parser.add_argument('-o', '--output', action='store', dest='output', help='output directory')
-    parser.add_argument('-s', '--sample-sheet-source', action='store', dest='sample_sheet_source',
-                        help='Sample sheet source')
+    parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source')
+    parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
+    parser.add_argument('-s', '--sample-sheet-file', action='store', dest='sample_sheet_file',
+                        help='Path to sample sheet file')
     parser.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Barcode usage",
                         default=False)
     parser.add_argument('--version', action='version', version=version.__version__)
 
     argument_value = parser.parse_args(remaining_argv)
+    print(argument_value)
     fast5_source = argument_value.fast5_source
     albacore_summary_source = argument_value.albacore_summary_source
     fastq_source = argument_value.fastq_source
@@ -81,7 +82,7 @@ def get_args():
 
     is_barcode = argument_value.is_barcode
     output_directory = argument_value.output
-    sample_sheet_source = argument_value.sample_sheet_source
+    sample_sheet_file = argument_value.sample_sheet_file
 
     if not fast5_source:
         print('The fast5 source argument is empty')
@@ -96,7 +97,7 @@ def get_args():
         sys.exit(0)
 
     elif is_barcode:
-        if not sample_sheet_source:
+        if not sample_sheet_file:
             print('The sample sheet source argument is empty')
             sys.exit(0)
 
@@ -107,11 +108,11 @@ def get_args():
     else:
         pass
 
-    return run_name, is_barcode, fast5_source, fastq_source, albacore_summary_source, sample_sheet_source, output_directory
+    return run_name, is_barcode, fast5_source, fastq_source, albacore_summary_source, sample_sheet_file, output_directory
 
 
 def config_file_initialization(is_barcode, run_name, fast5_source='', fastq_source='', albacore_summary_source='',
-                               sample_sheet_source='', output_directory=''):
+                               sample_sheet_file='', output_directory=''):
     """
     Creation of a dictionary of the path file contained in the configuration file
 
@@ -127,7 +128,7 @@ def config_file_initialization(is_barcode, run_name, fast5_source='', fastq_sour
     dico_path['result_directory'] = output_directory
 
     if is_barcode:
-        dico_path['design_file'] = sample_sheet_source
+        dico_path['design_file'] = sample_sheet_file
 
     if dico_path['result_directory'] == '':
         dico_path['result_directory'] = os.getcwd()
@@ -155,7 +156,7 @@ def config_file_initialization(is_barcode, run_name, fast5_source='', fastq_sour
     return dico_path
 
 
-def extension(run_name, is_barcode, fast5_source='', fastq_source='', sample_sheet_source='',
+def extension(run_name, is_barcode, fast5_source='', fastq_source='', sample_sheet_file='',
               albacore_summary_source='', output_directory=''):
     '''
     Creation of a dictionary containing the extension used for the fast5 and fastq files
@@ -301,9 +302,9 @@ def get_barcode(design_file):
 
 def main():
     # Initialization of the differents directories used by the program
-    run_name, is_barcode, fast5_source, fastq_source, albacore_summary_source, sample_sheet_source, output_directory = get_args()
+    run_name, is_barcode, fast5_source, fastq_source, albacore_summary_source, sample_sheet_file, output_directory = get_args()
     dico_path = config_file_initialization(is_barcode, run_name, fast5_source, fastq_source, albacore_summary_source,
-                                           sample_sheet_source, output_directory)
+                                           sample_sheet_file, output_directory)
     if not dico_path:
         sys.exit("Error, dico_path is empty")
 
@@ -326,7 +327,7 @@ def main():
 
 
     # Determination of fast5 and fastq files extension
-    dico_extension = extension(run_name, is_barcode, fast5_directory, fastq_directory, sample_sheet_source,
+    dico_extension = extension(run_name, is_barcode, fast5_directory, fastq_directory, sample_sheet_file,
                                albacore_summary_source, output_directory)
     print(dico_extension)
     fast5_file_extension = dico_extension['fast5_file_extension']
