@@ -86,7 +86,8 @@ On Debian/Ubuntu, you can install requirements using the 'apt-get' command, here
 The run name is indicated before the file extension in the FAST5 and FASTQ files.
 Example:
 
-usage: ```main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
+usage: ```
+main.py [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
                [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
                [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]
 
@@ -103,7 +104,8 @@ optional arguments:
   -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source ALBACORE_SUMMARY_SOURCE Albacore summary source 
   -q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE fastq file source                   
   -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY  output directory
-  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE Sample sheet source```
+  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE Sample sheet source
+```
                        
  <a name="example"></a>
  * #### Example
@@ -114,22 +116,26 @@ Example with optional arguments:
 
 Example with optional arguments but no config file:
 
-```$ python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source \
+```
+$ python3 toulligqc.py --run_name FAF0256 --barcoding --fast5_source /path/to/fast5/source \
 -albacore_summary_source /path/to/albacore/summary/source --fastq_source /path/to/fastq/source\
- --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet```
+ --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet
+```
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
 
 A configuration file can be used, the required informations has to be defined as following in the same order :
 
-```[config]
+```
+[config]
 
 fast5_source=/path/to/fast5/directory/ (containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
 albacore_summary_source=/path/to/albacore/sequencing/summary/directory/or/file
 output =/path/to/result/directory/(directory where the results are stored)
 fastq_source=/path/to/fastq/directory/ (containing either FASTQ or FASTQ.bz2 files)
-sample_sheet_file=/path/to/sample/sheet```
+sample_sheet_file=/path/to/sample/sheet
+```
 
 In the config part, the sample.sheet directory can be omitted if barcodes were not used in the run.
 
