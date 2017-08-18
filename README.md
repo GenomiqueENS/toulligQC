@@ -46,7 +46,7 @@ Example:
 <a name="launching-docker-image-with-a-shell-script"></a>
 * ####  Launching Docker image with docker run
 
-```$ docker run -ti --rm  -v /path/to/result/directory:/path/to/result/directory \
+``` $ docker run -ti --rm  -v /path/to/result/directory:/path/to/result/directory \
 -v /path/to/fast5/directory:/path/to/fast5/directory \
 -v /path/to/fastq/directory:/path/to/fastq/directory \
 -v /path/to/design/file/:/path/to/design/file/ \
