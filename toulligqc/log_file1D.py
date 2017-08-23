@@ -16,9 +16,7 @@
 
 import os
 import numpy as np
-import fastq_extractor
-import fast5_extractor
-import basecalling_stat_plotter1D
+
 
 def log_file1D(config_dictionary, result_dict):
     '''
