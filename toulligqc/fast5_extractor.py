@@ -78,8 +78,6 @@ class fast5_extractor():
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
         else:
             return
-        #print(self.fast5_file)
-        #shutil.rmtree(self.fast5_file, ignore_errors=True)
 
     def _fast5_tar_bz2_extraction(self, tar_bz2_file, result_directory):
         '''
@@ -142,7 +140,6 @@ class fast5_extractor():
         else:
             print('There is a problem with the fast5 file or the tar file')
             sys.exit(0)
-        print(self.fast5_file)
         h5py_file = h5py.File(self.fast5_file)
 
         return h5py_file

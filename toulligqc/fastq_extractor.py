@@ -191,14 +191,12 @@ class fastq_extractor():
         Get different information about fastq files
         :param selected_barcode: barcode selection
         '''
-        print('uuu')
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter = self._fastq_metrics()
         series_read_size = pd.Series(barcode_length_array)
         selected_barcode_fastq_size_statistics = pd.Series.describe(series_read_size)
         self.global_dico['nucleotide_count_'+selected_barcode] = template_nucleotide_counter
         self.global_dico['total_nucleotide_'+selected_barcode] = total_nucs_template
         self.global_dico['fastq_length_'+selected_barcode] = selected_barcode_fastq_size_statistics
-        print(self.global_dico)
 
 
     def _read_fastq_barcoded(self):

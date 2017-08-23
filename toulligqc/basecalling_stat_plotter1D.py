@@ -6,9 +6,6 @@ matplotlib.use('Agg')
 from matplotlib import cm
 import matplotlib.pyplot as plt
 import re
-import os
-from toulligqc import fastq
-import csv
 from matplotlib import gridspec
 import sys
 
@@ -19,37 +16,53 @@ class basecalling_stat_plotter1D:
     Plots different graphs for exploitation of minion runs from Albacore file log
     """
 
-    def __init__(self, path_sequencing_summary, barcode_present, result_directory, fastq_directory, fast5_tuple, run_name, is_barcode, fastq_file_extension, barcode_selection = '' ):
+    def __init__(self, config_dictionary):
 
-
-        self.minknown_version, self.flowcell_id, self.hostname, self.numMinion, self.run_id = fast5_tuple
         self.global_dictionnary = {}
         self.statistics_dictionnary = {}
-        self.albacore_log = pd.read_csv(path_sequencing_summary, sep="\t")
-        self.result_directory = result_directory
+        self.albacore_log = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
+        self.result_directory = config_dictionary['result_directory']
         self.channel = self.albacore_log['channel']
         self.sequence_length_template = self.albacore_log['sequence_length_template']
         self.null_event = self.albacore_log[self.albacore_log['num_events']==0]
         self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
         self.albacore_log = self.albacore_log[self.albacore_log['num_events']!=0]
-        fastq_object = fastq.fastq(result_directory, fastq_directory, run_name, is_barcode, fastq_file_extension)
         self.fast5_tot = len(self.albacore_log)
         self.my_dpi = 100
-        if barcode_present:
+        self.is_barcode = config_dictionary['barcoding']
 
-            self.barcode_selection = barcode_selection
+        if self.is_barcode:
+
+            self.barcode_selection = config_dictionary['barcode_selection']
+
             try:
                 self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
             except:
                 print('You put the barcode argument but no barcode is present in your sequencing summary file')
                 sys.exit(0)
-            self.fastq_length_array, self.global_dictionnary = fastq_object.get_fastq_barcoded(self.barcode_selection)
             self.barcode_selection.append('unclassified')
 
-        else:
-            self.total_nucs_template, self.fastq_length_array,_ , self.template_nucleotide_counter \
-                = fastq_object.get_fastq_without_barcode()
+    def init(self):
+        return 1
 
+    def extract(self, result_dict):
+        if self.is_barcode:
+
+            for index_barcode, barcode in enumerate(self.barcode_selection):
+                barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+                result_dict['mean_qscore_statistics_'+barcode] = barcode_selected_dataframe['mean_qscore_template'].describe()
+                result_dict['sequence_length_statistics_'+barcode] = barcode_selected_dataframe['sequence_length_template'].describe()
+        else:
+
+            mean_qscore_template = self.albacore_log['mean_qscore_template']
+            result_dict['mean_qscore_template'] = pd.DataFrame.describe(mean_qscore_template).drop("count")
+            result_dict['sequence_length_statistics'] = self.albacore_log['sequence_length_template'].describe()
+
+        result_dict['run_name'] = self.run_date()
+        result_dict['channel_occupancy_statistics'] = self.occupancy_channel()
+        result_dict['sequence_length_template'] = self.sequence_length_template
+
+        return result_dict
 
     def make_table(self, value, ax, metric_suppression = ''):
         '''
@@ -71,23 +84,6 @@ class basecalling_stat_plotter1D:
         the_table.set_fontsize(12)
         the_table.scale(1, 1.2)
 
-    def barcode_meanqscore(self):
-        """
-        Writes the mean qscore extracted from the log file provided by albacore
-        """
-
-        barcode_meanqscore_dataframe = self.albacore_log[['mean_qscore_template','barcode_arrangement']]
-        barcode_selection = barcode_meanqscore_dataframe[barcode_meanqscore_dataframe['barcode_arrangement'].isin(self.barcode_selection)]
-
-        for barcode in self.barcode_selection:
-            meanq_score = barcode_selection[barcode_selection['barcode_arrangement'] == barcode].mean()
-            meanq_score = meanq_score.tolist()[0]
-            completeName = os.path.join('statistics/', barcode)
-            file = open(completeName,'a')
-            file.write("mean.phred_score.template={}\n".format(meanq_score))
-            file.close()
-
-
     def run_date(self):
         """
         Returns the date of a Minion run from the log file provided by albacore
@@ -96,15 +92,6 @@ class basecalling_stat_plotter1D:
         pattern = re.search(r'(_(\d+)_)', file_name)
         return pattern.group(2)
 
-    def stat_generation(self):
-        """
-        Generates a dictionary of statistics such as quartile, the standard deviation for the creation of a log file from the log file provided by Albacore
-        """
-        num_called_template = self.albacore_log['num_called_template']
-        mean_qscore_template = self.albacore_log['mean_qscore_template']
-        statistics_num_called_template = pd.DataFrame.describe(num_called_template).drop("count")
-        statistics_mean_qscore_template = pd.DataFrame.describe(mean_qscore_template).drop("count")
-        return statistics_num_called_template, statistics_mean_qscore_template
 
     def barcode_percentage_pie_chart(self):
         """
@@ -188,19 +175,6 @@ class basecalling_stat_plotter1D:
         plt.savefig(self.result_directory + 'images/read_length_histogram.png')
         plt.close()
 
-    def counter(self):
-        """
-        Paricipates to the count df nucleotide(A,T,C,G)" \
-        """
-        return self.template_nucleotide_counter, self.total_nucs_template
-
-    def statistics_read_size(self):
-        """
-        Gets statistics from the file containing the fastq bz2 files decompressed
-        """
-        series_read_size = pd.Series(self.fastq_length_array)
-        statistics = pd.Series.describe(series_read_size)
-        return statistics
 
     def phred_score_frequency(self):
         '''
@@ -361,162 +335,11 @@ class basecalling_stat_plotter1D:
         plt.close()
 
 
-    def occupancy_pore(self):
+    def occupancy_channel(self):
         channel_count = self.channel
-        total_number_reads_per_pore = pd.value_counts(channel_count)
-        Series = pd.DataFrame.describe(total_number_reads_per_pore)
-        return pd.Series.to_dict(Series)
-
-    def get_barcode_selection(self):
-        """
-        Returns the selection of barcodes used from the design file.
-        """
-        return self.barcode_selection
-
-
-    def statistics_dictionnary(self):
-        nucleotide = ['A', 'T', 'C', 'G']
-        sequence_length_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
-        channel_occupancy_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
-        mean_qscore_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
-        nucleotide_count_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
-        nucleotide_proportion_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
-
-
-        column = 0
-        for index_barcode, barcode in enumerate(self.barcode_selection):
-            barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
-            channel_occupancy_statistics = barcode_selected_dataframe['channel'].describe()
-            mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
-            sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
-            sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
-            if column == 0:
-                for i in range(8):
-                    mean_qscore_matrix[i][column] = 'phred_score_' + mean_qscore_statistics.keys()[i]
-                    channel_occupancy_matrix[i][0] = 'channel_occupancy_' + channel_occupancy_statistics.keys()[i]
-                    sequence_length_matrix[i][0] = 'sequence_length_' + sequence_length_statistics.keys()[i]
-
-                for line, nucleotide_number_list in enumerate(sorted_list):
-                    if nucleotide_number_list[0] in nucleotide:
-                        nucleotide_count_matrix[line][column] = 'nucleotide_count_' + nucleotide_number_list[0]
-                        nucleotide_proportion_matrix[line][column] = 'nucleotide_proportion_'+ nucleotide_number_list[0]
-                    else:
-                        continue
-
-                column += 1
-
-            for line, metric in enumerate(mean_qscore_statistics):
-                mean_qscore_matrix[line][column] = round(metric, 3)
-
-            for line, metric in enumerate(channel_occupancy_statistics):
-                channel_occupancy_matrix[line][column] = round(metric, 3)
-
-            for line, metric in enumerate(sequence_length_statistics):
-                sequence_length_matrix[line][column] = round(metric, 3)
-
-            for line, nucleotide_number_list in enumerate(sorted_list):
-                if nucleotide_number_list[0] in nucleotide:
-                    nucleotide_count_matrix[line][column] = nucleotide_number_list[1]
-                    calcul = nucleotide_number_list[1] / self.global_dictionnary['total_nucleotide_'+barcode]
-                    nucleotide_proportion_matrix[line][column] = calcul
-                else:
-                    continue
-            column += 1
-
-    def statistics_dataframe(self):
-        """
-        Returns the statistics retrieved from the statistics files in the statistics directory for each barcode as a dataframe to make
-        the reading easier.
-        """
-
-        nucleotide = ['A', 'T', 'C', 'G']
-        sequence_length_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
-        channel_occupancy_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
-        mean_qscore_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
-        nucleotide_count_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
-        nucleotide_proportion_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
-
-
-        column = 0
-        for index_barcode, barcode in enumerate(self.barcode_selection):
-            barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
-            channel_occupancy_statistics = barcode_selected_dataframe['channel'].describe()
-            mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
-            sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
-            if barcode != 'unclassified':
-                sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
-            if column == 0:
-                for i in range(8):
-                    mean_qscore_matrix[i][column] = 'phred_score_' + mean_qscore_statistics.keys()[i]
-                    channel_occupancy_matrix[i][0] = 'channel_occupancy_' + channel_occupancy_statistics.keys()[i]
-                    sequence_length_matrix[i][0] = 'sequence_length_' + sequence_length_statistics.keys()[i]
-
-                for line, nucleotide_number_list in enumerate(sorted_list):
-                    if nucleotide_number_list[0] in nucleotide and barcode != 'unclassified':
-                        nucleotide_count_matrix[line][column] = 'nucleotide_count_' + nucleotide_number_list[0]
-                        nucleotide_proportion_matrix[line][column] = 'nucleotide_proportion_'+ nucleotide_number_list[0]
-                    else:
-                        continue
-
-                column += 1
-
-            for line, metric in enumerate(mean_qscore_statistics):
-                mean_qscore_matrix[line][column] = round(metric, 3)
-
-            for line, metric in enumerate(channel_occupancy_statistics):
-                channel_occupancy_matrix[line][column] = round(metric, 3)
-
-            for line, metric in enumerate(sequence_length_statistics):
-                sequence_length_matrix[line][column] = round(metric, 3)
-
-            for line, nucleotide_number_list in enumerate(sorted_list):
-                if nucleotide_number_list[0] in nucleotide and barcode != 'unclassified':
-                    nucleotide_count_matrix[line][column] = float(nucleotide_number_list[1])
-                    calcul = nucleotide_number_list[1] / self.global_dictionnary['total_nucleotide_'+barcode]
-                    nucleotide_proportion_matrix[line][column] = round(calcul, 3)
-                else:
-                    continue
-            column += 1
-
-        barcode_selection_matrix = list(self.barcode_selection)
-        barcode_selection_matrix.insert(0, '')
-        self.global_dictionnary["minknown.version"] = self.minknown_version
-        self.global_dictionnary["hostname"] = self.hostname
-        self.global_dictionnary["minion.serial.number"] = self.numMinion
-        self.global_dictionnary["run.id"] = self.run_id
-        general_information_list = [['minknown', self.global_dictionnary["minknown.version"]],
-                                    ['hostname', self.global_dictionnary["hostname"]],
-                                    ['minion.serial.number', self.global_dictionnary["minion.serial.number"]],
-                                    ['run.id', self.global_dictionnary["run.id"]]]
-
-        with open(self.result_directory + 'dataframe.csv', 'a') as csv_file:
-            writer = csv.writer(csv_file, delimiter='\t')
-
-            writer.writerow(['Number of reads:', len(self.sequence_length_template)])
-            writer.writerow('')
-
-            writer.writerow(barcode_selection_matrix)
-            for element in channel_occupancy_matrix:
-                writer.writerow(element)
-
-            writer.writerow('')
-            for metric in mean_qscore_matrix:
-                writer.writerow(metric)
-
-            writer.writerow('')
-            for metric in sequence_length_matrix:
-                writer.writerow(metric)
-
-            writer.writerow('')
-            for metric in nucleotide_count_matrix:
-                writer.writerow(metric)
-
-            writer.writerow('')
-            for metric in nucleotide_proportion_matrix:
-                writer.writerow(metric)
-
-            writer.writerow('')
-            writer.writerows(general_information_list)
+        total_number_reads_per_channel = pd.value_counts(channel_count)
+        channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
+        return channel_count_statistics
 
     def barcode_length_boxplot(self):
         '''
@@ -579,3 +402,154 @@ class basecalling_stat_plotter1D:
         plt.close()
 
 
+
+    # def get_barcode_selection(self):
+    #     """
+    #     Returns the selection of barcodes used from the design file.
+    #     """
+    #     return self.barcode_selection
+
+
+    # def statistics_dictionnary(self):
+    #     nucleotide = ['A', 'T', 'C', 'G']
+    #     sequence_length_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
+    #     channel_occupancy_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
+    #     mean_qscore_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
+    #     nucleotide_count_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
+    #     nucleotide_proportion_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
+    #
+    #
+    #     column = 0
+    #     for index_barcode, barcode in enumerate(self.barcode_selection):
+    #         barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+    #         channel_occupancy_statistics = barcode_selected_dataframe['channel'].describe()
+    #         mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
+    #         sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
+    #         sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
+    #         if column == 0:
+    #             for i in range(8):
+    #                 mean_qscore_matrix[i][column] = 'phred_score_' + mean_qscore_statistics.keys()[i]
+    #                 channel_occupancy_matrix[i][0] = 'channel_occupancy_' + channel_occupancy_statistics.keys()[i]
+    #                 sequence_length_matrix[i][0] = 'sequence_length_' + sequence_length_statistics.keys()[i]
+    #
+    #             for line, nucleotide_number_list in enumerate(sorted_list):
+    #                 if nucleotide_number_list[0] in nucleotide:
+    #                     nucleotide_count_matrix[line][column] = 'nucleotide_count_' + nucleotide_number_list[0]
+    #                     nucleotide_proportion_matrix[line][column] = 'nucleotide_proportion_'+ nucleotide_number_list[0]
+    #                 else:
+    #                     continue
+    #
+    #             column += 1
+    #
+    #         for line, metric in enumerate(mean_qscore_statistics):
+    #             mean_qscore_matrix[line][column] = round(metric, 3)
+    #
+    #         for line, metric in enumerate(channel_occupancy_statistics):
+    #             channel_occupancy_matrix[line][column] = round(metric, 3)
+    #
+    #         for line, metric in enumerate(sequence_length_statistics):
+    #             sequence_length_matrix[line][column] = round(metric, 3)
+    #
+    #         for line, nucleotide_number_list in enumerate(sorted_list):
+    #             if nucleotide_number_list[0] in nucleotide:
+    #                 nucleotide_count_matrix[line][column] = nucleotide_number_list[1]
+    #                 calcul = nucleotide_number_list[1] / self.global_dictionnary['total_nucleotide_'+barcode]
+    #                 nucleotide_proportion_matrix[line][column] = calcul
+    #             else:
+    #                 continue
+    #         column += 1
+    #
+    # def statistics_dataframe(self):
+    #     """
+    #     Returns the statistics retrieved from the statistics files in the statistics directory for each barcode as a dataframe to make
+    #     the reading easier.
+    #     """
+    #
+    #     nucleotide = ['A', 'T', 'C', 'G']
+    #     sequence_length_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
+    #     channel_occupancy_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
+    #     mean_qscore_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(8)]
+    #     nucleotide_count_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
+    #     nucleotide_proportion_matrix = [[0 for column in range(len(self.barcode_selection) + 1)] for line in range(4)]
+    #
+    #
+    #     column = 0
+    #     for index_barcode, barcode in enumerate(self.barcode_selection):
+    #         barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+    #         channel_occupancy_statistics = barcode_selected_dataframe['channel'].describe()
+    #         mean_qscore_statistics = barcode_selected_dataframe['mean_qscore_template'].describe()
+    #         sequence_length_statistics = barcode_selected_dataframe['sequence_length_template'].describe()
+    #         if barcode != 'unclassified':
+    #             sorted_list = sorted(self.global_dictionnary['nucleotide_count_'+barcode].items())
+    #         if column == 0:
+    #             for i in range(8):
+    #                 mean_qscore_matrix[i][column] = 'phred_score_' + mean_qscore_statistics.keys()[i]
+    #                 channel_occupancy_matrix[i][0] = 'channel_occupancy_' + channel_occupancy_statistics.keys()[i]
+    #                 sequence_length_matrix[i][0] = 'sequence_length_' + sequence_length_statistics.keys()[i]
+    #
+    #             for line, nucleotide_number_list in enumerate(sorted_list):
+    #                 if nucleotide_number_list[0] in nucleotide and barcode != 'unclassified':
+    #                     nucleotide_count_matrix[line][column] = 'nucleotide_count_' + nucleotide_number_list[0]
+    #                     nucleotide_proportion_matrix[line][column] = 'nucleotide_proportion_'+ nucleotide_number_list[0]
+    #                 else:
+    #                     continue
+    #
+    #             column += 1
+    #
+    #         for line, metric in enumerate(mean_qscore_statistics):
+    #             mean_qscore_matrix[line][column] = round(metric, 3)
+    #
+    #         for line, metric in enumerate(channel_occupancy_statistics):
+    #             channel_occupancy_matrix[line][column] = round(metric, 3)
+    #
+    #         for line, metric in enumerate(sequence_length_statistics):
+    #             sequence_length_matrix[line][column] = round(metric, 3)
+    #
+    #         for line, nucleotide_number_list in enumerate(sorted_list):
+    #             if nucleotide_number_list[0] in nucleotide and barcode != 'unclassified':
+    #                 nucleotide_count_matrix[line][column] = float(nucleotide_number_list[1])
+    #                 calcul = nucleotide_number_list[1] / self.global_dictionnary['total_nucleotide_'+barcode]
+    #                 nucleotide_proportion_matrix[line][column] = round(calcul, 3)
+    #             else:
+    #                 continue
+    #         column += 1
+    #
+    #     barcode_selection_matrix = list(self.barcode_selection)
+    #     barcode_selection_matrix.insert(0, '')
+    #     self.global_dictionnary["minknown.version"] = self.minknown_version
+    #     self.global_dictionnary["hostname"] = self.hostname
+    #     self.global_dictionnary["minion.serial.number"] = self.numMinion
+    #     self.global_dictionnary["run.id"] = self.run_id
+    #     general_information_list = [['minknown', self.global_dictionnary["minknown.version"]],
+    #                                 ['hostname', self.global_dictionnary["hostname"]],
+    #                                 ['minion.serial.number', self.global_dictionnary["minion.serial.number"]],
+    #                                 ['run.id', self.global_dictionnary["run.id"]]]
+    #
+    #     with open(self.result_directory + 'dataframe.csv', 'a') as csv_file:
+    #         writer = csv.writer(csv_file, delimiter='\t')
+    #
+    #         writer.writerow(['Number of reads:', len(self.sequence_length_template)])
+    #         writer.writerow('')
+    #
+    #         writer.writerow(barcode_selection_matrix)
+    #         for element in channel_occupancy_matrix:
+    #             writer.writerow(element)
+    #
+    #         writer.writerow('')
+    #         for metric in mean_qscore_matrix:
+    #             writer.writerow(metric)
+    #
+    #         writer.writerow('')
+    #         for metric in sequence_length_matrix:
+    #             writer.writerow(metric)
+    #
+    #         writer.writerow('')
+    #         for metric in nucleotide_count_matrix:
+    #             writer.writerow(metric)
+    #
+    #         writer.writerow('')
+    #         for metric in nucleotide_proportion_matrix:
+    #             writer.writerow(metric)
+    #
+    #         writer.writerow('')
+    #         writer.writerows(general_information_list)
