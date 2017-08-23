@@ -20,7 +20,6 @@ import os
 import tarfile
 import shutil
 import tempfile
-import pathlib
 
 class fast5_extractor():
     '''

@@ -21,20 +21,16 @@ import shutil
 import sys
 import csv
 import re
-import configparser
 import argparse
-import glob
-import pandas as pd
 import os
-import basecalling_stat_plotter1D
-import fastq_extractor
-import fast5_extractor
-import log_file1D
-import html_report
-import version
-import albacore_stats_extractor
+from toulligqc import fastq_extractor
+from toulligqc import fast5_extractor
+from toulligqc import log_file1D
+from toulligqc import html_report
+from toulligqc import version
+from toulligqc import albacore_stats_extractor
 from pathlib import Path
-import config
+from toulligqc import config
 
 
 def parse_args(config_dictionary):
