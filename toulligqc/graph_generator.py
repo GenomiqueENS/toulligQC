@@ -14,6 +14,9 @@
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
 
+
+#Graph generation
+
 import pandas as pd
 import seaborn as sns
 import numpy as np

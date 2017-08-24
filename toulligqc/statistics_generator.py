@@ -21,6 +21,8 @@
 #
 #
 
+#Creation of a text file containing statistics retrieved from FAST5, FASTQ files and sequencing_summary.txt file
+
 import os
 import numpy as np
 

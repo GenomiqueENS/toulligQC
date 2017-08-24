@@ -20,6 +20,8 @@
 #
 #
 
+#Extraction of the informations about the FAST5 files
+
 import h5py
 import glob
 import sys

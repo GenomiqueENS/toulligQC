@@ -19,12 +19,13 @@
 #
 #      https://github.com/GenomicParisCentre/toulligQC
 
+#Extraction of statistics from sequencing_summary.txt file
+
 import pandas as pd
 import sys
 from toulligqc import graph_generator
 import numpy as np
 import re
-import csv
 
 
 class albacore_stats_extractor():

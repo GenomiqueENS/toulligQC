@@ -20,6 +20,8 @@
 #      https://github.com/GenomicParisCentre/toulligQC
 #
 
+#Extraction of statistics about the FASTQ files
+
 import os
 import glob
 from collections import Counter

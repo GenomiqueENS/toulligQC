@@ -22,6 +22,8 @@
 #
 #
 
+#Production of graphs and statistics
+
 import matplotlib
 matplotlib.use('Agg')
 import shutil
@@ -30,14 +32,14 @@ import csv
 import re
 import argparse
 import os
-import fastq_extractor
-import fast5_extractor
-import statistics_generator
-import html_report
-import version
-import albacore_stats_extractor
+from toulligqc import fastq_extractor
+from toulligqc import fast5_extractor
+from toulligqc import statistics_generator
+from toulligqc import html_report
+from toulligqc import version
+from toulligqc import albacore_stats_extractor
 from pathlib import Path
-import toulligqc_conf
+from toulligqc import toulligqc_conf
 
 
 def parse_args(config_dictionary):
@@ -64,6 +66,7 @@ def parse_args(config_dictionary):
 
 
     argument_value = parser.parse_args()
+
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
     albacore_summary_source = argument_value.albacore_summary_source
@@ -74,6 +77,7 @@ def parse_args(config_dictionary):
     sample_sheet_file = argument_value.sample_sheet_file
 
     config_dictionary['run_name'] = run_name
+
     if argument_value.conf_file:
         config_dictionary.load(conf_file)
     elif os.path.isfile(home + '/.toulligqc/config.txt'):
@@ -208,6 +212,7 @@ def main():
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['run_name'] + '/sequencing_summary.txt'
 
     extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+
     for extractor in extractors:
         extractor.check_conf()
         extractor.init()

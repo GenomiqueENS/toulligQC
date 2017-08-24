@@ -20,6 +20,8 @@
 #      https://github.com/GenomicParisCentre/toulligQC
 #
 #
+
+#HTML report generation
 import re
 
 def html_report(config_dictionary, result_dict, graphs):
