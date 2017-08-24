@@ -37,7 +37,7 @@ setup(
     author_email='ferrato@biologie-ens.fr',
 
     license='GPL V3',
-    plateformes = 'ALL',
+    platforms = 'ALL',
     classifiers=[
         'Development Status :: 3 - Alpha',
 
