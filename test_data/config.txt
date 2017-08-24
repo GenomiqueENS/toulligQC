@@ -1,0 +1,6 @@
+#Path indicated for a docker image
+fast5_source=/scripts/toulligQC/test_data/fast5
+albacore_summary_source=/scripts/toulligQC/test_data/sequencing_summary
+fastq_source=/scripts/toulligQC/test_data/fastq
+sample_sheet_file=/scripts/toulligQC/test_data/samplesheet.csv
+output=/path/to/output/directory

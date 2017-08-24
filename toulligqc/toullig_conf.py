@@ -36,7 +36,9 @@ class toullig_conf():
 
         with open(conf_path, 'r') as config_file:
             for line in config_file:
-                if line.strip():
+                if line.statswith('#'):
+                    continue
+                elif line.strip():
                     line = line.replace(" ", "")
                     path_list = line.strip().split('=')
                     self._config_dictionary[path_list[0]] = path_list[1]

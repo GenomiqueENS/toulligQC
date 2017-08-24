@@ -41,11 +41,9 @@ def parse_args(config_dictionary):
 
     home = str(Path.home())
     parser = argparse.ArgumentParser()
-
     parser.add_argument("-c", "--conf-file",
                              help="Specify config file", metavar="FILE")
     parser.add_argument("-n", "--run-name", action='store', dest="run_name", help="Run name", required=True)
-
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
                         help='Albacore summary source')
@@ -56,6 +54,7 @@ def parse_args(config_dictionary):
     parser.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Barcode usage",
                         default=False)
     parser.add_argument('--version', action='version', version=version.__version__)
+
 
     argument_value = parser.parse_args()
     conf_file = argument_value.conf_file
