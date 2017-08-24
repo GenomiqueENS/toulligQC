@@ -15,24 +15,23 @@
 # the individual authors.
 
 class toullig_conf():
+    """
+    Dictionary for the storage of configuration file
+    """
     def __init__(self):
-        self._config_dictionary = {}
-        self._config_dictionary['dpi'] = '100'
-        self._config_dictionary['tmpdir'] = '/tmp'
-        self._config_dictionary['barcoding'] = False
+        self._config_dictionary = {'dpi': '100', 'tmpdir': '/tmp', 'barcoding': False}
 
     def __getitem__(self, item):
         return self._config_dictionary[item]
-        #return self._config_dictionary.__getitem__(item)
 
     def __setitem__(self, key, value):
-        #self._config_dictionary['key'] = value
         self._config_dictionary.__setitem__(key, value)
 
     def items(self):
         return self._config_dictionary.items()
+
     def __contains__(self, item):
-        ff
+        return
     def load(self,conf_path):
 
         with open(conf_path, 'r') as config_file:

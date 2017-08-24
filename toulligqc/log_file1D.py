@@ -20,10 +20,9 @@ import numpy as np
 
 def log_file1D(config_dictionary, result_dict):
     '''
-    Create a log file like where different information about the minion run are printed
-    :param fast5_data: tuple containing informations from a raw FAST5 file
-    :param basecall_stat: basecalling_stat_plotter instance
-    :param result_directory: result directory
+    Create a log file where different informations and statistics about the minion run are printed
+    :param result_dict:
+    :param config_dictionary:
     '''
     result_directory = config_dictionary['result_directory']
     barcode_selection = config_dictionary['barcode_selection']
@@ -56,7 +55,7 @@ def log_file1D(config_dictionary, result_dict):
                     for nucleotide, count in nucleotide_counter.items():
                         file_data.write("nucleotide.{}.{}.template={}\n".format(nucleotide, barcode, np.round(count, decimals=2)))
                         calcul = float(count) / float(barcode_total_nucleotide)
-                        calcul = calcul * 100
+                        calcul *= 100
                         file_data.write("nucleotide.{}.{}.proportion={}\n".format(nucleotide, barcode, np.round(calcul, decimals=2)))
                     file_data.write("barcode_total_nucleotide={}".format(barcode_total_nucleotide))
 
@@ -77,7 +76,7 @@ def log_file1D(config_dictionary, result_dict):
                 file_data.write(
                     "nucleotide.{}.template={}\n".format(nucleotide, np.round(count, decimals=2)))
                 calcul = float(count) / float(total_nucleotide)
-                calcul = calcul * 100
+                calcul *= 100
                 file_data.write("nucleotide.{}.proportion={}\n".format(nucleotide, np.round(calcul, decimals=2)))
             for key, mean_qscore_stat in mean_qscore_statistics.iteritems():
                 file_data.write("meanq_score.{} ={}\n".format(key, mean_qscore_stat))

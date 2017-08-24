@@ -36,12 +36,6 @@ class fastq_extractor():
         self.barcode_selection = config_dictionary['barcode_selection']
         print(self.barcode_selection)
         self.fastq_source = config_dictionary['fastq_source']
-       # if os.path.isdir(self.fastq_source):
-        #    if self.run_name in self.fastq_source:
-         #       self.fastq_source = config_dictionary['fastq_source']
-          #  else:
-           #     self.fastq_source = config_dictionary['fastq_source']+self.run_name
-
         self.image_directory = self.result_directory+'images/'
         self.statistic_directory = self.result_directory+'statistics/'
         self.selection_global = []
@@ -49,6 +43,10 @@ class fastq_extractor():
         self.fastq_file_extension = ''
 
     def init(self):
+        '''
+        Initialization and determination of the fastq file extension
+        :return:
+        '''
         if os.path.isdir(self.fastq_source):
             if glob.glob(self.fastq_source + '/*.fastq') or glob.glob(self.fastq_source + self.run_name+ '/*.fastq'):
                 self.fastq_file_extension = 'fastq'
@@ -99,10 +97,16 @@ class fastq_extractor():
             sys.exit(0)
 
     def check_conf(self):
+        '''Configuration checking'''
         return
 
 
     def extract(self,result_dict):
+        '''
+        Extraction of differents information from the fastq file
+        :param result_dict: result dictionary where the informations or statistics are stored
+        :return: result_dict
+        '''
         if self.is_barcode:
             self._read_fastq_barcoded()
 
@@ -114,23 +118,35 @@ class fastq_extractor():
         return result_dict
 
     def graph_generation(self):
+        '''
+        Generation of graphs for fastq files
+        :return:
+        '''
         return []
 
     def clean(self):
+        '''
+        Cleaning
+        :return:
+        '''
         return
 
     def _get_fastq_configuration(self):
-
+        '''
+        Create directory for images and statistics
+        :return:
+        '''
         os.makedirs(self.image_directory)
         os.makedirs(self.statistic_directory)
 
     def _fastq_metrics(self):
         '''
         Determination of different metrics
-        :return: total nucleotides,
-        sequence length contained in the fastq file,
-        sequence length for each barcode sample,
-        counting of the nucleotide present in each barcode
+        :return:
+        total_nucs_template: number of total nucleotides
+        self.global_length_array: sequence length contained in the fastq file,
+        barcode_length_array: sequence length for each barcode sample,
+        template_nucleotide_counter: counting of the nucleotide present in each barcode
         '''
         counter = 0
         barcode_length_array = []
@@ -202,9 +218,6 @@ class fastq_extractor():
     def _read_fastq_barcoded(self):
         '''
         Get informations about the barcoded fastq sequence
-        :param selection: barcode selection
-        :return: length of all sequences of a fastq barcoded file,
-        dictionary containing different information such as the nucleotide counting and other
         '''
         self._get_fastq_configuration()
         self.init()
@@ -240,17 +253,9 @@ class fastq_extractor():
                         self.fastq_file = open(fastq_files, 'r')
                         self._barcoded_fastq_informations(selected_barcode)
 
-        #self.global_dico['global_length_array'] = self.global_length_array
-
-                #return self.global_length_array, self.global_dico
-
-
     def _read_fastq_without_barcode(self):
         '''
         Gets informations about the fastq sequence not barcoded
-        :return: total nucleotides,
-        sequence length contained in the fastq file,
-        counting of the different nucleotide for the entire sample
         '''
         self._get_fastq_configuration()
         self.init()
@@ -278,11 +283,9 @@ class fastq_extractor():
                 self.fastq_file = fastq_files
                 total_nucs_template, self.global_length_array, _, template_nucleotide_counter = self._fastq_metrics()
 
-        fastq_length_statistics = pd.Series(self.global_length_array).describe()
-        #self.global_dico['global_length_array'] = fastq_length_statistics
         self.global_dico['total_nucleotide'] = total_nucs_template
         self.global_dico['nucleotide_count'] = template_nucleotide_counter
 
-#return total_nucs_template, self.global_length_array, _, template_nucleotide_counter
+
 
 

@@ -36,16 +36,12 @@ from toulligqc import config
 def parse_args(config_dictionary):
     '''
     Parsing the command line
-    :return: different informations: run name,
-    path towards files contained in the configuration file,
-    boolean indicating if we use the barcode,
-    path list used with the -f option
+    :return: config_dictionary containing the paths containing in the configuration file or specify by line arguments
     '''
 
     home = str(Path.home())
     parser = argparse.ArgumentParser()
-    # print(remaining_argv)
-    #parser.set_defaults(**defaults)
+
     parser.add_argument("-c", "--conf-file",
                              help="Specify config file", metavar="FILE")
     parser.add_argument("-n", "--run-name", action='store', dest="run_name", help="Run name", required=True)
@@ -72,7 +68,6 @@ def parse_args(config_dictionary):
     sample_sheet_file = argument_value.sample_sheet_file
 
     config_dictionary['run_name'] = run_name
-    # Load confiuration file if possible
     if argument_value.conf_file:
         config_dictionary.load(conf_file)
     elif os.path.isfile(home + '/.toulligqc/config.txt'):
@@ -114,6 +109,10 @@ def parse_args(config_dictionary):
     return config_dictionary
 
 def check_conf(config_dictionary):
+    '''
+    Check the configuration
+    :param config_dictionary: configuration dictionary containing the file or directory paths
+    '''
     if not config_dictionary['fast5_source']:
         print('The fast5 source argument is empty')
         sys.exit(0)
@@ -149,27 +148,13 @@ def check_conf(config_dictionary):
 
     config_dictionary['result_directory'] = config_dictionary['result_directory'] + config_dictionary['run_name'] + '/'
 
-
-def statistics_log_file(config_dictionary,result_dict):
-    '''
-    Production of statistics file in the form of a tsv file
-    :param fast5_data: tuple containing the informations extracted from a fast5 file
-    :param basecalling: basecalling_stat_plotter instance
-    :param result_directory: result directory
-    :param is_barcode: boolean indicating if we use the barcodes or not
-    '''
-
-    log_file1D.log_file1D(config_dictionary,result_dict)
-    #log_file1D.log_file_tsv(fast5_data, basecalling, result_directory)
-
-
-def get_barcode(design_file):
+def get_barcode(samplesheet):
     '''
     Get the barcode from a file given in input
-    :param design_file: sample sheet directory
+    :param samplesheet: sample sheet directory
     :return: sorted list containing the barcode indicated in the sample sheet
     '''
-    barcode_file = design_file
+    barcode_file = samplesheet
 
     set_doublon = set()
 
@@ -193,13 +178,14 @@ def create_output_directories(config_dictionary):
 
 
 def main():
-    # Initialization of the differents directories used by the program
+    '''
+    Main function creating graphs and statistics
+    '''
     config_dictionary = config.toullig_conf()
     parse_args(config_dictionary)
     check_conf(config_dictionary)
 
-   # dico_path = config_file_initialization(is_barcode, run_name, fast5_source, fastq_source, albacore_summary_source,
-    #                                       sample_sheet_file, output_directory)
+
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
 
@@ -216,7 +202,6 @@ def main():
     if os.path.isdir(config_dictionary['albacore_summary_source']):
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['run_name'] + '/sequencing_summary.txt'
 
-    #Create extractors objects
     extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
     for extractor in extractors:
         extractor.check_conf()
@@ -231,11 +216,9 @@ def main():
         graphs.extend(extractor.graph_generation())
         extractor.clean()
 
-    # Generation of the report
     html_report.html_report(config_dictionary, result_dict, graphs)
 
-    # Creation of the statistics files
-    statistics_log_file(config_dictionary, result_dict)
+    log_file1D.log_file1D(config_dictionary, result_dict)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,5 @@
-[config]
 fast5_source=/home/ferrato/shares-net/sequencages/nanopore/fast5/raw/
 albacore_summary_source=/home/ferrato/
 fastq_source=/home/ferrato/shares-net/sequencages/nanopore/fastq
 sample_sheet_file=/home/ferrato/design.csv
 output=/home/ferrato/git/toulligQC/tmp
-
-

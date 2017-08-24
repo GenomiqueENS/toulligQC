@@ -40,7 +40,9 @@ class fast5_extractor():
         self.fast5_file = ''
 
     def init(self):
-
+        '''
+        Determination of the fast5 file extension
+        '''
         if os.path.isdir(self.fast5_source):
            self.fast5_file_extension = 'fast5_directory'
 
@@ -58,6 +60,11 @@ class fast5_extractor():
             sys.exit(0)
 
     def extract(self, result_dict):
+        '''
+        Extraction of the different informations about the fast5 files
+        :param result_dict:
+        :return: result_dict
+        '''
         h5py_file = self._read_fast5()
         result_dict['flowcell_id'] = self._get_flowcell_id(h5py_file)
         result_dict['minknow_version'] = self._get_minknow_version(h5py_file)
@@ -67,12 +74,24 @@ class fast5_extractor():
         return result_dict
 
     def check_conf(self):
+        '''
+        Configuration checking
+        :return:
+        '''
         return
 
     def graph_generation(self):
+        '''
+        Graph generaiton
+        :return:
+        '''
         return []
 
     def clean(self):
+        '''
+        Deleting the temporary fast5 file extracted from the tar archive if used
+        :return:
+        '''
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
         else:
@@ -109,7 +128,10 @@ class fast5_extractor():
         return member.name
 
     def _read_fast5(self):
-
+        '''
+        Extraction of one fast5 file from the archive and stores it in a h5py object for next retrieving informations
+        :return: h5py_file: h5py file
+        '''
         self.temporary_directory = tempfile.mkdtemp(dir=self.result_directory)
         if self.fast5_file_extension == 'tar.bz2':
             tar_bz2_file = self.fast5_source
@@ -133,9 +155,6 @@ class fast5_extractor():
             elif glob.glob(self.fast5_source + '/*.tar.gz'):
                 tar_gz_file = self.fast5_source+self.run_name+ '.tar.gz'
                 self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file, self.result_directory)
-
-
-
         else:
             print('There is a problem with the fast5 file or the tar file')
             sys.exit(0)

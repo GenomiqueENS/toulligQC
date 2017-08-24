@@ -14,14 +14,11 @@
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
 
-def html_report(config_dictionary, result_dict, graphs):
+def html_report(config_dictionary, result_dict):
     '''
     Creation of a html report
-    :param result_directory: result directory
-    :param run_date: run date
-    :param flowcell_id: flowcell id
-    :param is_barcode: boolean indicated if we use the barcodes
-    :param sequence_length_template: sequence length template
+    :param config_dictionary: dictionary containing file or directory paths
+    :param result_dict: result dictionary containing all statistics
     '''
     result_directory = config_dictionary['result_directory']
     sequence_length_template = result_dict['sequence_length_template']
