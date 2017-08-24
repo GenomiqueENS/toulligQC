@@ -382,18 +382,7 @@ def html_report(config_dictionary, result_dict, graphs):
                           channel_count, read_number, channel_occupancy, phred_score_frequency, scatterplot, barcode_pie_chart, \
                           barcode_length_boxplot, barcode_phred_score_boxplot)
 
-        <div class="module">
-            <h2 id="M10">Boxplot of phred score distribution by barcode</h2>
-            <p>
-            <img src="/Users/lionelferrato/result_directory/FAF04250/images/barcode_phred_score_boxplot.png" alt="Barcode read length boxplot", width=800, height=700>
-            </p>
-        </div>
-        </div>
-        <div class="footer">
-        Produced by <a href="https://github.com/GenomicParisCentre/toulligQC">ToulligQC</a> (version 0.0.1)
-        </div>
-    </body>
-    </html>""".format(barcode_pie_chart, barcode_length_boxplot, barcode_phred_score_boxplot)
+
     else:
         report = """
                  <style>
