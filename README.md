@@ -115,8 +115,7 @@ $ python3 toulligqc.py --run_name FAF0256
 					   --barcoding --fast5_source /path/to/fast5/source \
 					   --albacore_summary_source /path/to/albacore/summary/source \
                        --fastq_source /path/to/fastq/source \
-                       --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet
-```
+                       --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet```
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
@@ -125,7 +124,6 @@ A configuration file can be used, the required informations has to be defined as
 
 ```ini
 [config]
-
 ;(containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
 fast5_source=/path/to/fast5/directory/or/file
 albacore_summary_source=/path/to/albacore/sequencing/summary/directory/or/file
