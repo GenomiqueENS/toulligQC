@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 #                  ToulligQC development code
 #
 # This code may be freely distributed and modified under the
@@ -13,14 +13,22 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+#
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomicParisCentre/toulligQC
+#
+#
 import re
 
-def html_report(config_dictionary, result_dict):
+def html_report(config_dictionary, result_dict, graphs):
     '''
     Creation of a html report
     :param config_dictionary: dictionary containing file or directory paths
     :param result_dict: result dictionary containing all statistics
     '''
+
     result_directory = config_dictionary['result_directory']
     sequence_length_template = result_dict['sequence_length_template']
     is_barcode = config_dictionary['barcoding']
@@ -29,21 +37,22 @@ def html_report(config_dictionary, result_dict):
     run_date = result_dict['run_date']
     date = re.search('(\d{4})(\d{2})(\d{2})', run_date).groups()
     run_date = '{}-{}-{}'.format(date[2], date[1], date[0])
-    image_directory = result_directory + 'images/'
     f = open(result_directory + 'report.html', 'w')
-    read_count = image_directory + "read_count_histogram.png"
-    phred_score = image_directory + "read_quality_boxplot.png"
-    channel_count = image_directory + "channel_count_histogram.png"
-    read_number = image_directory + "read_number_run.png"
-    read_length = image_directory + "read_length_histogram.png"
-    channel_occupancy = image_directory + "channel_occupancy.png"
-    barcode_pie_chart = image_directory + "barcode_percentage_pie_chart.png"
-    barcode_length_boxplot = image_directory + 'barcode_length_boxplot.png'
-    scatterplot = image_directory + "scatter_plot.png"
-    phred_score_frequency = image_directory + "phred_score_frequency.png"
-    barcode_phred_score_boxplot = image_directory + "barcode_phred_score_boxplot.png"
 
+    image_title, image_path = zip(*graphs)
+    read_count_barplot = image_path[0]
+    read_length_histogram = image_path[1]
+    read_number_curve = image_path[2]
+    phred_score_boxplot = image_path[3]
+    phred_score_frequency = image_path[4]
+    channel_count_histogram = image_path[5]
+    channel_occupancy = image_path[6]
+    scatterplot = image_path[7]
+    barcode_pie_chart = image_path[8]
+    barcode_length_boxplot = image_path[9]
+    barcode_phred_score_boxplot = image_path[10]
     number_of_read = len(sequence_length_template)
+
     if is_barcode:
         report = """<!DOCTYPE html>
         <html>
@@ -253,19 +262,19 @@ def html_report(config_dictionary, result_dict):
                 <a href="#M1">Histogram of read length</a>
               </li>
               <li>
-                <a href="#M2">Phred score according to the read type </a>
+                <a href="#M2">Curve representing the reads number produced against the time</a>
               </li>
               <li>
-                <a href="#M3">Channel counts</a>
+                <a href="#M3">Phred score according to the read type </a>
               </li>
               <li>
-                <a href="#M4">Curve representing the reads number produced against the time</a>
+                <a href="#M4">Phred score frequency</a>
               </li>
               <li>
-                <a href="#M5">Channel occupancy</a>
+                <a href="#M5">Channel counts</a>
               </li>
               <li>
-                <a href="#M6">Phred score frequency</a>
+                <a href="#M6">Channel occupancy</a>
               </li>
               <li>
                 <a href="#M7">Relation between the sequence length template and the mean qscore template</a>
@@ -313,8 +322,16 @@ def html_report(config_dictionary, result_dict):
              <img src={5} alt=read_count>
             </p>
           </div>
+
           <div class="module">
-            <h2 id=M2>
+              <h2 id=M2>Curve representing the reads number produced against the time</h2>
+              <p>
+                    <img src="{8}" alt=read_number, width=700, height=400>
+              </p>
+            </div>
+
+          <div class="module">
+            <h2 id=M3>
               Phred score according to the read type
             </h2>
             <p>
@@ -323,37 +340,33 @@ def html_report(config_dictionary, result_dict):
           </div>
 
           <div class="module">
-            <h2 id=M3>Channel counts</h2>
-            <p>
-                <img src="{7}" alt=channel_count>
-            </p>
-          </div>
-            <div class="module">
-              <h2 id=M4>Curve representing the reads number produced against the time</h2>
-              <p>
-                    <img src="{8}" alt=read_number, width=700, height=400>
-              </p>
-            </div>
-            <div class="module">
-              <h2 id="M5">Channel occupancy</h2>
-              <p>
-                <img src="{9}" alt=channel_occupancy>
-              </p>
-            </div>
-            <div class="module">
-              <h2 id="M6">Phred score frequency</h2>
+              <h2 id="M4">Phred score frequency</h2>
               <p>
                 <img src="{10}" alt=phred score frequency>
               </p>
             </div>
 
+          <div class="module">
+            <h2 id=M5>Channel counts</h2>
+            <p>
+                <img src="{7}" alt=channel_count>
+            </p>
+          </div>
+
             <div class="module">
+              <h2 id="M6">Channel occupancy</h2>
+              <p>
+                <img src="{9}" alt=channel_occupancy>
+              </p>
+            </div>
+
+             <div class="module">
               <h2 id="M7">Relation between the sequence length template and the mean qscore template</h2>
               <p>
                 <img src="{11}" alt=scatter plot>
               </p>
             </div>
-     <div class="module">
+        <div class="module">
               <h2 id="M8">Barcode pie chart</h2>
               <p>
                 <img src="{12}" alt="Barcode pie chart", width=600, height=400>
@@ -377,8 +390,8 @@ def html_report(config_dictionary, result_dict):
             Produced by <a href="https://github.com/GenomicParisCentre/toulligQC">ToulligQC</a> (version 0.0.1)
             </div>
         </body>
-        </html>""".format(run_name, flowcell_id, run_date, number_of_read,read_count, read_length, phred_score, \
-                          channel_count, read_number, channel_occupancy, phred_score_frequency, scatterplot, barcode_pie_chart, \
+        </html>""".format(run_name, flowcell_id, run_date, number_of_read,read_count_barplot, read_length_histogram, phred_score_boxplot, \
+                          channel_count_histogram, read_number_curve, channel_occupancy, phred_score_frequency, scatterplot, barcode_pie_chart, \
                           barcode_length_boxplot, barcode_phred_score_boxplot)
 
 
@@ -574,121 +587,126 @@ def html_report(config_dictionary, result_dict):
 
     <div class='summary'>
         <h2>Summary</h2>
-        <ol>
-          <li>
-            <a href="#M0">Histogram of read count</a>
-          </li>
-          <li>
-            <a href="#M1">Histogram of read length</a>
-          </li>
-          <li>
-            <a href="#M2">Phred score according to the read type </a>
-          </li>
-          <li>
-            <a href="#M3">Channel counts</a>
-          </li>
-          <li>
-            <a href="#M4">Curve representing the reads number produced against the time</a>
-          </li>
-          <li>
-            <a href="#M5">Channel occupancy</a>
-          </li>
-          <li>
-            <a href="#M6">Phred score frequency</a>
-          </li>
-          <li>
-            <a href="#M7">Relation between the sequence length template and the mean qscore template</a>
-          </li>
-          <li>
-            <a href="#M8">Barcode pie chart</a>
-          </li>
-          <li>
-            <a href="#M9">Boxplot of read length distribution for each barcode</a>
-          </li>
-          <li>
-            <a href="#M10">Boxplot of phred score distribution by barcode</a>
-          </li>
-        </ol>
-      </div>
-      <div class="header">
-        <div id="header_title">
-          Run MionION report
-        </div>
-        <div id="header_filename">
-          Run name: {0},br>
-          Run date: {1}<br>
-          Flowcell id: {2}
-        </div>
-      </div>
+       <ol>
+              <li>
+                <a href="#M0">Histogram of read count</a>
+              </li>
+              <li>
+                <a href="#M1">Histogram of read length</a>
+              </li>
+              <li>
+                <a href="#M2">Curve representing the reads number produced against the time</a>
+              </li>
+              <li>
+                <a href="#M3">Phred score according to the read type </a>
+              </li>
+              <li>
+                <a href="#M4">Phred score frequency</a>
+              </li>
+              <li>
+                <a href="#M5">Channel counts</a>
+              </li>
+              <li>
+                <a href="#M6">Channel occupancy</a>
+              </li>
+              <li>
+                <a href="#M7">Relation between the sequence length template and the mean qscore template</a>
+              </li>
+              <li>
+                <a href="#M8">Barcode pie chart</a>
+              </li>
+              <li>
+                <a href="#M9">Boxplot of read length distribution for each barcode</a>
+              </li>
+              <li>
+                <a href="#M10">Boxplot of phred score distribution by barcode</a>
+              </li>
+            </ol>
+          </div>
+          <div class="header">
+            <div id="header_title">
+              Run MinION report<br>
 
-      <div class = 'main'>
+            </div>
+            <div id="header_filename">
+              Run name: {0}<br>
+              Run date: {2}<br>
+              Flowcell id: {1}
+            </div>
+          </div>
+
+          <div class = 'main'>
+
+            <div class="module">
+            <p><b>Number of reads: {3}</b></p>
 
 
-        <div class="module">
-        <p><b>Number of reads: {3}</b></p>
+            <h2 id=M0>
+              Histogram of read count
+            </h2>
+            <p>
+               <img src={4} alt=read_count>
+           </div>
+          <div class="module">
+            <h2 id=M1>
+              Histogram of read length
+            </h2>
+            <p>
+             <img src={5} alt=read_count>
+            </p>
+          </div>
 
-        <h2 id=M0>
-          Histogram of read count
-        </h2>
-        <p>
-           <img src={4} alt=read_count>
-       </div>
-      <div class="module">
-        <h2 id=M1>
-          Histogram of read length
-        </h2>
-        <p>
-         <img src={5} alt=read_length>
-        </p>
-      </div>
-      <div class="module">
-        <h2 id=M2>
-          Phred score according to the read type
-        </h2>
-        <p>
-            <img src="{6}" alt=phred_score>
-        </p>
-      </div>
+          <div class="module">
+              <h2 id=M2>Curve representing the reads number produced against the time</h2>
+              <p>
+                    <img src="{8}" alt=read_number, width=700, height=400>
+              </p>
+            </div>
 
-      <div class="module">
-        <h2 id=M3>Channel counts</h2>
-        <p>
-            <img src="{7}" alt=channel_count>
-        </p>
-      </div>
-        <div class="module">
-          <h2 id=M4>Curve representing the reads number produced against the time</h2>
-          <p>
-                <img src="{8}" alt=read_number, width=700, height=400>
-          </p>
-        </div>
-        <div class="module">
-          <h2 id="M5">Channel occupancy</h2>
-          <p>
-            <img src="{9}" alt=channel_occupancy>
-          </p>
-        </div>
-        <div class="module">
-          <h2 id="M6">Phred score frequency</h2>
-          <p>
-            <img src="{10}" alt=phred score frequency>
-          </p>
-        </div>
+          <div class="module">
+            <h2 id=M3>
+              Phred score according to the read type
+            </h2>
+            <p>
+                <img src="{6}" alt=phred_score>
+            </p>
+          </div>
 
-        <div class="module">
-          <h2 id="M7">Relation between the sequence length template and the mean qscore template</h2>
-          <p>
-            <img src="{11}" alt=scatter plot>
-          </p>
-        </div>
+          <div class="module">
+              <h2 id="M4">Phred score frequency</h2>
+              <p>
+                <img src="{10}" alt=phred score frequency>
+              </p>
+            </div>
+
+          <div class="module">
+            <h2 id=M5>Channel counts</h2>
+            <p>
+                <img src="{7}" alt=channel_count>
+            </p>
+          </div>
+
+            <div class="module">
+              <h2 id="M6">Channel occupancy</h2>
+              <p>
+                <img src="{9}" alt=channel_occupancy>
+              </p>
+            </div>
+
+             <div class="module">
+              <h2 id="M7">Relation between the sequence length template and the mean qscore template</h2>
+              <p>
+                <img src="{11}" alt=scatter plot>
+              </p>
+            </div>
         <div class="footer">
       Produced by <a href="https://github.com/GenomicParisCentre/toulligQC">ToulligQC</a> (version 0.0.1)
          </div>
     </div>
     </body>
 
-    </html>""".format(run_name, run_date, flowcell_id, number_of_read, read_count, read_length, phred_score,
-                      channel_count, read_number, channel_occupancy, phred_score_frequency, scatterplot)
+    </html>""".format(run_name, run_date, flowcell_id, number_of_read, read_count_barplot, read_length_histogram, phred_score_boxplot,
+                      channel_count_histogram, read_number_curve, channel_occupancy, phred_score_frequency, scatterplot)
 
 
     f.write(report)

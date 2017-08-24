@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+#
 #                  ToulligQC development code
 #
 # This code may be freely distributed and modified under the
@@ -14,6 +14,13 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+#
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomicParisCentre/toulligQC
+#
+#
 
 import matplotlib
 matplotlib.use('Agg')
@@ -23,14 +30,14 @@ import csv
 import re
 import argparse
 import os
-from toulligqc import fastq_extractor
-from toulligqc import fast5_extractor
-from toulligqc import statistics_generator
-from toulligqc import html_report
-from toulligqc import version
-from toulligqc import albacore_stats_extractor
+import fastq_extractor
+import fast5_extractor
+import statistics_generator
+import html_report
+import version
+import albacore_stats_extractor
 from pathlib import Path
-from toulligqc import toullig_conf
+import toulligqc_conf
 
 
 def parse_args(config_dictionary):
@@ -89,7 +96,8 @@ def parse_args(config_dictionary):
         config_dictionary['sample_sheet_file'] = sample_sheet_file
 
     if is_barcode:
-        config_dictionary['barcoding'] = True
+        config_dictionary['barcoding'] = 'True'
+
     for key, value in config_dictionary.items():
 
         if type(value)==bool:
@@ -113,25 +121,20 @@ def check_conf(config_dictionary):
     :param config_dictionary: configuration dictionary containing the file or directory paths
     '''
     if not config_dictionary['fast5_source']:
-        print('The fast5 source argument is empty')
-        sys.exit(0)
+        sys.exit('The fast5 source argument is empty')
 
     elif not config_dictionary['fastq_source']:
-        print('The fastq source arugment is empty')
-        sys.exit(0)
+        sys.exit('The fastq source arugment is empty')
 
     elif not config_dictionary['albacore_summary_source']:
-        print('The albacore summary source argument is empty')
-        sys.exit(0)
+        sys.exit('The albacore summary source argument is empty')
 
-    elif config_dictionary['barcoding']:
+    elif config_dictionary['barcoding'] == 'True':
         if not config_dictionary['sample_sheet_file']:
-            print('The sample sheet source argument is empty')
-            sys.exit(0)
+            sys.exit('The sample sheet source argument is empty')
 
     elif not config_dictionary['result_directory']:
-        print('The output directory argument is empty')
-        sys.exit(0)
+        sys.exit('The output directory argument is empty')
 
     else:
         pass
@@ -173,22 +176,25 @@ def get_barcode(samplesheet):
     return sorted(set_doublon)
 
 def create_output_directories(config_dictionary):
-    return
+    image_directory = config_dictionary['result_directory'] + 'images/'
+    statistic_directory = config_dictionary['result_directory'] + 'statistics/'
+    os.makedirs(image_directory)
+    os.makedirs(statistic_directory)
 
 
 def main():
     '''
     Main function creating graphs and statistics
     '''
-    config_dictionary = toullig_conf.toullig_conf()
+    config_dictionary = toulligqc_conf.toulligqc_conf()
     parse_args(config_dictionary)
     check_conf(config_dictionary)
-
+    create_output_directories(config_dictionary)
 
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
 
-    if config_dictionary['barcoding']:
+    if config_dictionary['barcoding'] == 'True':
         sample_sheet_file = config_dictionary['sample_sheet_file']
         barcode_selection = get_barcode(sample_sheet_file)
         config_dictionary['barcode_selection'] = barcode_selection
@@ -215,10 +221,10 @@ def main():
         graphs.extend(extractor.graph_generation())
         extractor.clean()
 
-    html_report.html_report(config_dictionary, result_dict)
+    html_report.html_report(config_dictionary, result_dict, graphs)
 
     statistics_generator.statistics_generator(config_dictionary, result_dict)
-
+    statistics_generator.save_result_file(config_dictionary, result_dict)
 
 if __name__ == "__main__":
     main()

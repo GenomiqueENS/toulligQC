@@ -13,6 +13,12 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+#
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomicParisCentre/toulligQC
+#
 
 import os
 import glob
@@ -24,6 +30,7 @@ import gzip
 import sys
 import re
 
+
 class fastq_extractor():
     def __init__(self, config_dictionary):
         self.config_dictionary = config_dictionary
@@ -31,13 +38,17 @@ class fastq_extractor():
         self.global_length_array = []
         self.run_name = config_dictionary['run_name']
         self.is_barcode = config_dictionary['barcoding']
+
+        if self.is_barcode == 'True':
+            self.is_barcode = True
+        elif self.is_barcode == 'False':
+            self.is_barcode = True
+
         self.fastq_file = ''
         self.result_directory = config_dictionary['result_directory']
         self.barcode_selection = config_dictionary['barcode_selection']
         print(self.barcode_selection)
         self.fastq_source = config_dictionary['fastq_source']
-        self.image_directory = self.result_directory+'images/'
-        self.statistic_directory = self.result_directory+'statistics/'
         self.selection_global = []
 
         self.fastq_file_extension = ''
@@ -48,32 +59,32 @@ class fastq_extractor():
         :return:
         '''
         if os.path.isdir(self.fastq_source):
-            if glob.glob(self.fastq_source + '/*.fastq') or glob.glob(self.fastq_source + self.run_name+ '/*.fastq'):
+            if glob.glob(self.fastq_source + '/*.fastq') or glob.glob(self.fastq_source + self.run_name + '/*.fastq'):
                 self.fastq_file_extension = 'fastq'
-            
-            elif glob.glob(self.fastq_source + '/*.fq') or glob.glob(self.fastq_source + self.run_name+ '/*.fq'):
+
+            elif glob.glob(self.fastq_source + '/*.fq') or glob.glob(self.fastq_source + self.run_name + '/*.fq'):
                 self.fastq_file_extension = 'fq'
-            
-            elif glob.glob(self.fastq_source + '/*.gz') or glob.glob(self.fastq_source + self.run_name+ '/*.gz'):
+
+            elif glob.glob(self.fastq_source + '/*.gz') or glob.glob(self.fastq_source + self.run_name + '/*.gz'):
                 self.fastq_file_extension = 'gz'
-            
-            elif glob.glob(self.fastq_source + '/*.bz2') or glob.glob(self.fastq_source + self.run_name+ '/*.bz2'):
+
+            elif glob.glob(self.fastq_source + '/*.bz2') or glob.glob(self.fastq_source + self.run_name + '/*.bz2'):
                 self.fastq_file_extension = 'bz2'
 
-            elif glob.glob(self.fastq_source + self.run_name+ '/*.fastq'):
-                self.fastq_source = self.fastq_source+self.run_name+'/'
+            elif glob.glob(self.fastq_source + self.run_name + '/*.fastq'):
+                self.fastq_source = self.fastq_source + self.run_name + '/'
                 self.fastq_file_extension = 'fastq'
 
-            elif glob.glob(self.fastq_source + self.run_name+ '/*.fq'):
-                self.fastq_source = self.fastq_source+self.run_name+'/'
+            elif glob.glob(self.fastq_source + self.run_name + '/*.fq'):
+                self.fastq_source = self.fastq_source + self.run_name + '/'
                 self.fastq_file_extension = 'fq'
 
-            elif glob.glob(self.fastq_source + self.run_name+ '/*.gz'):
-                self.fastq_source = self.fastq_source+self.run_name+'/'
+            elif glob.glob(self.fastq_source + self.run_name + '/*.gz'):
+                self.fastq_source = self.fastq_source + self.run_name + '/'
                 self.fastq_file_extension = 'gz'
 
-            elif glob.glob(self.fastq_source + self.run_name+ '/*.bz2'):
-                self.fastq_source = self.fastq_source+self.run_name+'/'
+            elif glob.glob(self.fastq_source + self.run_name + '/*.bz2'):
+                self.fastq_source = self.fastq_source + self.run_name + '/'
                 self.fastq_file_extension = 'bz2'
 
             else:
@@ -85,23 +96,22 @@ class fastq_extractor():
             self.fastq_file_extension = 'fastq'
 
         elif self.fastq_source.endswith('.fq'):
-            self.fastq_file_extension= 'fq'
+            self.fastq_file_extension = 'fq'
 
-        elif self.fastq_source.endswith('.bz2') or self.fastq_source.endswith('.gz') or self.fastq_source.endswith('.zip'):
+        elif self.fastq_source.endswith('.bz2') or self.fastq_source.endswith('.gz') or self.fastq_source.endswith(
+                '.zip'):
             pattern = '\.(gz|bz2|zip)$'
             if re.search(pattern, self.fastq_source):
                 match = re.search(pattern, self.fastq_source)
                 self.fastq_file_extension = match.groups()[0]
         else:
-            print('The fastq source extension is not supported (fast5, bz2 or gz format)')
-            sys.exit(0)
+            sys.exit('The fastq source extension is not supported (fast5, bz2 or gz format)')
 
     def check_conf(self):
         '''Configuration checking'''
         return
 
-
-    def extract(self,result_dict):
+    def extract(self, result_dict):
         '''
         Extraction of differents information from the fastq file
         :param result_dict: result dictionary where the informations or statistics are stored
@@ -114,8 +124,6 @@ class fastq_extractor():
         else:
             self._read_fastq_without_barcode()
             result_dict.update(self.global_dico)
-        
-        return result_dict
 
     def graph_generation(self):
         '''
@@ -130,14 +138,6 @@ class fastq_extractor():
         :return:
         '''
         return
-
-    def _get_fastq_configuration(self):
-        '''
-        Create directory for images and statistics
-        :return:
-        '''
-        os.makedirs(self.image_directory)
-        os.makedirs(self.statistic_directory)
 
     def _fastq_metrics(self):
         '''
@@ -202,7 +202,7 @@ class fastq_extractor():
         total_nucs_template = len(sequence)
         return total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter
 
-    def _barcoded_fastq_informations(self, selected_barcode= ''):
+    def _barcoded_fastq_informations(self, selected_barcode=''):
         '''
         Get different information about fastq files
         :param selected_barcode: barcode selection
@@ -210,16 +210,14 @@ class fastq_extractor():
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter = self._fastq_metrics()
         series_read_size = pd.Series(barcode_length_array)
         selected_barcode_fastq_size_statistics = pd.Series.describe(series_read_size)
-        self.global_dico['nucleotide_count_'+selected_barcode] = template_nucleotide_counter
-        self.global_dico['total_nucleotide_'+selected_barcode] = total_nucs_template
-        self.global_dico['fastq_length_'+selected_barcode] = selected_barcode_fastq_size_statistics
-
+        self.global_dico['nucleotide_count_' + selected_barcode] = template_nucleotide_counter
+        self.global_dico['total_nucleotide_' + selected_barcode] = total_nucs_template
+        self.global_dico['fastq_length_' + selected_barcode] = selected_barcode_fastq_size_statistics
 
     def _read_fastq_barcoded(self):
         '''
         Get informations about the barcoded fastq sequence
         '''
-        self._get_fastq_configuration()
         self.init()
         if os.path.isfile(self.fastq_source):
             self.fastq_file = self.fastq_source
@@ -257,7 +255,6 @@ class fastq_extractor():
         '''
         Gets informations about the fastq sequence not barcoded
         '''
-        self._get_fastq_configuration()
         self.init()
         if os.path.isfile(self.fastq_source):
             self.fastq_file = self.fastq_source

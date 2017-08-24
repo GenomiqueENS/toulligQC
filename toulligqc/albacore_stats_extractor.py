@@ -13,6 +13,11 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+#
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomicParisCentre/toulligQC
 
 import pandas as pd
 import sys
@@ -35,6 +40,12 @@ class albacore_stats_extractor():
         self.albacore_log = self.albacore_log[self.albacore_log['num_events'] != 0]
         self.fast5_tot_number = len(self.albacore_log)
         self.is_barcode = config_dictionary['barcoding']
+
+        if self.is_barcode == 'True':
+            self.is_barcode = True
+        elif self.is_barcode == 'False':
+            self.is_barcode = False
+
         self.my_dpi = int(config_dictionary['dpi'])
 
         if self.is_barcode:
@@ -45,8 +56,7 @@ class albacore_stats_extractor():
                 self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
             except:
-                print('You put the barcode argument but no barcode is present in your sequencing summary file')
-                sys.exit(0)
+                sys.exit('No barcode found in sequencing summary file')
 
     def init(self):
         '''
@@ -77,7 +87,6 @@ class albacore_stats_extractor():
         result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
         result_dict['sequence_length_template'] = self.sequence_length_template
         result_dict['run_date'] = self._run_date()
-        return result_dict
 
 
 
@@ -89,38 +98,25 @@ class albacore_stats_extractor():
         :return: images array containing the title and the path toward the images
         '''
         images = []
-        title, image_path = graph_generator.read_count_histogram(self.albacore_log, self.my_dpi, self.result_directory)
-        images.append((title, image_path))
-        title, image_path = graph_generator.read_quality_boxplot(self.albacore_log, self.my_dpi, self.result_directory)
-        images.append((title, image_path))
-        title, image_path = graph_generator.channel_count_histogram(self.albacore_log, self.my_dpi,
-                                                                    self.result_directory)
-        images.append((title, image_path))
-        title, image_path = graph_generator.read_number_run(self.albacore_log, self.my_dpi, self.result_directory)
-        images.append((title, image_path))
-        title, image_path = graph_generator.read_length_histogram(self.albacore_log, self.my_dpi, self.result_directory)
-        images.append((title, image_path))
-        if self.is_barcode:
-            title, image_path = graph_generator.barcode_percentage_pie_chart(self.albacore_log, self.barcode_selection,
-                                                                             self.my_dpi, self.result_directory)
-            images.append((title, image_path))
-            title, image_path = graph_generator.barcode_length_boxplot(self.albacore_log, self.barcode_selection,
-                                                                       self.my_dpi, self.result_directory)
-            images.append((title, image_path))
-            title, image_path = graph_generator.barcoded_phred_score_frequency(self.albacore_log,
-                                                                               self.barcode_selection, self.my_dpi,
-                                                                               self.result_directory)
-            images.append((title, image_path))
-
+        images.append(graph_generator.read_count_histogram(self.albacore_log, self.my_dpi, self.result_directory))
+        images.append(graph_generator.read_length_histogram(self.albacore_log, self.my_dpi, self.result_directory))
+        images.append(graph_generator.read_number_run(self.albacore_log, self.my_dpi, self.result_directory))
+        images.append(graph_generator.read_quality_boxplot(self.albacore_log, self.my_dpi, self.result_directory))
+        images.append(graph_generator.phred_score_frequency(self.albacore_log, self.my_dpi, self.result_directory))
+        images.append(graph_generator.channel_count_histogram(self.albacore_log, self.my_dpi,self.result_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        title, image_path = graph_generator.plot_performance(total_number_reads_per_pore, self.my_dpi,
-                                                             self.result_directory)
-        images.append((title, image_path))
-        title, image_path = graph_generator.phred_score_frequency(self.albacore_log, self.my_dpi, self.result_directory)
-        images.append((title, image_path))
-        title, image_path = graph_generator.scatterplot(self.albacore_log, self.my_dpi, self.result_directory)
-        images.append((title, image_path))
+        images.append(graph_generator.plot_performance(total_number_reads_per_pore, self.my_dpi,
+                                                       self.result_directory))
+        images.append(graph_generator.scatterplot(self.albacore_log, self.my_dpi, self.result_directory))
+        if self.is_barcode:
+            images.append(graph_generator.barcode_percentage_pie_chart(self.albacore_log, self.barcode_selection,
+                                                                             self.my_dpi, self.result_directory))
+            images.append(graph_generator.barcode_length_boxplot(self.albacore_log, self.barcode_selection,
+                                                                       self.my_dpi, self.result_directory))
+            images.append(graph_generator.barcoded_phred_score_frequency(self.albacore_log,
+                                                                               self.barcode_selection, self.my_dpi,
+                                                                               self.result_directory))
         return images
 
     def clean(self):

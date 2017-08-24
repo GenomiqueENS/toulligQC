@@ -12,6 +12,13 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+#
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomicParisCentre/toulligQC
+#
+#
 
 import h5py
 import glob
@@ -71,7 +78,6 @@ class fast5_extractor():
         result_dict['hostname'] = self._get_hostname(h5py_file)
         result_dict['minion_run_id'] = self._get_minion_run_id(h5py_file)
         result_dict['protocol_run_id'] = self._get_protocol_run_id(h5py_file)
-        return result_dict
 
     def check_conf(self):
         '''
