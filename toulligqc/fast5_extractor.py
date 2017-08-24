@@ -190,8 +190,8 @@ class fast5_extractor():
         """
         Get the number of Minion run
         """
-        numMinION = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-        minion_run_id_dico = {key: value.decode('utf-8') for key, value in numMinION}
+        minion_run_id = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+        minion_run_id_dico = {key: value.decode('utf-8') for key, value in minion_run_id}
         return minion_run_id_dico['device_id']
 
     def _get_protocol_run_id(self, h5py_file):

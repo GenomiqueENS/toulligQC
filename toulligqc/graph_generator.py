@@ -45,42 +45,6 @@ def make_table(value, ax, metric_suppression=''):
     the_table.set_fontsize(12)
     the_table.scale(1, 1.2)
 
-def barcode_percentage_pie_chart(albacore_log, barcode_selection, my_dpi, result_directory):
-    """
-    Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
-    """
-    plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
-    for element in barcode_selection:
-
-        if all(albacore_log['barcode_arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
-
-    barcode = albacore_log['barcode_arrangement']
-    barcode_count = barcode.value_counts()
-    count_sorted = barcode_count.sort_index()[barcode_selection]
-    total = sum(count_sorted)
-
-    cs = cm.Paired(np.arange(len(barcode_selection)) / len(barcode_selection))
-
-    sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
-    if len(barcode_selection) <= 10:
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, labels=barcode_selection, autopct='%.2f%%', startangle=90, colors=cs)
-        ax1.axis('equal')
-
-    else:
-        fig = plt.figure(figsize=(20, 10))
-        ax1 = fig.add_subplot(111)
-        length = np.arange(0, len(barcode_count))
-        ax1.set_title('Percentage of different barcodes')
-        ax1.bar(length, barcode_count, color=cs)
-        ax1.set_xticks(length)
-        ax1.set_xticklabels(barcode_selection)
-
-    plt.savefig(result_directory + 'images/barcode_percentage_pie_chart.png')
-    plt.close()
-    return 'Percentage of different barcodes', result_directory + 'images/barcode_percentage_pie_chart.png'
 
 def safe_log(x):
     '''
@@ -162,10 +126,10 @@ def scatterplot(albacore_log, my_dpi, result_directory):
     plt.xlim(0, 100000)
     plt.xlabel("sequence_length_template")
     plt.ylabel("mean_qscore_template")
-    plt.title("Relation between the sequence length template and the mean qscore template")
+    plt.title("mean template qscore function of template read length")
     plt.savefig(result_directory + 'images/scatter_plot.png')
     plt.close()
-    return "Relation between the sequence length template and the mean qscore template", result_directory + 'images/scatter_plot.png'
+    return "mean template qscore function of template read length", result_directory + 'images/mean_template_qscore_function_of_template_read_length.png'
 
 def read_count_histogram(albacore_log, my_dpi, result_directory):
     """
@@ -300,6 +264,43 @@ def plot_performance(pore_measure, my_dpi, result_directory):
     plt.savefig(result_directory + 'images/channel_occupancy.png')
     plt.close()
     return 'Channel occupancy', result_directory + 'images/channel_occupancy.png'
+
+def barcode_percentage_pie_chart(albacore_log, barcode_selection, my_dpi, result_directory):
+    """
+    Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
+    """
+    plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
+    for element in barcode_selection:
+
+        if all(albacore_log['barcode_arrangement'] != element):
+            print("The barcode {} doesn't exist".format(element))
+            return False
+
+    barcode = albacore_log['barcode_arrangement']
+    barcode_count = barcode.value_counts()
+    count_sorted = barcode_count.sort_index()[barcode_selection]
+    total = sum(count_sorted)
+
+    cs = cm.Paired(np.arange(len(barcode_selection)) / len(barcode_selection))
+
+    sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
+    if len(barcode_selection) <= 10:
+        fig1, ax1 = plt.subplots()
+        ax1.pie(sizes, labels=barcode_selection, autopct='%.2f%%', startangle=90, colors=cs)
+        ax1.axis('equal')
+
+    else:
+        fig = plt.figure(figsize=(20, 10))
+        ax1 = fig.add_subplot(111)
+        length = np.arange(0, len(barcode_count))
+        ax1.set_title('Percentage of different barcodes')
+        ax1.bar(length, barcode_count, color=cs)
+        ax1.set_xticks(length)
+        ax1.set_xticklabels(barcode_selection)
+
+    plt.savefig(result_directory + 'images/barcode_percentage_pie_chart.png')
+    plt.close()
+    return 'Percentage of different barcodes', result_directory + 'images/barcode_percentage_pie_chart.png'
 
 def barcode_length_boxplot(albacore_log, barcode_selection, my_dpi, result_directory):
     '''

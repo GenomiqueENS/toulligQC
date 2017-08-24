@@ -33,7 +33,7 @@ class albacore_stats_extractor():
         self.null_event = self.albacore_log[self.albacore_log['num_events'] == 0]
         self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
         self.albacore_log = self.albacore_log[self.albacore_log['num_events'] != 0]
-        self.fast5_tot = len(self.albacore_log)
+        self.fast5_tot_number = len(self.albacore_log)
         self.is_barcode = config_dictionary['barcoding']
         self.my_dpi = int(config_dictionary['dpi'])
 
