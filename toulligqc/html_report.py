@@ -13,6 +13,7 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+import re
 
 def html_report(config_dictionary, result_dict):
     '''
@@ -26,7 +27,8 @@ def html_report(config_dictionary, result_dict):
     run_name = config_dictionary['run_name']
     flowcell_id = result_dict['flowcell_id']
     run_date = result_dict['run_date']
-
+    date = re.search('(\d{4})(\d{2})(\d{2})', run_date).groups()
+    run_date = '{}-{}-{}'.format(date[2], date[1], date[0])
     image_directory = result_directory + 'images/'
     f = open(result_directory + 'report.html', 'w')
     read_count = image_directory + "read_count_histogram.png"

@@ -65,7 +65,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'toulligqc=toulligqc.toulligqc_main:main',
+            'toulligqc=toulligqc.toulligqc:main',
         ],
     },
 )

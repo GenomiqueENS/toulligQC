@@ -216,7 +216,7 @@ def main():
         graphs.extend(extractor.graph_generation())
         extractor.clean()
 
-    html_report.html_report(config_dictionary, result_dict, graphs)
+    html_report.html_report(config_dictionary, result_dict)
 
     log_file1D.log_file1D(config_dictionary, result_dict)
 
