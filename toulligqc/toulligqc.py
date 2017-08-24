@@ -25,12 +25,12 @@ import argparse
 import os
 from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
-from toulligqc import log_file1D
+from toulligqc import statistics_generator
 from toulligqc import html_report
 from toulligqc import version
 from toulligqc import albacore_stats_extractor
 from pathlib import Path
-from toulligqc import config
+from toulligqc import toullig_conf
 
 
 def parse_args(config_dictionary):
@@ -181,7 +181,7 @@ def main():
     '''
     Main function creating graphs and statistics
     '''
-    config_dictionary = config.toullig_conf()
+    config_dictionary = toullig_conf.toullig_conf()
     parse_args(config_dictionary)
     check_conf(config_dictionary)
 
@@ -218,7 +218,7 @@ def main():
 
     html_report.html_report(config_dictionary, result_dict)
 
-    log_file1D.log_file1D(config_dictionary, result_dict)
+    statistics_generator.statistics_generator(config_dictionary, result_dict)
 
 
 if __name__ == "__main__":
