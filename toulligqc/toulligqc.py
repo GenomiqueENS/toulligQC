@@ -65,8 +65,8 @@ def parse_args(config_dictionary):
     parser.add_argument('--version', action='version', version=version.__version__)
 
 
+    #Parsing lone aruguments and assign each argument value to a variable
     argument_value = parser.parse_args()
-
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
     albacore_summary_source = argument_value.albacore_summary_source
@@ -78,21 +78,24 @@ def parse_args(config_dictionary):
 
     config_dictionary['run_name'] = run_name
 
+    #Checking of the presence of a configuration file
     if argument_value.conf_file:
         config_dictionary.load(conf_file)
     elif os.path.isfile(home + '/.toulligqc/config.txt'):
         config_dictionary.load(home + '/.toulligqc/config.txt')
+
+    #Rewrite the configuration file value if argument option is present
     if fast5_source:
         config_dictionary['fast5_source'] = fast5_source
 
     if albacore_summary_source:
         config_dictionary['albacore_summary_source'] = albacore_summary_source
 
-
     if fastq_source:
         config_dictionary['fastq_source'] = fastq_source
     else:
         config_dictionary['fastq_source'] = config_dictionary['fastq_source']+'/'+run_name
+
     if result_directory:
         config_dictionary['result_directory'] = result_directory
 
@@ -142,6 +145,7 @@ def check_conf(config_dictionary):
 
     else:
         pass
+
     if not os.path.isdir(config_dictionary['result_directory']):
         os.makedirs(config_dictionary['result_directory'])
 
@@ -211,8 +215,10 @@ def main():
     if os.path.isdir(config_dictionary['albacore_summary_source']):
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['run_name'] + '/sequencing_summary.txt'
 
+    #Production of the extractors object
     extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
 
+    #Configuration checking and initialisation of the extractors
     for extractor in extractors:
         extractor.check_conf()
         extractor.init()
@@ -220,14 +226,14 @@ def main():
     result_dict = {}
     graphs = []
 
+    #Information extraction about statistics and generation of the graphs
     for extractor in extractors:
-        print(type(extractor))
         extractor.extract(result_dict)
         graphs.extend(extractor.graph_generation())
         extractor.clean()
 
+    #HTML report and statistics file generation
     html_report.html_report(config_dictionary, result_dict, graphs)
-
     statistics_generator.statistics_generator(config_dictionary, result_dict)
     statistics_generator.save_result_file(config_dictionary, result_dict)
 

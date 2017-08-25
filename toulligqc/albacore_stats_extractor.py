@@ -29,6 +29,9 @@ import re
 
 
 class albacore_stats_extractor():
+    '''
+    Extraction of statistics from sequencing_summary.txt file and graph generation
+    '''
     def __init__(self, config_dictionary):
         self.global_dictionnary = {}
         self.config_dictionary = config_dictionary

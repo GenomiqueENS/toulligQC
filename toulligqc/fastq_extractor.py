@@ -49,7 +49,6 @@ class fastq_extractor():
         self.fastq_file = ''
         self.result_directory = config_dictionary['result_directory']
         self.barcode_selection = config_dictionary['barcode_selection']
-        print(self.barcode_selection)
         self.fastq_source = config_dictionary['fastq_source']
         self.selection_global = []
 
