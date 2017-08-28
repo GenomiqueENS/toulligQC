@@ -147,17 +147,18 @@ def check_conf(config_dictionary):
     else:
         pass
 
+    # Create the root output directory if not exists
     if not os.path.isdir(config_dictionary['result_directory']):
         os.makedirs(config_dictionary['result_directory'])
 
-    if os.path.isdir(config_dictionary['result_directory'] + config_dictionary['run_name']):
-        shutil.rmtree(config_dictionary['result_directory'] + config_dictionary['run_name'], ignore_errors=True)
-        os.makedirs(config_dictionary['result_directory'] + config_dictionary['run_name'])
+    # Define the output directory
+    config_dictionary['result_directory'] = config_dictionary['result_directory'] + '/' + config_dictionary['run_name'] + '/'
 
+    if os.path.isdir(config_dictionary['result_directory']):
+        shutil.rmtree(config_dictionary['result_directory'], ignore_errors=True)
+        os.makedirs(config_dictionary['result_directory'])
     else:
-        os.makedirs(config_dictionary['result_directory'] + config_dictionary['run_name'])
-
-    config_dictionary['result_directory'] = config_dictionary['result_directory'] + config_dictionary['run_name'] + '/'
+        os.makedirs(config_dictionary['result_directory'])
 
 def get_barcode(samplesheet):
     '''
