@@ -55,479 +55,148 @@ def html_report(config_dictionary, result_dict, graphs):
     barcode_phred_score_boxplot = image_path[10]
     number_of_read = len(sequence_length_template)
 
-    if is_barcode:
-        report = """<!DOCTYPE html>
-        <html>
-        <head>
-            <title>Rapport run MinION</title>
-            <meta charset='UTF-8'>
-            <style>
-            </style>
-        </head>
+    # Define the header of the page
+    header = """<!doctype html>
+<html>
+  <head>
+    <title>Rapport run MinION</title>
+    <meta charset='UTF-8'>
+    <style type="text/css">
 
-        <body>
-            <style>
-            @media screen {{
-                div.summary {{
-                width: 16em;
-                position:fixed;
-                top: 3em;
-                margin:1em 0 0 1em;
-            }}
+  @media screen {
 
-      div.main {{
-        display:block;
-        position:absolute;
-        overflow:auto;
-        height:auto;
-        width:auto;
-        top:4.5em;
-        bottom:2.3em;
-        left:18em;
-        right:0;
-        border-left: 1px solid #CCC;
-        padding:0 0 0 1em;
-        background-color: white;
-        z-index:1;
-      }}
+    div.summary {
+      width: 16em;
+      position:fixed;
+      top: 3em;
+      margin:1em 0 0 1em;
+    }
 
-      div.header {{
-        background-color: #EEE;
-        border:0;
-        margin:0;
-        padding: 0.5em;
-        font-size: 200%;
-        font-weight: bold;
-        position:fixed;
-        width:100%;
-        top:0;
-        left:0;
-        z-index:2;
-      }}
+    div.main {
+      display:block;
+      position:absolute;
+      overflow:auto;
+      height:auto;
+      width:auto;
+      top:4.5em;
+      bottom:2.3em;
+      left:18em;
+      right:0;
+      border-left: 1px solid #CCC;
+      padding:0 0 0 1em;
+      background-color: white;
+      z-index:1;
+    }
 
-      div.footer {{
-        background-color: #EEE;
-        border:0;
-        margin:0;
-        padding:0.5em;
-        height: 1.3em;
-        overflow:hidden;
-        font-size: 100%;
-        font-weight: bold;
-        position:fixed;
-        bottom:0;
-        width:100%;
-        z-index:2;
-      }}
+    div.header {
+      background-color: #EEE;
+      border:0;
+      margin:0;
+      padding: 0.5em;
+      font-size: 200%;
+      font-weight: bold;
+      position:fixed;
+      width:100%;
+      top:0;
+      left:0;
+      z-index:2;
+    }
 
-      img.indented {{
-        margin-left: 3em;
-      }}
-     }}
+    div.footer {
+      background-color: #EEE;
+      border:0;
+      margin:0;
+      padding:0.5em;
+      height: 1.3em;
+      overflow:hidden;
+      font-size: 100%;
+      font-weight: bold;
+      position:fixed;
+      bottom:0;
+      width:100%;
+      z-index:2;
+    }
 
-     @media print {{
-        img {{
-            max-width:100% !important;
-            page-break-inside: avoid;
-        }}
-        h2, h3 {{
-            page-break-after: avoid;
-        }}
-        div.header {{
-          background-color: #FFF;
-        }}
+    img.indented {
+      margin-left: 3em;
+    }
+  }
 
-      }}
-                body {{
-        font-family: sans-serif;
-        color: #000;
-        background-color: #FFF;
-        border: 0;
-        margin: 0;
-        padding: 0;
-        }}
+  @media print {
 
-        div.header {{
-        border:0;
-        margin:0;
-        padding: 0.5em;
-        font-size: 200%;
-        font-weight: bold;
-        width:100%;
-        }}
+    img {
+      max-width:100% !important;
+      page-break-inside: avoid;
+    }
 
-        #header_title {{
-        display:inline-block;
-        float:left;
-        clear:left;
-        }}
-        #header_filename {{
-        display:inline-block;
-        float:right;
-        clear:right;
-        font-size: 50%;
-        margin-right:2em;
-        text-align: right;
-        }}
+    h2, h3 {
+      page-break-after: avoid;
+    }
 
-        div.header h3 {{
-        font-size: 50%;
-        margin-bottom: 0;
-        }}
-
-        div.summary ul {{
-        padding-left:0;
-        list-style-type:none;
-        }}
-
-        div.summary ul li img {{
-        margin-bottom:-0.5em;
-        margin-top:0.5em;
-        }}
-
-        div.main {{
-        background-color: white;
-        }}
-
-        div.module {{
-        padding-bottom:1.5em;
-        padding-top:1.5em;
-        }}
-
-        div.footer {{
-        background-color: #EEE;
-        border:0;
-        margin:0;
-        padding: 0.5em;
-        font-size: 100%;
-        font-weight: bold;
-        width:100%;
-        }}
-
-
-        a {{
-        color: #000080;
-        }}
-
-        a:hover {{
-        color: #800000;
-        }}
-
-        h2 {{
-        color: #800000;
-        padding-bottom: 0;
-        margin-bottom: 0;
-        clear:left;
-        }}
-
-        table {{
-        margin-left: 3em;
-        text-align: center;
-        }}
-
-        th {{
-        text-align: center;
-        background-color: #000080;
-        color: #FFF;
-        padding: 0.4em;
-        }}
-
-        td {{
-        font-family: monospace;
-        text-align: left;
-        background-color: #EEE;
-        color: #000;
-        padding: 0.4em;
-        }}
-
-        img {{
-        padding-top: 0;
-        margin-top: 0;
-        border-top: 0;
-        }}
-
-
-        p {{
-        padding-top: 0;
-        margin-top: 0;
-        }}
-
-        </style>
-
-        <div class='summary'>
-            <h2>Summary</h2>
-            <ol>
-              <li>
-                <a href="#M0">Histogram of read count</a>
-              </li>
-              <li>
-                <a href="#M1">Histogram of read length</a>
-              </li>
-              <li>
-                <a href="#M2">Curve representing the reads number produced against the time</a>
-              </li>
-              <li>
-                <a href="#M3">Phred score according to the read type </a>
-              </li>
-              <li>
-                <a href="#M4">Phred score frequency</a>
-              </li>
-              <li>
-                <a href="#M5">Channel counts</a>
-              </li>
-              <li>
-                <a href="#M6">Channel occupancy</a>
-              </li>
-              <li>
-                <a href="#M7">Relation between the sequence length template and the mean qscore template</a>
-              </li>
-              <li>
-                <a href="#M8">Barcode pie chart</a>
-              </li>
-              <li>
-                <a href="#M9">Boxplot of read length distribution for each barcode</a>
-              </li>
-              <li>
-                <a href="#M10">Boxplot of phred score distribution by barcode</a>
-              </li>
-            </ol>
-          </div>
-          <div class="header">
-            <div id="header_title">
-              Run MinION report<br>
-
-            </div>
-            <div id="header_filename">
-              Run name: {0}<br>
-              Run date: {2}<br>
-              Flowcell id: {1}
-            </div>
-          </div>
-
-          <div class = 'main'>
-
-            <div class="module">
-            <p><b>Number of reads: {3}</b></p>
-
-
-            <h2 id=M0>
-              Histogram of read count
-            </h2>
-            <p>
-               <img src={4} alt=read_count>
-           </div>
-          <div class="module">
-            <h2 id=M1>
-              Histogram of read length
-            </h2>
-            <p>
-             <img src={5} alt=read_count>
-            </p>
-          </div>
-
-          <div class="module">
-              <h2 id=M2>Curve representing the reads number produced against the time</h2>
-              <p>
-                    <img src="{8}" alt=read_number, width=700, height=400>
-              </p>
-            </div>
-
-          <div class="module">
-            <h2 id=M3>
-              Phred score according to the read type
-            </h2>
-            <p>
-                <img src="{6}" alt=phred_score>
-            </p>
-          </div>
-
-          <div class="module">
-              <h2 id="M4">Phred score frequency</h2>
-              <p>
-                <img src="{10}" alt=phred score frequency>
-              </p>
-            </div>
-
-          <div class="module">
-            <h2 id=M5>Channel counts</h2>
-            <p>
-                <img src="{7}" alt=channel_count>
-            </p>
-          </div>
-
-            <div class="module">
-              <h2 id="M6">Channel occupancy</h2>
-              <p>
-                <img src="{9}" alt=channel_occupancy>
-              </p>
-            </div>
-
-             <div class="module">
-              <h2 id="M7">Relation between the sequence length template and the mean qscore template</h2>
-              <p>
-                <img src="{11}" alt=scatter plot>
-              </p>
-            </div>
-        <div class="module">
-              <h2 id="M8">Barcode pie chart</h2>
-              <p>
-                <img src="{12}" alt="Barcode pie chart", width=600, height=400>
-              </p>
-            </div>
-
-            <div class="module">
-              <h2 id="M9">Boxplot of read length distribution for each barcode</h2>
-              <img src="{13}" alt="Barcode read length boxplot", width=800, height=700>
-            </div>
-
-            <div class="module">
-                <h2 id="M10">Boxplot of phred score distribution by barcode</h2>
-                <p>
-                <img src="{14}" alt="Barcode read length boxplot", width=800, height=700>
-                </p>
-            </div>
-
-        </div>
-         <div class="footer">
-            Produced by <a href="https://github.com/GenomicParisCentre/toulligQC">ToulligQC</a> (version 0.0.1)
-            </div>
-        </body>
-        </html>""".format(run_name, flowcell_id, run_date, number_of_read,read_count_barplot, read_length_histogram, phred_score_boxplot, \
-                          channel_count_histogram, read_number_curve, channel_occupancy, phred_score_frequency, scatterplot, barcode_pie_chart, \
-                          barcode_length_boxplot, barcode_phred_score_boxplot)
-
-
-    else:
-        report = """
-                 <style>
-            @media screen {{
-                div.summary {{
-                width: 16em;
-                position:fixed;
-                top: 3em;
-                margin:1em 0 0 1em;
-            }}
-
-  div.main {{
-    display:block;
-    position:absolute;
-    overflow:auto;
-    height:auto;
-    width:auto;
-    top:4.5em;
-    bottom:2.3em;
-    left:18em;
-    right:0;
-    border-left: 1px solid #CCC;
-    padding:0 0 0 1em;
-    background-color: white;
-    z-index:1;
-  }}
-
-  div.header {{
-    background-color: #EEE;
-    border:0;
-    margin:0;
-    padding: 0.5em;
-    font-size: 200%;
-    font-weight: bold;
-    position:fixed;
-    width:100%;
-    top:0;
-    left:0;
-    z-index:2;
-  }}
-
-  div.footer {{
-    background-color: #EEE;
-    border:0;
-    margin:0;
-	padding:0.5em;
-    height: 1.3em;
-	overflow:hidden;
-    font-size: 100%;
-    font-weight: bold;
-    position:fixed;
-    bottom:0;
-    width:100%;
-    z-index:2;
-  }}
-
-  img.indented {{
-    margin-left: 3em;
-  }}
- }}
-
- @media print {{
-	img {{
-		max-width:100% !important;
-		page-break-inside: avoid;
-	}}
-	h2, h3 {{
-		page-break-after: avoid;
-	}}
-	div.header {{
+    div.header {
       background-color: #FFF;
-    }}
+    }
 
-  }}
-            body {{
+  }
+
+  body {
     font-family: sans-serif;
     color: #000;
     background-color: #FFF;
     border: 0;
     margin: 0;
     padding: 0;
-    }}
+  }
 
-    div.header {{
+  div.header {
     border:0;
     margin:0;
     padding: 0.5em;
     font-size: 200%;
     font-weight: bold;
     width:100%;
-    }}
+  }
 
-    #header_title {{
+  #header_title {
     display:inline-block;
     float:left;
     clear:left;
-    }}
-    #header_filename {{
+  }
+
+  #header_filename {
     display:inline-block;
     float:right;
     clear:right;
     font-size: 50%;
     margin-right:2em;
     text-align: right;
-    }}
+  }
 
-    div.header h3 {{
+  div.header h3 {
     font-size: 50%;
     margin-bottom: 0;
-    }}
+  }
 
-    div.summary ul {{
+  div.summary ul {
     padding-left:0;
     list-style-type:none;
-    }}
+  }
 
-    div.summary ul li img {{
+  div.summary ul li img {
     margin-bottom:-0.5em;
     margin-top:0.5em;
-    }}
+  }
 
-    div.main {{
+  div.main {
     background-color: white;
-    }}
+  }
 
-    div.module {{
+  div.module {
     padding-bottom:1.5em;
     padding-top:1.5em;
-    }}
+  }
 
-    div.footer {{
+  div.footer {
     background-color: #EEE;
     border:0;
     margin:0;
@@ -535,181 +204,106 @@ def html_report(config_dictionary, result_dict, graphs):
     font-size: 100%;
     font-weight: bold;
     width:100%;
-    }}
+  }
 
 
-    a {{
+  a {
     color: #000080;
-    }}
+  }
 
-    a:hover {{
+  a:hover {
     color: #800000;
-    }}
+  }
 
-    h2 {{
+  h2 {
     color: #800000;
     padding-bottom: 0;
     margin-bottom: 0;
     clear:left;
-    }}
+  }
 
-    table {{
+  table {
     margin-left: 3em;
     text-align: center;
-    }}
+  }
 
-    th {{
+  th {
     text-align: center;
     background-color: #000080;
     color: #FFF;
     padding: 0.4em;
-    }}
+  }
 
-    td {{
+  td {
     font-family: monospace;
     text-align: left;
     background-color: #EEE;
     color: #000;
     padding: 0.4em;
-    }}
+  }
 
-    img {{
+  img {
     padding-top: 0;
     margin-top: 0;
     border-top: 0;
-    }}
+  }
 
 
-    p {{
+  p {
     padding-top: 0;
     margin-top: 0;
-    }}
+  }
 
     </style>
+  </head>
+  <body>
+"""
 
-    <div class='summary'>
-        <h2>Summary</h2>
-       <ol>
-              <li>
-                <a href="#M0">Histogram of read count</a>
-              </li>
-              <li>
-                <a href="#M1">Histogram of read length</a>
-              </li>
-              <li>
-                <a href="#M2">Curve representing the reads number produced against the time</a>
-              </li>
-              <li>
-                <a href="#M3">Phred score according to the read type </a>
-              </li>
-              <li>
-                <a href="#M4">Phred score frequency</a>
-              </li>
-              <li>
-                <a href="#M5">Channel counts</a>
-              </li>
-              <li>
-                <a href="#M6">Channel occupancy</a>
-              </li>
-              <li>
-                <a href="#M7">Relation between the sequence length template and the mean qscore template</a>
-              </li>
-              <li>
-                <a href="#M8">Barcode pie chart</a>
-              </li>
-              <li>
-                <a href="#M9">Boxplot of read length distribution for each barcode</a>
-              </li>
-              <li>
-                <a href="#M10">Boxplot of phred score distribution by barcode</a>
-              </li>
-            </ol>
-          </div>
-          <div class="header">
-            <div id="header_title">
-              Run MinION report<br>
+    # Define the footer of the page
+    footer = """
+    <div class="footer"> Produced by <a href="{0}">{1}</a> (version {2})</div>
+  </body>
 
-            </div>
-            <div id="header_filename">
-              Run name: {0}<br>
-              Run date: {2}<br>
-              Flowcell id: {1}
-            </div>
-          </div>
+</html>
+""".format(config_dictionary['app.url'], config_dictionary['app.name'], config_dictionary['app.version'])
 
-          <div class = 'main'>
-
-            <div class="module">
-            <p><b>Number of reads: {3}</b></p>
-
-
-            <h2 id=M0>
-              Histogram of read count
-            </h2>
-            <p>
-               <img src={4} alt=read_count>
-           </div>
-          <div class="module">
-            <h2 id=M1>
-              Histogram of read length
-            </h2>
-            <p>
-             <img src={5} alt=read_count>
-            </p>
-          </div>
-
-          <div class="module">
-              <h2 id=M2>Curve representing the reads number produced against the time</h2>
-              <p>
-                    <img src="{8}" alt=read_number, width=700, height=400>
-              </p>
-            </div>
-
-          <div class="module">
-            <h2 id=M3>
-              Phred score according to the read type
-            </h2>
-            <p>
-                <img src="{6}" alt=phred_score>
-            </p>
-          </div>
-
-          <div class="module">
-              <h2 id="M4">Phred score frequency</h2>
-              <p>
-                <img src="{10}" alt=phred score frequency>
-              </p>
-            </div>
-
-          <div class="module">
-            <h2 id=M5>Channel counts</h2>
-            <p>
-                <img src="{7}" alt=channel_count>
-            </p>
-          </div>
-
-            <div class="module">
-              <h2 id="M6">Channel occupancy</h2>
-              <p>
-                <img src="{9}" alt=channel_occupancy>
-              </p>
-            </div>
-
-             <div class="module">
-              <h2 id="M7">Relation between the sequence length template and the mean qscore template</h2>
-              <p>
-                <img src="{11}" alt=scatter plot>
-              </p>
-            </div>
-        <div class="footer">
-      Produced by <a href="https://github.com/GenomicParisCentre/toulligQC">ToulligQC</a> (version 0.0.1)
-         </div>
+    # Compose the Banner of the page
+    banner = """
+    <div class="header">
+      <div id="header_title">Run MinION report<br/></div>
+      <div id="header_filename">
+        Run name: {0}<br>
+        Run date: {1}<br>
+        Flowcell id: {2}
+      </div>
     </div>
-    </body>
+""".format(run_name, run_date, flowcell_id)
 
-    </html>""".format(run_name, run_date, flowcell_id, number_of_read, read_count_barplot, read_length_histogram, phred_score_boxplot,
-                      channel_count_histogram, read_number_curve, channel_occupancy, phred_score_frequency, scatterplot)
+    # Compose the summary section of the page
+    summary = """
+    <div class='summary'>
+      <h2>Summary</h2>
+      <ol>
+"""
+    for i, t in enumerate(graphs):
+      summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0]  + "</a></li>\n"
+    summary += """      </ol>
+    </div>
+"""
+
+    # Compose the main of the page
+    main_report = """
+    <div class = 'main'>
+      <div class="module"><p><b>Number of reads: {0}</b></p></div>
+""".format(number_of_read)
+    for i, t in enumerate(graphs):
+      main_report += "      <div class=\"module\"><h2 id=M{0}>{1}</h2><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], t[1])
+    main_report += "    </div>\n"
 
 
+    # Add all the element of the page
+    report = header + banner + summary + main_report + footer
+
+    # Write the HTML page
     f.write(report)
     f.close()
