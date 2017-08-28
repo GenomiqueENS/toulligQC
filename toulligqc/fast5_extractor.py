@@ -48,6 +48,14 @@ class fast5_extractor():
         self.fast5_file_extension = ''
         self.fast5_file = ''
 
+    def get_name(self):
+        '''
+        Get the name of the extractor.
+        :return: the name of the extractor
+        '''
+        return 'FAST5'
+
+
     def init(self):
         '''
         Determination of the fast5 file extension

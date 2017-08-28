@@ -62,6 +62,13 @@ class albacore_stats_extractor():
             except:
                 sys.exit('No barcode found in sequencing summary file')
 
+    def get_name(self):
+        '''
+        Get the name of the extractor.
+        :return: the name of the extractor
+        '''
+        return 'Albacore statistics'
+
     def init(self):
         '''
         Initialisation

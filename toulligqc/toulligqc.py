@@ -32,6 +32,7 @@ import csv
 import re
 import argparse
 import os
+import time
 from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
 from toulligqc import statistics_generator
@@ -184,11 +185,37 @@ def get_barcode(samplesheet):
     return sorted(set_doublon)
 
 def create_output_directories(config_dictionary):
+    '''
+    Create output directories
+    :param config_dictionary: configuration dictionnary
+    '''
     image_directory = config_dictionary['result_directory'] + 'images/'
     statistic_directory = config_dictionary['result_directory'] + 'statistics/'
     os.makedirs(image_directory)
     os.makedirs(statistic_directory)
 
+def _welcome(config_dictionary):
+    '''
+    Print welcome message
+    '''
+    _show(config_dictionary, "ToulligQC version " + config_dictionary['app.version'])
+
+def _show(config_dictionary, msg):
+    '''
+    Print a message on the screen
+    :param config_dictionary: configuration dictionnary
+    :param msg: message to print
+    '''
+    print(msg)
+
+def _format_time(t):
+    '''
+    Format a time duration for humans
+    :param t: time in milliseconds
+    :return: a string with the duration
+    '''
+
+    return time.strftime("%H:%M:%S", time.gmtime(t))
 
 def main():
     '''
@@ -215,27 +242,44 @@ def main():
     if os.path.isdir(config_dictionary['albacore_summary_source']):
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['run_name'] + '/sequencing_summary.txt'
 
+    # Print welcome message
+    _welcome(config_dictionary)
+
     #Production of the extractors object
     extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
 
     #Configuration checking and initialisation of the extractors
+    _show(config_dictionary, "* Initialize extractors")
     for extractor in extractors:
         extractor.check_conf()
         extractor.init()
 
     result_dict = {}
     graphs = []
+    qc_start = time.time()
 
     #Information extraction about statistics and generation of the graphs
     for extractor in extractors:
+        _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
+
+        extractor_start = time.time()
         extractor.extract(result_dict)
         graphs.extend(extractor.graph_generation())
         extractor.clean()
+        extractor_end = time.time()
+
+        _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extractor_end - extractor_start)))
 
     #HTML report and statistics file generation
+    _show(config_dictionary, "* Write HTML report")
     html_report.html_report(config_dictionary, result_dict, graphs)
+
+    _show(config_dictionary, "* Write statistics files")
     statistics_generator.statistics_generator(config_dictionary, result_dict)
     statistics_generator.save_result_file(config_dictionary, result_dict)
+
+    qc_end = time.time()
+    _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))
 
 if __name__ == "__main__":
     main()

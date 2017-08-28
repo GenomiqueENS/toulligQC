@@ -54,6 +54,14 @@ class fastq_extractor():
 
         self.fastq_file_extension = ''
 
+    def get_name(self):
+        '''
+        Get the name of the extractor.
+        :return: the name of the extractor
+        '''
+        return 'FASTQ'
+
+
     def init(self):
         '''
         Initialization and determination of the fastq file extension
