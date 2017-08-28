@@ -23,6 +23,7 @@
 
 #HTML report generation
 import re
+import base64
 
 def html_report(config_dictionary, result_dict, graphs):
     '''
@@ -297,7 +298,7 @@ def html_report(config_dictionary, result_dict, graphs):
       <div class="module"><p><b>Number of reads: {0}</b></p></div>
 """.format(number_of_read)
     for i, t in enumerate(graphs):
-      main_report += "      <div class=\"module\"><h2 id=M{0}>{1}</h2><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], t[1])
+      main_report += "      <div class=\"module\"><h2 id=M{0}>{1}</h2><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
     main_report += "    </div>\n"
 
 
@@ -307,3 +308,17 @@ def html_report(config_dictionary, result_dict, graphs):
     # Write the HTML page
     f.write(report)
     f.close()
+
+
+def _embedded_image(image_path):
+    '''
+    Embedded an image
+    :param image_path: path of the image
+    :return: a string with the image in base64
+    '''
+
+    with open(image_path, "rb") as image_file:
+        result = "data:image/png;base64," + base64.b64encode(image_file.read()).decode('ascii')
+
+    return result
+
