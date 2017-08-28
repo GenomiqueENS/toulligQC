@@ -28,7 +28,7 @@ from matplotlib import gridspec
 from pandas.tools.plotting import table
 import re
 
-def make_table(value, ax, metric_suppression=''):
+def _make_table(value, ax, metric_suppression=''):
     '''
     Creation of a statistics table printed with the graph
     :param value: information measured
@@ -49,7 +49,7 @@ def make_table(value, ax, metric_suppression=''):
     the_table.scale(1, 1.2)
 
 
-def safe_log(x):
+def _safe_log(x):
     '''
     Verification that we haven't a null value
     :param x: tested value
@@ -63,6 +63,7 @@ def read_length_histogram(albacore_log, my_dpi,result_directory):
     """
     Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
     """
+    output_file = result_directory + '/read_length_histogram.png'
     sequence_length_template = albacore_log['sequence_length_template']
     minimum, maximum = min(sequence_length_template), max(sequence_length_template)
 
@@ -71,7 +72,7 @@ def read_length_histogram(albacore_log, my_dpi,result_directory):
     ax = plt.subplot(gs[0])
 
     n, bins, patches = ax.hist(sequence_length_template, edgecolor='black',
-                               bins=2 ** np.linspace(safe_log(minimum), safe_log(maximum), 30))
+                               bins=2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30))
     ax.set_xscale('log', basex=2)
     ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.1f'))
     ax.set_xticks(bins)
@@ -93,14 +94,16 @@ def read_length_histogram(albacore_log, my_dpi,result_directory):
     the_table.set_fontsize(12)
     the_table.scale(1, 1)
 
-    plt.savefig(result_directory + 'images/read_length_histogram.png')
+    plt.savefig(output_file)
     plt.close()
-    return 'Read size histogram', result_directory + 'images/read_length_histogram.png'
+
+    return 'Read size histogram', output_file
 
 def phred_score_frequency(albacore_log, my_dpi, result_directory):
     '''
     Plot the distribution of the phred score
     '''
+    output_file = result_directory + '/phred_score_frequency.png'
     plt.figure(figsize=(800 / my_dpi, 8), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
@@ -115,29 +118,33 @@ def phred_score_frequency(albacore_log, my_dpi, result_directory):
     plt.axvline(x=albacore_log['mean_qscore_template'].describe()['50%'], color='green')
 
     ax2 = plt.subplot(gs[1])
-    make_table(rd, ax2, 'count')
-    plt.savefig(result_directory + 'images/phred_score_frequency.png')
+    _make_table(rd, ax2, 'count')
+    plt.savefig(output_file)
     plt.close()
-    return "Phred score frequency", result_directory + 'images/phred_score_frequency.png'
+
+    return "Phred score frequency", output_file
 
 def scatterplot(albacore_log, my_dpi, result_directory):
     '''
     Plot the scatter plot representing the relation between the phred score and the sequence length
     '''
+    output_file = result_directory + '/scatter_plot.png'
     plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
     plt.scatter(x=albacore_log['sequence_length_template'], y=albacore_log['mean_qscore_template'])
     plt.xlim(0, 100000)
     plt.xlabel("sequence_length_template")
     plt.ylabel("mean_qscore_template")
     plt.title("mean template qscore function of template read length")
-    plt.savefig(result_directory + 'images/scatter_plot.png')
+    plt.savefig(output_file)
     plt.close()
-    return "mean template qscore function of template read length", result_directory + 'images/mean_template_qscore_function_of_template_read_length.png'
+
+    return "mean template qscore function of template read length", output_file
 
 def read_count_histogram(albacore_log, my_dpi, result_directory):
     """
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
     """
+    output_file = result_directory + '/read_count_histogram.png'
     plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
     fast5_raw = len(albacore_log['num_events'])
     fast5_template_basecalled = \
@@ -157,14 +164,16 @@ def read_count_histogram(albacore_log, my_dpi, result_directory):
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
 
-    plt.savefig(result_directory + 'images/read_count_histogram.png')
+    plt.savefig(output_file)
     plt.close()
-    return "Counts of read template", result_directory + 'images/read_count_histogram.png'
+
+    return "Counts of read template", output_file
 
 def read_quality_boxplot(albacore_log, my_dpi, result_directory):
     """
     Plots a boxplot of reads quality
     """
+    output_file = result_directory + '/read_quality_boxplot.png'
     plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
@@ -175,16 +184,18 @@ def read_quality_boxplot(albacore_log, my_dpi, result_directory):
     plt.ylabel('Phred score')
 
     ax2 = plt.subplot(gs[1])
-    make_table(dataframe, ax2, 'count')
+    _make_table(dataframe, ax2, 'count')
 
-    plt.savefig(result_directory + 'images/read_quality_boxplot.png')
+    plt.savefig(output_file)
     plt.close()
-    return 'Boxplot of read quality', result_directory + 'images/read_quality_boxplot.png'
+
+    return 'Boxplot of read quality', output_file
 
 def channel_count_histogram(albacore_log, my_dpi, result_directory):
     """
     Plots an histogram of the channel count according to the channel number
     """
+    output_file = result_directory + '/channel_count_histogram.png'
     plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
@@ -197,17 +208,19 @@ def channel_count_histogram(albacore_log, my_dpi, result_directory):
     channel_count = albacore_log['channel']
     total_number_reads_per_channel = pd.value_counts(channel_count)
     ax2 = plt.subplot(gs[1])
-    make_table(total_number_reads_per_channel, ax2, metric_suppression=['mean', 'std', '50%', '75%', '25%'])
+    _make_table(total_number_reads_per_channel, ax2, metric_suppression=['mean', 'std', '50%', '75%', '25%'])
 
-    plt.savefig(result_directory + 'images/channel_count_histogram.png')
+    plt.savefig(output_file)
     plt.close()
-    return "Channel counts", result_directory + 'images/channel_count_histogram.png'
+
+    return "Channel counts", output_file
 
 
 def read_number_run(albacore_log, my_dpi, result_directory):
     """
     Plots the reads produced along the run against the time(in hour)
     """
+    output_file = result_directory + '/read_number_run.png'
     plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
     start_time = albacore_log["start_time"] / 3600
     start_time_sorted = sorted(start_time)
@@ -216,11 +229,12 @@ def read_number_run(albacore_log, my_dpi, result_directory):
     plt.xlabel("hour")
     plt.title("Read produced along the run")
 
-    plt.savefig(result_directory + 'images/read_number_run.png')
+    plt.savefig(output_file)
     plt.close()
-    return "Read produced along the run", result_directory + 'images/read_number_run.png'
 
-def minion_flowcell_layout():
+    return "Read produced along the run", output_file
+
+def _minion_flowcell_layout():
     """
     Represents the layout of a minion flowcell
     """
@@ -242,7 +256,8 @@ def plot_performance(pore_measure, my_dpi, result_directory):
     Plots the channels occupancy by the reads
     @:param pore_measure: reads number per pore
     """
-    flowcell_layout = minion_flowcell_layout()
+    output_file = result_directory + '/channel_occupancy.png'
+    flowcell_layout = _minion_flowcell_layout()
 
     pore_values = []
     for pore in flowcell_layout:
@@ -264,14 +279,16 @@ def plot_performance(pore_measure, my_dpi, result_directory):
     sns.heatmap(d, fmt="", annot=d2, linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7})
     plt.title('Channel occupancy')
 
-    plt.savefig(result_directory + 'images/channel_occupancy.png')
+    plt.savefig(output_file)
     plt.close()
-    return 'Channel occupancy', result_directory + 'images/channel_occupancy.png'
+
+    return 'Channel occupancy', output_file
 
 def barcode_percentage_pie_chart(albacore_log, barcode_selection, my_dpi, result_directory):
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
+    output_file = result_directory + '/barcode_percentage_pie_chart.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
@@ -301,14 +318,16 @@ def barcode_percentage_pie_chart(albacore_log, barcode_selection, my_dpi, result
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
 
-    plt.savefig(result_directory + 'images/barcode_percentage_pie_chart.png')
+    plt.savefig(output_file)
     plt.close()
-    return 'Percentage of different barcodes', result_directory + 'images/barcode_percentage_pie_chart.png'
+
+    return 'Percentage of different barcodes', output_file
 
 def barcode_length_boxplot(albacore_log, barcode_selection, my_dpi, result_directory):
     '''
     Plot the length boxplot for each barcode indicated in the sample sheet
     '''
+    output_file = result_directory + '/barcode_length_boxplot.png'
     pattern = '(\d{2})'
     dico = {}
 
@@ -332,15 +351,17 @@ def barcode_length_boxplot(albacore_log, barcode_selection, my_dpi, result_direc
     plt.title('Read size distribution for each barcode')
 
     ax2 = plt.subplot(gs[1])
-    make_table(barcode_selection_sequence_length_dataframe,ax2)
-    plt.savefig(result_directory + 'images/barcode_length_boxplot.png')
+    _make_table(barcode_selection_sequence_length_dataframe,ax2)
+    plt.savefig(output_file)
     plt.close()
-    return 'Read size distribution for each barcode', result_directory + 'images/barcode_length_boxplot.png'
+
+    return 'Read size distribution for each barcode', output_file
 
 def barcoded_phred_score_frequency(albacore_log, barcode_selection, my_dpi, result_directory):
     '''
     Plot the phred score distribution boxplot for each barcode indicated in the sample sheet
     '''
+    output_file = result_directory + '/barcode_phred_score_boxplot.png'
     dico = {}
     pattern = '(\d{2})'
 
@@ -362,7 +383,8 @@ def barcoded_phred_score_frequency(albacore_log, barcode_selection, my_dpi, resu
     plt.title('Phred score distribution for each barcode')
 
     ax2 = plt.subplot(gs[1])
-    make_table(barcode_selection_phred_scrore_dataframe,ax2)
-    plt.savefig(result_directory + 'images/barcode_phred_score_boxplot.png')
+    _make_table(barcode_selection_phred_scrore_dataframe,ax2)
+    plt.savefig(output_file)
     plt.close()
-    return 'Phred score distribution for each barcode', result_directory + 'images/barcode_phred_score_boxplot.png'
+
+    return 'Phred score distribution for each barcode', output_file

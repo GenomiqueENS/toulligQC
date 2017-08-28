@@ -108,26 +108,27 @@ class albacore_stats_extractor():
         Generation of the differents graphs containing in the graph_generator module
         :return: images array containing the title and the path toward the images
         '''
+        images_directory = self.result_directory + '/images'
         images = []
-        images.append(graph_generator.read_count_histogram(self.albacore_log, self.my_dpi, self.result_directory))
-        images.append(graph_generator.read_length_histogram(self.albacore_log, self.my_dpi, self.result_directory))
-        images.append(graph_generator.read_number_run(self.albacore_log, self.my_dpi, self.result_directory))
-        images.append(graph_generator.read_quality_boxplot(self.albacore_log, self.my_dpi, self.result_directory))
-        images.append(graph_generator.phred_score_frequency(self.albacore_log, self.my_dpi, self.result_directory))
-        images.append(graph_generator.channel_count_histogram(self.albacore_log, self.my_dpi,self.result_directory))
+        images.append(graph_generator.read_count_histogram(self.albacore_log, self.my_dpi, images_directory))
+        images.append(graph_generator.read_length_histogram(self.albacore_log, self.my_dpi, images_directory))
+        images.append(graph_generator.read_number_run(self.albacore_log, self.my_dpi, images_directory))
+        images.append(graph_generator.read_quality_boxplot(self.albacore_log, self.my_dpi, images_directory))
+        images.append(graph_generator.phred_score_frequency(self.albacore_log, self.my_dpi, images_directory))
+        images.append(graph_generator.channel_count_histogram(self.albacore_log, self.my_dpi, images_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, self.my_dpi,
-                                                       self.result_directory))
-        images.append(graph_generator.scatterplot(self.albacore_log, self.my_dpi, self.result_directory))
+                                                       images_directory))
+        images.append(graph_generator.scatterplot(self.albacore_log, self.my_dpi, images_directory))
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart(self.albacore_log, self.barcode_selection,
                                                                              self.my_dpi, self.result_directory))
             images.append(graph_generator.barcode_length_boxplot(self.albacore_log, self.barcode_selection,
-                                                                       self.my_dpi, self.result_directory))
+                                                                       self.my_dpi, images_directory))
             images.append(graph_generator.barcoded_phred_score_frequency(self.albacore_log,
                                                                                self.barcode_selection, self.my_dpi,
-                                                                               self.result_directory))
+                                                                               images_directory))
         return images
 
     def clean(self):
