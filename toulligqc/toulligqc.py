@@ -63,6 +63,8 @@ def parse_args(config_dictionary):
                         help='Path to sample sheet file')
     parser.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Barcode usage",
                         default=False)
+    parser.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
+                        default=False)
     parser.add_argument('--version', action='version', version=version.__version__)
 
 
@@ -76,6 +78,7 @@ def parse_args(config_dictionary):
     is_barcode = argument_value.is_barcode
     result_directory = argument_value.output
     sample_sheet_file = argument_value.sample_sheet_file
+    is_quiet = argument_value.is_quiet
 
     config_dictionary['run_name'] = run_name
 
@@ -105,6 +108,10 @@ def parse_args(config_dictionary):
 
     if is_barcode:
         config_dictionary['barcoding'] = 'True'
+
+    if is_quiet:
+        config_dictionary['quiet'] = 'True'
+
 
     for key, value in config_dictionary.items():
 
@@ -207,7 +214,8 @@ def _show(config_dictionary, msg):
     :param config_dictionary: configuration dictionnary
     :param msg: message to print
     '''
-    print(msg)
+    if not config_dictionary['quiet'].strip().lower() == 'true':
+        print(msg)
 
 def _format_time(t):
     '''
