@@ -26,12 +26,20 @@
 #
 #
 
+import tempfile
+from toulligqc import version
+
 class toulligqc_conf():
     """
     Dictionary for the storage of configuration file
     """
     def __init__(self):
-        self._config_dictionary = {'dpi': '100', 'tmpdir': '/tmp', 'barcoding': 'False'}
+        self._config_dictionary = {'app.name' : "ToulligQC", \
+                                   'app.url' : "https://github.com/GenomicParisCentre/toulligQC", \
+                                   'app.version' :  version.__version__, \
+                                   'dpi': '100', \
+                                   'tmpdir': tempfile.gettempdir(), \
+                                   'barcoding': 'False'}
 
     def __getitem__(self, item):
         return self._config_dictionary[item]
@@ -44,6 +52,10 @@ class toulligqc_conf():
 
     def __contains__(self, item):
         return
+
+    def __str__(self):
+        return self._config_dictionary.__str__()
+
     def load(self,conf_path):
 
         with open(conf_path, 'r') as config_file:
