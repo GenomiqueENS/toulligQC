@@ -123,7 +123,7 @@ class albacore_stats_extractor():
         images.append(graph_generator.scatterplot(self.albacore_log, self.my_dpi, images_directory))
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart(self.albacore_log, self.barcode_selection,
-                                                                             self.my_dpi, self.result_directory))
+                                                                             self.my_dpi, images_directory))
             images.append(graph_generator.barcode_length_boxplot(self.albacore_log, self.barcode_selection,
                                                                        self.my_dpi, images_directory))
             images.append(graph_generator.barcoded_phred_score_frequency(self.albacore_log,
