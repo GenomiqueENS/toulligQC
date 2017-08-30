@@ -89,29 +89,23 @@ def parse_args(config_dictionary):
         config_dictionary.load(home + '/.toulligqc/config.txt')
 
     #Rewrite the configuration file value if argument option is present
-    if fast5_source:
-        config_dictionary['fast5_source'] = fast5_source
+    source_file = [
+        ('fast5_source', fast5_source),
+        ('albacore_summary_source', albacore_summary_source),
+        ('fastq_source', fastq_source),
+        ('result_directory', result_directory),
+        ('sample_sheet_file', sample_sheet_file),
+        ('barcoding', 'True'),
+        ('quiet', 'True'),
+    ]
 
-    if albacore_summary_source:
-        config_dictionary['albacore_summary_source'] = albacore_summary_source
-
-    if fastq_source:
-        config_dictionary['fastq_source'] = fastq_source
-    else:
-        config_dictionary['fastq_source'] = config_dictionary['fastq_source']+'/'+run_name
-
-    if result_directory:
-        config_dictionary['result_directory'] = result_directory
-
-    if sample_sheet_file:
-        config_dictionary['sample_sheet_file'] = sample_sheet_file
-
-    if is_barcode:
-        config_dictionary['barcoding'] = 'True'
-
-    if is_quiet:
-        config_dictionary['quiet'] = 'True'
-
+    for key, value in source_file:
+        if value:
+            config_dictionary[key] = value
+        elif key == 'fastq_source':
+            config_dictionary['fastq_source'] = config_dictionary['fastq_source'] + '/' + run_name
+        else:
+            continue
 
     for key, value in config_dictionary.items():
 
