@@ -51,11 +51,27 @@ class toulligqc_conf():
     def items(self):
         return self._config_dictionary.items()
 
-    def __contains__(self, item):
-        return
+    def __contains__(self, key):
+        return key in self.keys()
 
     def __str__(self):
         return self._config_dictionary.__str__()
+
+    def __len__(self):
+        return len(self._config_dictionary)
+
+    def __missing__(self, key):
+        raise KeyError(key)
+
+    def __delitem__(self, key):
+        del self._config_dictionary[key]
+
+    def __iter__(self):
+        for key in self._config_dictionary:
+            yield key
+
+    def keys(self):
+        return self._config_dictionary.keys()
 
     def load(self,conf_path):
 
