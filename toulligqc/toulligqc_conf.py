@@ -79,7 +79,8 @@ class toulligqc_conf():
             for line in config_file:
                 if line.startswith('#'):
                     continue
-                elif line.strip():
+                elif line.startswith(('fast5_source', 'albacore_summary_source', 'fastq_source', 'result_directory',
+                                     'sample_sheet_file')):
                     line = line.replace(" ", "")
                     path_list = line.strip().split('=')
                     self._config_dictionary[path_list[0]] = path_list[1]
