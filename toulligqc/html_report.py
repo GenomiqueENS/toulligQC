@@ -42,18 +42,6 @@ def html_report(config_dictionary, result_dict, graphs):
     run_date = '{}-{}-{}'.format(date[2], date[1], date[0])
     f = open(result_directory + 'report.html', 'w')
 
-    image_title, image_path = zip(*graphs)
-    read_count_barplot = image_path[0]
-    read_length_histogram = image_path[1]
-    read_number_curve = image_path[2]
-    phred_score_boxplot = image_path[3]
-    phred_score_frequency = image_path[4]
-    channel_count_histogram = image_path[5]
-    channel_occupancy = image_path[6]
-    scatterplot = image_path[7]
-    barcode_pie_chart = image_path[8]
-    barcode_length_boxplot = image_path[9]
-    barcode_phred_score_boxplot = image_path[10]
     number_of_read = len(sequence_length_template)
 
     # Define the header of the page
