@@ -132,7 +132,7 @@ A configuration file can be used, the required informations has to be defined as
 fast5_source=/path/to/fast5/directory/or/file
 albacore_summary_source=/path/to/albacore/sequencing/summary/directory/or/file
 ;(directory where the results are stored)
-output =/path/to/result/directory/
+result_directory =/path/to/result/directory/
 fastq_source=/path/to/fastq/directory/or/file 
 sample_sheet_file=/path/to/sample/sheet/file
 ```
