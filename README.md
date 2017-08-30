@@ -1,7 +1,9 @@
 # ToulligQC
 This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not. It requires a samplesheet describing the barcodes used if the run was barcoded. It partly relies on the file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore. It also needs a single FAST5 file (to catch the flowcell Id and the run date) and the the Albacore outputted FASTQ file (to compute the sequence statistics). To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
-This program will produce a set of graphs and statistic files and a report in html format.
-ToulligQC is developped by the Genomic facility of the biology institute of ecole normale superieure(IBENS)
+This program will produce a set of graphs and statistic files and a report in HTML format.
+
+
+ToulligQC is developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biologie of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
 
 ## Table of Contents
 
@@ -31,8 +33,9 @@ ToulligQC is developped by the Genomic facility of the biology institute of ecol
 ### 1.1 Local
 This option is also suitable if you are interested in further developing the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
 
-```$ git clone https://github.com/GenomicParisCentre/toulligQC.git
-   $ cd toulligqc && python3 setup.py build install
+```bash
+$ git clone https://github.com/GenomicParisCentre/toulligQC.git
+$ cd toulligqc && python3 setup.py build install
 ```
 
 * **Requirements**
@@ -43,7 +46,7 @@ To run ToulligQC without Docker, you need to install the following softwares:
 * pandas
 * seaborn
 * numpy
-* 
+
 <a name="docker"></a>
 ### 1.2 Docker
 ToulligQC and its dependencies are available through a Docker image. To install docker on your system, go to the Docker website. Even if Docker can run on Windows or macOS virtual machines, we recommend to run ToulligQC on a Linux host. 
@@ -95,7 +98,6 @@ optional arguments:
   -q FASTQ_SOURCE, --fastq-source FASTQ_SOURCE fastq file source                   
   -o OUTPUT_DIRECTORY, --output OUTPUT_DIRECTORY  output directory
   -s SAMPLE_SHEET_SOURCE, --sample-sheet-source SAMPLE_SHEET_SOURCE Sample sheet source
-
 ```
                        
  <a name="example"></a>
@@ -103,19 +105,21 @@ optional arguments:
   
 Example with optional arguments:
 
+```bash
+$ python3 toulligqc.py --run_name FAF0256 \
+                       --barcoding \
+                       --config_file /path/to/configuration/file/
 ```
-$ python3 toulligqc.py --run_name FAF0256 
-                       --barcoding 
-                       --config_file /path/to/configuration/file/```
 
 Example with optional arguments but no config file:
 
-```
-$ python3 toulligqc.py --run_name FAF0256 
-					   --barcoding --fast5_source /path/to/fast5/source \
-					   --albacore_summary_source /path/to/albacore/summary/source \
+```bash
+$ python3 toulligqc.py --run_name FAF0256 \
+                       --barcoding --fast5_source /path/to/fast5/source \
+                       --albacore_summary_source /path/to/albacore/summary/source \
                        --fastq_source /path/to/fastq/source \
-                       --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet```
+                       --output /path/to/output/directory --sample-sheet-source /path/to/sample/sheet
+```
 
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
