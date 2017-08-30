@@ -44,7 +44,7 @@ class fastq_extractor():
         if self.is_barcode == 'True':
             self.is_barcode = True
         elif self.is_barcode == 'False':
-            self.is_barcode = True
+            self.is_barcode = False
 
         self.fastq_file = ''
         self.result_directory = config_dictionary['result_directory']
