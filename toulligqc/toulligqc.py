@@ -95,8 +95,8 @@ def parse_args(config_dictionary):
         ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
-        ('barcoding', 'True'),
-        ('quiet', 'True'),
+        ('barcoding', is_barcode),
+        ('quiet', is_quiet)
     ]
 
     for key, value in source_file:
