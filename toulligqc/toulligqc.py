@@ -51,9 +51,8 @@ def parse_args(config_dictionary):
 
     home = str(Path.home())
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--conf-file",
-                             help="Specify config file", metavar="FILE")
-    parser.add_argument("-n", "--run-name", action='store', dest="run_name", help="Run name", required=True)
+    parser.add_argument("-c", "--conf-file",help="Specify config file", metavar="FILE")
+    parser.add_argument("-n", "--run-name", action='store', dest="run_name", help="Run name",type=str)
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
                         help='Albacore summary source')
@@ -66,7 +65,6 @@ def parse_args(config_dictionary):
     parser.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                         default=False)
     parser.add_argument('--version', action='version', version=version.__version__)
-
 
     #Parsing lone aruguments and assign each argument value to a variable
     argument_value = parser.parse_args()
@@ -103,7 +101,7 @@ def parse_args(config_dictionary):
         if value:
             config_dictionary[key] = value
         elif key == 'fastq_source':
-            config_dictionary['fastq_source'] = config_dictionary['fastq_source'] + '/' + run_name
+            config_dictionary['fastq_source'] = config_dictionary['fastq_source']
         else:
             continue
 
@@ -175,10 +173,12 @@ def get_barcode(samplesheet):
         spamreader = csv.reader(csvfile, delimiter='\t')
 
         for row in spamreader:
+
+            # Do not handle comment lines
             if row[0].startswith('#'):
                 continue
-            else:
-                pattern = re.search(r'BC(\d{2})', row[0])
+
+            pattern = re.search(r'BC(\d{2})', row[0])
 
             if pattern:
                 barcode = 'barcode{}'.format(pattern.group(1))
@@ -232,7 +232,7 @@ def main():
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
 
-    if config_dictionary['barcoding'] == 'True':
+    if config_dictionary['barcoding'] == True:
         sample_sheet_file = config_dictionary['sample_sheet_file']
         barcode_selection = get_barcode(sample_sheet_file)
         config_dictionary['barcode_selection'] = barcode_selection

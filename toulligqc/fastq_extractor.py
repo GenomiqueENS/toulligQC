@@ -32,6 +32,15 @@ import gzip
 import sys
 import re
 
+def _show(config_dictionary, msg):
+    '''
+    Print a message on the screen
+    :param config_dictionary: configuration dictionnary
+    :param msg: message to print
+    '''
+    if not config_dictionary['quiet'].strip().lower() == 'true':
+        print(msg)
+
 
 class fastq_extractor():
     def __init__(self, config_dictionary):
@@ -41,7 +50,7 @@ class fastq_extractor():
         self.run_name = config_dictionary['run_name']
         self.is_barcode = config_dictionary['barcoding']
 
-        if self.is_barcode == 'True':
+        if self.is_barcode == True:
             self.is_barcode = True
         elif self.is_barcode == 'False':
             self.is_barcode = False
@@ -99,7 +108,6 @@ class fastq_extractor():
             else:
                 print('The fastq source extension is not supported (fast5, tar.bz2 or tar.gz format)')
                 sys.exit(0)
-
 
         elif self.fastq_source.endswith('.fastq'):
             self.fastq_file_extension = 'fastq'

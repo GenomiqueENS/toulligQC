@@ -47,7 +47,7 @@ def statistics_generator(config_dictionary, result_dict):
 
 
     with open(completeName, 'w') as file_data:
-        if config_dictionary['barcoding'] == 'True':
+        if config_dictionary['barcoding'] == True:
             for barcode in barcode_selection:
                 if barcode == 'unclassified':
                     pass

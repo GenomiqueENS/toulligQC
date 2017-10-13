@@ -27,7 +27,6 @@ from toulligqc import graph_generator
 import numpy as np
 import re
 
-
 class albacore_stats_extractor():
     '''
     Extraction of statistics from sequencing_summary.txt file and graph generation
