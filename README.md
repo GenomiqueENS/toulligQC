@@ -1,9 +1,15 @@
 # ToulligQC
-This program is dedicated to the QC analyses of Oxford Nanopore runs, barcoded or not. It requires a samplesheet describing the barcodes used if the run was barcoded. It partly relies on the file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore. It also needs a single FAST5 file (to catch the flowcell Id and the run date) and the the Albacore outputted FASTQ file (to compute the sequence statistics). To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
-This program will produce a set of graphs and statistic files and a report in HTML format.
 
+ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biologie of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
 
-ToulligQC is developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biologie of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
+This program is dedicated to the QC analyses of Oxford Nanopore runs.
+Moreover it is adapted to RNA-Seq along with DNA-Seq.
+It partly relies on the summary.txt file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
+It also needs a single FAST5 file (to catch the flowcell Id and the run date) and the Albacore outputted FASTQ file (to compute the sequence statistics).
+ToulligQC can take barcoding samples into account with a samplesheet.csv describing the barcodes used.
+
+To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
+This tool will produce a set of graphs and statistic files in txt format and a HTML report.
 
 ## Table of Contents
 
