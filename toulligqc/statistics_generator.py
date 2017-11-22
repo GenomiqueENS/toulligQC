@@ -37,7 +37,7 @@ def statistics_generator(config_dictionary, result_dict):
     barcode_selection = config_dictionary['barcode_selection']
 
     minknown_version = result_dict['minknow_version']
-    flowcell_id = result_dict['flowcell_id']
+    flow_cell_id = result_dict['flow_cell_id']
     hostname = result_dict['hostname']
     minion_run_id = result_dict['minion_run_id']
     protocol_run_id = result_dict['protocol_run_id']
@@ -97,7 +97,7 @@ def statistics_generator(config_dictionary, result_dict):
             file_data.write("channel.occupancy.{}={}\n".format(index, value))
 
         file_data.write("Number.of.reads={}\n".format(len(result_dict['sequence_length_template'])))
-        file_data.write("flowcell.serial.number={}\n".format(flowcell_id))
+        file_data.write("flowcell.serial.number={}\n".format(flow_cell_id))
         file_data.write("minknown.version={}\n".format(minknown_version))
         file_data.write("hostname={}\n".format(hostname))
         file_data.write("minion.serial.number={}\n".format(protocol_run_id))

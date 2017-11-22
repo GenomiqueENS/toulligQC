@@ -81,13 +81,15 @@ class fast5_extractor():
         Extraction of the different informations about the fast5 files
         :param result_dict:
         :return: result_dict
-        '''
+       '''
         h5py_file = self._read_fast5()
-        result_dict['flowcell_id'] = self._get_flowcell_id(h5py_file)
-        result_dict['minknow_version'] = self._get_minknow_version(h5py_file)
-        result_dict['hostname'] = self._get_hostname(h5py_file)
-        result_dict['minion_run_id'] = self._get_minion_run_id(h5py_file)
-        result_dict['protocol_run_id'] = self._get_protocol_run_id(h5py_file)
+        result_dict['flow_cell_id'] = self._get_fast5_items(h5py_file,'flow_cell_id')
+        result_dict['minknow_version'] = self._get_fast5_items(h5py_file,'version')
+        result_dict['hostname'] = self._get_fast5_items(h5py_file,'hostname')
+        result_dict['minion_run_id'] = self._get_fast5_items(h5py_file,'device_id')
+        result_dict['protocol_run_id'] = self._get_fast5_items(h5py_file,'protocol_run_id')
+        result_dict['exp_start_time'] = self._get_fast5_items(h5py_file,'exp_start_time')
+        result_dict['sample_id'] = self._get_fast5_items(h5py_file,'sample_id')
 
     def check_conf(self):
         '''
@@ -178,45 +180,16 @@ class fast5_extractor():
 
         return h5py_file
 
-    def _get_minknow_version(self,h5py_file):
-        """
-        Get the Minknow version from fast5 file
-        """
-        version = list(h5py_file['/UniqueGlobalKey/tracking_id'].attrs.items())
-        version_d = {key: value.decode('utf-8') for key, value in version}
-        return version_d['version']
-
-    def _get_flowcell_id(self,h5py_file):
-        """
-        Get the flowcell id from fast5 file
-        """
-        flowcell_id = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-        flowcell_id_dico = {key: value.decode('utf-7') for key, value in flowcell_id}
-        return flowcell_id_dico['flow_cell_id']
-
-    def _get_hostname(self,h5py_file):
-        """
-        Get the hostname from fast5 file
-        """
-        host_name = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-        host_name_dico = {key: value.decode('utf-8') for key, value in host_name}
-        return host_name_dico['hostname']
-
-    def _get_minion_run_id(self,h5py_file):
-        """
-        Get the number of Minion run
-        """
-        minion_run_id = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-        minion_run_id_dico = {key: value.decode('utf-8') for key, value in minion_run_id}
-        return minion_run_id_dico['device_id']
-
-    def _get_protocol_run_id(self, h5py_file):
-        """
-        Get the run id protocol from fast 5 file
-        """
-        protocol_run_id =  list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-        protocol_run_id_dico = {key: value.decode('utf-8') for key, value in protocol_run_id}
-        return protocol_run_id_dico['protocol_run_id']
+    def _get_fast5_items(self,h5py_file,params):
+        '''
+        Global function to exctract run informations stores in h5py format
+        :param h5py_file: fast5 file store in a h5py object
+        :param params:  required h5py attributes
+        :return: h5py value, for example flow_cell_id : FAE22827
+        '''
+        tracking_id_items = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+        tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
+        return tracking_id_dict[params]
 
 
 
