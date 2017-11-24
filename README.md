@@ -11,7 +11,9 @@ ToulligQC can take barcoding samples into account with a samplesheet.csv describ
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
 This tool will produce a set of graphs, statistic files in txt format and a HTML report.
 
-<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/laffayb-patch-1-1/report.html" rel="some text">![](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/report.png)</a>
+<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/laffayb-patch-1-1/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/report.png)</a>
+
+Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/laffayb-patch-1-1/report.html) to see an report example! 
 
 ## Table of Contents
 
