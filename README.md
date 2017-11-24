@@ -86,24 +86,23 @@ $ docker run -ti \
 <a name="command-line"></a>
 
 To run ToulligQC, you need one of yours initial Fast5 ONT file,
+ 
+You may also have an Albacore output directory like to find the ``` **Fastq files** ```  and ``` **the sequencing_summary.txt** ``` : 
 
-You may also have an Albacore output directory like to find the Fastq file and the sequencing_summary.txt : 
-with Albacore 1.2.6
-               
-  |/workspace/**fastq_run_id.fastq**
---|
-  |- configuration.cfg
-  |- **sequencingsummary.txt** 
-  
- with Albacore 2.0
+* ``` sequencing_summary.txt ``` 
+*  pipeline.log
+*  configuration.cfg
+* ``` workspace ``` 
+  * ```run_id.fastq```
 
-  |/workspace - /pass/**fastq_run_id.fastq**
-  |           - /fail
---|
-  |- configuration.cfg
-  |- **sequencingsummary.txt** 
-  
-  
+** or **
+
+* ``` sequencing_summary.txt ``` 
+*  pipeline.log
+*  configuration.cfg
+* ``` workspace ``` 
+  * ``` pass``` 
+    * ```run_id.fastq```
  
 ### 2.1 Command line
 
@@ -190,17 +189,24 @@ The sample.sheet directory can be omitted if barcodes were not used in the run.
  
 The sample sheet file describes the different barcodes and their corresponding samples. 
 The **Index column is mandatory** and  must contain the Oxford Nanopore Technology **barcode number** like **BC01**.
-The **other columns are optional** but can be useful to define your samples for the following analyses. They can be modified at your convenience.
+``` The **other columns are optional** but can be useful to define your samples for the following analyses. They can be modified at your convenience.```
 
 samplesheet.csv example:
 
-index | Reads | 
+index | ``` Reads ``` | 
 ------- | ------- 
- BC01| dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 
+ BC01| ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 ``` 
 
 ## 3.Output
-We can see a report example in the git repository.
+We can see ...
 
 
+*  ```Run_id``` 
+   * ```report.html```
+   * ```statistics```
+     * ```run_statistics_file.txt```
+     * ```save_result_statistics.txt```
+   * ```images```
+     * ```graphes.png```
 
 
