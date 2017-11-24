@@ -9,7 +9,9 @@ It also needs a single FAST5 file (to catch the flowcell Id and the run date) an
 ToulligQC can take barcoding samples into account with a samplesheet.csv describing the barcodes used.
 
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
-This tool will produce a set of graphs and statistic files in txt format and a HTML report.
+This tool will produce a set of graphs, statistic files in txt format and a HTML report.
+
+<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/laffayb-patch-1-1/report.html" rel="some text">![](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/report.png)</a>
 
 ## Table of Contents
 
@@ -26,7 +28,7 @@ This tool will produce a set of graphs and statistic files in txt format and a H
 
       * [Options](#options)
   
-      * [Example](#example)
+      * [Examples](#examples)
 
      *  2.2 [Configuration file](#configuration-file)
   
@@ -37,7 +39,7 @@ This tool will produce a set of graphs and statistic files in txt format and a H
 ## 1. Get ToulligQC 
 <a name="local-installation"></a>
 ### 1.1 Local
-This option is also suitable if you are interested in further developing the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
+This option is also suitable if you are interested in further developments of the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
 
 ```bash
 $ git clone https://github.com/GenomicParisCentre/toulligQC.git
@@ -85,21 +87,20 @@ $ docker run -ti \
 ## 2. Usage
 <a name="command-line"></a>
 
-To run ToulligQC, you need one of yours initial Fast5 ONT file,
- 
-You may also have an Albacore output directory like to find the ``` **Fastq files** ```  and ``` **the sequencing_summary.txt** ``` : 
+To run ToulligQC, you need one of your initial Fast5 ONT file and you may also need an Albacore output directory to get the ``` Fastq files ```  and ``` the sequencing_summary.txt ```.
+ToulligQC can perform analyses on your data if the directory is organise as following :
 
 * ``` sequencing_summary.txt ``` 
-*  pipeline.log
-*  configuration.cfg
+* ``` pipeline.log ```
+* ``` configuration.cfg``` 
 * ``` workspace ``` 
   * ```run_id.fastq```
 
-** or **
+or 
 
 * ``` sequencing_summary.txt ``` 
-*  pipeline.log
-*  configuration.cfg
+* ```pipeline.log ```
+* ```configuration.cfg```
 * ``` workspace ``` 
   * ``` pass``` 
     * ```run_id.fastq```
@@ -131,7 +132,7 @@ optional arguments:
 ```
 
  <a name="example"></a>
- * #### Example
+ * #### Examples
  
 
 Example with optional arguments:
@@ -145,7 +146,7 @@ $ python3 toulligqc.py --run_name FAF0256 \
 ```
 
 
-Example with optional arguments to barcodes samples:
+Example with optional arguments to deal with barcoded samples:
 
 ```bash
 $ python3 toulligqc.py --run_name FAF0256 \
@@ -157,7 +158,7 @@ $ python3 toulligqc.py --run_name FAF0256 \
                        --sample-sheet-source /path/to/sample/sheet
 ``` 
  
-Example with optional arguments with configuration file:
+Example with optional arguments with a configuration file:
 
 ```bash
 $ python3 toulligqc.py --run_name FAF0256 \
@@ -169,7 +170,7 @@ $ python3 toulligqc.py --run_name FAF0256 \
 <a name="configuration-file"></a>
 ### 2.2 Configuration file
 
-A configuration file can be used, the required informations has to be defined as following in the same order :
+A configuration file can be used, the required informations have to be defined as following in the same order :
 
 ```ini
 [config]
@@ -182,14 +183,14 @@ fastq_source=/path/to/fastq/directory/or/file
 sample_sheet_file=/path/to/sample/sheet/file
 ```
 
-The sample.sheet directory can be omitted if barcodes were not used in the run.
+The samplesheet directory can be omitted if barcodes were not used in the run.
 
 <a name="sample-sheet-for-barcoded-samples"></a>
 ### 2.3 Samplesheet
  
 The sample sheet file describes the different barcodes and their corresponding samples. 
 The **Index column is mandatory** and  must contain the Oxford Nanopore Technology **barcode number** like **BC01**.
-``` The **other columns are optional** but can be useful to define your samples for the following analyses. They can be modified at your convenience.```
+The other columns are optional but can be useful to define your samples for the following analyses. They can be modified at your convenience.
 
 samplesheet.csv example:
 
@@ -198,8 +199,19 @@ index | ``` Reads ``` |
  BC01| ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 ``` 
 
 ## 3.Output
-We can see ...
 
+
+
+ToulligQC gives different informations such as:
+
+- A graph allowing to locate potential flowcell spatial biaises
+- A read length histogram adapted to transcripts
+- A graph checking that the sequencing was homogeneous during a run
+- Graphs representing the phred score frequency
+- A set of graphs providing quality, length informations and read counts for each barcode
+- Full statistics are provided in a text file for complementary analyses if needed
+
+in a output directory organised like this : 
 
 *  ```Run_id``` 
    * ```report.html```
