@@ -58,6 +58,7 @@ class albacore_stats_extractor():
             try:
                 self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
+
             except:
                 sys.exit('No barcode found in sequencing summary file')
 
