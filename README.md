@@ -77,8 +77,8 @@ An image of ToulligQC is hosted on the Docker hub on the genomicpariscentre repo
 $ docker run -ti \
              -u $(id -u):$(ig -g) \
              --rm \  
-             -v /path/to/fast5/directory:/path/to/fast5/directory \
-             -v /path/to/fastq/directory:/path/to/fastq/directory \
+             -v /path/to/fast5/directory:/path/to/fast5/file \
+             -v /path/to/fastq/directory:/path/to/fastq/file \
              -v /path/to/albacore/sequencing/summary/file:/path/to/albacore/sequencing/summary/file \ 
              -v /path/to/samplesheet/file/:/path/to/samplesheet/file/ \
              -v /path/to/configuration/file:/path/to/configuration/file \
@@ -125,12 +125,12 @@ optional arguments:
   -n RUN_NAME, --run-name          Run name                   
   -b, --barcoding                  Search for barcodes to demultiplex sequencing data
   -c CONFIG_FILE, --config-file    Optional configuration file to use
-  -f FAST5_SOURCE, --fast5-source  Fast5 file source
+  -f FAST5_SOURCE, --fast5-source  Fast5 file source (.fast5 or fastq.tar.bz2 format) 
                        
-  -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source      Albacore summary source
-  -q FASTQ_SOURCE, --fastq-source                            Fastq file source                   
+  -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source      Albacore summary source (.txt format)
+  -q FASTQ_SOURCE, --fastq-source                            Fastq file source (.fastq or fastq.tar.gz format)                  
   -o OUTPUT_DIRECTORY, --output                              Path to save the output directory
-  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source              Path to samplesheet to take barcodes into account
+  -s SAMPLE_SHEET_SOURCE, --sample-sheet-source              Path to samplesheet to take barcodes into account 
 ```
 
  <a name="example"></a>
@@ -140,10 +140,10 @@ optional arguments:
 Example with optional arguments:
 
 ```bash
-$ python3 toulligqc.py --run_name FAF0256 \
-                       --fast5_source /path/to/fast5/source \
-                       --albacore_summary_source /path/to/albacore/sequencing_summary.txt \
-                       --fastq_source /path/to/fastq/source \
+$ python3 toulligqc.py --run-name FAF0256 \
+                       --fast5-source /path/to/fast5/source \
+                       --albacore-summary-source /path/to/albacore/sequencing_summary.txt \
+                       --fastq-source /path/to/fastq/source \
                        --output /path/to/output/directory \
 ```
 
@@ -151,11 +151,11 @@ $ python3 toulligqc.py --run_name FAF0256 \
 Example with optional arguments to deal with barcoded samples:
 
 ```bash
-$ python3 toulligqc.py --run_name FAF0256 \
+$ python3 toulligqc.py --run-name FAF0256 \
                        --barcoding \
-                       --fast5_source /path/to/fast5/source \
-                       --albacore_summary_source /path/to/albacore/sequencing_summary.txt \
-                       --fastq_source /path/to/fastq/source \
+                       --fast5-source /path/to/fast5/source \
+                       --albacore-summary-source /path/to/albacore/sequencing_summary.txt \
+                       --fastq-source /path/to/fastq/source \
                        --output /path/to/output/directory \
                        --sample-sheet-source /path/to/sample/sheet
 ``` 
@@ -163,9 +163,9 @@ $ python3 toulligqc.py --run_name FAF0256 \
 Example with optional arguments with a configuration file:
 
 ```bash
-$ python3 toulligqc.py --run_name FAF0256 \
+$ python3 toulligqc.py --run-name FAF0256 \
                        --barcoding \
-                       --config_file /path/to/configuration/file/
+                       --config-file /path/to/configuration/file/
 ```
 
 
