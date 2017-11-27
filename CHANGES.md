@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4 (2017-11-27)
+* Fix issue with the --version option of ToulligQC
+
+
 ## 0.3 (2017-11-27)
 * Fix issue with setup.py and pip install
 
