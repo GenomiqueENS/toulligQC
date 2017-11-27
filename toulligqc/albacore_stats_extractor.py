@@ -58,6 +58,7 @@ class albacore_stats_extractor():
             try:
                 self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
+
             except:
                 sys.exit('No barcode found in sequencing summary file')
 
@@ -96,7 +97,6 @@ class albacore_stats_extractor():
 
         result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
         result_dict['sequence_length_template'] = self.sequence_length_template
-        result_dict['run_date'] = self._run_date()
 
 
 
@@ -147,10 +147,4 @@ class albacore_stats_extractor():
         channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
         return channel_count_statistics
 
-    def _run_date(self):
-        """
-        Returns the date of a Minion run from the log file provided by albacore
-        """
-        file_name = self.albacore_log['filename'].iloc[0]
-        pattern = re.search(r'(_(\d+)_)', file_name)
-        return pattern.group(2)
+

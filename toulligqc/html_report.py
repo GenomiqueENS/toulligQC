@@ -24,8 +24,11 @@
 #HTML report generation
 import re
 import base64
+import dateutil.parser
+
 
 def html_report(config_dictionary, result_dict, graphs):
+
     '''
     Creation of a html report
     :param config_dictionary: dictionary containing file or directory paths
@@ -36,10 +39,11 @@ def html_report(config_dictionary, result_dict, graphs):
     sequence_length_template = result_dict['sequence_length_template']
     is_barcode = config_dictionary['barcoding']
     run_name = config_dictionary['run_name']
-    flowcell_id = result_dict['flowcell_id']
-    run_date = result_dict['run_date']
-    date = re.search('(\d{4})(\d{2})(\d{2})', run_date).groups()
-    run_date = '{}-{}-{}'.format(date[2], date[1], date[0])
+    flow_cell_id = result_dict['flow_cell_id']
+    run_date = result_dict['exp_start_time']
+    date = dateutil.parser.parse(run_date)
+    run_date = date.strftime("%x %X %Z")
+    run_id = result_dict['sample_id']
     f = open(result_directory + 'report.html', 'w')
 
     number_of_read = len(sequence_length_template)
@@ -261,12 +265,13 @@ def html_report(config_dictionary, result_dict, graphs):
     <div class="header">
       <div id="header_title">Run MinION report<br/></div>
       <div id="header_filename">
+        Run id: {3} <br>
         Run name: {0}<br>
         Run date: {1}<br>
         Flowcell id: {2}
       </div>
     </div>
-""".format(run_name, run_date, flowcell_id)
+""".format(run_name, run_date, flow_cell_id, run_id)
 
     # Compose the summary section of the page
     summary = """
