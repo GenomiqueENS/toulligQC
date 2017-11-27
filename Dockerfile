@@ -1,6 +1,6 @@
 FROM ubuntu:17.04
 
-MAINTAINER Lionel Ferrato Berberian <ferrato@biologie.ens.fr>
+MAINTAINER Laurent Jourdren <jourdren@biologie.ens.fr>
 
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
@@ -12,11 +12,13 @@ RUN apt update && \
                     python3-matplotlib\
                     python3-pandas\
                     python3-numpy\
-                    python3-seaborn && \
+                    python3-seaborn \
+                    python3-pypandoc && \
     pip3 install --upgrade setuptools && \
     cd /tmp && \
     git clone https://github.com/GenomicParisCentre/toulligQC && \
     cd toulligQC && \
+    git checkout v0.2 && \
     python3 setup.py build install && \
     apt remove --yes git && \
     apt clean
