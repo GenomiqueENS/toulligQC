@@ -2,25 +2,10 @@ import os
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
-import pypandoc
 
 version_py = os.path.join(os.path.dirname(__file__), 'toulligqc', 'version.py')
 version = open(version_py).read().strip().split('=')[-1].replace('"', '')\
     .strip()
-
-"""A setuptools based setup module.
-
-See:
-https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
-"""
-
-
-here = path.abspath(path.dirname(__file__))
-
-# Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = pypandoc.convert_text(f.read(), 'rst', format='md')
 
 setup(
     name='toulligqc',
@@ -28,7 +13,7 @@ setup(
     version=version,
 
     description='A post sequencing QC tool for Oxford Nanopore sequencers',
-    long_description=long_description,
+    long_description='See project website for more information.',
 
     # The project's main homepage.
     url='https://github.com/GenomicParisCentre/toulligQC',
