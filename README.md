@@ -19,22 +19,16 @@ Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicP
 
 * 1.[Get ToulligQC](#get-toulligqc)
   * 1.1 [Local installation](#local-installation)
-  * 1.2 [Docker](#docker)
-     *  [Docker image recovery](#docker-image-recovery)
-     
+  * 1.2 [PyPi installation](#pypi-installation) 
+  * 1.3 [Docker](#docker)
+     *  [Docker image recovery](#docker-image-recovery)    
      *  [Launching Docker image with docker run](#launching-Docker-image-with-docker-run)
-     
- 
 * 2.[Usage](#usage)
-    * 2.1 [Command line](#command-line)
-
+  * 2.1 [Command line](#command-line)
       * [Options](#options)
-  
       * [Examples](#examples)
-
-     *  2.2 [Configuration file](#configuration-file)
-  
-     * 2.3 [Sample sheet for barcoded samples](#sample-sheet-for-barcoded-samples)
+  * 2.2 [Configuration file](#configuration-file)
+  * 2.3 [Sample sheet for barcoded samples](#sample-sheet-for-barcoded-samples)
 * 3.[Output](#output) 
 
 <a name="get-toulligqc"></a>
@@ -45,6 +39,8 @@ This option is also suitable if you are interested in further developments of th
 
 ```bash
 $ git clone https://github.com/GenomicParisCentre/toulligQC.git
+# X.X here is the version of ToulligQC to install
+$ git checkout vX.X
 $ cd toulligqc && python3 setup.py build install
 ```
 
@@ -59,15 +55,25 @@ To run ToulligQC without Docker, you need to install the following Python module
 * seaborn
 * numpy
 
+<a name="pypi-installation"></a>
+### 1.3 Using PyPi
+
+ToulligQC can be more easlilly installed with a pip package availlable on the PyPi repository:
+```bash
+$ pip3 install toulligqc
+```
+
 <a name="docker"></a>
-### 1.2 Using Docker
+### 1.3 Using Docker
 ToulligQC and its dependencies are available through a Docker image. To install docker on your system, go to the Docker website(https://docs.docker.com/engine/installation/). 
 Even if Docker can run on Windows or macOS virtual machines, we recommend to run ToulligQC on a Linux host. 
 <a name="docker-image-recovery"></a>
 * ####  Docker image recovery
 An image of ToulligQC is hosted on the Docker hub on the genomicpariscentre repository(genomicpariscentre/toulligqc).
 
-```$ docker pull genomicpariscentre/toulligqc:latest ```
+```bash
+$ docker pull genomicpariscentre/toulligqc:latest
+```
 
 
 <a name="launching-docker-image-with-a-shell-script"></a>
@@ -92,20 +98,26 @@ $ docker run -ti \
 To run ToulligQC, you need one of your initial Fast5 ONT file and you may also need an Albacore output directory to get the ``` Fastq files ```  and ``` the sequencing_summary.txt ```.
 ToulligQC can perform analyses on your data if the directory is organise as following :
 
-* ``` sequencing_summary.txt ``` 
-* ``` pipeline.log ```
-* ``` configuration.cfg``` 
-* ``` workspace ``` 
-  * ```run_id.fastq```
+```
+RUN_ID
+├── sequencing_summary.txt
+├── pipeline.log
+├── configuration.cfg
+└── workspace
+    └── run_id.fastq
+```
 
 or 
 
-* ``` sequencing_summary.txt ``` 
-* ```pipeline.log ```
-* ```configuration.cfg```
-* ``` workspace ``` 
-  * ``` pass``` 
-    * ```run_id.fastq```
+```
+RUN_ID
+├── sequencing_summary.txt
+├── pipeline.log
+├── configuration.cfg
+└── workspace
+    └── pass
+        └── run_id.fastq
+```
  
 ### 2.1 Command line
 
@@ -214,13 +226,16 @@ ToulligQC gives different informations such as:
 - Full statistics are provided in a text file for complementary analyses if needed
 
 in a output directory organised like this : 
-
-*  ```Run_id``` 
-   * ```report.html```
-   * ```statistics```
-     * ```run_statistics_file.txt```
-     * ```save_result_statistics.txt```
-   * ```images```
-     * ```graphes.png```
+   
+```
+RUN_ID
+├── report.html
+├── statistics
+│   ├── run_statistics_file.txt                                                                                                                                                                                                                                                               
+│   └── save_result_statistics.txt 
+│   └── run_id.fastq
+└── images
+    └── graphes.png
+```
 
 
