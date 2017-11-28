@@ -19,7 +19,7 @@ Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicP
 
 * 1.[Get ToulligQC](#get-toulligqc)
   * 1.1 [Local installation](#local-installation)
-  * 1.2 [PyPi installation](#pypi-installation) 
+  * 1.2 [PyPi package installation](#pypi-installation) 
   * 1.3 [Docker](#docker)
      *  [Docker image recovery](#docker-image-recovery)    
      *  [Launching Docker image with docker run](#launching-Docker-image-with-docker-run)
@@ -59,7 +59,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 * numpy
 
 <a name="pypi-installation"></a>
-### 1.3 Using PyPi
+### 1.3 Using a PyPi package
 
 ToulligQC can be more easlily installed with a pip package availlable on the PyPi repository. To do this, use the following command line: 
 ```bash
