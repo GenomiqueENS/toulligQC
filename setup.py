@@ -50,7 +50,7 @@ setup(
 
     python_requires='>=3',
     install_requires=['matplotlib>=2.0,<2.1', 'seaborn>=0.7,<0.8', 'h5py>=2.7,<2.8', \
-                      'pandas>=0.19,<0.20', 'numpy>=1.12,<1.13', 'pypandoc>=1.3'],
+                      'pandas>=0.19,<0.20', 'numpy>=1.12,<1.13'],
 
     entry_points={
         'console_scripts': [

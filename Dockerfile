@@ -12,8 +12,7 @@ RUN apt update && \
                     python3-matplotlib\
                     python3-pandas\
                     python3-numpy\
-                    python3-seaborn \
-                    python3-pypandoc && \
+                    python3-seaborn && \
     pip3 install --upgrade setuptools && \
     cd /tmp && \
     git clone https://github.com/GenomicParisCentre/toulligQC && \
