@@ -4,7 +4,7 @@ ToulligQC is a program written in Python and developped by the [Genomic facility
 
 This program is dedicated to the QC analyses of Oxford Nanopore runs.
 Moreover it is adapted to RNA-Seq along with DNA-Seq.
-It partly relies on the summary.txt file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
+It partly relies on the summary file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
 It also needs a single FAST5 file (to catch the flowcell Id and the run date) and the Albacore outputted FASTQ file (to compute the sequence statistics).
 ToulligQC can take barcoding samples into account with a samplesheet.csv describing the barcodes used.
 
@@ -61,7 +61,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 <a name="pypi-installation"></a>
 ### 1.3 Using PyPi
 
-ToulligQC can be more easlilly installed with a pip package availlable on the PyPi repository:
+ToulligQC can be more easlily installed with a pip package availlable on the PyPi repository. To do this, use the following command line: 
 ```bash
 $ pip3 install toulligqc
 ```
@@ -211,9 +211,9 @@ The other columns are optional but can be useful to define your samples for the 
 
 samplesheet.csv example:
 
-index | ``` Reads ``` | 
+index | Reads | 
 ------- | ------- 
- BC01| ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2 ``` 
+ BC01| ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2``` 
 
 ## 3.Output
 
