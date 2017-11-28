@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5 (2017-11-28)
+* Fix exception when toulligqc was launched with no arguments
+* Remove pypandoc dependency in setup.py
+* Fix issue when checking if directory paths ends with a '/'
+* Fix issue when checking missing arguments
+
+
 ## 0.4 (2017-11-27)
 * Fix issue with the --version option of ToulligQC
 
