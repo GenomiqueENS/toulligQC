@@ -100,10 +100,6 @@ def parse_args(config_dictionary):
     for key, value in source_file:
         if value:
             config_dictionary[key] = value
-        elif key == 'fastq_source':
-            config_dictionary['fastq_source'] = config_dictionary['fastq_source']
-        else:
-            continue
 
     for key, value in config_dictionary.items():
 
