@@ -97,24 +97,15 @@ def parse_args(config_dictionary):
         ('quiet', is_quiet)
     ]
 
+    # Put arguments values in configuration object
     for key, value in source_file:
         if value:
             config_dictionary[key] = value
 
+    # Directory paths must ends with '/'
     for key, value in config_dictionary.items():
-
-        if type(value)==bool:
-            continue
-        elif value.endswith('/'):
-            continue
-        elif os.path.isfile(value):
-            continue
-        elif value == '':
-            continue
-        elif os.path.isdir(value):
+        if type(value) == str and os.path.isdir(value) and (not value.endswith('/')):
             config_dictionary[key] = value + '/'
-        else:
-            continue
 
     return config_dictionary
 
