@@ -11,9 +11,9 @@ ToulligQC can take barcoding samples into account with a samplesheet.csv describ
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
 This tool will produce a set of graphs, statistic files in txt format and a HTML report.
 
-<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/laffayb-patch-1-1/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/report.png)</a>
+<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/report.png)</a>
 
-Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/laffayb-patch-1-1/report.html) to see an report example! 
+Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/report.html) to see an report example! 
 
 ## Table of Contents
 
@@ -23,13 +23,16 @@ Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicP
   * 1.3 [Docker](#docker)
      *  [Docker image recovery](#docker-image-recovery)    
      *  [Launching Docker image with docker run](#launching-Docker-image-with-docker-run)
+     
 * 2.[Usage](#usage)
   * 2.1 [Command line](#command-line)
       * [Options](#options)
       * [Examples](#examples)
   * 2.2 [Configuration file](#configuration-file)
   * 2.3 [Sample sheet for barcoded samples](#sample-sheet-for-barcoded-samples)
+  
 * 3.[Output](#output) 
+
 
 <a name="get-toulligqc"></a>
 ## 1. Get ToulligQC 
