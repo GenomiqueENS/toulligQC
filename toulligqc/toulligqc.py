@@ -114,24 +114,20 @@ def check_conf(config_dictionary):
     Check the configuration
     :param config_dictionary: configuration dictionary containing the file or directory paths
     '''
-    if not config_dictionary['fast5_source']:
+
+    if 'fast5_source' not in config_dictionary or not config_dictionary['fast5_source']:
         sys.exit('The fast5 source argument is empty')
 
-    elif not config_dictionary['fastq_source']:
-        sys.exit('The fastq source arugment is empty')
-
-    elif not config_dictionary['albacore_summary_source']:
+    if 'albacore_summary_source' not in config_dictionary or not config_dictionary['albacore_summary_source']:
         sys.exit('The albacore summary source argument is empty')
 
-    elif config_dictionary['barcoding'] == 'True':
+    if config_dictionary['barcoding'] == 'True':
         if not config_dictionary['sample_sheet_file']:
             sys.exit('The sample sheet source argument is empty')
 
-    elif not config_dictionary['result_directory']:
+    if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
         sys.exit('The output directory argument is empty')
 
-    else:
-        pass
 
     # Create the root output directory if not exists
     if not os.path.isdir(config_dictionary['result_directory']):
