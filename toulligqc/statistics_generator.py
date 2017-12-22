@@ -96,7 +96,7 @@ def statistics_generator(config_dictionary, result_dict):
         for index, value in channel_occupancy_statistics.iteritems():
             file_data.write("channel.occupancy.{}={}\n".format(index, value))
 
-        file_data.write("Number.of.reads={}\n".format(len(result_dict['sequence_length_template'])))
+        #file_data.write("Number.of.reads={}\n".format(len(result_dict['sequence_length_template'])))
         file_data.write("flowcell.serial.number={}\n".format(flow_cell_id))
         file_data.write("minknown.version={}\n".format(minknown_version))
         file_data.write("hostname={}\n".format(hostname))

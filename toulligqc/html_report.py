@@ -36,7 +36,6 @@ def html_report(config_dictionary, result_dict, graphs):
     '''
 
     result_directory = config_dictionary['result_directory']
-    sequence_length_template = result_dict['sequence_length_template']
     is_barcode = config_dictionary['barcoding']
     run_name = config_dictionary['run_name']
     flow_cell_id = result_dict['flow_cell_id']
@@ -45,8 +44,6 @@ def html_report(config_dictionary, result_dict, graphs):
     run_date = date.strftime("%x %X %Z")
     run_id = result_dict['sample_id']
     f = open(result_directory + 'report.html', 'w')
-
-    number_of_read = len(sequence_length_template)
 
     # Define the header of the page
     header = """<!doctype html>
@@ -289,7 +286,8 @@ def html_report(config_dictionary, result_dict, graphs):
     main_report = """
     <div class = 'main'>
       <div class="module"><p><b>Number of reads: {0}</b></p></div>
-""".format(number_of_read)
+""".format(run_id)
+    #number_of_read
     for i, t in enumerate(graphs):
       main_report += "      <div class=\"module\"><h2 id=M{0}>{1}</h2><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
     main_report += "    </div>\n"

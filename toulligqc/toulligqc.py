@@ -36,6 +36,8 @@ import time
 from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
 from toulligqc import statistics_generator
+from toulligqc import albacore_1dsqr_stats_generator
+from toulligqc import graph_1dsqr_generator
 from toulligqc import html_report
 from toulligqc import version
 from toulligqc import albacore_stats_extractor
@@ -56,6 +58,8 @@ def parse_args(config_dictionary):
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
                         help='Albacore summary source')
+    parser.add_argument('-d', '--albacore-1d-summary-source', action='store', dest='albacore_2d_summary_source',
+                        help='Albacore 2d summary source',default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source')
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
@@ -71,6 +75,7 @@ def parse_args(config_dictionary):
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
     albacore_summary_source = argument_value.albacore_summary_source
+    albacore_2d_summary_source = argument_value.albacore_2d_summary_source
     fastq_source = argument_value.fastq_source
     run_name = argument_value.run_name
     is_barcode = argument_value.is_barcode
@@ -87,15 +92,16 @@ def parse_args(config_dictionary):
         config_dictionary.load(home + '/.toulligqc/config.txt')
 
     #Rewrite the configuration file value if argument option is present
-    source_file = [
+    source_file = {
         ('fast5_source', fast5_source),
         ('albacore_summary_source', albacore_summary_source),
+        ('albacore_2d_summary_source', albacore_2d_summary_source),
         ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
         ('barcoding', is_barcode),
         ('quiet', is_quiet)
-    ]
+    }
 
     # Put arguments values in configuration object
     for key, value in source_file:
@@ -118,8 +124,11 @@ def check_conf(config_dictionary):
     if 'fast5_source' not in config_dictionary or not config_dictionary['fast5_source']:
         sys.exit('The fast5 source argument is empty')
 
+    #if 'albacore_2d_summary_source' not in config_dictionary or not config_dictionary['albacore_2d_summary_source']:
+    #    sys.exit('The albacore 1Dsqr summary source argument is empty')
+
     if 'albacore_summary_source' not in config_dictionary or not config_dictionary['albacore_summary_source']:
-        sys.exit('The albacore summary source argument is empty')
+         sys.exit('The albacore summary source argument is empty')
 
     if config_dictionary['barcoding'] == 'True':
         if not config_dictionary['sample_sheet_file']:
@@ -228,11 +237,18 @@ def main():
     if os.path.isdir(config_dictionary['albacore_summary_source']):
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['run_name'] + '/sequencing_summary.txt'
 
+    # if os.path.isdir(config_dictionary['albacore_2d_summary_source']):
+    #     config_dictionary['albacore_2d_summary_source'] = config_dictionary['albacore_2d_summary_source'] + config_dictionary['run_name'] + '/sequencing_2d_summary.txt'
+
     # Print welcome message
     _welcome(config_dictionary)
 
     #Production of the extractors object
-    extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+
+    if 'albacore_2d_summary_source' not in config_dictionary or not config_dictionary['albacore_2d_summary_source']:
+        extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+    else:
+        extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
 
     #Configuration checking and initialisation of the extractors
     _show(config_dictionary, "* Initialize extractors")
