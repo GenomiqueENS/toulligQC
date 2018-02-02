@@ -164,8 +164,8 @@ class fast5_extractor():
 
         elif self.fast5_file_extension == 'fast5_directory':
 
-            if glob.glob(self.fast5_source+self.run_name+'/*.fast5'):
-                self.fast5_file = self.fast5_source+self.run_name+'.fast5'
+            if glob.glob(self.fast5_source+'/*.fast5'):
+                self.fast5_file = self.fast5_source+os.listdir(self.fast5_source)[0]
 
             elif glob.glob(self.fast5_source + '/*.tar.bz2'):
                 tar_bz2_file = self.fast5_source+self.run_name+'.tar.bz2'
