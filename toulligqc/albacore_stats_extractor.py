@@ -32,20 +32,21 @@ class albacore_stats_extractor():
     Extraction of statistics from sequencing_summary.txt file and graph generation
     '''
     def __init__(self, config_dictionary):
+
         self.global_dictionnary = {}
         self.config_dictionary = config_dictionary
-        self.albacore_log = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
         self.result_directory = config_dictionary['result_directory']
-        self.channel = self.albacore_log['channel']
-        self.passes_filtering = self.albacore_log['passes_filtering']
-        self.sequence_length_template = self.albacore_log['sequence_length_template']
-        self.null_event = self.albacore_log[self.albacore_log['num_events'] == 0]
-        self.albacore_log = self.albacore_log.replace([np.inf, -np.inf], 0)
-        self.albacore_log = self.albacore_log[self.albacore_log['num_events'] != 0]
-        self.fast5_tot_number = len(self.albacore_log)
         self.is_barcode = config_dictionary['barcoding']
 
-
+        # panda's object for 1d_summary
+        self.albacore_log_1d = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
+        self.channel = self.albacore_log_1d['channel']
+        self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
+        self.sequence_length_template = self.albacore_log_1d['sequence_length_template']
+        self.null_event_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] == 0]
+        self.albacore_log_1d = self.albacore_log_1d.replace([np.inf, -np.inf], 0)
+        self.albacore_log_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] != 0]
+        self.fast5_tot_number_1d = len(self.albacore_log_1d)
 
         if self.is_barcode == 'True':
             self.is_barcode = True
@@ -57,9 +58,8 @@ class albacore_stats_extractor():
         if self.is_barcode:
 
             self.barcode_selection = config_dictionary['barcode_selection']
-            print(self.albacore_log.loc['barcode_arrangement'])
             try:
-                self.albacore_log.loc[~self.albacore_log['barcode_arrangement'].isin(
+                self.albacore_log_1d.loc[~self.albacore_log_1d['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
 
             except:
@@ -87,16 +87,16 @@ class albacore_stats_extractor():
         if self.is_barcode:
             self.barcode_selection.append('unclassified')
             for index_barcode, barcode in enumerate(self.barcode_selection):
-                barcode_selected_dataframe = self.albacore_log[self.albacore_log['barcode_arrangement'] == barcode]
+                barcode_selected_dataframe = self.albacore_log_1d[self.albacore_log_1d['barcode_arrangement'] == barcode]
                 result_dict['mean_qscore_statistics_' + barcode] = \
                     barcode_selected_dataframe['mean_qscore_template'].describe()
                 result_dict['sequence_length_statistics_' + barcode] = \
                     barcode_selected_dataframe['sequence_length_template'].describe()
         else:
 
-            mean_qscore_template = self.albacore_log['mean_qscore_template']
+            mean_qscore_template = self.albacore_log_1d['mean_qscore_template']
             result_dict['mean_qscore_statistics'] = pd.DataFrame.describe(mean_qscore_template).drop("count")
-            result_dict['sequence_length_statistics'] = self.albacore_log['sequence_length_template'].describe()
+            result_dict['sequence_length_statistics'] = self.albacore_log_1d['sequence_length_template'].describe()
 
         result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
         result_dict['sequence_length_template'] = self.sequence_length_template
@@ -112,35 +112,33 @@ class albacore_stats_extractor():
         '''
         images_directory = self.result_directory + '/images'
         images = []
-        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, 'Counts of read template', self.my_dpi,images_directory))
-        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, 'Counts of read 1d', self.my_dpi,images_directory))
+        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, '1D read count histogram', self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_length_histogram(self.albacore_log_1d, 'Read size histogram', self.my_dpi,images_directory))
-        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'All Read size histogram', self.my_dpi,images_directory))
+        #images.append(graph_generator.read_length_histogram(self.albacore_log_1d, 'Read size histogram', self.my_dpi,images_directory))
+        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'All the 1D Read type size histogram', self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_number_run(self.albacore_log_1d, 'Read produced along the run', self.my_dpi,images_directory))
-        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'All Read produced along the run', self.my_dpi,images_directory))
+        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'Yield curve of all the 1D read type', self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_quality_boxplot(self.albacore_log_1d, 'Boxplot of read quality', self.my_dpi,images_directory))
-        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d, "read_quality_multiboxplot", self.my_dpi,images_directory))
+        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d, "All the 1D read type boxplot", self.my_dpi,images_directory))
 
-        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Phred score frequency', self.my_dpi, images_directory))
-        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, '1d Phred score frequency', self.my_dpi,images_directory))
+        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the 1D reads', self.my_dpi, images_directory))
+        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the all 1D read type', self.my_dpi,images_directory))
 
-        images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
+        #images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel counts', self.my_dpi,images_directory))
+        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Map of the reads', self.my_dpi,images_directory))
 
-        images.append(graph_generator.scatterplot(self.albacore_log_1d, 'Mean template qscore function of template read length',self.my_dpi, images_directory))
-        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Mean qscore function of template read length',self.my_dpi, images_directory))
+        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Qscore function of 1D read length',self.my_dpi, images_directory))
 
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart(self.albacore_log,'Percentage of different barcodes', self.barcode_selection,
+            images.append(graph_generator.barcode_percentage_pie_chart_pass(self.albacore_log_1d,'1D pass read percentage of different barcodes', self.barcode_selection,
                                                                              self.my_dpi, images_directory))
-            images.append(graph_generator.barcode_length_boxplot(self.albacore_log,'Read size distribution for each barcode',  self.barcode_selection,
+            images.append(graph_generator.barcode_percentage_pie_chart_fail(self.albacore_log_1d,'1D fail read percentage of different barcodes', self.barcode_selection,
+                                                                             self.my_dpi, images_directory))
+            images.append(graph_generator.barcode_length_boxplot(self.albacore_log_1d,'1D Read size distribution for each barcode',  self.barcode_selection,
                                                                        self.my_dpi, images_directory))
-            images.append(graph_generator.barcoded_phred_score_frequency(self.albacore_log,'Phred score distribution for each barcode',
+            images.append(graph_generator.barcoded_phred_score_frequency(self.albacore_log_1d,'1D reads phred score distribution for each barcode',
                                                                                self.barcode_selection, self.my_dpi,
                                                                         images_directory))
         print(images)

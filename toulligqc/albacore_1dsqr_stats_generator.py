@@ -118,43 +118,40 @@ class albacore_1dsqr_stats_extractor():
         images_directory = self.result_directory + '/images/'
         images = []
 
-        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, 'Counts of read template', self.my_dpi,images_directory))
-        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, 'Counts of read 1d', self.my_dpi, images_directory))
-        images.append(graph_generator.dsqr_read_count_histogram(self.albacore_log_1d, self.albacore_log_1dsqr,"1dsqr read count histogram", self.my_dpi,images_directory))
+        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, '1D read count histogram', self.my_dpi, images_directory))
+        images.append(graph_generator.dsqr_read_count_histogram(self.albacore_log_1d, self.albacore_log_1dsqr,"1Dsquare read count histogram", self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_length_histogram(self.albacore_log_1d, 'Read size histogram', self.my_dpi, images_directory))
-        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'All Read size histogram', self.my_dpi, images_directory))
+        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'All the 1D read size histogram', self.my_dpi, images_directory))
+        images.append(graph_generator.dsqr_read_length_multihistogram(self.albacore_log_1d, self.albacore_log_1dsqr, 'All the 1Dsquare read size histogram', self.my_dpi, images_directory))
 
-        images.append(graph_generator.read_number_run(self.albacore_log_1d, 'Read produced along the run', self.my_dpi, images_directory))
-        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'All Read produced along the run', self.my_dpi, images_directory))
+        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'Yield curve of all the 1D read type', self.my_dpi, images_directory))
 
-        images.append(graph_generator.read_quality_boxplot(self.albacore_log_1d, 'Boxplot of read quality', self.my_dpi,images_directory))
-        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d,"read_quality_multiboxplot", self.my_dpi, images_directory))
-        images.append(graph_generator.quality_boxplot_1dsqr(self.albacore_log_1d, self.albacore_log_1dsqr, "Phred score boxplot", self.my_dpi, images_directory))
+        #images.append(graph_generator.read_quality_boxplot(self.albacore_log_1d, 'Boxplot of read quality', self.my_dpi,images_directory))
 
-        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Phred score frequency', self.my_dpi, images_directory))
-        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, '1d Phred score frequency', self.my_dpi,images_directory))
+        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d,"All the 1D read type boxplot", self.my_dpi, images_directory))
+        images.append(graph_generator.dsqr_read_quality_multiboxplot(self.albacore_log_1d, self.albacore_log_1dsqr, "All the 1Dsquare read type boxplot", self.my_dpi, images_directory))
 
-        images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
+        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the 1D reads', self.my_dpi, images_directory))
+        images.append(graph_generator.dsqr_phred_score_frequency(self.albacore_log_1dsqr, "Phred score frequency of the 1Dsquare reads", self.my_dpi, images_directory))
+        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the all 1D read type', self.my_dpi,images_directory))
+        images.append(graph_generator.dsqr_allphred_score_frequency(self.albacore_log_1d, self.albacore_log_1dsqr, "Phred score frequency of the all 1Dsquare read type", self.my_dpi, images_directory))
+
+        #images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel counts', self.my_dpi, images_directory))
+        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Map of the reads', self.my_dpi, images_directory))
 
-        images.append(graph_generator.scatterplot(self.albacore_log_1d, 'Mean template qscore function of template read length',self.my_dpi, images_directory))
-        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Mean qscore function of template read length', self.my_dpi, images_directory))
-        images.append(graph_generator.scatterplot_1dsqr(self.albacore_log_1d, self.albacore_log_1dsqr,"mean 1dsqr qscore function length", self.my_dpi, images_directory))
-
-        #images.append(graph_generator.read_length_histogram(self.albacore_log_1dsqr,"1dsqr read length histgram", self.my_dpi, images_directory ))
-        #images.append(graph_generator.read_quality_boxplot(self.albacore_log_1dsqr, "1dsqr read quality boxplot", self.my_dpi, images_directory))
-        #images.append(graph_generator.phred_score_frequency(self.albacore_log_1dsqr, "1dsqr phred score frequency", self.my_dpi, images_directory))
-
+        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Qscore function of 1D read length', self.my_dpi, images_directory))
+        images.append(graph_generator.scatterplot_1dsqr(self.albacore_log_1d, self.albacore_log_1dsqr,"Qscore function of 1Dsquare read length", self.my_dpi, images_directory))
 
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr(self.albacore_log_1dsqr, "Percentage of different barcodes", self.barcode_selection,
+            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(self.albacore_log_1dsqr, "1Dsquare pass percentage of different barcodes", self.barcode_selection,
                                                                              self.my_dpi, images_directory))
-            images.append(graph_generator.barcode_length_boxplot_1dsqr(self.albacore_log_1dsqr,"1dsqr Read size distribution for each barcode", self.barcode_selection,
+            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(self.albacore_log_1dsqr, "1Dsquare fail percentage of different barcodes", self.barcode_selection,
+                                                                             self.my_dpi, images_directory))
+            images.append(graph_generator.barcode_length_boxplot_1dsqr(self.albacore_log_1dsqr,"1Dsquare read size distribution for each barcode", self.barcode_selection,
                                                                        self.my_dpi, images_directory))
-            images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(self.albacore_log_1dsqr, "1dsqr phred score distribution for each barcode",
+            images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(self.albacore_log_1dsqr, "1Dsquare read phred score distribution for each barcode",
                                                                                self.barcode_selection, self.my_dpi,images_directory))
         return images
 
