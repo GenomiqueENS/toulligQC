@@ -72,7 +72,7 @@ def read_count_histogram(albacore_log, main, my_dpi, result_directory):
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
     """
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     fast5_raw = len(albacore_log['num_events'])
     fast5_template_basecalled = len(albacore_log[albacore_log['num_called_template'] != 0])
     read_pass = len(albacore_log[albacore_log['passes_filtering'] == True])
@@ -90,11 +90,12 @@ def read_count_histogram(albacore_log, main, my_dpi, result_directory):
     for bar in bars:
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
+    table_html=None
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def read_length_multihistogram(albacore_log, main, my_dpi, result_directory):
     """
@@ -107,9 +108,10 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory):
     minimum, maximum = min(sequence_length_template), max(sequence_length_template)
     read_type=['1D','1D pass','1D fail']
 
-    fig = plt.figure(figsize=(14, 8), dpi=my_dpi)
+    fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
+    plt.subplots_adjust(bottom=0.015, top=1.0)
 
     n, bins, patches = ax.hist([sequence_length_template,read_pass,read_fail],color=["salmon", "yellowgreen", "orangered"], edgecolor='black', label=read_type,
                                bins=2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30))
@@ -125,17 +127,19 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory):
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
-    ax2 = plt.subplot(gs[1])
+    # ax2 = plt.subplot(gs[1])
     dataframe = pd.DataFrame({"1D": sequence_length_template, "1D pass": read_pass, "1D fail": read_fail})
-
-    ax2 = plt.subplot(gs[1])
-    _make_table(dataframe, ax2, 'count')
-
-    #the_table = table(ax2, np.round(dataframe.describe(), 2), loc='center')
-
-    ax2.xaxis.set_visible(False)
-    ax2.yaxis.set_visible(False)
-    ax2.axis('off')
+    dataframe = dataframe[["1D","1D pass","1D fail"]]
+    #
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(dataframe, ax2, 'count')
+    #
+    #
+    # #the_table = table(ax2, np.round(dataframe.describe(), 2), loc='center')
+    #
+    # ax2.xaxis.set_visible(False)
+    # ax2.yaxis.set_visible(False)
+    # ax2.axis('off')
 
     #the_table.set_fontsize(12)
     #the_table.scale(1, 1)
@@ -143,14 +147,19 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory):
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    dataframe = dataframe[["1D","1D pass","1D fail"]]
+    table = np.round(dataframe.describe(),2)
+
+    table_html = pd.DataFrame.to_html(table)
+
+    return main, output_file, table_html
 
 def allread_number_run(albacore_log, main, my_dpi, result_directory):
     """
     Plots the reads produced along the run against the time(in hour)
     """
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
 
     start_time_sorted = sorted(sorted(albacore_log['start_time']/3600))
     read_pass = sorted(albacore_log.start_time.loc[True == albacore_log['passes_filtering']]/3600)
@@ -168,14 +177,16 @@ def allread_number_run(albacore_log, main, my_dpi, result_directory):
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table_html = None
+
+    return main, output_file, table_html
 
 def read_quality_multiboxplot(albacore_log, main, my_dpi, result_directory):
     """
     Plots a boxplot of reads quality
     """
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     mean_qscore = albacore_log.loc[:, "mean_qscore_template"]
     read_pass = albacore_log.mean_qscore_template.loc[True == albacore_log['passes_filtering']]
@@ -186,6 +197,7 @@ def read_quality_multiboxplot(albacore_log, main, my_dpi, result_directory):
     dataframe = pd.DataFrame({"1D": mean_qscore, "1D pass": read_pass, "1D fail": read_fail })
     sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order)
 
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Phred score')
     plt.title(main)
     plt.legend()
@@ -193,23 +205,29 @@ def read_quality_multiboxplot(albacore_log, main, my_dpi, result_directory):
     #arr = dataframe.as_matrix()
     #print(arr)
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(dataframe, ax2, 'count')
+    #ax2 = plt.subplot(gs[1])
+    #_make_table(dataframe, ax2, 'count')
 
+    dataframe = dataframe[["1D","1D pass","1D fail"]]
+    table = np.round(dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def phred_score_frequency(albacore_log, main, my_dpi, result_directory):
     '''
     Plot the distribution of the phred score
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(800 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
+    plt.subplots_adjust(bottom=0.015, top=1.0)
+
     mean_qscore = albacore_log['mean_qscore_template']
 
     sns.distplot(mean_qscore, bins=15, color='salmon',
@@ -225,21 +243,25 @@ def phred_score_frequency(albacore_log, main, my_dpi, result_directory):
 
     plt.axvline(x=mean_qscore.describe()['50%'], color='salmon')
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(rd, ax2, 'count')
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(rd, ax2, 'count')
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table = np.round(rd.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
+
+    return main, output_file, table_html
 
 def allphred_score_frequency(albacore_log, main, my_dpi, result_directory):
     '''
     Plot the distribution of the phred score
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     mean_qscore = albacore_log['mean_qscore_template']
     mean_qscore_read_pass = albacore_log.mean_qscore_template.loc[True == albacore_log['passes_filtering']]
     mean_qscore_read_fail = albacore_log.mean_qscore_template.loc[False == albacore_log['passes_filtering']]
@@ -260,12 +282,16 @@ def allphred_score_frequency(albacore_log, main, my_dpi, result_directory):
     plt.axvline(x=mean_qscore_read_pass.describe()['50%'], color='yellowgreen')
     plt.axvline(x=mean_qscore_read_fail.describe()['50%'], color='orangered')
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(rd, ax2, 'count')
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(rd, ax2, 'count')
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    dataframe = dataframe[["1D","1D pass","1D fail"]]
+    table = np.round(dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
+
+    return main, output_file, table_html
 
 
 def all_scatterplot(albacore_log, main, my_dpi, result_directory):
@@ -273,7 +299,8 @@ def all_scatterplot(albacore_log, main, my_dpi, result_directory):
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(10, 5), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.0, top=1.0)
 
     length_read_pass = albacore_log.sequence_length_template.loc[True == albacore_log['passes_filtering']]
     length_read_fail = albacore_log.sequence_length_template.loc[False == albacore_log['passes_filtering']]
@@ -292,7 +319,9 @@ def all_scatterplot(albacore_log, main, my_dpi, result_directory):
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table_html = None
+
+    return main, output_file, table_html
 
 
 
@@ -301,7 +330,7 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory):
     Plots an histogram of the channel count according to the channel number
     """
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     ax.hist(albacore_log['channel'], edgecolor='black',
@@ -317,8 +346,10 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory):
 
     plt.savefig(output_file)
     plt.close()
+    table = total_number_reads_per_channel.describe()
+    table_html = pd.DataFrame.to_html(table)
 
-    return main, output_file
+    return main, output_file, table_html
 
 def _minion_flowcell_layout():
     """
@@ -335,6 +366,7 @@ def _minion_flowcell_layout():
             for row in range(4):
                 flowcell_layout.append(s + 128 * block + row)
     return flowcell_layout
+
 
 def plot_performance(pore_measure, main, my_dpi, result_directory):
     """
@@ -360,14 +392,16 @@ def plot_performance(pore_measure, main, my_dpi, result_directory):
 
     d = df.pivot("rownum", "colnum", "tot_reads")
     d2 = df.pivot("rownum", "colnum", "labels")
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
-    sns.heatmap(d, fmt="", annot=d2, linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7})
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    sns.heatmap(d, fmt="", linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7}, cbar_kws={'label': 'read number per pore channel',"orientation": "horizontal"})
     plt.title(main)
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table_html = None
+
+    return main, output_file, table_html
 
 # For eache barcode 1D
 
@@ -409,7 +443,9 @@ def barcode_percentage_pie_chart_pass(albacore_log, main, barcode_selection, my_
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table_html = None
+
+    return main, output_file, table_html
 
 def barcode_percentage_pie_chart_fail(albacore_log, main, barcode_selection, my_dpi, result_directory):
     """
@@ -449,7 +485,9 @@ def barcode_percentage_pie_chart_fail(albacore_log, main, barcode_selection, my_
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table_html = None
+
+    return main, output_file, table_html
 
 def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result_directory):
     '''
@@ -459,9 +497,11 @@ def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result
     pattern = '(\d{2})'
     dico = {}
 
-    fig = plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
+    plt.subplots_adjust(bottom=0.015, top=1.0)
+
 
     dico["passes_filtering"] = albacore_log['passes_filtering']
     for barcode in barcode_selection:
@@ -482,12 +522,15 @@ def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result
     plt.ylabel('Read size(in pb)')
     plt.title(main)
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(barcode_selection_sequence_length_dataframe, ax2)
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(barcode_selection_sequence_length_dataframe, ax2)
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table=np.round(barcode_selection_sequence_length_dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
+
+    return main, output_file, table_html
 
 
 def barcoded_phred_score_frequency(albacore_log, main, barcode_selection, my_dpi, result_directory):
@@ -498,7 +541,8 @@ def barcoded_phred_score_frequency(albacore_log, main, barcode_selection, my_dpi
     dico = {}
     pattern = '(\d{2})'
 
-    fig = plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
 
@@ -525,12 +569,15 @@ def barcoded_phred_score_frequency(albacore_log, main, barcode_selection, my_dpi
     plt.ylabel('Phred score')
     plt.title(main)
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(barcode_selection_phred_scrore_dataframe, ax2)
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(barcode_selection_phred_scrore_dataframe, ax2)
+    table=np.round(barcode_selection_phred_scrore_dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+
+    return main, output_file, table_html
 
 
 #  1Dsqr plots
@@ -540,7 +587,7 @@ def dsqr_read_count_histogram(albacore_log_1d, albacore_log_1dsqr, main, my_dpi,
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
     """
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     fast5_template_basecalled = len(albacore_log_1d[albacore_log_1d['num_called_template'] != 0])
     fast5_1dsqr = len(albacore_log_1dsqr['passes_filtering'])
     read_pass_1dsqr = len(albacore_log_1dsqr[albacore_log_1dsqr['passes_filtering'] == True])
@@ -559,11 +606,13 @@ def dsqr_read_count_histogram(albacore_log_1d, albacore_log_1dsqr, main, my_dpi,
     for bar in bars:
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
+    table_html = None
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+
+    return main, output_file, table_html
 
 def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, my_dpi, result_directory):
     """
@@ -577,9 +626,10 @@ def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, m
     minimum, maximum = min(read_1d), max(read_1d)
     read_type=['1D','1Dsquare','1Dsquare pass','1Dsquare fail']
 
-    fig = plt.figure(figsize=(14, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
+    plt.subplots_adjust(bottom=0.015, top=1)
 
     n, bins, patches = ax.hist([read_1d,read_1dsqr,read_pass_1dsqr,read_fail_1dsqr],color=["salmon","goldenrod","yellowgreen", "orangered"], edgecolor='black', label=read_type,
                                bins=2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30))
@@ -595,17 +645,19 @@ def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, m
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
-    ax2 = plt.subplot(gs[1])
     dataframe = pd.DataFrame({"1D": read_1d,'1Dsquare': read_1dsqr ,"1Dsquare pass": read_pass_1dsqr, "1Dsquare fail": read_fail_1dsqr})
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(dataframe, ax2, 'count')
+    #ax2 = plt.subplot(gs[1])
 
     #the_table = table(ax2, np.round(dataframe.describe(), 2), loc='center')
 
-    ax2.xaxis.set_visible(False)
-    ax2.yaxis.set_visible(False)
-    ax2.axis('off')
+    dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
+    table = np.round(dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
+
+    # ax2.xaxis.set_visible(False)
+    # ax2.yaxis.set_visible(False)
+    # ax2.axis('off')
 
     #the_table.set_fontsize(12)
     #the_table.scale(1, 1)
@@ -613,15 +665,16 @@ def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, m
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def dsqr_read_quality_multiboxplot(albacore_log_1d, albacore_log_1dsqr, main, my_dpi, result_directory):
     """
     Plots a boxplot of reads quality
     """
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     mean_qscore_1d = albacore_log_1d.loc[:,"mean_qscore_template"]
     mean_qscore_1dsqr = albacore_log_1dsqr.loc[:,"mean_qscore_2d"]
     read_pass_1dsqr = albacore_log_1dsqr.mean_qscore_2d.loc[True == albacore_log_1dsqr['passes_filtering']]
@@ -632,6 +685,7 @@ def dsqr_read_quality_multiboxplot(albacore_log_1d, albacore_log_1dsqr, main, my
     dataframe = pd.DataFrame({"1D": mean_qscore_1d,"1Dsquare": mean_qscore_1dsqr, "1Dsquare pass": read_pass_1dsqr, "1Dsquare fail": read_fail_1dsqr })
     sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order)
 
+
     plt.ylabel('Phred score')
     plt.title(main)
     plt.legend()
@@ -639,21 +693,24 @@ def dsqr_read_quality_multiboxplot(albacore_log_1d, albacore_log_1dsqr, main, my
     #arr = dataframe.as_matrix()
     #print(arr)
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(dataframe, ax2, 'count')
-
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(dataframe, ax2, 'count')
+    dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
+    table = np.round(dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def dsqr_phred_score_frequency(albacore_log_1dsqr, main, my_dpi, result_directory):
     '''
     Plot the distribution of the phred score
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(800 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     qscore_1dsqr = albacore_log_1dsqr['mean_qscore_2d']
@@ -671,19 +728,22 @@ def dsqr_phred_score_frequency(albacore_log_1dsqr, main, my_dpi, result_director
 
     plt.axvline(x=qscore_1dsqr.describe()['50%'], color='goldenrod')
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(rd, ax2, 'count')
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(rd, ax2, 'count')
     plt.savefig(output_file)
     plt.close()
+    table= np.round(rd.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
 
-    return main, output_file
+    return main, output_file, table_html
 
 def dsqr_allphred_score_frequency(albacore_log_1d, albacore_log_1dsqr, main, my_dpi, result_directory):
     '''
     Plot the distribution of the phred score
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     qscore_1d = albacore_log_1d['mean_qscore_template']
@@ -707,19 +767,24 @@ def dsqr_allphred_score_frequency(albacore_log_1d, albacore_log_1dsqr, main, my_
     plt.axvline(x=mean_qscore_read_pass.describe()['50%'], color='yellowgreen')
     plt.axvline(x=mean_qscore_read_fail.describe()['50%'], color='orangered')
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(rd, ax2, 'count')
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(rd, ax2, 'count')
+
+    rd = rd[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
+    table = np.round(rd.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def scatterplot_1dsqr(albacore_log_1d,albacore_log_1dsqr, main, my_dpi, result_directory):
     '''
     Plot the scatter plot representing the relation between the phred score and the sequence length
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1200 / my_dpi, 8), dpi=my_dpi)
+    plt.figure(figsize=(10, 5), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
 
     length_1dsqr_read_pass = albacore_log_1dsqr.sequence_length_2d.loc[True == albacore_log_1dsqr['passes_filtering']]
     length_1dsqr_read_fail = albacore_log_1dsqr.sequence_length_2d.loc[False == albacore_log_1dsqr['passes_filtering']]
@@ -738,7 +803,9 @@ def scatterplot_1dsqr(albacore_log_1d,albacore_log_1dsqr, main, my_dpi, result_d
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    table_html = None
+
+    return main, output_file, table_html
 
 # For eache barcode 1Dsqr
 
@@ -775,11 +842,12 @@ def barcode_percentage_pie_chart_1dsqr_pass(albacore_log, main, barcode_selectio
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
+    table_html = None
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def barcode_percentage_pie_chart_1dsqr_fail(albacore_log, main, barcode_selection, my_dpi, result_directory):
     """
@@ -814,11 +882,12 @@ def barcode_percentage_pie_chart_1dsqr_fail(albacore_log, main, barcode_selectio
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
+    table_html = None
 
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def barcode_length_boxplot_1dsqr(albacore_log, main, barcode_selection, my_dpi, result_directory):
     '''
@@ -828,9 +897,11 @@ def barcode_length_boxplot_1dsqr(albacore_log, main, barcode_selection, my_dpi, 
     pattern = '(\d{2})'
     dico = {}
 
-    fig = plt.figure(figsize=(1420 / my_dpi, 8), dpi=my_dpi)
+    fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
+
 
     dico["passes_filtering"] = albacore_log['passes_filtering']
 
@@ -855,12 +926,14 @@ def barcode_length_boxplot_1dsqr(albacore_log, main, barcode_selection, my_dpi, 
     plt.ylabel('Read size(in pb)')
     plt.title(main)
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(barcode_selection_sequence_length_dataframe, ax2)
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(barcode_selection_sequence_length_dataframe, ax2)
+    table = np.round(barcode_selection_sequence_length_dataframe.describe(),2)
+    table_html = pd.DataFrame.to_html(table)
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file
+    return main, output_file, table_html
 
 def barcoded_phred_score_frequency_1dsqr(albacore_log, main, barcode_selection, my_dpi, result_directory):
     '''
@@ -870,7 +943,8 @@ def barcoded_phred_score_frequency_1dsqr(albacore_log, main, barcode_selection, 
     dico = {}
     pattern = '(\d{2})'
 
-    fig = plt.figure(figsize=(1420 / my_dpi, 8), dpi=my_dpi)
+    fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
 
@@ -894,11 +968,11 @@ def barcoded_phred_score_frequency_1dsqr(albacore_log, main, barcode_selection, 
     plt.ylabel('Phred score')
     plt.title(main)
 
-    ax2 = plt.subplot(gs[1])
-    _make_table(barcode_selection_phred_scrore_dataframe, ax2)
-    table = barcode_selection_phred_scrore_dataframe.describe()
+    # ax2 = plt.subplot(gs[1])
+    # _make_table(barcode_selection_phred_scrore_dataframe, ax2)
+    table = np.round(barcode_selection_phred_scrore_dataframe.describe(),2)
     table_html = pd.DataFrame.to_html(table)
     plt.savefig(output_file)
     plt.close()
 
-    return main, output_file, table_html,
+    return main, output_file, table_html

@@ -115,7 +115,7 @@ def html_report(config_dictionary, result_dict, graphs):
   @media print {
 
     img {
-      max-width:100% !important;
+      max-width:80% !important;
       page-break-inside: avoid;
     }
 
@@ -185,6 +185,32 @@ def html_report(config_dictionary, result_dict, graphs):
     padding-bottom:1.5em;
     padding-top:1.5em;
   }
+  
+  .box {
+    float:left;
+    min-width: 1150px;
+    height: 450px;
+    margin: 0em;
+    padding-bottom:1.5em;
+    padding-top:1.8em;
+    top: 0 auto;
+    bottom: 0 auto;
+  }
+  
+    .box-left {
+    float:left;
+    min-width: 430px;
+    height: 460px;
+    margin: 0em;
+    padding-bottom:1.5em;
+    padding-top:1.5em;
+    top: 0.3px;
+    bottom: 0 auto;
+  }
+  
+  .after-box {
+    clear: left;
+  }
 
   div.footer {
     background-color: #EEE;
@@ -206,7 +232,7 @@ def html_report(config_dictionary, result_dict, graphs):
   }
 
   h2 {
-    color: #800000;
+    color: #244C89;
     padding-bottom: 0;
     margin-bottom: 0;
     clear:left;
@@ -215,11 +241,12 @@ def html_report(config_dictionary, result_dict, graphs):
   table {
     margin-left: 3em;
     text-align: center;
+    border-collapse:collapse;
   }
 
   th {
     text-align: center;
-    background-color: #000080;
+    background-color: #244C89;
     color: #FFF;
     padding: 0.4em;
   }
@@ -227,7 +254,7 @@ def html_report(config_dictionary, result_dict, graphs):
   td {
     font-family: monospace;
     text-align: left;
-    background-color: #EEE;
+    background-color: #EFEFEF;
     color: #000;
     padding: 0.4em;
   }
@@ -237,8 +264,7 @@ def html_report(config_dictionary, result_dict, graphs):
     margin-top: 0;
     border-top: 0;
   }
-
-
+  
   p {
     padding-top: 0;
     margin-top: 0;
@@ -286,11 +312,19 @@ def html_report(config_dictionary, result_dict, graphs):
     main_report = """
     <div class = 'main'>
       <div class="module"><p><b>Number of reads: {0}</b></p></div>
-""".format(run_id)
-    #number_of_read
+""".format(run_id) #number_of_read
+
+    print(graphs)
     for i, t in enumerate(graphs):
-      main_report += "      <div class=\"module\"><h2 id=M{0}>{1}</h2><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
+        main_report += "       <div class=\"module\"><h2 id=M{0}>{1}</h2></div>\n".format(i,t[0])
+        if(t[2]==None):
+            main_report += "      <div class=\"module\"><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
+        else:
+            main_report += "      <div class=\"box\"><img src=\"{2}\"></div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+            main_report += "      <div class=\"box-left\"><p>{3}</p></div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+            main_report += "      <div class=\"after-box\"><p></p></div>\n"
     main_report += "    </div>\n"
+
 
 
     # Add all the element of the page

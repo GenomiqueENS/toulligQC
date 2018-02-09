@@ -119,7 +119,7 @@ class albacore_stats_extractor():
 
         images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'Yield curve of all the 1D read type', self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d, "All the 1D read type boxplot", self.my_dpi,images_directory))
+        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d, "All the 1D read type quality boxplot", self.my_dpi,images_directory))
 
         images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the 1D reads', self.my_dpi, images_directory))
         images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the all 1D read type', self.my_dpi,images_directory))
