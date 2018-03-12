@@ -3,7 +3,7 @@
 ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biologie of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
 
 This program is dedicated to the QC analyses of Oxford Nanopore runs.
-Moreover it is adapted to RNA-Seq along with DNA-Seq.
+Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1Dsquare runs. 
 It partly relies on the summary file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
 It also needs a single FAST5 file (to catch the flowcell Id and the run date) and the Albacore outputted FASTQ file (to compute the sequence statistics).
 ToulligQC can take barcoding samples into account with a samplesheet.csv describing the barcodes used.
@@ -121,7 +121,20 @@ RUN_ID
     └── pass
         └── run_id.fastq
 ```
- 
+for 1Dsquare analysis
+
+```
+RUN_ID
+├── sequencing_summary.txt
+├── pipeline.log
+├── configuration.cfg
+└── workspace
+    └── pass
+        └── run_id.fastq
+└── 1dsq_analysis
+    └── sequencing_1dsq_summary.txt
+ ```
+
 ### 2.1 Command line
 
 <a name="options"></a>
@@ -129,20 +142,21 @@ RUN_ID
 
 General Options:
 ```
-toulligqc [-h] [-n RUN_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
-               [-a ALBACORE_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
+toulligqc [-h] [-n REPORT_NAME] [-b] [-c CONFIG_FILE] [-f FAST5_SOURCE]
+               [-a ALBACORE_SUMMARY_SOURCE] [-d ALBACORE_1DSQR_SUMMARY_SOURCE] [-q FASTQ_SOURCE]
                [-o OUTPUT_DIRECTORY] [-s SAMPLE_SHEET_SOURCE]
 
                
 optional arguments:
 
   -h, --help                       Show this help message and exit
-  -n RUN_NAME, --run-name          Run name                   
+  -n REPORT_NAME, --report-name    Report name                   
   -b, --barcoding                  Search for barcodes to demultiplex sequencing data
   -c CONFIG_FILE, --config-file    Optional configuration file to use
   -f FAST5_SOURCE, --fast5-source  Fast5 file source (.fast5 or fastq.tar.bz2 format) 
                        
   -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source      Albacore summary source (.txt format)
+  -d ALBACORE-1DSQR_SUMMARY_SOURCE, --albacore-1dsqr-summary-source      Albacore 1dsquare summary source (.txt format) (optional)
   -q FASTQ_SOURCE, --fastq-source                            Fastq file source (.fastq or fastq.tar.gz format)                  
   -o OUTPUT_DIRECTORY, --output                              Path to save the output directory
   -s SAMPLE_SHEET_SOURCE, --sample-sheet-source              Path to samplesheet to take barcodes into account 
@@ -155,9 +169,10 @@ optional arguments:
 Example with optional arguments:
 
 ```bash
-$ python3 toulligqc.py --run-name FAF0256 \
+$ python3 toulligqc.py --report-name FAF0256 \
                        --fast5-source /path/to/fast5/source \
                        --albacore-summary-source /path/to/albacore/sequencing_summary.txt \
+                       --albacore-summary-source /path/to/albacore/sequencing_1dsqr_summary.txt \ (optional)
                        --fastq-source /path/to/fastq/source \
                        --output /path/to/output/directory \
 ```
@@ -166,10 +181,11 @@ $ python3 toulligqc.py --run-name FAF0256 \
 Example with optional arguments to deal with barcoded samples:
 
 ```bash
-$ python3 toulligqc.py --run-name FAF0256 \
+$ python3 toulligqc.py --report-name FAF0256 \
                        --barcoding \
                        --fast5-source /path/to/fast5/source \
                        --albacore-summary-source /path/to/albacore/sequencing_summary.txt \
+                       --albacore-summary-source /path/to/albacore/sequencing_1dsqr_summary.txt \ (optional)
                        --fastq-source /path/to/fastq/source \
                        --output /path/to/output/directory \
                        --sample-sheet-source /path/to/sample/sheet
@@ -195,6 +211,8 @@ A configuration file can be used, the required informations have to be defined a
 fast5_source=/path/to/fast5/directory/or/file
 albacore_summary_source=/path/to/albacore/sequencing/summary/directory/or/file
 ;(directory where the results are stored)
+albacore_summary_source=/path/to/albacore/sequencing/1dsqr/summary/directory/or/file
+;(directory where the 1dsqr results are stored)
 result_directory =/path/to/result/directory/
 fastq_source=/path/to/fastq/directory/or/file 
 sample_sheet_file=/path/to/sample/sheet/file
