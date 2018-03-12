@@ -54,12 +54,12 @@ def parse_args(config_dictionary):
     home = str(Path.home())
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--conf-file",help="Specify config file", metavar="FILE")
-    parser.add_argument("-n", "--run-name", action='store', dest="run_name", help="Run name",type=str)
+    parser.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name",type=str)
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
                         help='Albacore summary source')
-    parser.add_argument('-d', '--albacore-1d-summary-source', action='store', dest='albacore_2d_summary_source',
-                        help='Albacore 2d summary source',default=False)
+    parser.add_argument('-d', '--albacore-1dsqr-summary-source', action='store', dest='albacore_1dsqr_summary_source',
+                        help='Albacore 1dsq summary source',default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source')
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
@@ -75,15 +75,15 @@ def parse_args(config_dictionary):
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
     albacore_summary_source = argument_value.albacore_summary_source
-    albacore_2d_summary_source = argument_value.albacore_2d_summary_source
+    albacore_1dsqr_summary_source = argument_value.albacore_1dsqr_summary_source
     fastq_source = argument_value.fastq_source
-    run_name = argument_value.run_name
+    report_name = argument_value.report_name
     is_barcode = argument_value.is_barcode
     result_directory = argument_value.output
     sample_sheet_file = argument_value.sample_sheet_file
     is_quiet = argument_value.is_quiet
 
-    config_dictionary['run_name'] = run_name
+    config_dictionary['report_name'] = report_name
 
     #Checking of the presence of a configuration file
     if argument_value.conf_file:
@@ -95,7 +95,7 @@ def parse_args(config_dictionary):
     source_file = {
         ('fast5_source', fast5_source),
         ('albacore_summary_source', albacore_summary_source),
-        ('albacore_2d_summary_source', albacore_2d_summary_source),
+        ('albacore_1dsqr_summary_source', albacore_1dsqr_summary_source),
         ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
@@ -143,7 +143,7 @@ def check_conf(config_dictionary):
         os.makedirs(config_dictionary['result_directory'])
 
     # Define the output directory
-    config_dictionary['result_directory'] = config_dictionary['result_directory'] + '/' + config_dictionary['run_name'] + '/'
+    config_dictionary['result_directory'] = config_dictionary['result_directory'] + '/' + config_dictionary['report_name'] + '/'
 
     if os.path.isdir(config_dictionary['result_directory']):
         shutil.rmtree(config_dictionary['result_directory'], ignore_errors=True)
@@ -235,20 +235,23 @@ def main():
         config_dictionary['barcode_selection'] = ''
 
     if os.path.isdir(config_dictionary['albacore_summary_source']):
-        config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['run_name'] + '/sequencing_summary.txt'
+        config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['report_name'] + '/sequencing_summary.txt'
 
     # if os.path.isdir(config_dictionary['albacore_2d_summary_source']):
-    #     config_dictionary['albacore_2d_summary_source'] = config_dictionary['albacore_2d_summary_source'] + config_dictionary['run_name'] + '/sequencing_2d_summary.txt'
+    #     config_dictionary['albacore_2d_summary_source'] = config_dictionary['albacore_2d_summary_source'] + config_dictionary['report_name'] + '/sequencing_2d_summary.txt'
 
     # Print welcome message
     _welcome(config_dictionary)
 
     #Production of the extractors object
 
-    if 'albacore_2d_summary_source' not in config_dictionary or not config_dictionary['albacore_2d_summary_source']:
-        extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+    if 'albacore_1dsqr_summary_source' not in config_dictionary or not config_dictionary['albacore_1dsqr_summary_source']:
+        #extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+        extractors = (fast5_extractor.fast5_extractor(config_dictionary),albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+
     else:
-        extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
+        #extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
+        extractors = (fast5_extractor.fast5_extractor(config_dictionary),albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
 
     #Configuration checking and initialisation of the extractors
     _show(config_dictionary, "* Initialize extractors")
@@ -277,8 +280,8 @@ def main():
     html_report.html_report(config_dictionary, result_dict, graphs)
 
     _show(config_dictionary, "* Write statistics files")
-    statistics_generator.statistics_generator(config_dictionary, result_dict)
-    statistics_generator.save_result_file(config_dictionary, result_dict)
+    #statistics_generator.statistics_generator(config_dictionary, result_dict)
+    #statistics_generator.save_result_file(config_dictionary, result_dict)
 
     qc_end = time.time()
     _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))
