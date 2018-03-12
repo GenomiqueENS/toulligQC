@@ -47,7 +47,7 @@ class fastq_extractor():
         self.config_dictionary = config_dictionary
         self.global_dico = {}
         self.global_length_array = []
-        self.run_name = config_dictionary['run_name']
+        self.report_name = config_dictionary['report_name']
         self.is_barcode = config_dictionary['barcoding']
 
         if self.is_barcode == True:
@@ -77,32 +77,32 @@ class fastq_extractor():
         :return:
         '''
         if os.path.isdir(self.fastq_source):
-            if glob.glob(self.fastq_source + '/*.fastq') or glob.glob(self.fastq_source + self.run_name + '/*.fastq'):
+            if glob.glob(self.fastq_source + '/*.fastq') or glob.glob(self.fastq_source + self.report_name + '/*.fastq'):
                 self.fastq_file_extension = 'fastq'
 
-            elif glob.glob(self.fastq_source + '/*.fq') or glob.glob(self.fastq_source + self.run_name + '/*.fq'):
+            elif glob.glob(self.fastq_source + '/*.fq') or glob.glob(self.fastq_source + self.report_name + '/*.fq'):
                 self.fastq_file_extension = 'fq'
 
-            elif glob.glob(self.fastq_source + '/*.gz') or glob.glob(self.fastq_source + self.run_name + '/*.gz'):
+            elif glob.glob(self.fastq_source + '/*.gz') or glob.glob(self.fastq_source + self.report_name + '/*.gz'):
                 self.fastq_file_extension = 'gz'
 
-            elif glob.glob(self.fastq_source + '/*.bz2') or glob.glob(self.fastq_source + self.run_name + '/*.bz2'):
+            elif glob.glob(self.fastq_source + '/*.bz2') or glob.glob(self.fastq_source + self.report_name + '/*.bz2'):
                 self.fastq_file_extension = 'bz2'
 
-            elif glob.glob(self.fastq_source + self.run_name + '/*.fastq'):
-                self.fastq_source = self.fastq_source + self.run_name + '/'
+            elif glob.glob(self.fastq_source + self.report_name + '/*.fastq'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
                 self.fastq_file_extension = 'fastq'
 
-            elif glob.glob(self.fastq_source + self.run_name + '/*.fq'):
-                self.fastq_source = self.fastq_source + self.run_name + '/'
+            elif glob.glob(self.fastq_source + self.report_name + '/*.fq'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
                 self.fastq_file_extension = 'fq'
 
-            elif glob.glob(self.fastq_source + self.run_name + '/*.gz'):
-                self.fastq_source = self.fastq_source + self.run_name + '/'
+            elif glob.glob(self.fastq_source + self.report_name + '/*.gz'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
                 self.fastq_file_extension = 'gz'
 
-            elif glob.glob(self.fastq_source + self.run_name + '/*.bz2'):
-                self.fastq_source = self.fastq_source + self.run_name + '/'
+            elif glob.glob(self.fastq_source + self.report_name + '/*.bz2'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
                 self.fastq_file_extension = 'bz2'
 
             else:

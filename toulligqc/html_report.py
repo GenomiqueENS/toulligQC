@@ -343,10 +343,6 @@ def html_report(config_dictionary, result_dict, graphs):
             <th>ToulligQC version</th>
             <td> {5} </td>
           </tr>
-          <tr>
-            <th></th>
-            <td> </td>
-          </tr>
           </tbody>
         </table>   
       </div>
