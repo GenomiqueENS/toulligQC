@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6 (2018-03-12)
+* Update html.report for 1D and 1Dsquare data
+* Fix issue when processing fast5 files directory
+* Add pass/fail filter
+* Add extractor and graphs for 1dsquare analysis
+
 ## 0.5 (2017-11-28)
 * Fix exception when toulligqc was launched with no arguments
 * Remove pypandoc dependency in setup.py
