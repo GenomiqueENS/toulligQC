@@ -50,10 +50,11 @@ class albacore_1dsqr_stats_extractor():
         self.fast5_tot_number_1d = len(self.albacore_log_1d)
 
     # panda's object for 1dsqr_summary
-        self.albacore_log_1dsqr = pd.read_csv(config_dictionary['albacore_2d_summary_source'], sep="\t")
+        self.albacore_log_1dsqr = pd.read_csv(config_dictionary['albacore_1dsqr_summary_source'], sep="\t")
         self.sequence_length_1dsqr = self.albacore_log_1dsqr['sequence_length_2d']
         self.passes_filtering_1dsqr = self.albacore_log_1dsqr['passes_filtering']
         self.fast5_tot_number_1dsqr = len(self.albacore_log_1dsqr)
+        self.albacore_log_1d["Yield"]=sum(self.albacore_log_1d['sequence_length_template'])
 
 
 
@@ -109,6 +110,8 @@ class albacore_1dsqr_stats_extractor():
 
         result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
         result_dict['sequence_length_2d'] = self.sequence_length_1dsqr
+        result_dict['yield']=sum(self.sequence_length_template)
+
 
     def graph_generation(self):
         '''
@@ -118,41 +121,42 @@ class albacore_1dsqr_stats_extractor():
         images_directory = self.result_directory + '/images/'
         images = []
 
-        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, '1D read count histogram', self.my_dpi, images_directory))
-        images.append(graph_generator.dsqr_read_count_histogram(self.albacore_log_1d, self.albacore_log_1dsqr,"1Dsquare read count histogram", self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'All the 1D read size histogram', self.my_dpi, images_directory))
-        images.append(graph_generator.dsqr_read_length_multihistogram(self.albacore_log_1d, self.albacore_log_1dsqr, 'All the 1Dsquare read size histogram', self.my_dpi, images_directory))
+        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, '1D read count histogram', self.my_dpi, images_directory,"Number of reads produced before (Fast 5 in blue) and after (1D in orange) basecalling. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.dsqr_read_count_histogram(self.albacore_log_1d, self.albacore_log_1dsqr,"1Dsquare read count histogram", self.my_dpi,images_directory,"Number of reads produced basecalled (1D in orange) and 1Dsquare reads (in gold). The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
-        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'Yield curve of all the 1D read type', self.my_dpi, images_directory))
+        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, '1D read size histogram', self.my_dpi, images_directory,"Size distribution of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.dsqr_read_length_multihistogram(self.albacore_log_1d, self.albacore_log_1dsqr, '1Dsquare read size histogram', self.my_dpi, images_directory,"Size distribution of basecalled reads (1D in orange) and 1Dsquare reads (in gold). The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
+
+        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'Yield plot of 1D read type', self.my_dpi, images_directory,"Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         #images.append(graph_generator.read_quality_boxplot(self.albacore_log_1d, 'Boxplot of read quality', self.my_dpi,images_directory))
 
-        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d,"All the 1D read type boxplot", self.my_dpi, images_directory))
-        images.append(graph_generator.dsqr_read_quality_multiboxplot(self.albacore_log_1d, self.albacore_log_1dsqr, "All the 1Dsquare read type boxplot", self.my_dpi, images_directory))
+        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d,"1D reads quality boxplot", self.my_dpi, images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.dsqr_read_quality_multiboxplot(self.albacore_log_1d, self.albacore_log_1dsqr, "1Dsquare reads quality boxplot", self.my_dpi, images_directory,"Boxplot of 1D (in orange) and 1Dsquare (in gold) reads quality. The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
-        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the 1D reads', self.my_dpi, images_directory))
-        images.append(graph_generator.dsqr_phred_score_frequency(self.albacore_log_1dsqr, "Phred score frequency of the 1Dsquare reads", self.my_dpi, images_directory))
-        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Phred score frequency of the all 1D read type', self.my_dpi,images_directory))
-        images.append(graph_generator.dsqr_allphred_score_frequency(self.albacore_log_1d, self.albacore_log_1dsqr, "Phred score frequency of the all 1Dsquare read type", self.my_dpi, images_directory))
+        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Mean Phred score frequency of the 1D reads', self.my_dpi, images_directory,"Mean Phred score frequency of the 1D reads"))
+        images.append(graph_generator.dsqr_phred_score_frequency(self.albacore_log_1dsqr, "Mean Phred score frequency of the 1Dsquare reads", self.my_dpi, images_directory,"Mean Phred score frequency of the 1Dsquare reads"))
+        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Mean Phred score frequency of 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.dsqr_allphred_score_frequency(self.albacore_log_1d, self.albacore_log_1dsqr, "Mean Phred score frequency of 1Dsquare read type", self.my_dpi, images_directory,"The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
         #images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Map of the reads', self.my_dpi, images_directory))
+        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell', self.my_dpi, images_directory,"Number of reads sequenced per pore channel."))
 
-        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Qscore function of 1D read length', self.my_dpi, images_directory))
-        images.append(graph_generator.scatterplot_1dsqr(self.albacore_log_1d, self.albacore_log_1dsqr,"Qscore function of 1Dsquare read length", self.my_dpi, images_directory))
+        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Mean Phred score function of 1D read length', self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.scatterplot_1dsqr(self.albacore_log_1d, self.albacore_log_1dsqr,"Mean Phred score function of 1Dsquare read length", self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(self.albacore_log_1dsqr, "1Dsquare pass percentage of different barcodes", self.barcode_selection,
-                                                                             self.my_dpi, images_directory))
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(self.albacore_log_1dsqr, "1Dsquare fail percentage of different barcodes", self.barcode_selection,
-                                                                             self.my_dpi, images_directory))
+            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(self.albacore_log_1dsqr, "1Dsquare pass reads percentage of different barcodes", self.barcode_selection,
+                                                                             self.my_dpi, images_directory,"1Dsquare pass reads distribution per barcode."))
+            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(self.albacore_log_1dsqr, "1Dsquare fail reads percentage of different barcodes", self.barcode_selection,
+                                                                             self.my_dpi, images_directory,"1Dsquare fail reads distribution per barcode."))
             images.append(graph_generator.barcode_length_boxplot_1dsqr(self.albacore_log_1dsqr,"1Dsquare read size distribution for each barcode", self.barcode_selection,
-                                                                       self.my_dpi, images_directory))
+                                                                       self.my_dpi, images_directory,"Read length boxplot per barcode of pass (in green) and fail (in red) 1Dsquare reads."))
             images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(self.albacore_log_1dsqr, "1Dsquare read phred score distribution for each barcode",
-                                                                               self.barcode_selection, self.my_dpi,images_directory))
+                                                                               self.barcode_selection, self.my_dpi,images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1Dsquare reads."))
         return images
 
     def clean(self):

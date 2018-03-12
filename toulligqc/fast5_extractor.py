@@ -36,7 +36,7 @@ class fast5_extractor():
        :param fast5_source: FAST5 file directory
        :param result_directory: result directory
        :param fast5_file_extension: extension used for the storage of the set of FAST5 files if there's one
-       :param run_name: run name
+       :param report_name: report name
        :return: a tuple containing the informations about a FAST5 file
        '''
 
@@ -44,7 +44,7 @@ class fast5_extractor():
         self.config_file_dictionary =config_dictionary
         self.fast5_source = config_dictionary['fast5_source']
         self.result_directory = config_dictionary['result_directory']
-        self.run_name = config_dictionary['run_name']
+        self.report_name = config_dictionary['report_name']
         self.fast5_file_extension = ''
         self.fast5_file = ''
 
@@ -168,10 +168,10 @@ class fast5_extractor():
                 self.fast5_file = self.fast5_source+os.listdir(self.fast5_source)[0]
 
             elif glob.glob(self.fast5_source + '/*.tar.bz2'):
-                tar_bz2_file = self.fast5_source+self.run_name+'.tar.bz2'
+                tar_bz2_file = self.fast5_source+self.report_name+'.tar.bz2'
                 self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
             elif glob.glob(self.fast5_source + '/*.tar.gz'):
-                tar_gz_file = self.fast5_source+self.run_name+ '.tar.gz'
+                tar_gz_file = self.fast5_source+self.report_name+ '.tar.gz'
                 self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file, self.result_directory)
         else:
             print('There is a problem with the fast5 file or the tar file')

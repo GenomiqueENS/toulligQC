@@ -37,12 +37,13 @@ def html_report(config_dictionary, result_dict, graphs):
 
     result_directory = config_dictionary['result_directory']
     is_barcode = config_dictionary['barcoding']
-    run_name = config_dictionary['run_name']
+    report_name = config_dictionary['report_name']
     flow_cell_id = result_dict['flow_cell_id']
     run_date = result_dict['exp_start_time']
     date = dateutil.parser.parse(run_date)
     run_date = date.strftime("%x %X %Z")
     run_id = result_dict['sample_id']
+    run_yield = result_dict['yield']
     f = open(result_directory + 'report.html', 'w')
 
     # Define the header of the page
@@ -58,7 +59,7 @@ def html_report(config_dictionary, result_dict, graphs):
     div.summary {
       width: 16em;
       position:fixed;
-      top: 3em;
+      top: 3.5em;
       margin:1em 0 0 1em;
     }
 
@@ -253,7 +254,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
   td {
     font-family: monospace;
-    text-align: left;
+    text-align: right;
     background-color: #EFEFEF;
     color: #000;
     padding: 0.4em;
@@ -288,13 +289,12 @@ def html_report(config_dictionary, result_dict, graphs):
     <div class="header">
       <div id="header_title">Run MinION report<br/></div>
       <div id="header_filename">
-        Run id: {3} <br>
-        Run name: {0}<br>
-        Run date: {1}<br>
-        Flowcell id: {2}
+        Run id: {0} <br>
+        Repport name: {1} <br>
+        Run date: {2} <br>
       </div>
     </div>
-""".format(run_name, run_date, flow_cell_id, run_id)
+""".format(run_id, report_name, run_date)
 
     # Compose the summary section of the page
     summary = """
@@ -311,12 +311,49 @@ def html_report(config_dictionary, result_dict, graphs):
     # Compose the main of the page
     main_report = """
     <div class = 'main'>
-      <div class="module"><p><b>Number of reads: {0}</b></p></div>
-""".format(run_id) #number_of_read
+      <div class=\"module\">
+        <h2 id=M{0}>Basic Statistics</h2>
+        <table class=\" dataframe \" border="1">
+          <thead>
+            <th>Measure</th>
+            <th>Value</th>
+          </thead>
+          <tbody>
+          <tr>
+            <th>Run id</th>
+            <td> {0} </td>
+          </tr>
+          <tr>
+            <th>Repport name </th>
+            <td> {1} </td>
+          </tr>
+          <tr>
+            <th>Run date</th>
+            <td> {2} </td>
+          </tr>
+          <tr>
+            <th>Flowcell id </th>
+            <td> {3} </td>
+          </tr>
+          <tr>
+            <th>Yield (b)</th>
+            <td> {4} </td>
+          </tr>
+          <tr>
+            <th>ToulligQC version</th>
+            <td> {5} </td>
+          </tr>
+          <tr>
+            <th></th>
+            <td> </td>
+          </tr>
+          </tbody>
+        </table>   
+      </div>
+""".format(run_id,report_name, run_date, flow_cell_id,run_yield,config_dictionary['app.version'])
 
-    print(graphs)
     for i, t in enumerate(graphs):
-        main_report += "       <div class=\"module\"><h2 id=M{0}>{1}</h2></div>\n".format(i,t[0])
+        main_report += "      <div class=\"module\"><h2 id=M{0}> {1} <img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> </h2></div>".format(i, t[0], _embedded_image(t[1]), t[2],t[3])
         if(t[2]==None):
             main_report += "      <div class=\"module\"><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
         else:
@@ -324,8 +361,6 @@ def html_report(config_dictionary, result_dict, graphs):
             main_report += "      <div class=\"box-left\"><p>{3}</p></div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
             main_report += "      <div class=\"after-box\"><p></p></div>\n"
     main_report += "    </div>\n"
-
-
 
     # Add all the element of the page
     report = header + banner + summary + main_report + footer
