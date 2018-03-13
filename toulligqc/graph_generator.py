@@ -136,7 +136,7 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory, des
 
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_rotation('vertical')
-    ax.set_xlabel('Read size(in pb)')
+    ax.set_xlabel('Read length(bp)')
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
@@ -291,7 +291,8 @@ def all_scatterplot(albacore_log, main, my_dpi, result_directory, desc):
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1100/my_dpi, 6), dpi=my_dpi)
+    #plt.figure(figsize=(1100/my_dpi, 6), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     #plt.subplots_adjust(bottom=0.015, top=1.0)
 
     length_read_pass = albacore_log.sequence_length_template.loc[True == albacore_log['passes_filtering']]
@@ -509,7 +510,7 @@ def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result
     handles, _ = ax.get_legend_handles_labels()
     plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
-    plt.ylabel('Read size(in pb)')
+    plt.ylabel('Read length(bp)')
     plt.title(main)
 
     # ax2 = plt.subplot(gs[1])
@@ -628,7 +629,7 @@ def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, m
 
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_rotation('vertical')
-    ax.set_xlabel('Read size(in pb)')
+    ax.set_xlabel('Read length(bp)')
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
@@ -754,7 +755,8 @@ def scatterplot_1dsqr(albacore_log_1d,albacore_log_1dsqr, main, my_dpi, result_d
     Plot the scatter plot representing the relation between the phred score and the sequence length
     '''
     output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(1100/my_dpi, 6), dpi=my_dpi)
+    #plt.figure(figsize=(1100/my_dpi, 6), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
     #plt.subplots_adjust(bottom=0.015, top=1.0)
 
     length_1dsqr_read_pass = albacore_log_1dsqr.sequence_length_2d.loc[True == albacore_log_1dsqr['passes_filtering']]
@@ -892,7 +894,7 @@ def barcode_length_boxplot_1dsqr(albacore_log, main, barcode_selection, my_dpi, 
     handles, _ = ax.get_legend_handles_labels()
     plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0.,labels=["Pass","Fail"],handles=handles)
     plt.xlabel('Barcodes')
-    plt.ylabel('Read size(in pb)')
+    plt.ylabel('Read length(bp)')
     plt.title(main)
 
     table_html = _make_table_html(barcode_selection_sequence_length_dataframe)
