@@ -38,7 +38,7 @@ def _show(config_dictionary, msg):
     :param config_dictionary: configuration dictionnary
     :param msg: message to print
     '''
-    if not config_dictionary['quiet'].strip().lower() == 'true':
+    if 'quiet' not in config_dictionary or not config_dictionary['quiet']:
         print(msg)
 
 
