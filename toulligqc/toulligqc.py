@@ -37,7 +37,6 @@ from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
 from toulligqc import statistics_generator
 from toulligqc import albacore_1dsqr_stats_generator
-from toulligqc import graph_1dsqr_generator
 from toulligqc import html_report
 from toulligqc import version
 from toulligqc import albacore_stats_extractor
