@@ -115,6 +115,10 @@ def parse_args(config_dictionary):
         if type(value) == str and os.path.isdir(value) and (not value.endswith('/')):
             config_dictionary[key] = value + '/'
 
+    # Convert all configuration values in strings
+    for key, value in config_dictionary.items():
+        config_dictionary[key] = str(value)
+
     return config_dictionary
 
 def check_conf(config_dictionary):
@@ -199,7 +203,7 @@ def _show(config_dictionary, msg):
     :param config_dictionary: configuration dictionnary
     :param msg: message to print
     '''
-    if 'quiet' not in config_dictionary or not config_dictionary['quiet']:
+    if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
         print(msg)
 
 def _format_time(t):
@@ -223,7 +227,7 @@ def main():
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
 
-    if config_dictionary['barcoding'] == True:
+    if config_dictionary['barcoding'].lower() == 'true':
         sample_sheet_file = config_dictionary['sample_sheet_file']
         barcode_selection = get_barcode(sample_sheet_file)
         config_dictionary['barcode_selection'] = barcode_selection
@@ -242,7 +246,7 @@ def main():
     #Production of the extractors object
 
     extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
-    if config_dictionary['is_quicklaunch'] == 'False':
+    if config_dictionary['is_quicklaunch'].lower() != 'true':
         extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
     if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
         extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
@@ -275,7 +279,7 @@ def main():
     _show(config_dictionary, "* Write HTML report")
     html_report.html_report(config_dictionary, result_dict, graphs)
 
-    if config_dictionary['is_quicklaunch'] == 'False':
+    if config_dictionary['is_quicklaunch'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         statistics_generator.statistics_generator(config_dictionary, result_dict)
         statistics_generator.save_result_file(config_dictionary, result_dict)
