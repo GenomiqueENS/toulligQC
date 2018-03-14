@@ -40,7 +40,8 @@ class toulligqc_conf():
                                    'quiet': 'False', \
                                    'dpi': '100', \
                                    'tmpdir': tempfile.gettempdir(), \
-                                   'barcoding': 'False'}
+                                   'barcoding': 'False', \
+                                   'is_quicklaunch': 'False'}
 
     def __getitem__(self, item):
         return self._config_dictionary[item]

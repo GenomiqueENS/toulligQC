@@ -67,6 +67,7 @@ def parse_args(config_dictionary):
                         default=False)
     parser.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                         default=False)
+    parser.add_argument("-l", "--devel-quick-launch", action='store_true', dest='is_quicklaunch', help=argparse.SUPPRESS, default=False)
     parser.add_argument('--version', action='version', version=version.__version__)
 
     #Parsing lone aruguments and assign each argument value to a variable
@@ -81,6 +82,7 @@ def parse_args(config_dictionary):
     result_directory = argument_value.output
     sample_sheet_file = argument_value.sample_sheet_file
     is_quiet = argument_value.is_quiet
+    is_quicklaunch = argument_value.is_quicklaunch
 
     config_dictionary['report_name'] = report_name
 
@@ -99,7 +101,8 @@ def parse_args(config_dictionary):
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
         ('barcoding', is_barcode),
-        ('quiet', is_quiet)
+        ('quiet', is_quiet),
+        ('is_quicklaunch', is_quicklaunch)
     }
 
     # Put arguments values in configuration object
@@ -238,13 +241,13 @@ def main():
 
     #Production of the extractors object
 
-    if 'albacore_1dsqr_summary_source' not in config_dictionary or not config_dictionary['albacore_1dsqr_summary_source']:
-        #extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
-        extractors = (fast5_extractor.fast5_extractor(config_dictionary),albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
-
+    extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
+    if config_dictionary['is_quicklaunch'] == 'False':
+        extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
+    if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
+        extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
     else:
-        #extractors = (fast5_extractor.fast5_extractor(config_dictionary), fastq_extractor.fastq_extractor(config_dictionary), albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
-        extractors = (fast5_extractor.fast5_extractor(config_dictionary),albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
+        extractors.append(albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
 
     #Configuration checking and initialisation of the extractors
     _show(config_dictionary, "* Initialize extractors")
@@ -272,9 +275,10 @@ def main():
     _show(config_dictionary, "* Write HTML report")
     html_report.html_report(config_dictionary, result_dict, graphs)
 
-    _show(config_dictionary, "* Write statistics files")
-    #statistics_generator.statistics_generator(config_dictionary, result_dict)
-    #statistics_generator.save_result_file(config_dictionary, result_dict)
+    if config_dictionary['is_quicklaunch'] == 'False':
+        _show(config_dictionary, "* Write statistics files")
+        statistics_generator.statistics_generator(config_dictionary, result_dict)
+        statistics_generator.save_result_file(config_dictionary, result_dict)
 
     qc_end = time.time()
     _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))
