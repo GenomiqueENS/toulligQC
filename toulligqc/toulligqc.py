@@ -124,9 +124,6 @@ def check_conf(config_dictionary):
     if 'fast5_source' not in config_dictionary or not config_dictionary['fast5_source']:
         sys.exit('The fast5 source argument is empty')
 
-    #if 'albacore_2d_summary_source' not in config_dictionary or not config_dictionary['albacore_2d_summary_source']:
-    #    sys.exit('The albacore 1Dsqr summary source argument is empty')
-
     if 'albacore_summary_source' not in config_dictionary or not config_dictionary['albacore_summary_source']:
          sys.exit('The albacore summary source argument is empty')
 
@@ -236,9 +233,6 @@ def main():
 
     if os.path.isdir(config_dictionary['albacore_summary_source']):
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] + config_dictionary['report_name'] + '/sequencing_summary.txt'
-
-    # if os.path.isdir(config_dictionary['albacore_2d_summary_source']):
-    #     config_dictionary['albacore_2d_summary_source'] = config_dictionary['albacore_2d_summary_source'] + config_dictionary['report_name'] + '/sequencing_2d_summary.txt'
 
     # Print welcome message
     _welcome(config_dictionary)

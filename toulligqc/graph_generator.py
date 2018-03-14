@@ -83,7 +83,6 @@ def read_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
     """
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    #ax = plt.subplot(gs[0])
 
     fast5_raw = len(albacore_log['num_events'])
     fast5_template_basecalled = len(albacore_log[albacore_log['num_called_template'] != 0])
@@ -140,8 +139,6 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory, des
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
-    # ax2 = plt.subplot(gs[1])
-
     dataframe = pd.DataFrame({"1D": sequence_length_template, "1D pass": read_pass, "1D fail": read_fail})
     dataframe = dataframe[["1D","1D pass","1D fail"]]
 
@@ -162,7 +159,6 @@ def allread_number_run(albacore_log, main, my_dpi, result_directory, desc):
     start_time_sorted = sorted(sorted(albacore_log['start_time']/3600))
     read_pass = sorted(albacore_log.start_time.loc[True == albacore_log['passes_filtering']]/3600)
     read_fail = sorted(albacore_log.start_time.loc[False == albacore_log['passes_filtering']]/3600)
-    #read_type = ['1D','1D pass', '1D fail']
 
     plt_read_1d=plt.scatter(start_time_sorted, np.arange(len(start_time_sorted)),color='salmon')
     plt_read_pass=plt.scatter(read_pass, np.arange(len(read_pass)),color='yellowgreen')
@@ -200,12 +196,6 @@ def read_quality_multiboxplot(albacore_log, main, my_dpi, result_directory, desc
     plt.title(main)
     plt.legend()
 
-    #arr = dataframe.as_matrix()
-    #print(arr)
-
-    #ax2 = plt.subplot(gs[1])
-    #_make_table(dataframe, ax2, 'count')
-
     dataframe = dataframe[["1D","1D pass","1D fail"]]
     table_html = _make_table_html(dataframe)
 
@@ -240,8 +230,6 @@ def phred_score_frequency(albacore_log, main, my_dpi, result_directory, desc):
 
     plt.axvline(x=mean_qscore.describe()['50%'], color='salmon')
 
-    # ax2 = plt.subplot(gs[1])
-    # _make_table(rd, ax2, 'count')
     plt.savefig(output_file)
     plt.close()
 
@@ -291,9 +279,7 @@ def all_scatterplot(albacore_log, main, my_dpi, result_directory, desc):
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     '''
     output_file = result_directory + '/' + main + '.png'
-    #plt.figure(figsize=(1100/my_dpi, 6), dpi=my_dpi)
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    #plt.subplots_adjust(bottom=0.015, top=1.0)
 
     length_read_pass = albacore_log.sequence_length_template.loc[True == albacore_log['passes_filtering']]
     length_read_fail = albacore_log.sequence_length_template.loc[False == albacore_log['passes_filtering']]
@@ -513,13 +499,8 @@ def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result
     plt.ylabel('Read length(bp)')
     plt.title(main)
 
-    # ax2 = plt.subplot(gs[1])
-    # _make_table(barcode_selection_sequence_length_dataframe, ax2)
     plt.savefig(output_file)
     plt.close()
-    # table=np.round(barcode_selection_sequence_length_dataframe.describe(),2)
-    # pd.options.display.float_format = '{:,}'.format
-    # table_html = pd.DataFrame.to_html(table)
     table_html=_make_table_html(barcode_selection_sequence_length_dataframe)
 
     return main, output_file, table_html, desc
@@ -638,13 +619,6 @@ def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, m
     dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
     table_html = _make_table_html(dataframe)
 
-    # ax2.xaxis.set_visible(False)
-    # ax2.yaxis.set_visible(False)
-    # ax2.axis('off')
-
-    #the_table.set_fontsize(12)
-    #the_table.scale(1, 1)
-
     plt.savefig(output_file)
     plt.close()
 
@@ -755,7 +729,6 @@ def scatterplot_1dsqr(albacore_log_1d,albacore_log_1dsqr, main, my_dpi, result_d
     Plot the scatter plot representing the relation between the phred score and the sequence length
     '''
     output_file = result_directory + '/' + main + '.png'
-    #plt.figure(figsize=(1100/my_dpi, 6), dpi=my_dpi)
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     #plt.subplots_adjust(bottom=0.015, top=1.0)
 

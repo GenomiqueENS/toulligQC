@@ -109,16 +109,6 @@ class albacore_stats_extractor():
         :return: images array containing the title and the path toward the images
         '''
 
-        #  Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories.
-        # Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories.
-        #  Phred score frequency of 1D reads.
-        # The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories.
-        #  Number of reads sequenced per pore channel.
-        #  The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories.
-        #  1D read pass distribution per barcode.
-        #  1D read fail distribution per barcode.
-        #  Read length boxplot per barcode of pass (in green) and fail (in red) 1D reads.
-
         images_directory = self.result_directory + '/images'
         images = []
         images.append(graph_generator.read_count_histogram(self.albacore_log_1d, 'Read count histogram', self.my_dpi,images_directory, "Number of reads produced before (Fast 5 in blue) and after (1D in orange) basecalling. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
