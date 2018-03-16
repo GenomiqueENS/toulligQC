@@ -17,7 +17,7 @@ RUN apt update && \
     cd /tmp && \
     git clone https://github.com/GenomicParisCentre/toulligQC && \
     cd toulligQC && \
-    git checkout v0.7 && \
+    git checkout v0.8 && \
     python3 setup.py build install && \
     apt remove --yes git && \
     apt clean

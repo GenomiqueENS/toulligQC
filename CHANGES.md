@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8 (2018-03-14)
+* Fix unexisting import in toulligqc.py
+* Fix the not working "--quiet" option
+
+
 ## 0.7 (2018-03-14)
 * Fix Dockerfile that used the Ubuntu 17.04 (Ubuntu 17.04 packages repository is no more available)
 
