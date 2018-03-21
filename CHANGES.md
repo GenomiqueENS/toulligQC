@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9 (2018-03-21)
+* Fix out of memory error when parsing big FASTQ files. The parsing of FASTQ files is now faster
+
+
 ## 0.8 (2018-03-14)
 * Fix unexisting import in toulligqc.py
 * Fix the not working "--quiet" option
