@@ -165,59 +165,45 @@ class fastq_extractor():
         barcode_length_array: sequence length for each barcode sample,
         template_nucleotide_counter: counting of the nucleotide present in each barcode
         '''
-        counter = 0
         barcode_length_array = []
-        sequence = ''
-        if self.fastq_file_extension == 'bz2':
-            with bz2.BZ2File(self.fastq_file, 'rb') as inputo:
-                with io.TextIOWrapper(inputo, encoding='utf-8') as bz2_fastq_file:
-                    for line in bz2_fastq_file:
-                        counter += 1
+        template_nucleotide_counter = Counter()
 
-                        if counter == 2:
-                            sequence += line.strip()
-                            self.global_length_array.append(len(line))
-
-                            if self.is_barcode:
-                                barcode_length_array.append(len(line))
-
-                        if counter == 4:
-                            counter = 0
-
-        elif self.fastq_file_extension == 'gz':
-            with gzip.open(self.fastq_file, 'rb') as input_file:
-                with io.TextIOWrapper(input_file, encoding='utf-8') as bz2_fastq_file:
-                    for line in bz2_fastq_file:
-                        counter += 1
-
-                        if counter == 2:
-                            sequence += line.strip()
-                            self.global_length_array.append(len(line))
-
-                            if self.is_barcode:
-                                barcode_length_array.append(len(line))
-
-                        if counter == 4:
-                            counter = 0
-
-        else:
-            with open(self.fastq_file, 'r') as fastq_file:
+        with self._open_compressed_file(self.fastq_file, self.fastq_file_extension) as input_file:
+            with io.TextIOWrapper(input_file, encoding='utf-8') as fastq_file:
+                entry_line = 0
                 for line in fastq_file:
-                    counter += 1
+                    line = line.strip()
+                    entry_line += 1
 
-                    if counter == 2:
-                        sequence += line.strip()
+                    if entry_line == 2:
+                        template_nucleotide_counter.update(line)
                         self.global_length_array.append(len(line))
 
-                    if self.is_barcode:
-                        barcode_length_array.append(len(line))
+                        if self.is_barcode:
+                            barcode_length_array.append(len(line))
 
-                    if counter == 4:
-                        counter = 0
+                    if entry_line == 4:
+                        entry_line = 0
 
-        template_nucleotide_counter = Counter(sequence)
-        total_nucs_template = len(sequence)
+        total_nucs_template = sum(template_nucleotide_counter.values())
         return total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter
+
+    def _open_compressed_file(self, file_path, file_extension):
+        '''
+        Open a compressed file or not
+        :param file_path: file path
+        :param file_extension: file compressed file format in a string
+        '''
+
+        if file_extension == 'bz2':
+            return bz2.BZ2File(file_path, 'rb')
+
+        elif file_extension == 'gz':
+            return gzip.open(file_path, 'rb')
+
+        else:
+            return open(file_path, 'rb')
+
 
     def _barcoded_fastq_informations(self, selected_barcode=''):
         '''
