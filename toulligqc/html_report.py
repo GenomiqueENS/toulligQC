@@ -287,7 +287,7 @@ def html_report(config_dictionary, result_dict, graphs):
     # Compose the Banner of the page
     banner = """
     <div class="header">
-      <div id="header_title">Run MinION report<br/></div>
+      <div id="header_title">ToulligQC report for {0} <br/></div>
       <div id="header_filename">
         Run id: {0} <br>
         Repport name: {1} <br>
