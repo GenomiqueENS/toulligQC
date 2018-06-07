@@ -40,6 +40,7 @@ from toulligqc import albacore_1dsqr_stats_generator
 from toulligqc import html_report
 from toulligqc import version
 from toulligqc import albacore_stats_extractor
+from toulligqc import pipeline_log_extractor
 from pathlib import Path
 from toulligqc import toulligqc_conf
 
@@ -59,6 +60,8 @@ def parse_args(config_dictionary):
                         help='Albacore summary source')
     parser.add_argument('-d', '--albacore-1dsqr-summary-source', action='store', dest='albacore_1dsqr_summary_source',
                         help='Albacore 1dsq summary source',default=False)
+    parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
+                        help='Albacore pipeline source',default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source')
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
@@ -76,6 +79,7 @@ def parse_args(config_dictionary):
     fast5_source = argument_value.fast5_source
     albacore_summary_source = argument_value.albacore_summary_source
     albacore_1dsqr_summary_source = argument_value.albacore_1dsqr_summary_source
+    albacore_pipeline_source=argument_value.albacore_pipeline_source
     fastq_source = argument_value.fastq_source
     report_name = argument_value.report_name
     is_barcode = argument_value.is_barcode
@@ -97,6 +101,7 @@ def parse_args(config_dictionary):
         ('fast5_source', fast5_source),
         ('albacore_summary_source', albacore_summary_source),
         ('albacore_1dsqr_summary_source', albacore_1dsqr_summary_source),
+        ('albacore_pipeline_source',albacore_pipeline_source),
         ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
@@ -246,8 +251,14 @@ def main():
     #Production of the extractors object
 
     extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
+
     if config_dictionary['is_quicklaunch'].lower() != 'true':
         extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
+        extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
+
+    if 'albacore_pipeline_source'in config_dictionary and config_dictionary['albacore_pipeline_source']:
+        extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
+        
     if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
         extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
     else:
