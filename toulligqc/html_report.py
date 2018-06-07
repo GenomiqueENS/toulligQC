@@ -25,7 +25,7 @@
 import re
 import base64
 import dateutil.parser
-
+import time
 
 def html_report(config_dictionary, result_dict, graphs):
 
@@ -38,12 +38,25 @@ def html_report(config_dictionary, result_dict, graphs):
     result_directory = config_dictionary['result_directory']
     is_barcode = config_dictionary['barcoding']
     report_name = config_dictionary['report_name']
-    flow_cell_id = result_dict['flow_cell_id']
+
+    report_date= time.strftime("%x %X %Z")
+
+    #from Fast5 file
     run_date = result_dict['exp_start_time']
     date = dateutil.parser.parse(run_date)
     run_date = date.strftime("%x %X %Z")
-    run_id = result_dict['sample_id']
+    flow_cell_id = result_dict['flow_cell_id']
+
     run_yield = result_dict['yield']
+
+    #from pipeline log file
+    flowcell_version = result_dict['flowcell_version']
+    kit_version = result_dict['kit_version']
+    run_id = result_dict['sample_id']
+    minknow_version = result_dict['minknow_version']
+    albacore_version = result_dict['albacore_version']
+
+
     f = open(result_directory + 'report.html', 'w')
 
     # Define the header of the page
@@ -292,9 +305,10 @@ def html_report(config_dictionary, result_dict, graphs):
         Run id: {0} <br>
         Repport name: {1} <br>
         Run date: {2} <br>
+        Report date : {3} <br>
       </div>
     </div>
-""".format(run_id, report_name, run_date)
+""".format(run_id, report_name, run_date, report_date)
 
     # Compose the summary section of the page
     summary = """
@@ -336,17 +350,33 @@ def html_report(config_dictionary, result_dict, graphs):
             <td> {3} </td>
           </tr>
           <tr>
-            <th>Yield (b)</th>
+            <th>Flowcell version</th>
             <td> {4} </td>
           </tr>
           <tr>
-            <th>ToulligQC version</th>
+            <th>Kit</th>
             <td> {5} </td>
+          </tr>
+          <tr>
+            <th>MinKNOW version </th>
+            <td> {6} </td>
+          </tr>
+          <tr>
+            <th>Albacore version</th>
+            <td> {7} </td>
+          </tr>
+          <tr>
+            <th>ToulligQC version</th>
+            <td> {8} </td>
+          </tr>
+          <tr>
+            <th>Yield (b)</th>
+            <td> {9} </td>
           </tr>
           </tbody>
         </table>   
       </div>
-""".format(run_id,report_name, run_date, flow_cell_id,run_yield,config_dictionary['app.version'])
+""".format(run_id,report_name, run_date, flow_cell_id,flowcell_version,kit_version,minknow_version,albacore_version,config_dictionary['app.version'],run_yield)
 
     for i, t in enumerate(graphs):
         main_report += "      <div class=\"module\"><h2 id=M{0}> {1} <img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> </h2></div>".format(i, t[0], _embedded_image(t[1]), t[2],t[3])

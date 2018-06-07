@@ -86,16 +86,13 @@ class albacore_log_extractor():
 
             for line in pipeline_file:
                 if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
-                    result_dict['albacore_version'] = re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line).group(0)
-                    print(result_dict['albacore_version'])
+                    self.pipeline_dict['albacore_version'] = re.compile("\s(\d+\.)(\d+\.)(\d)").search(line).group(0)
 
                 if re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line):
-                    result_dict['kit_version'] = re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
-                    print(result_dict['kit_version'])
+                    self.pipeline_dict['kit_version'] = re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
 
                 if re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line):
-                    result_dict['flowcell_version'] = re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
-                    print(result_dict['flowcell_version'])
+                    self.pipeline_dict['flowcell_version'] = re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
 
                 if re.compile('(sequence)\_(length)\_(template)').search(line):
                     self.pipeline_dict['Fast5_failed_to_load_key'] += 1
@@ -110,6 +107,14 @@ class albacore_log_extractor():
                     self.pipeline_dict['Fast5_submitted'] += 1
 
         pipeline_file.close()
+
+        result_dict['albacore_version'] = self.pipeline_dict['albacore_version']
+        result_dict['kit_version'] = self.pipeline_dict['kit_version']
+        result_dict['flowcell_version'] = self.pipeline_dict['flowcell_version']
+        result_dict['Fast5_failed_to_load_key'] = self.pipeline_dict['Fast5_failed_to_load_key']
+        result_dict['Fast5_failed_count'] = self.pipeline_dict['Fast5_failed_count']
+        result_dict['Fast5_processed'] = self.pipeline_dict['Fast5_processed']
+        result_dict['Fast5_submitted'] = self.pipeline_dict['Fast5_submitted']
 
     def graph_generation(self):
         '''
