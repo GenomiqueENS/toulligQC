@@ -102,6 +102,7 @@ class albacore_stats_extractor():
         result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
         result_dict['sequence_length_template'] = self.sequence_length_template
         result_dict['yield']=sum(self.sequence_length_template)
+        result_dict['read_count']=len(self.albacore_log_1d['num_events'])
 
     def graph_generation(self):
         '''
