@@ -62,7 +62,7 @@ def parse_args(config_dictionary):
                         help='Albacore 1dsq summary source',default=False)
     parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
                         help='Albacore pipeline source',default=False)
-    parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source')
+    parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source',default=False)
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
                         help='Path to sample sheet file')
@@ -252,8 +252,10 @@ def main():
 
     extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
 
-    if config_dictionary['is_quicklaunch'].lower() != 'true':
+    if config_dictionary['fastq_source']in config_dictionary and config_dictionary['fastq_source']:
         extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
+
+    if config_dictionary['is_quicklaunch'].lower() != 'true':
         extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
 
     if 'albacore_pipeline_source'in config_dictionary and config_dictionary['albacore_pipeline_source']:
