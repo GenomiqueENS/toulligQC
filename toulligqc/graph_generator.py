@@ -74,6 +74,37 @@ def _safe_log(x):
         return 0
     return np.log2(x)
 
+def log_count_histogram(result_dict, main, my_dpi, result_directory, desc):
+    """
+    Plots the count histograms of count  of the different types of reads submit, basecalled and failed.
+    """
+    output_file = result_directory + '/' + main + '.png'
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    print(result_dict)
+    fast5_submitting =result_dict['Fast5_submitted']
+    fast5_finished = result_dict['Fast5_processed']
+    fast5_with_error_load_key = result_dict['Fast5_failed_to_load_key']
+    fast5_with_error_inserting = result_dict['Fast5_failed_count']
+    label = ("fast5_submitted", "fast5_finished", "fast5_with_error_load_key", "fast5_with_error_inserting")
+    read_type = [fast5_submitting,fast5_finished,fast5_with_error_load_key,fast5_with_error_inserting]
+    nd = np.arange(len(read_type))
+
+    bars = plt.bar(nd, read_type, align='center', color=["lightblue", "salmon", "yellowgreen", "orangered"])
+
+    plt.xticks(nd, label)
+    plt.xlabel("Read type")
+    plt.ylabel("Counts")
+    plt.title(main)
+
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
+    table_html=None
+
+    plt.savefig(output_file)
+    plt.close()
+
+    return main, output_file, table_html, desc
 
 #  1D plots
 
