@@ -45,6 +45,7 @@ class albacore_log_extractor():
         self.result_directory = config_dictionary['result_directory']
         self.pipeline_file = ''
         self.my_dpi = int(config_dictionary['dpi'])
+        self.pipeline_dict = {}
 
     def check_conf(self):
         '''
@@ -78,10 +79,10 @@ class albacore_log_extractor():
        '''
 
         with open(self.pipeline_file, 'r') as pipeline_file:
-            result_dict['Fast5_submitted']=0
-            result_dict['Fast5_failed_to_load_key'] = 0
-            result_dict['Fast5_failed_count']=0
-            result_dict['Fast5_processed']=0
+            self.pipeline_dict['Fast5_submitted'] = 0
+            self.pipeline_dict['Fast5_failed_to_load_key'] = 0
+            self.pipeline_dict['Fast5_failed_count'] = 0
+            self.pipeline_dict['Fast5_processed'] = 0
 
             for line in pipeline_file:
                 if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
@@ -97,17 +98,16 @@ class albacore_log_extractor():
                     print(result_dict['flowcell_version'])
 
                 if re.compile('(sequence)\_(length)\_(template)').search(line):
-                    result_dict['Fast5_failed_to_load_key'] = result_dict['Fast5_failed_to_load_key'] + 1
+                    self.pipeline_dict['Fast5_failed_to_load_key'] += 1
 
                 if re.compile('(ERROR)\s(inserting)\s(read)').search(line):
-                    result_dict['Fast5_failed_count'] = result_dict['Fast5_failed_count'] + 1
+                    self.pipeline_dict['Fast5_failed_count'] += 1
 
                 if re.compile('(Finished)').search(line):
-
-                    result_dict['Fast5_processed'] = result_dict['Fast5_processed'] + 1
+                    self.pipeline_dict['Fast5_processed'] += 1
 
                 if re.compile('(Submitting)').search(line):
-                    result_dict['Fast5_submitted'] = result_dict['Fast5_submitted'] + 1
+                    self.pipeline_dict['Fast5_submitted'] += 1
 
         pipeline_file.close()
 
@@ -118,7 +118,7 @@ class albacore_log_extractor():
         '''
         images_directory = self.result_directory + '/images'
         images = []
-        images.append(graph_generator.log_count_histogram(self.result_directory, 'About Albacore log', self.my_dpi,
+        images.append(graph_generator.log_count_histogram(self.pipeline_dict, 'About Albacore log', self.my_dpi,
                                                            images_directory,
                                                            "Number of reads submitted (Fast 5 in blue), proccesed (Fast 5 in blue) and with Error load key (Fast 5 in blue) or Error inserting file (Fast 5 in blue)."))
         return images
