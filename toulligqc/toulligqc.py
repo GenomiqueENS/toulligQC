@@ -258,7 +258,7 @@ def main():
 
     if 'albacore_pipeline_source'in config_dictionary and config_dictionary['albacore_pipeline_source']:
         extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-        
+
     if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
         extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
     else:
