@@ -94,7 +94,7 @@ class albacore_log_extractor():
                 if re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line):
                     self.pipeline_dict['flowcell_version'] = re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
 
-                if re.compile('(sequence)\_(length)\_(template)').search(line):
+                if re.compile("(key\:)\s('(sequence)\_(length)\_(template)')").search(line):
                     self.pipeline_dict['Fast5_failed_to_load_key'] += 1
 
                 if re.compile('(ERROR)\s(inserting)\s(read)').search(line):
