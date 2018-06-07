@@ -47,7 +47,8 @@ def html_report(config_dictionary, result_dict, graphs):
     run_date = date.strftime("%x %X %Z")
     flow_cell_id = result_dict['flow_cell_id']
 
-    run_yield = result_dict['yield']
+    read_count = result_dict['read_count']
+    run_yield = result_dict['yield']/1000000000
 
     #from pipeline log file
     flowcell_version = result_dict['flowcell_version']
@@ -338,7 +339,7 @@ def html_report(config_dictionary, result_dict, graphs):
             <td> {0} </td>
           </tr>
           <tr>
-            <th>Repport name </th>
+            <th>Report name </th>
             <td> {1} </td>
           </tr>
           <tr>
@@ -373,10 +374,14 @@ def html_report(config_dictionary, result_dict, graphs):
             <th>Yield (b)</th>
             <td> {9} </td>
           </tr>
+          <tr>
+            <th>Read count</th>
+            <td> {10} </td>
+          </tr>
           </tbody>
         </table>   
       </div>
-""".format(run_id,report_name, run_date, flow_cell_id,flowcell_version,kit_version,minknow_version,albacore_version,config_dictionary['app.version'],run_yield)
+""".format(run_id,report_name, run_date, flow_cell_id,flowcell_version,kit_version,minknow_version,albacore_version,config_dictionary['app.version'],run_yield,read_count)
 
     for i, t in enumerate(graphs):
         main_report += "      <div class=\"module\"><h2 id=M{0}> {1} <img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> </h2></div>".format(i, t[0], _embedded_image(t[1]), t[2],t[3])
