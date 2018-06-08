@@ -126,11 +126,6 @@ class albacore_log_extractor():
         Graph generaiton
         :return:
         '''
-        # images_directory = self.result_directory + '/images'
-        # images = []
-        # images.append(graph_generator.log_count_histogram(self.pipeline_dict, 'Fast5 basecalled histogram', self.my_dpi,
-        #                                                    images_directory,
-        #                                                    "Number of submitted  reads, proccesed and with Error load key or Error inserting file."))
         return []
 
     def clean(self):
