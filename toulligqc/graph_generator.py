@@ -74,38 +74,6 @@ def _safe_log(x):
         return 0
     return np.log2(x)
 
-# def log_count_histogram(result_dict, main, my_dpi, result_directory, desc):
-#     """
-#     Plots the count histograms of count  of the different types of reads submit, basecalled and failed.
-#     """
-#     output_file = result_directory + '/' + main + '.png'
-#     plt.figure(figsize=(12, 7), dpi=my_dpi)
-#     print(result_dict)
-#     fast5_submitting =result_dict['Fast5_submitted']
-#     fast5_finished = result_dict['Fast5_processed']
-#     fast5_with_error_load_key = result_dict['Fast5_failed_to_load_key']
-#     fast5_with_error_inserting = result_dict['Fast5_failed_count']
-#     label = ("fast5_submitted", "fast5_finished", "fast5_with_error_load_key", "fast5_with_error_inserting")
-#     read_type = [fast5_submitting,fast5_finished,fast5_with_error_load_key,fast5_with_error_inserting]
-#     nd = np.arange(len(read_type))
-#
-#     bars = plt.bar(nd, read_type, align='center', color=sns.color_palette("BuGn",len(nd)))
-#
-#     plt.xticks(nd, label)
-#     plt.xlabel("Read type")
-#     plt.ylabel("Counts")
-#     plt.title(main)
-#
-#     for bar in bars:
-#         height = bar.get_height()
-#         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
-#     table_html=None
-#
-#     plt.savefig(output_file)
-#     plt.close()
-#
-#     return main, output_file, table_html, desc
-
 #  1D plots
 
 def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
@@ -116,7 +84,7 @@ def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
     read_type = [result_dict['raw_fast5'],result_dict['basecalled_error_count'],result_dict["fastQ_entries"], result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
-    label = ("raw Fast5","raw Fast5 with error","fastQ entries", "1D", "1D pass", "1D fail")
+    label = ("Raw Fast5","Raw Fast5 with error","FastQ entries", "1D", "1D pass", "1D fail")
     nd = np.arange(len(read_type))
 
     bars = plt.bar(nd, read_type, align='center', color=["Green","yellow","lightblue", "salmon", "yellowgreen", "orangered"])
@@ -196,20 +164,17 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc
 
-def read_quality_multiboxplot(albacore_log, main, my_dpi, result_directory, desc):
+def read_quality_multiboxplot(result_dict, albacore_log, main, my_dpi, result_directory, desc):
     """
     Plots a boxplot of reads quality
     """
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    mean_qscore = albacore_log.loc[:, "mean_qscore_template"]
-    read_pass = albacore_log.mean_qscore_template.loc[True == albacore_log['passes_filtering']]
-    read_fail = albacore_log.mean_qscore_template.loc[False == albacore_log['passes_filtering']]
 
     my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
     order=["1D","1D pass","1D fail"]
-    dataframe = pd.DataFrame({"1D": mean_qscore, "1D pass": read_pass, "1D fail": read_fail })
+    dataframe = pd.DataFrame({"1D": result_dict["mean_qscore"], "1D pass": result_dict['qscore_read_pass'], "1D fail": result_dict['qscore_read_fail'] })
     sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order)
 
     plt.subplots_adjust(bottom=0.015, top=1.0)

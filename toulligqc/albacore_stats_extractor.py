@@ -109,10 +109,13 @@ class albacore_stats_extractor():
         result_dict["read_fail"] = self.albacore_log_1d.sequence_length_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
         #yield information
-        result_dict["Yield"] = sum(self.albacore_log_1d['sequence_length_template'])
+        result_dict["Yield"] = sum(self.albacore_log_1d['sequence_length_template']/1000000000)
         result_dict["start_time_sorted"] = sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
         result_dict["read_pass_sorted"] = sorted(self.albacore_log_1d.start_time.loc[True == self.albacore_log_1d['passes_filtering']]/3600)
         result_dict["read_fail_sorted"] = sorted(self.albacore_log_1d.start_time.loc[False == self.albacore_log_1d['passes_filtering']]/3600)
+        result_dict["mean_qscore"] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
+        result_dict["qscore_read_pass"] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
+        result_dict["qscore_read_fail"] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
     def graph_generation(self,result_dict):
         '''
@@ -126,7 +129,7 @@ class albacore_stats_extractor():
 
         images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type', self.my_dpi,images_directory,"Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.read_quality_multiboxplot(result_dict, self.albacore_log_1d, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Mean Phred score frequency of 1D reads', self.my_dpi, images_directory,"Phred score frequency of 1D reads."))
         images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Mean Phred score frequency of all 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
