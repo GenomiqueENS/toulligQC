@@ -98,7 +98,7 @@ class fast5_extractor():
         '''
         return
 
-    def graph_generation(self):
+    def graph_generation(self,result_dict):
         '''
         Graph generaiton
         :return:

@@ -142,7 +142,7 @@ class fastq_extractor():
             self._read_fastq_without_barcode()
             result_dict.update(self.global_dico)
 
-    def graph_generation(self):
+    def graph_generation(self,result_dict):
         '''
         Generation of graphs for fastq files
         :return:
