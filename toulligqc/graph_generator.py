@@ -83,11 +83,17 @@ def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    read_type = [result_dict['raw_fast5'],result_dict['basecalled_error_count'],result_dict["fastQ_entries"], result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
-    label = ("Raw Fast5","Raw Fast5 with error","FastQ entries", "1D", "1D pass", "1D fail")
-    nd = np.arange(len(read_type))
+    if result_dict['raw_fast5'] == -1:
+        read_type = [result_dict["fastQ_entries"],result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
+        label = ("FastQ entries", "1D", "1D pass", "1D fail")
+        nd = np.arange(len(read_type))
+        bars = plt.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"])
+    else:
+        read_type = [result_dict['raw_fast5'], result_dict['basecalled_error_count'], result_dict["fastQ_entries"],result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
+        label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D", "1D pass", "1D fail")
+        nd = np.arange(len(read_type))
+        bars = plt.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"])
 
-    bars = plt.bar(nd, read_type, align='center', color=["Green","yellow","lightblue", "salmon", "yellowgreen", "orangered"])
     plt.xticks(nd, label)
     plt.xlabel("Read type")
     plt.ylabel("Counts")
@@ -190,7 +196,7 @@ def read_quality_multiboxplot(result_dict, albacore_log, main, my_dpi, result_di
     plt.close()
     return main, output_file, table_html, desc
 
-def phred_score_frequency(albacore_log, main, my_dpi, result_directory, desc):
+def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the distribution of the phred score
     '''
@@ -201,9 +207,7 @@ def phred_score_frequency(albacore_log, main, my_dpi, result_directory, desc):
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    mean_qscore = albacore_log['mean_qscore_template']
-
-    sns.distplot(mean_qscore, bins=15, color='salmon',
+    sns.distplot(result_dict["mean_qscore"], bins=15, color='salmon',
                  hist_kws=dict(edgecolor="k", linewidth=1),hist=True,label="1D")
 
     plt.legend()
@@ -211,10 +215,10 @@ def phred_score_frequency(albacore_log, main, my_dpi, result_directory, desc):
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1D": mean_qscore})
+    dataframe = pd.DataFrame({"1D": result_dict["mean_qscore"]})
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=mean_qscore.describe()['50%'], color='salmon')
+    plt.axvline(x=result_dict["mean_qscore"].describe()['50%'], color='salmon')
 
     plt.savefig(output_file)
     plt.close()
@@ -223,7 +227,7 @@ def phred_score_frequency(albacore_log, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc
 
-def allphred_score_frequency(albacore_log, main, my_dpi, result_directory, desc):
+def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the distribution of the phred score
     '''
@@ -232,25 +236,22 @@ def allphred_score_frequency(albacore_log, main, my_dpi, result_directory, desc)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
-    mean_qscore = albacore_log['mean_qscore_template']
-    mean_qscore_read_pass = albacore_log.mean_qscore_template.loc[True == albacore_log['passes_filtering']]
-    mean_qscore_read_fail = albacore_log.mean_qscore_template.loc[False == albacore_log['passes_filtering']]
 
-    sns.distplot(mean_qscore_read_pass, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
+    sns.distplot(result_dict['qscore_read_pass'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
                  hist=True, label='1D pass')
-    sns.distplot(mean_qscore_read_fail, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
+    sns.distplot(result_dict['qscore_read_fail'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
                  hist=True)
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1D": mean_qscore, "1D pass": mean_qscore_read_pass, "1D fail": mean_qscore_read_fail})
+    dataframe = pd.DataFrame({"1D": result_dict["mean_qscore"], "1D pass": result_dict['qscore_read_pass'], "1D fail": result_dict['qscore_read_fail']})
 
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=mean_qscore_read_pass.describe()['50%'], color='yellowgreen')
-    plt.axvline(x=mean_qscore_read_fail.describe()['50%'], color='orangered')
+    plt.axvline(x=result_dict['qscore_read_pass'].describe()['50%'], color='yellowgreen')
+    plt.axvline(x=result_dict['qscore_read_fail'].describe()['50%'], color='orangered')
 
     plt.savefig(output_file)
     plt.close()

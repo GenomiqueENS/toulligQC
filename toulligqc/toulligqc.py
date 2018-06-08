@@ -61,7 +61,7 @@ def parse_args(config_dictionary):
     parser.add_argument('-d', '--albacore-1dsqr-summary-source', action='store', dest='albacore_1dsqr_summary_source',
                         help='Albacore 1dsq summary source',default=False)
     parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
-                        help='Albacore pipeline source')
+                        help='Albacore pipeline source', default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source', help='Fastq file source',default=False)
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
@@ -250,13 +250,16 @@ def main():
 
     #Production of the extractors object
 
-    extractors = [fast5_extractor.fast5_extractor(config_dictionary),pipeline_log_extractor.albacore_log_extractor(config_dictionary)]
+    extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
 
-    if config_dictionary['fastq_source']in config_dictionary and config_dictionary['fastq_source']:
+    if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
+        extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
+
+    if 'fastq_source' in config_dictionary and config_dictionary['fastq_source']:
         extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
 
-    if config_dictionary['is_quicklaunch'].lower() != 'true':
-        extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
+    # if config_dictionary['is_quicklaunch'].lower() != 'true':
+    #     extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
 
     if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
         extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
@@ -272,6 +275,17 @@ def main():
     result_dict = {}
     graphs = []
     qc_start = time.time()
+
+    # Initialisation if --albacore-pipeline-source not in config-dictionnry
+    result_dict['albacore_version'] = "Unknown"
+    result_dict['kit_version'] = "Unknown"
+    result_dict['flowcell_version'] = "Unknown"
+    result_dict['raw_fast5'] = -1
+    result_dict['fast5_failed_to_load_key'] = -1
+    result_dict['fast5_failed_count'] = -1
+    result_dict['fast5_processed'] = -1
+    result_dict['raw_fast5_no_processed'] = -1
+    result_dict['basecalled_error_count'] = -1
 
     #Information extraction about statistics and generation of the graphs
     for extractor in extractors:

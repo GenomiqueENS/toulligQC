@@ -98,11 +98,13 @@ class albacore_stats_extractor():
             result_dict['mean_qscore_statistics'] = pd.DataFrame.describe(mean_qscore_template).drop("count")
             result_dict['sequence_length_statistics'] = self.albacore_log_1d['sequence_length_template'].describe()
 
+        # read count
         result_dict["fastQ_entries"] = len(self.albacore_log_1d['num_events'])
         result_dict["fast5_template_basecalled"] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
         result_dict["read_pass_count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
         result_dict["read_fail_count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
 
+        # read length information
         result_dict["sequence_length_template"] = self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
         result_dict["passes_filtering"] = self.albacore_log_1d['passes_filtering']
         result_dict["read_pass"] = self.albacore_log_1d.sequence_length_template.loc[True == self.albacore_log_1d['passes_filtering']]
@@ -113,6 +115,8 @@ class albacore_stats_extractor():
         result_dict["start_time_sorted"] = sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
         result_dict["read_pass_sorted"] = sorted(self.albacore_log_1d.start_time.loc[True == self.albacore_log_1d['passes_filtering']]/3600)
         result_dict["read_fail_sorted"] = sorted(self.albacore_log_1d.start_time.loc[False == self.albacore_log_1d['passes_filtering']]/3600)
+
+        #qscore information
         result_dict["mean_qscore"] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
         result_dict["qscore_read_pass"] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
         result_dict["qscore_read_fail"] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
@@ -131,8 +135,8 @@ class albacore_stats_extractor():
 
         images.append(graph_generator.read_quality_multiboxplot(result_dict, self.albacore_log_1d, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        images.append(graph_generator.phred_score_frequency(self.albacore_log_1d, 'Mean Phred score frequency of 1D reads', self.my_dpi, images_directory,"Phred score frequency of 1D reads."))
-        images.append(graph_generator.allphred_score_frequency(self.albacore_log_1d, 'Mean Phred score frequency of all 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.phred_score_frequency(result_dict, 'Mean Phred score frequency of 1D reads', self.my_dpi, images_directory,"Phred score frequency of 1D reads."))
+        images.append(graph_generator.allphred_score_frequency(result_dict, 'Mean Phred score frequency of all 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         #images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
         channel_count = self.channel
