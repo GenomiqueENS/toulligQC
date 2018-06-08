@@ -99,34 +99,32 @@ class albacore_stats_extractor():
             result_dict['sequence_length_statistics'] = self.albacore_log_1d['sequence_length_template'].describe()
 
         result_dict["fastQ_entries"] = len(self.albacore_log_1d['num_events'])
-        print(result_dict["fastQ_entries"])
-
         result_dict["fast5_template_basecalled"] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
-        print(result_dict["fast5_template_basecalled"])
+        result_dict["read_pass_count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
+        result_dict["read_fail_count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
 
-        result_dict["read_pass"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
-        print(result_dict["read_pass"])
+        result_dict["sequence_length_template"] = self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
+        result_dict["passes_filtering"] = self.albacore_log_1d['passes_filtering']
+        result_dict["read_pass"] = self.albacore_log_1d.sequence_length_template.loc[True == self.albacore_log_1d['passes_filtering']]
+        result_dict["read_fail"] = self.albacore_log_1d.sequence_length_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
-        result_dict["read_fail"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
-        print(result_dict["read_fail"])
-
+        #yield information
         result_dict["Yield"] = sum(self.albacore_log_1d['sequence_length_template'])
+        result_dict["start_time_sorted"] = sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
+        result_dict["read_pass_sorted"] = sorted(self.albacore_log_1d.start_time.loc[True == self.albacore_log_1d['passes_filtering']]/3600)
+        result_dict["read_fail_sorted"] = sorted(self.albacore_log_1d.start_time.loc[False == self.albacore_log_1d['passes_filtering']]/3600)
 
-
-    def graph_generation(self, result_dict):
+    def graph_generation(self,result_dict):
         '''
         Generation of the differents graphs containing in the graph_generator module
         :return: images array containing the title and the path toward the images
         '''
-
         images_directory = self.result_directory + '/images'
         images = []
-        images.append(graph_generator.read_count_histogram(result_dict, self.albacore_log_1d, 'Read count histogram', self.my_dpi,images_directory, "Number of reads produced before (Fast 5 in blue) and after (1D in orange) basecalling. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.read_count_histogram(result_dict, 'Read count histogram', self.my_dpi,images_directory, "Number of reads produced before (Fast 5 in blue) and after (1D in orange) basecalling. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.read_length_multihistogram(result_dict, 'Read length histogram', self.my_dpi,images_directory,"Size distribution of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        #images.append(graph_generator.read_length_histogram(self.albacore_log_1d, 'Read size histogram', self.my_dpi,images_directory))
-        images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'Read length histogram', self.my_dpi,images_directory,"Size distribution of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
-
-        images.append(graph_generator.allread_number_run(self.albacore_log_1d, 'Yield plot of 1D read type', self.my_dpi,images_directory,"Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type', self.my_dpi,images_directory,"Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         images.append(graph_generator.read_quality_multiboxplot(self.albacore_log_1d, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 

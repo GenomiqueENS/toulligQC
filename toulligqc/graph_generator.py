@@ -108,20 +108,14 @@ def _safe_log(x):
 
 #  1D plots
 
-def read_count_histogram(result_dict,albacore_log, main, my_dpi, result_directory, desc):
+def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
     """
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
     """
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-
-
-    fastQ_entries = len(albacore_log['num_events'])
-    fast5_template_basecalled = len(albacore_log[albacore_log['num_called_template'] != 0])
-    read_pass = len(albacore_log[albacore_log['passes_filtering'] == True])
-    read_fail = len(albacore_log[albacore_log['passes_filtering'] == False])
-    read_type = [result_dict['raw_fast5'],result_dict['basecalled_error_count'],result_dict["fastQ_entries"], result_dict["fast5_template_basecalled"], result_dict["read_pass"],result_dict["read_fail"]]
+    read_type = [result_dict['raw_fast5'],result_dict['basecalled_error_count'],result_dict["fastQ_entries"], result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
     label = ("raw Fast5","raw Fast5 with error","fastQ entries", "1D", "1D pass", "1D fail")
     nd = np.arange(len(read_type))
 
@@ -141,15 +135,13 @@ def read_count_histogram(result_dict,albacore_log, main, my_dpi, result_director
 
     return main, output_file, table_html, desc
 
-def read_length_multihistogram(albacore_log, main, my_dpi, result_directory, desc):
+def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
     """
     output_file = result_directory + '/' + main + '.png'
-    read_pass = albacore_log.sequence_length_template.loc[True == albacore_log['passes_filtering']]
-    read_fail = albacore_log.sequence_length_template.loc[False == albacore_log['passes_filtering']]
-    sequence_length_template = albacore_log.sequence_length_template[albacore_log['num_called_template'] != 0]
-    minimum, maximum = min(sequence_length_template), max(sequence_length_template)
+
+    minimum, maximum = min(result_dict["sequence_length_template"]), max(result_dict["sequence_length_template"])
     read_type=['1D','1D pass','1D fail']
 
     fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -157,7 +149,7 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory, des
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    n, bins, patches = ax.hist([sequence_length_template,read_pass,read_fail],color=["salmon", "yellowgreen", "orangered"], edgecolor='black', label=read_type,
+    n, bins, patches = ax.hist([result_dict["sequence_length_template"],result_dict["read_pass"],result_dict["read_fail"]],color=["salmon", "yellowgreen", "orangered"], edgecolor='black', label=read_type,
                                bins=2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30))
     plt.legend()
 
@@ -172,7 +164,7 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory, des
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
-    dataframe = pd.DataFrame({"1D": sequence_length_template, "1D pass": read_pass, "1D fail": read_fail})
+    dataframe = pd.DataFrame({"1D": result_dict["sequence_length_template"], "1D pass": result_dict["read_pass"], "1D fail": result_dict["read_fail"]})
     dataframe = dataframe[["1D","1D pass","1D fail"]]
 
     plt.savefig(output_file)
@@ -182,20 +174,16 @@ def read_length_multihistogram(albacore_log, main, my_dpi, result_directory, des
 
     return main, output_file, table_html, desc
 
-def allread_number_run(albacore_log, main, my_dpi, result_directory, desc):
+def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots the reads produced along the run against the time(in hour)
     """
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    start_time_sorted = sorted(sorted(albacore_log['start_time']/3600))
-    read_pass = sorted(albacore_log.start_time.loc[True == albacore_log['passes_filtering']]/3600)
-    read_fail = sorted(albacore_log.start_time.loc[False == albacore_log['passes_filtering']]/3600)
-
-    plt_read_1d=plt.scatter(start_time_sorted, np.arange(len(start_time_sorted)),color='salmon')
-    plt_read_pass=plt.scatter(read_pass, np.arange(len(read_pass)),color='yellowgreen')
-    plt_read_fail=plt.scatter(read_fail, np.arange(len(read_fail)),color='orangered')
+    plt_read_1d=plt.scatter(result_dict["start_time_sorted"], np.arange(len(result_dict["start_time_sorted"])),color='salmon')
+    plt_read_pass=plt.scatter(result_dict["read_pass_sorted"], np.arange(len(result_dict["read_pass_sorted"])),color='yellowgreen')
+    plt_read_fail=plt.scatter(result_dict["read_fail_sorted"], np.arange(len(result_dict["read_fail_sorted"])),color='orangered')
     plt.ylabel("Read number")
     plt.xlabel("Time (Hour)")
     plt.legend((plt_read_1d,plt_read_pass,plt_read_fail),('1D','1D pass','1D fail'))
