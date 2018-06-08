@@ -79,10 +79,10 @@ class albacore_log_extractor():
        '''
 
         with open(self.pipeline_file, 'r') as pipeline_file:
-            self.pipeline_dict['Fast5_submitted'] = 0
-            self.pipeline_dict['Fast5_failed_to_load_key'] = 0
-            self.pipeline_dict['Fast5_failed_count'] = 0
-            self.pipeline_dict['Fast5_processed'] = 0
+            self.pipeline_dict['fast5_submitted'] = 0
+            self.pipeline_dict['fast5_failed_to_load_key'] = 0
+            self.pipeline_dict['fast5_failed_count'] = 0
+            self.pipeline_dict['fast5_processed'] = 0
 
             for line in pipeline_file:
                 if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
@@ -95,38 +95,43 @@ class albacore_log_extractor():
                     self.pipeline_dict['flowcell_version'] = re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
 
                 if re.compile("(key\:)\s('(sequence)\_(length)\_(template)')").search(line):
-                    self.pipeline_dict['Fast5_failed_to_load_key'] += 1
+                    self.pipeline_dict['fast5_failed_to_load_key'] += 1
 
                 if re.compile('(ERROR)\s(inserting)\s(read)').search(line):
-                    self.pipeline_dict['Fast5_failed_count'] += 1
+                    self.pipeline_dict['fast5_failed_count'] += 1
 
                 if re.compile('(Finished)').search(line):
-                    self.pipeline_dict['Fast5_processed'] += 1
+                    self.pipeline_dict['fast5_processed'] += 1
 
                 if re.compile('(Submitting)').search(line):
-                    self.pipeline_dict['Fast5_submitted'] += 1
+                    self.pipeline_dict['fast5_submitted'] += 1
 
         pipeline_file.close()
 
         result_dict['albacore_version'] = self.pipeline_dict['albacore_version']
         result_dict['kit_version'] = self.pipeline_dict['kit_version']
         result_dict['flowcell_version'] = self.pipeline_dict['flowcell_version']
-        result_dict['Fast5_failed_to_load_key'] = self.pipeline_dict['Fast5_failed_to_load_key']
-        result_dict['Fast5_failed_count'] = self.pipeline_dict['Fast5_failed_count']
-        result_dict['Fast5_processed'] = self.pipeline_dict['Fast5_processed']
-        result_dict['Fast5_submitted'] = self.pipeline_dict['Fast5_submitted']
+        result_dict['raw_fast5'] = self.pipeline_dict['fast5_submitted']
+        result_dict['fast5_failed_to_load_key'] = self.pipeline_dict['fast5_failed_to_load_key']
+        result_dict['fast5_failed_count'] = self.pipeline_dict['fast5_failed_count']
+        result_dict['fast5_processed'] = self.pipeline_dict['fast5_processed']
 
-    def graph_generation(self):
+        result_dict['raw_fast5_no_processed']=self.pipeline_dict['fast5_submitted'] - self.pipeline_dict['fast5_processed']
+        result_dict['basecalled_error_count']= result_dict['raw_fast5_no_processed'] + result_dict['fast5_failed_to_load_key'] + result_dict['fast5_failed_count']
+
+
+
+    def graph_generation(self,result_dict):
         '''
         Graph generaiton
         :return:
         '''
-        images_directory = self.result_directory + '/images'
-        images = []
-        images.append(graph_generator.log_count_histogram(self.pipeline_dict, 'About Albacore log', self.my_dpi,
-                                                           images_directory,
-                                                           "Number of reads submitted (Fast 5 in blue), proccesed (Fast 5 in blue) and with Error load key (Fast 5 in blue) or Error inserting file (Fast 5 in blue)."))
-        return images
+        # images_directory = self.result_directory + '/images'
+        # images = []
+        # images.append(graph_generator.log_count_histogram(self.pipeline_dict, 'Fast5 basecalled histogram', self.my_dpi,
+        #                                                    images_directory,
+        #                                                    "Number of submitted  reads, proccesed and with Error load key or Error inserting file."))
+        return []
 
     def clean(self):
         '''

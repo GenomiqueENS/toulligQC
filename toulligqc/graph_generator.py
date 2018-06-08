@@ -74,56 +74,58 @@ def _safe_log(x):
         return 0
     return np.log2(x)
 
-def log_count_histogram(result_dict, main, my_dpi, result_directory, desc):
-    """
-    Plots the count histograms of count  of the different types of reads submit, basecalled and failed.
-    """
-    output_file = result_directory + '/' + main + '.png'
-    plt.figure(figsize=(12, 7), dpi=my_dpi)
-    print(result_dict)
-    fast5_submitting =result_dict['Fast5_submitted']
-    fast5_finished = result_dict['Fast5_processed']
-    fast5_with_error_load_key = result_dict['Fast5_failed_to_load_key']
-    fast5_with_error_inserting = result_dict['Fast5_failed_count']
-    label = ("fast5_submitted", "fast5_finished", "fast5_with_error_load_key", "fast5_with_error_inserting")
-    read_type = [fast5_submitting,fast5_finished,fast5_with_error_load_key,fast5_with_error_inserting]
-    nd = np.arange(len(read_type))
-
-    bars = plt.bar(nd, read_type, align='center', color=["lightblue", "salmon", "yellowgreen", "orangered"])
-
-    plt.xticks(nd, label)
-    plt.xlabel("Read type")
-    plt.ylabel("Counts")
-    plt.title(main)
-
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
-    table_html=None
-
-    plt.savefig(output_file)
-    plt.close()
-
-    return main, output_file, table_html, desc
+# def log_count_histogram(result_dict, main, my_dpi, result_directory, desc):
+#     """
+#     Plots the count histograms of count  of the different types of reads submit, basecalled and failed.
+#     """
+#     output_file = result_directory + '/' + main + '.png'
+#     plt.figure(figsize=(12, 7), dpi=my_dpi)
+#     print(result_dict)
+#     fast5_submitting =result_dict['Fast5_submitted']
+#     fast5_finished = result_dict['Fast5_processed']
+#     fast5_with_error_load_key = result_dict['Fast5_failed_to_load_key']
+#     fast5_with_error_inserting = result_dict['Fast5_failed_count']
+#     label = ("fast5_submitted", "fast5_finished", "fast5_with_error_load_key", "fast5_with_error_inserting")
+#     read_type = [fast5_submitting,fast5_finished,fast5_with_error_load_key,fast5_with_error_inserting]
+#     nd = np.arange(len(read_type))
+#
+#     bars = plt.bar(nd, read_type, align='center', color=sns.color_palette("BuGn",len(nd)))
+#
+#     plt.xticks(nd, label)
+#     plt.xlabel("Read type")
+#     plt.ylabel("Counts")
+#     plt.title(main)
+#
+#     for bar in bars:
+#         height = bar.get_height()
+#         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
+#     table_html=None
+#
+#     plt.savefig(output_file)
+#     plt.close()
+#
+#     return main, output_file, table_html, desc
 
 #  1D plots
 
-def read_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
+def read_count_histogram(result_dict,albacore_log, main, my_dpi, result_directory, desc):
     """
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
     """
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    fast5_raw = len(albacore_log['num_events'])
+
+
+    fastQ_entries = len(albacore_log['num_events'])
     fast5_template_basecalled = len(albacore_log[albacore_log['num_called_template'] != 0])
     read_pass = len(albacore_log[albacore_log['passes_filtering'] == True])
     read_fail = len(albacore_log[albacore_log['passes_filtering'] == False])
-    read_type = [fast5_raw, fast5_template_basecalled, read_pass, read_fail]
-    label = ("fast5", "1D", "1D pass", "1D fail")
+    read_type = [result_dict['raw_fast5'],result_dict['basecalled_error_count'],result_dict["fastQ_entries"], result_dict["fast5_template_basecalled"], result_dict["read_pass"],result_dict["read_fail"]]
+    label = ("raw Fast5","raw Fast5 with error","fastQ entries", "1D", "1D pass", "1D fail")
     nd = np.arange(len(read_type))
 
-    bars = plt.bar(nd, read_type, align='center', color=["lightblue", "salmon", "yellowgreen", "orangered"])
+    bars = plt.bar(nd, read_type, align='center', color=["Green","yellow","lightblue", "salmon", "yellowgreen", "orangered"])
     plt.xticks(nd, label)
     plt.xlabel("Read type")
     plt.ylabel("Counts")
