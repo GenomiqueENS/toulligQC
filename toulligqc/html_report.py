@@ -47,8 +47,8 @@ def html_report(config_dictionary, result_dict, graphs):
     run_date = date.strftime("%x %X %Z")
     flow_cell_id = result_dict['flow_cell_id']
 
-    read_count = result_dict['read_count']
-    run_yield = result_dict['yield']/1000000000
+    read_count = result_dict["fastQ_entries"]
+    run_yield = round(result_dict["Yield"],2)
 
     #from pipeline log file
     flowcell_version = result_dict['flowcell_version']
@@ -73,7 +73,7 @@ def html_report(config_dictionary, result_dict, graphs):
     div.summary {
       width: 16em;
       position:fixed;
-      top: 3.5em;
+      top: 4.5em;
       margin:1em 0 0 1em;
     }
 
@@ -371,7 +371,7 @@ def html_report(config_dictionary, result_dict, graphs):
             <td> {8} </td>
           </tr>
           <tr>
-            <th>Yield (b)</th>
+            <th>Yield (Gbp)</th>
             <td> {9} </td>
           </tr>
           <tr>
