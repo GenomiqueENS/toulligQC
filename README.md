@@ -4,7 +4,7 @@ ToulligQC is a program written in Python and developped by the [Genomic facility
 
 This program is dedicated to the QC analyses of Oxford Nanopore runs.
 Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1Dsquare runs. 
-It partly relies on the summary file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
+It partly relies on the summary file and the pipieline.log file produced during the basecalling process by the Oxford Nanopore basecaller, Albacore.
 It also needs a single FAST5 file (to catch the flowcell Id and the run date) and the Albacore outputted FASTQ file (to compute the sequence statistics).
 ToulligQC can take barcoding samples into account with a samplesheet.csv describing the barcodes used.
 
@@ -88,7 +88,8 @@ $ docker run -ti \
              --rm \  
              -v /path/to/fast5/directory:/path/to/fast5/file \
              -v /path/to/fastq/directory:/path/to/fastq/file \
-             -v /path/to/albacore/sequencing/summary/file:/path/to/albacore/sequencing/summary/file \ 
+             -v /path/to/albacore/sequencing/summary/file:/path/to/albacore/sequencing/summary/file \
+             -v /path/to/albacore/pipelinelog/file:/path/to/albacore/pipelinelog/file \
              -v /path/to/samplesheet/file/:/path/to/samplesheet/file/ \
              -v /path/to/configuration/file:/path/to/configuration/file \
              -v /path/to/result/directory:/path/to/result/directory \
@@ -155,8 +156,9 @@ optional arguments:
   -c CONFIG_FILE, --config-file    Optional configuration file to use
   -f FAST5_SOURCE, --fast5-source  Fast5 file source (.fast5 or fastq.tar.bz2 format) 
                        
-  -a ALBACORE_SUMMARY_SOURCE, --albacore-summary-source      Albacore summary source (.txt format)
+  -a ALBACORE-SUMMARY-SOURCE, --albacore-summary-source      Albacore summary source (.txt format)
   -d ALBACORE-1DSQR_SUMMARY_SOURCE, --albacore-1dsqr-summary-source      Albacore 1dsquare summary source (.txt format) (optional)
+  -p ALBACORE-PIPELINE-SOURCE, --albacore-pipeline-source      Albacore pipeline.log file
   -q FASTQ_SOURCE, --fastq-source                            Fastq file source (.fastq or fastq.tar.gz format)                  
   -o OUTPUT_DIRECTORY, --output                              Path to save the output directory
   -s SAMPLE_SHEET_SOURCE, --sample-sheet-source              Path to samplesheet to take barcodes into account 
@@ -173,6 +175,7 @@ $ python3 toulligqc.py --report-name FAF0256 \
                        --fast5-source /path/to/fast5/source \
                        --albacore-summary-source /path/to/albacore/sequencing_summary.txt \
                        --albacore-summary-source /path/to/albacore/sequencing_1dsqr_summary.txt \ (optional)
+                       --albacore-pipeline-source /path/to/albacore/pipeline.log \
                        --fastq-source /path/to/fastq/source \
                        --output /path/to/output/directory \
 ```
@@ -186,6 +189,7 @@ $ python3 toulligqc.py --report-name FAF0256 \
                        --fast5-source /path/to/fast5/source \
                        --albacore-summary-source /path/to/albacore/sequencing_summary.txt \
                        --albacore-summary-source /path/to/albacore/sequencing_1dsqr_summary.txt \ (optional)
+                       --albacore-pipeline-source /path/to/albacore/pipeline.log \
                        --fastq-source /path/to/fastq/source \
                        --output /path/to/output/directory \
                        --sample-sheet-source /path/to/sample/sheet
@@ -196,6 +200,7 @@ Example with optional arguments with a configuration file:
 ```bash
 $ python3 toulligqc.py --run-name FAF0256 \
                        --barcoding \
+                       --albacore-pipeline-source /path/to/albacore/pipeline.log \
                        --config-file /path/to/configuration/file/
 ```
 
