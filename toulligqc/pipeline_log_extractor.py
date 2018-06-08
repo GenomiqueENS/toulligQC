@@ -78,21 +78,29 @@ class albacore_log_extractor():
         :return: result_dict
        '''
 
+        result_dict['albacore_version'] = "Unknown"
+        result_dict['kit_version'] = "Unknown"
+        result_dict['flowcell_version'] = "Unknown"
+        self.pipeline_dict['fast5_submitted'] = 0
+        self.pipeline_dict['fast5_failed_to_load_key'] = 0
+        self.pipeline_dict['fast5_failed_count'] = 0
+        self.pipeline_dict['fast5_processed'] = 0
+
         with open(self.pipeline_file, 'r') as pipeline_file:
-            self.pipeline_dict['fast5_submitted'] = 0
-            self.pipeline_dict['fast5_failed_to_load_key'] = 0
-            self.pipeline_dict['fast5_failed_count'] = 0
-            self.pipeline_dict['fast5_processed'] = 0
+
 
             for line in pipeline_file:
                 if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
                     self.pipeline_dict['albacore_version'] = re.compile("\s(\d+\.)(\d+\.)(\d)").search(line).group(0)
+                    result_dict['albacore_version'] = self.pipeline_dict['albacore_version']
 
                 if re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line):
                     self.pipeline_dict['kit_version'] = re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
+                    result_dict['kit_version'] = self.pipeline_dict['kit_version']
 
                 if re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line):
                     self.pipeline_dict['flowcell_version'] = re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
+                    result_dict['flowcell_version'] = self.pipeline_dict['flowcell_version']
 
                 if re.compile("(key\:)\s('(sequence)\_(length)\_(template)')").search(line):
                     self.pipeline_dict['fast5_failed_to_load_key'] += 1
@@ -108,9 +116,6 @@ class albacore_log_extractor():
 
         pipeline_file.close()
 
-        result_dict['albacore_version'] = self.pipeline_dict['albacore_version']
-        result_dict['kit_version'] = self.pipeline_dict['kit_version']
-        result_dict['flowcell_version'] = self.pipeline_dict['flowcell_version']
         result_dict['raw_fast5'] = self.pipeline_dict['fast5_submitted']
         result_dict['fast5_failed_to_load_key'] = self.pipeline_dict['fast5_failed_to_load_key']
         result_dict['fast5_failed_count'] = self.pipeline_dict['fast5_failed_count']
