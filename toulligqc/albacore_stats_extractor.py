@@ -47,7 +47,6 @@ class albacore_stats_extractor():
         self.albacore_log_1d = self.albacore_log_1d.replace([np.inf, -np.inf], 0)
         self.albacore_log_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] != 0]
         self.fast5_tot_number_1d = len(self.albacore_log_1d)
-        self.albacore_log_1d["Yield"]=sum(self.albacore_log_1d['sequence_length_template'])
 
         if self.is_barcode == 'True':
             self.is_barcode = True
@@ -99,12 +98,22 @@ class albacore_stats_extractor():
             result_dict['mean_qscore_statistics'] = pd.DataFrame.describe(mean_qscore_template).drop("count")
             result_dict['sequence_length_statistics'] = self.albacore_log_1d['sequence_length_template'].describe()
 
-        result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
-        result_dict['sequence_length_template'] = self.sequence_length_template
-        result_dict['yield']=sum(self.sequence_length_template)
-        result_dict['read_count']=len(self.albacore_log_1d['num_events'])
+        result_dict["fastQ_entries"] = len(self.albacore_log_1d['num_events'])
+        print(result_dict["fastQ_entries"])
 
-    def graph_generation(self):
+        result_dict["fast5_template_basecalled"] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
+        print(result_dict["fast5_template_basecalled"])
+
+        result_dict["read_pass"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
+        print(result_dict["read_pass"])
+
+        result_dict["read_fail"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
+        print(result_dict["read_fail"])
+
+        result_dict["Yield"] = sum(self.albacore_log_1d['sequence_length_template'])
+
+
+    def graph_generation(self, result_dict):
         '''
         Generation of the differents graphs containing in the graph_generator module
         :return: images array containing the title and the path toward the images
@@ -112,7 +121,7 @@ class albacore_stats_extractor():
 
         images_directory = self.result_directory + '/images'
         images = []
-        images.append(graph_generator.read_count_histogram(self.albacore_log_1d, 'Read count histogram', self.my_dpi,images_directory, "Number of reads produced before (Fast 5 in blue) and after (1D in orange) basecalling. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.read_count_histogram(result_dict, self.albacore_log_1d, 'Read count histogram', self.my_dpi,images_directory, "Number of reads produced before (Fast 5 in blue) and after (1D in orange) basecalling. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         #images.append(graph_generator.read_length_histogram(self.albacore_log_1d, 'Read size histogram', self.my_dpi,images_directory))
         images.append(graph_generator.read_length_multihistogram(self.albacore_log_1d, 'Read length histogram', self.my_dpi,images_directory,"Size distribution of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
