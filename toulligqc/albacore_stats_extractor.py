@@ -117,7 +117,7 @@ class albacore_stats_extractor():
         result_dict["read_fail_sorted"] = sorted(self.albacore_log_1d.start_time.loc[False == self.albacore_log_1d['passes_filtering']]/3600)
 
         #qscore information
-        result_dict["mean_qscore"] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
+        result_dict["mean_qscore"] = self.albacore_log_1d.loc[:,"mean_qscore_template"]
         result_dict["qscore_read_pass"] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
         result_dict["qscore_read_fail"] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
@@ -143,7 +143,7 @@ class albacore_stats_extractor():
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell', self.my_dpi,images_directory,"Number of reads sequenced per pore channel."))
 
-        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Mean Phred score function of 1D read length',self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart_pass(self.albacore_log_1d,'1D pass reads percentage of different barcodes', self.barcode_selection,

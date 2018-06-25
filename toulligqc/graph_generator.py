@@ -261,23 +261,17 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc
 
-def all_scatterplot(albacore_log, main, my_dpi, result_directory, desc):
+def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     '''
     output_file = result_directory + '/' + main + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    length_read_pass = albacore_log.sequence_length_template.loc[True == albacore_log['passes_filtering']]
-    length_read_fail = albacore_log.sequence_length_template.loc[False == albacore_log['passes_filtering']]
-
-    qscore_read_pass = albacore_log.mean_qscore_template.loc[True == albacore_log['passes_filtering']]
-    qscore_read_fail = albacore_log.mean_qscore_template.loc[False == albacore_log['passes_filtering']]
-
-    read_pass=plt.scatter(x=length_read_pass, y=qscore_read_pass,color="yellowgreen")
-    read_fail=plt.scatter(x=length_read_fail, y=qscore_read_fail,color="orangered")
+    read_pass=plt.scatter(x=result_dict["read_pass"], y=result_dict["qscore_read_pass"],color="yellowgreen")
+    read_fail=plt.scatter(x=result_dict["read_fail"], y=result_dict["qscore_read_fail"],color="orangered")
     plt.legend((read_pass,read_fail),("1D pass","1D fail"))
-    plt.xlim(np.min(albacore_log.sequence_length_template.loc[albacore_log.sequence_length_template>0]),np.max(albacore_log.sequence_length_template))
+    plt.xlim(np.min(result_dict["sequence_length_template"].loc[result_dict["sequence_length_template"]>0]),np.max(result_dict["sequence_length_template"]))
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
