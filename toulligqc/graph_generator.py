@@ -152,7 +152,7 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots the reads produced along the run against the time(in hour)
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
     plt_read_1d=plt.scatter(result_dict["start_time_sorted"], np.arange(len(result_dict["start_time_sorted"])),color='salmon')
@@ -368,7 +368,7 @@ def barcode_percentage_pie_chart_pass(albacore_log, main, barcode_selection, my_
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
