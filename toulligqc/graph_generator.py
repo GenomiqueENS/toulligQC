@@ -80,7 +80,7 @@ def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
     """
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template, complement, full_2D.
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
     if result_dict['raw_fast5'] == -1:
@@ -113,7 +113,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     """
     Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     minimum, maximum = min(result_dict["sequence_length_template"]), max(result_dict["sequence_length_template"])
     read_type=['1D','1D pass','1D fail']
@@ -174,7 +174,7 @@ def read_quality_multiboxplot(result_dict, albacore_log, main, my_dpi, result_di
     """
     Plots a boxplot of reads quality
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
 
@@ -196,11 +196,12 @@ def read_quality_multiboxplot(result_dict, albacore_log, main, my_dpi, result_di
     plt.close()
     return main, output_file, table_html, desc
 
+
 def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the distribution of the phred score
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
@@ -231,7 +232,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the distribution of the phred score
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
@@ -265,7 +266,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
     read_pass=plt.scatter(x=result_dict["read_pass"], y=result_dict["qscore_read_pass"],color="yellowgreen")
@@ -287,7 +288,7 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
     """
     Plots an histogram of the channel count according to the channel number
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
@@ -361,7 +362,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc
 
-# For eache barcode 1D
+# For each barcode 1D
 
 def barcode_percentage_pie_chart_pass(albacore_log, main, barcode_selection, my_dpi, result_directory, desc):
     """
@@ -409,7 +410,7 @@ def barcode_percentage_pie_chart_fail(albacore_log, main, barcode_selection, my_
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
@@ -451,7 +452,7 @@ def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result
     '''
     Plot the length boxplot for each barcode indicated in the sample sheet
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     pattern = '(\d{2})'
     dico = {}
 
@@ -459,7 +460,6 @@ def barcode_length_boxplot(albacore_log, main, barcode_selection, my_dpi, result
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
-
 
     dico["passes_filtering"] = albacore_log['passes_filtering']
     for barcode in barcode_selection:
@@ -490,7 +490,7 @@ def barcoded_phred_score_frequency(albacore_log, main, barcode_selection, my_dpi
     '''
     Plot the phred score distribution boxplot for each barcode indicated in the sample sheet
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     dico = {}
     pattern = '(\d{2})'
 
@@ -536,7 +536,7 @@ def dsqr_read_count_histogram(albacore_log_1d, albacore_log_1dsqr, main, my_dpi,
     """
     Plots the count histograms of count  of the different types of reads eventually available in a Minion run: 1D, full_1Dsquare.
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     fast5_template_basecalled = len(albacore_log_1d[albacore_log_1d['num_called_template'] != 0])
     fast5_1dsqr = len(albacore_log_1dsqr['passes_filtering'])
@@ -567,7 +567,7 @@ def dsqr_read_length_multihistogram(albacore_log_1d, albacore_log_1dsqr, main, m
     """
     Plots an histogram of the reads length by bins of 100 for each of the barcodes described in the design file or without barcode
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     read_1d = albacore_log_1d.sequence_length_template.loc[albacore_log_1d['num_called_template'] != 0]
     read_1dsqr = albacore_log_1dsqr.loc[:,"sequence_length_2d"]
     read_pass_1dsqr = albacore_log_1dsqr.sequence_length_2d.loc[True == albacore_log_1dsqr['passes_filtering']]
@@ -609,7 +609,7 @@ def dsqr_read_quality_multiboxplot(albacore_log_1d, albacore_log_1dsqr, main, my
     """
     Plots a boxplot of reads quality
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     plt.subplots_adjust(bottom=0.015, top=1.0)
@@ -640,7 +640,7 @@ def dsqr_phred_score_frequency(albacore_log_1dsqr, main, my_dpi, result_director
     '''
     Plot the distribution of the phred score
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
@@ -671,7 +671,7 @@ def dsqr_allphred_score_frequency(albacore_log_1d, albacore_log_1dsqr, main, my_
     '''
     Plot the distribution of the phred score
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
@@ -709,7 +709,7 @@ def scatterplot_1dsqr(albacore_log_1d,albacore_log_1dsqr, main, my_dpi, result_d
     '''
     Plot the scatter plot representing the relation between the phred score and the sequence length
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     #plt.subplots_adjust(bottom=0.015, top=1.0)
 
@@ -739,7 +739,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(albacore_log, main, barcode_selectio
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
@@ -778,7 +778,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(albacore_log, main, barcode_selectio
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
@@ -818,7 +818,7 @@ def barcode_length_boxplot_1dsqr(albacore_log, main, barcode_selection, my_dpi, 
     '''
     Plot the length boxplot for each barcode indicated in the sample sheet
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     pattern = '(\d{2})'
     dico = {}
 
@@ -860,7 +860,7 @@ def barcoded_phred_score_frequency_1dsqr(albacore_log, main, barcode_selection, 
     '''
     Plot the 1Dsquare phred score distribution boxplot for each barcode indicated in the sample sheet
     '''
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     dico = {}
     pattern = '(\d{2})'
 
