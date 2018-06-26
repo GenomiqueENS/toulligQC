@@ -87,12 +87,12 @@ def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
         read_type = [result_dict["fastQ_entries"],result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
         label = ("FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
-        bars = plt.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"])
+        bars = plt.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
     else:
         read_type = [result_dict['raw_fast5'], result_dict['basecalled_error_count'], result_dict["fastQ_entries"],result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
         label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
-        bars = plt.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"])
+        bars = plt.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
     plt.xticks(nd, label)
     plt.xlabel("Read type")
