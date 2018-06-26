@@ -334,7 +334,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
     Plots the channels occupancy by the reads
     @:param pore_measure: reads number per pore
     """
-    output_file = result_directory + '/' + main + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     flowcell_layout = _minion_flowcell_layout()
 
     pore_values = []
