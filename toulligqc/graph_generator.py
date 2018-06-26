@@ -178,13 +178,15 @@ def read_quality_multiboxplot(result_dict, albacore_log, main, my_dpi, result_di
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+    gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
 
     my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
     order=["1D","1D pass","1D fail"]
     dataframe = pd.DataFrame({"1D": result_dict["mean_qscore"], "1D pass": result_dict['qscore_read_pass'], "1D fail": result_dict['qscore_read_fail'] })
-    sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order)
+    sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order,linewidth=1)
+    plt.ylabel('Mean Phred score')
 
+    sns.violinplot(data=dataframe, ax=plt.subplot(gs[1]), palette=my_pal, inner=None, cut=0, order=order,linewidth=1)
     plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
     plt.title(main)
