@@ -158,6 +158,8 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     plt_read_1d=plt.scatter(result_dict["start_time_sorted"], np.arange(len(result_dict["start_time_sorted"])),color='salmon')
     plt_read_pass=plt.scatter(result_dict["read_pass_sorted"], np.arange(len(result_dict["read_pass_sorted"])),color='yellowgreen')
     plt_read_fail=plt.scatter(result_dict["read_fail_sorted"], np.arange(len(result_dict["read_fail_sorted"])),color='orangered')
+    plt.xticks(np.arange(0,max(result_dict["start_time_sorted"]),8))
+
     plt.ylabel("Read number")
     plt.xlabel("Time (Hour)")
     plt.legend((plt_read_1d,plt_read_pass,plt_read_fail),('1D','1D pass','1D fail'))
