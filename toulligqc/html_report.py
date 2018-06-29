@@ -41,6 +41,9 @@ def html_report(config_dictionary, result_dict, graphs):
 
     report_date= time.strftime("%x %X %Z")
 
+    #from sequence summary file
+    run_time = result_dict["run_time"]
+
     #from Fast5 file
     run_date = result_dict['exp_start_time']
     date = dateutil.parser.parse(run_date)
@@ -347,41 +350,45 @@ def html_report(config_dictionary, result_dict, graphs):
             <td> {2} </td>
           </tr>
           <tr>
-            <th>Flowcell id </th>
+            <th>Run time (h) </th>
             <td> {3} </td>
           </tr>
           <tr>
-            <th>Flowcell version</th>
+            <th>Flowcell id </th>
             <td> {4} </td>
           </tr>
           <tr>
-            <th>Kit</th>
+            <th>Flowcell version</th>
             <td> {5} </td>
           </tr>
           <tr>
-            <th>MinKNOW version </th>
+            <th>Kit</th>
             <td> {6} </td>
           </tr>
           <tr>
-            <th>Albacore version</th>
+            <th>MinKNOW version </th>
             <td> {7} </td>
           </tr>
           <tr>
-            <th>ToulligQC version</th>
+            <th>Albacore version</th>
             <td> {8} </td>
           </tr>
           <tr>
-            <th>Yield (Gbp)</th>
+            <th>ToulligQC version</th>
             <td> {9} </td>
           </tr>
           <tr>
-            <th>Read count</th>
+            <th>Yield (Gbp)</th>
             <td> {10} </td>
+          </tr>
+          <tr>
+            <th>Read count</th>
+            <td> {11} </td>
           </tr>
           </tbody>
         </table>   
       </div>
-""".format(run_id,report_name, run_date, flow_cell_id,flowcell_version,kit_version,minknow_version,albacore_version,config_dictionary['app.version'],run_yield,read_count)
+""".format(run_id,report_name, run_date, run_time, flow_cell_id,flowcell_version,kit_version,minknow_version,albacore_version,config_dictionary['app.version'],run_yield,read_count)
 
     for i, t in enumerate(graphs):
         main_report += "      <div class=\"module\"><h2 id=M{0}> {1} <img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> </h2></div>".format(i, t[0], _embedded_image(t[1]), t[2],t[3])
