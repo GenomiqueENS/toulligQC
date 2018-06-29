@@ -368,7 +368,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 
 # For each barcode 1D
 
-def barcode_percentage_pie_chart_pass(albacore_log, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
@@ -376,23 +376,23 @@ def barcode_percentage_pie_chart_pass(albacore_log, main, barcode_selection, my_
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(albacore_log['barcode_arrangement'] != element):
+        if all(result_dict['barcode_arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode = albacore_log.barcode_arrangement.loc[True == albacore_log['passes_filtering']]
-    barcode_count = barcode.value_counts()
+    barcode_count = result_dict["read_pass_barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = cm.Paired(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = cm.Spectral(np.arange(len(barcode_selection)) / len(barcode_selection))
 
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
         fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, labels=barcode_selection, autopct='%.2f%%', startangle=90, colors=cs)
+        wedges,texts = ax1.pie(sizes, labels=None, startangle=90, colors=cs,wedgeprops={'linewidth':1,'edgecolor':'k'})
         ax1.axis('equal')
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right" , bbox_to_anchor =(1.1,1.18), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -402,15 +402,19 @@ def barcode_percentage_pie_chart_pass(albacore_log, main, barcode_selection, my_
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
+        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right",bbox_to_anchor =(1.1,1.18))
 
     plt.savefig(output_file)
     plt.close()
 
-    table_html = None
+    barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    pd.options.display.float_format = '{:.2f}%'.format
+
+    table_html = table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
 
-def barcode_percentage_pie_chart_fail(albacore_log, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
     """
@@ -418,23 +422,23 @@ def barcode_percentage_pie_chart_fail(albacore_log, main, barcode_selection, my_
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(albacore_log['barcode_arrangement'] != element):
+        if all(result_dict['barcode_arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode = albacore_log.barcode_arrangement.loc[False == albacore_log['passes_filtering']]
-    barcode_count = barcode.value_counts()
+    barcode_count = result_dict["read_fail_barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = cm.Paired(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = cm.Spectral(np.arange(len(barcode_selection)) / len(barcode_selection))
 
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
         fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, labels=barcode_selection, autopct='%.2f%%', startangle=90, colors=cs)
+        ax1.pie(sizes, labels=None, startangle=90, colors=cs,wedgeprops={'linewidth':1,'edgecolor':'k'})
         ax1.axis('equal')
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],loc="upper right",bbox_to_anchor =(1.1,1.18),edgecolor='black')
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -444,11 +448,15 @@ def barcode_percentage_pie_chart_fail(albacore_log, main, barcode_selection, my_
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],loc="upper right",bbox_to_anchor =(1.1,1.18))
 
     plt.savefig(output_file)
     plt.close()
 
-    table_html = None
+    barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    pd.options.display.float_format = '{:.2f}%'.format
+
+    table_html = table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
 
