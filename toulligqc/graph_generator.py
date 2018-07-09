@@ -224,12 +224,76 @@ def speed_during_the_run(result_dict, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc
 
-def read_quality_multiboxplot(result_dict, albacore_log, main, my_dpi, result_directory, desc):
+def read_quality_during_the_run(result_dict, main, my_dpi, result_directory, desc):
+    """
+    Plots the reads produced along the run against the time(in hour)
+    """
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+
+    bins = int(max(result_dict["start_time_sorted"])*10)
+    bin_count = _define_bins_count(result_dict["read_pass_sorted"], result_dict["read_pass_speed"],result_dict["read_fail_sorted"], result_dict["read_fail_speed"], bins,methode='count')
+
+    bin_median_1d, bin_centers_1d = _make_median_fitted_model(result_dict["start_time_sorted"],result_dict["mean_qscore"],bins,'median')
+    plt_read_1d = plt.plot(bin_centers_1d[0:bin_count],bin_median_1d[0:bin_count],color='salmon',linewidth=1,label="1D")
+
+    bin_median_pass, bin_centers_pass = _make_median_fitted_model(result_dict["read_pass_sorted"],result_dict["qscore_read_pass"],bins,'median')
+    plt_read_pass = plt.plot(bin_centers_pass[0:bin_count], bin_median_pass[0:bin_count], color='yellowgreen', linewidth=1, label="1D pass")
+
+    bin_median_fail,bin_centers_fail = _make_median_fitted_model(result_dict["read_fail_sorted"], result_dict["qscore_read_fail"],bins,'median')
+    plt_read_fail = plt.plot(bin_centers_fail[0:bin_count],bin_median_fail[0:bin_count],color='orangered',linewidth=1,label="1D fail")
+
+    plt.ylabel("Mean Phred score)")
+    plt.xlabel("Time (Hour)")
+    plt.xticks(np.arange(0, max(result_dict["start_time_sorted"]), 8))
+    plt.legend()
+    plt.title(main)
+
+    plt.savefig(output_file)
+    plt.close()
+
+    table_html = None
+
+    return main, output_file, table_html, desc
+
+def read_length_during_the_run(result_dict, main, my_dpi, result_directory, desc):
+    """
+    Plots the reads produced along the run against the time(in hour)
+    """
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+
+    bins = int(max(result_dict["start_time_sorted"])*5)
+    bin_count = _define_bins_count(result_dict["read_pass_sorted"], result_dict["read_pass_speed"],result_dict["read_fail_sorted"], result_dict["read_fail_speed"], bins,methode='count')
+
+    bin_median_1d, bin_centers_1d = _make_median_fitted_model(result_dict["start_time_sorted"],result_dict["sequence_length_template"],bins,'median')
+    plt_read_1d = plt.plot(bin_centers_1d[0:bin_count],bin_median_1d[0:bin_count],color='salmon',linewidth=1,label="1D")
+
+    bin_median_pass, bin_centers_pass = _make_median_fitted_model(result_dict["read_pass_sorted"],result_dict["read_pass"],bins,'median')
+    plt_read_pass = plt.plot(bin_centers_pass[0:bin_count], bin_median_pass[0:bin_count], color='yellowgreen', linewidth=1, label="1D pass")
+
+    bin_median_fail,bin_centers_fail = _make_median_fitted_model(result_dict["read_fail_sorted"], result_dict["read_fail"],bins,'median')
+    plt_read_fail = plt.plot(bin_centers_fail[0:bin_count],bin_median_fail[0:bin_count],color='orangered',linewidth=1,label="1D fail")
+
+    plt.xticks(np.arange(0, max(result_dict["start_time_sorted"]), 8))
+    plt.ylabel("Read length ())")
+    plt.xlabel("Time (Hour)")
+    plt.legend()
+    plt.title(main)
+
+    plt.savefig(output_file)
+    plt.close()
+
+    table_html = None
+
+    return main, output_file, table_html, desc
+
+def read_quality_multiboxplot(result_dict,main, my_dpi, result_directory, desc):
     """
     Plots a boxplot of reads quality
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    plt.figure(figsize=(12, 7), dpi=my_dpi, facecolor='white',edgecolor='black')
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
 
     my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
