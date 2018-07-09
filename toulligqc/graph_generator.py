@@ -182,7 +182,39 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
 
     plt.ylabel("Read number")
     plt.xlabel("Time (Hour)")
-    plt.legend((plt_read_1d,plt_read_pass,plt_read_fail),('1D','1D pass','1D fail'))
+    plt.legend()
+
+    plt.savefig(output_file)
+    plt.close()
+
+    table_html = None
+
+    return main, output_file, table_html, desc
+
+
+def speed_during_the_run(result_dict, main, my_dpi, result_directory, desc):
+    """
+    Plots the reads produced along the run against the time(in hour)
+    """
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
+    plt.figure(figsize=(12, 7), dpi=my_dpi)
+
+    bins = result_dict["run_time"]*10
+    bin_count = _define_bins_count(result_dict["read_pass_sorted"],result_dict["read_pass_speed"],result_dict["read_fail_sorted"],result_dict["read_fail_speed"],bins,methode='count')
+    bin_median_1d,bin_centers_1d = _make_median_fitted_model(result_dict["start_time_sorted"],result_dict["read_speed"],bins,'median')
+
+    plt_read_1d = plt.plot(bin_centers_1d[0:bin_count],bin_median_1d[0:bin_count],color='salmon',linewidth=1,label="1D")
+
+    bin_median_pass,bin_centers_pass = _make_median_fitted_model(result_dict["read_pass_sorted"], result_dict["read_pass_speed"],bins,'median')
+    plt_read_pass = plt.plot(bin_centers_pass[0:bin_count],bin_median_pass[0:bin_count],color='yellowgreen',linewidth=1,label="1D pass")
+
+    bin_median_fail,bin_centers_fail = _make_median_fitted_model(result_dict["read_fail_sorted"], result_dict["read_fail_speed"],bins,'median')
+    plt_read_fail = plt.plot(bin_centers_fail[0:bin_count],bin_median_fail[0:bin_count],color='orangered',linewidth=1,label="1D fail")
+
+    plt.ylabel("Speed (base per seconde)")
+    plt.xlabel("Time (Hour)")
+    plt.xticks(np.arange(0, max(result_dict["start_time_sorted"]), 8))
+    plt.legend()
     plt.title(main)
 
     plt.savefig(output_file)
