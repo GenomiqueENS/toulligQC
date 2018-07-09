@@ -58,6 +58,7 @@ class albacore_stats_extractor():
         if self.is_barcode:
 
             self.barcode_selection = config_dictionary['barcode_selection']
+
             try:
                 self.albacore_log_1d.loc[~self.albacore_log_1d['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
@@ -121,6 +122,11 @@ class albacore_stats_extractor():
         result_dict["qscore_read_pass"] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
         result_dict["qscore_read_fail"] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
+        #barcode
+        result_dict["barcode_arrangement"]=self.albacore_log_1d["barcode_arrangement"]
+        result_dict["read_pass_barcode"] = self.albacore_log_1d.barcode_arrangement.loc[True == self.albacore_log_1d['passes_filtering']]
+        result_dict["read_fail_barcode"] = self.albacore_log_1d.barcode_arrangement.loc[False == self.albacore_log_1d['passes_filtering']]
+
     def graph_generation(self,result_dict):
         '''
         Generation of the differents graphs containing in the graph_generator module
@@ -133,7 +139,7 @@ class albacore_stats_extractor():
 
         images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type', self.my_dpi,images_directory,"Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        images.append(graph_generator.read_quality_multiboxplot(result_dict, self.albacore_log_1d, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.read_quality_multiboxplot(result_dict, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         images.append(graph_generator.phred_score_frequency(result_dict, 'Mean Phred score frequency of 1D reads', self.my_dpi, images_directory,"Phred score frequency of 1D reads."))
         images.append(graph_generator.allphred_score_frequency(result_dict, 'Mean Phred score frequency of all 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
@@ -146,9 +152,9 @@ class albacore_stats_extractor():
         images.append(graph_generator.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_pass(self.albacore_log_1d,'1D pass reads percentage of different barcodes', self.barcode_selection,
+            images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict,'1D pass reads percentage of different barcodes', self.barcode_selection,
                                                                              self.my_dpi, images_directory,"1D pass read distribution per barcode."))
-            images.append(graph_generator.barcode_percentage_pie_chart_fail(self.albacore_log_1d,'1D fail reads percentage of different barcodes', self.barcode_selection,
+            images.append(graph_generator.barcode_percentage_pie_chart_fail(result_dict,'1D fail reads percentage of different barcodes', self.barcode_selection,
                                                                              self.my_dpi, images_directory,"1D fail read distribution per barcode."))
             images.append(graph_generator.barcode_length_boxplot(self.albacore_log_1d,'1D reads size distribution for each barcode',  self.barcode_selection,
                                                                        self.my_dpi, images_directory,"Read length boxplot per barcode of pass (in green) and fail (in red) 1D reads."))
