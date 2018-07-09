@@ -84,16 +84,29 @@ def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
+    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+    ax = plt.subplot(gs[0])
+    plt.mec = 'black'
+    plt.mfc = 'white'
+    plt.subplots_adjust(bottom=0.015, top=1.0)
+
     if result_dict['raw_fast5'] == -1:
         read_type = [result_dict["fastQ_entries"],result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
         label = ("FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
-        bars = plt.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
+        bars = ax.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
+        d = {"FastQ_entries": result_dict["fastQ_entries"],
+             "1D": result_dict["fast5_template_basecalled"],
+             "1D pass": result_dict["read_pass_count"],
+             "1D fail": result_dict["read_fail_count"]}
     else:
         read_type = [result_dict['raw_fast5'], result_dict['basecalled_error_count'], result_dict["fastQ_entries"],result_dict["fast5_template_basecalled"], result_dict["read_pass_count"],result_dict["read_fail_count"]]
         label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
-        bars = plt.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
+        bars = ax.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
+        d = {"Raw Fast5": result_dict['raw_fast5'] , "Raw Fast5 with error" : result_dict['basecalled_error_count'] ,"fastQ_entries": result_dict["fastQ_entries"],"1D": result_dict["fast5_template_basecalled"],
+             "1D pass": result_dict["read_pass_count"],
+             "1D fail": result_dict["read_fail_count"]}
 
     plt.xticks(nd, label)
     plt.xlabel("Read type")
@@ -107,6 +120,11 @@ def read_count_histogram(result_dict , main , my_dpi , result_directory , desc):
 
     plt.savefig(output_file)
     plt.close()
+
+
+    dataframe = pd.DataFrame(d,index=['count'])
+    pd.options.display.float_format = '{:.2f}'.format
+    table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc
 
