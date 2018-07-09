@@ -21,15 +21,16 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib
-
-matplotlib.use('Agg')
+from scipy import stats
 from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from matplotlib.ticker import FormatStrFormatter
 from pandas.tools.plotting import table
 import re
 
-pd.options.display.float_format = '{:,}'.format
+
+pd.options.display.float_format = '{x:.2f}'.format
 
 
 def _make_table(value, ax, metric_suppression=''):
@@ -41,9 +42,9 @@ def _make_table(value, ax, metric_suppression=''):
     '''
 
     if metric_suppression:
-        the_table = table(ax, np.round(value.describe().drop(metric_suppression), 2), loc='center', )
+        the_table = table(ax, np.round(value.describe().drop(metric_suppression), 2), loc='center')
     else:
-        the_table = table(ax, np.round(value.describe(), 2), loc='center', )
+        the_table = table(ax, np.round(value.describe(), 2), loc='center')
 
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
@@ -60,7 +61,7 @@ def _make_table_html(value):
     '''
 
     table=np.round(value.describe(),2)
-    pd.options.display.float_format = '{:,}'.format
+    pd.options.display.float_format = '{:.0f}'.format
     table_html = pd.DataFrame.to_html(table)
     return table_html
 
