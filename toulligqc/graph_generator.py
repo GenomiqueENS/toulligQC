@@ -174,9 +174,10 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    plt_read_1d=plt.scatter(result_dict["start_time_sorted"], np.arange(len(result_dict["start_time_sorted"])),color='salmon')
-    plt_read_pass=plt.scatter(result_dict["read_pass_sorted"], np.arange(len(result_dict["read_pass_sorted"])),color='yellowgreen')
-    plt_read_fail=plt.scatter(result_dict["read_fail_sorted"], np.arange(len(result_dict["read_fail_sorted"])),color='orangered')
+    plt_read_1d = plt.plot(result_dict["start_time_sorted"],np.arange(len(result_dict["start_time_sorted"])),color='salmon',linewidth=1,label="1D")
+    plt_read_pass = plt.plot(result_dict["read_pass_sorted"],np.arange(len(result_dict["read_pass_sorted"])),color='yellowgreen',linewidth=1,label="1D pass")
+    plt_read_fail = plt.plot(result_dict["read_fail_sorted"],np.arange(len(result_dict["read_fail_sorted"])),color='orangered',linewidth=1,label="1D fail")
+
     plt.xticks(np.arange(0,max(result_dict["start_time_sorted"]),8))
 
     plt.ylabel("Read number")
