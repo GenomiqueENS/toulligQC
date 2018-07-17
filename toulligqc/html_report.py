@@ -36,13 +36,11 @@ def html_report(config_dictionary, result_dict, graphs):
     '''
 
     result_directory = config_dictionary['result_directory']
-    is_barcode = config_dictionary['barcoding']
     report_name = config_dictionary['report_name']
-
-    report_date= time.strftime("%x %X %Z")
 
     #from sequence summary file
     run_time = result_dict["run_time"]
+    report_date= time.strftime("%x %X %Z")
 
     #from Fast5 file
     run_date = result_dict['exp_start_time']
