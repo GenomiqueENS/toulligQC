@@ -113,7 +113,6 @@ class albacore_1dsqr_stats_extractor():
 
         result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
         result_dict['sequence_length_2d'] = self.sequence_length_1dsqr
-        result_dict['yield']=sum(self.sequence_length_template)
 
         # Extract from 1D summary source
         # read count
@@ -133,6 +132,7 @@ class albacore_1dsqr_stats_extractor():
         result_dict["start_time_sorted"] = sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
         result_dict["read_pass_sorted"] = sorted(self.albacore_log_1d.start_time.loc[True == self.albacore_log_1d['passes_filtering']]/3600)
         result_dict["read_fail_sorted"] = sorted(self.albacore_log_1d.start_time.loc[False == self.albacore_log_1d['passes_filtering']]/3600)
+        result_dict["run_time"] = int(max(result_dict["start_time_sorted"]))
 
         #qscore information
         result_dict["mean_qscore"] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
@@ -172,7 +172,7 @@ class albacore_1dsqr_stats_extractor():
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell', self.my_dpi, images_directory,"Number of reads sequenced per pore channel."))
 
-        images.append(graph_generator.all_scatterplot(self.albacore_log_1d, 'Mean Phred score function of 1D read length', self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
+        images.append(graph_generator.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length', self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
         images.append(graph_generator.scatterplot_1dsqr(self.albacore_log_1d, self.albacore_log_1dsqr,"Mean Phred score function of 1Dsquare read length", self.my_dpi, images_directory,"The Mean Phred score varies according to the read length. The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
         if self.is_barcode:
