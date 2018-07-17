@@ -286,6 +286,7 @@ def main():
     result_dict['fast5_processed'] = -1
     result_dict['raw_fast5_no_processed'] = -1
     result_dict['basecalled_error_count'] = -1
+    result_dict['parsing_fastq'] = False
 
     #Information extraction about statistics and generation of the graphs
     for extractor in extractors:

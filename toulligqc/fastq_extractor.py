@@ -134,6 +134,7 @@ class fastq_extractor():
         :param result_dict: result dictionary where the informations or statistics are stored
         :return: result_dict
         '''
+        result_dict['parsing_fastq'] = True
         if self.is_barcode:
             self._read_fastq_barcoded()
 
