@@ -103,6 +103,8 @@ class albacore_stats_extractor():
             result_dict['mean_qscore_statistics'] = pd.DataFrame.describe(mean_qscore_template).drop("count")
             result_dict['sequence_length_statistics'] = self.albacore_log_1d['sequence_length_template'].describe()
 
+        result_dict['channel_occupancy_statistics'] = self._occupancy_channel()
+
         # read count
         result_dict["fastQ_entries"] = len(self.albacore_log_1d['num_events'])
         result_dict["fast5_template_basecalled"] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
