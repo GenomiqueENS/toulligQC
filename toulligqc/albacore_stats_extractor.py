@@ -120,6 +120,7 @@ class albacore_stats_extractor():
         result_dict["start_time_sorted"] = sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
         result_dict["read_pass_sorted"] = sorted(self.albacore_log_1d.start_time.loc[True == self.albacore_log_1d['passes_filtering']]/3600)
         result_dict["read_fail_sorted"] = sorted(self.albacore_log_1d.start_time.loc[False == self.albacore_log_1d['passes_filtering']]/3600)
+        result_dict["run_time"] = int(max(result_dict["start_time_sorted"]))
 
         #qscore information
         result_dict["mean_qscore"] = self.albacore_log_1d.loc[:,"mean_qscore_template"]
