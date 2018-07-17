@@ -102,6 +102,9 @@ class albacore_1dsqr_stats_extractor():
                     barcode_selected_dataframe['mean_qscore_2d'].describe()
                 result_dict['sequence_length_statistics_' + barcode] = \
                     barcode_selected_dataframe['sequence_length_2d'].describe()
+            result_dict["barcode_arrangement"] = self.albacore_log_1dsqr["barcode_arrangement"]
+            result_dict["read_pass_barcode"] = self.albacore_log_1dsqr.barcode_arrangement.loc[True == self.albacore_log_1dsqr['passes_filtering']]
+            result_dict["read_fail_barcode"] = self.albacore_log_1dsqr.barcode_arrangement.loc[False == self.albacore_log_1dsqr['passes_filtering']]
         else:
 
             mean_qscore_template = self.albacore_log_1dsqr['mean_qscore_2d']

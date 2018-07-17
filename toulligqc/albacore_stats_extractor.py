@@ -93,6 +93,10 @@ class albacore_stats_extractor():
                     barcode_selected_dataframe['mean_qscore_template'].describe()
                 result_dict['sequence_length_statistics_' + barcode] = \
                     barcode_selected_dataframe['sequence_length_template'].describe()
+            result_dict["barcode_arrangement"] = self.albacore_log_1d["barcode_arrangement"]
+            result_dict["read_pass_barcode"] = self.albacore_log_1d.barcode_arrangement.loc[True == self.albacore_log_1d['passes_filtering']]
+            result_dict["read_fail_barcode"] = self.albacore_log_1d.barcode_arrangement.loc[False == self.albacore_log_1d['passes_filtering']]
+
         else:
 
             mean_qscore_template = self.albacore_log_1d['mean_qscore_template']
@@ -121,11 +125,6 @@ class albacore_stats_extractor():
         result_dict["mean_qscore"] = self.albacore_log_1d.loc[:,"mean_qscore_template"]
         result_dict["qscore_read_pass"] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
         result_dict["qscore_read_fail"] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
-
-        #barcode
-        result_dict["barcode_arrangement"]=self.albacore_log_1d["barcode_arrangement"]
-        result_dict["read_pass_barcode"] = self.albacore_log_1d.barcode_arrangement.loc[True == self.albacore_log_1d['passes_filtering']]
-        result_dict["read_fail_barcode"] = self.albacore_log_1d.barcode_arrangement.loc[False == self.albacore_log_1d['passes_filtering']]
 
     def graph_generation(self,result_dict):
         '''
