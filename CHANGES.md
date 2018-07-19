@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10 (2018-07-18)
+* Add pipeline.log parsing option
+
 ## 0.9 (2018-03-21)
 * Fix out of memory error when parsing big FASTQ files. The parsing of FASTQ files is now faster
 
