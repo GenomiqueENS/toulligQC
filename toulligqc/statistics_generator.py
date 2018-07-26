@@ -45,63 +45,65 @@ def statistics_generator(config_dictionary, result_dict):
 
     completeName = os.path.join(result_directory+'statistics/', "run_statistics_file.txt")
 
-    if result_dict['parsing_fastq'] == True :
-        with open(completeName, 'w') as file_data:
-            if config_dictionary['barcoding'].lower() == 'true':
-                for barcode in barcode_selection:
-                    if barcode == 'unclassified':
-                        pass
+
+    with open(completeName, 'w') as file_data:
+        if result_dict['parsing_fastq'] == True:
+                if config_dictionary['barcoding'].lower() == 'true':
+                    for barcode in barcode_selection:
+                        if barcode == 'unclassified':
+                            pass
+                        else:
+                            fastq_length_statistics = result_dict['sequence_length_statistics_' + barcode]
+                            mean_qscore_statistics = result_dict['mean_qscore_statistics_' + barcode]
+                            barcode_total_nucleotide = result_dict['total_nucleotide_' + barcode]
+
+                            for index, value in fastq_length_statistics.iteritems():
+                                file_data.write(
+                                    "Read.fastq.length.{}.{}={}\n".format(index, barcode, np.round(value, decimals=2)))
+
+                            nucleotide_counter = result_dict['nucleotide_count_' + barcode]
+                            for nucleotide, count in nucleotide_counter.items():
+                                file_data.write("nucleotide.{}.{}.template={}\n".format(nucleotide, barcode, np.round(count, decimals=2)))
+                                calcul = float(count) / float(barcode_total_nucleotide)
+                                calcul *= 100
+                                file_data.write("nucleotide.{}.{}.proportion={}\n".format(nucleotide, barcode, np.round(calcul, decimals=2)))
+                            file_data.write("barcode_total_nucleotide={}".format(barcode_total_nucleotide))
+
+                            for key, mean_qscore_stat in mean_qscore_statistics.iteritems():
+                                file_data.write("meanq_score.{}.{}={}".format(key, barcode, mean_qscore_stat))
+
                 else:
-                    fastq_length_statistics = result_dict['sequence_length_statistics_' + barcode]
-                    mean_qscore_statistics = result_dict['mean_qscore_statistics_' + barcode]
-                    barcode_total_nucleotide = result_dict['total_nucleotide_' + barcode]
+                    fastq_length_statistics = result_dict['sequence_length_statistics']
+                    nucleotide_counter = result_dict['nucleotide_count']
+                    mean_qscore_statistics = result_dict['mean_qscore_statistics']
+                    total_nucleotide = result_dict['total_nucleotide']
+
 
                     for index, value in fastq_length_statistics.iteritems():
-                        file_data.write(
-                            "Read.fastq.length.{}.{}={}\n".format(index, barcode, np.round(value, decimals=2)))
+                        file_data.write("Read.fastq.length.{}={}\n".format(index, np.round(value, decimals=2)))
 
-                    nucleotide_counter = result_dict['nucleotide_count_' + barcode]
                     for nucleotide, count in nucleotide_counter.items():
-                        file_data.write("nucleotide.{}.{}.template={}\n".format(nucleotide, barcode, np.round(count, decimals=2)))
-                        calcul = float(count) / float(barcode_total_nucleotide)
+                        file_data.write(
+                            "nucleotide.{}.template={}\n".format(nucleotide, np.round(count, decimals=2)))
+                        calcul = float(count) / float(total_nucleotide)
                         calcul *= 100
-                        file_data.write("nucleotide.{}.{}.proportion={}\n".format(nucleotide, barcode, np.round(calcul, decimals=2)))
-                    file_data.write("barcode_total_nucleotide={}".format(barcode_total_nucleotide))
-
+                        file_data.write("nucleotide.{}.proportion={}\n".format(nucleotide, np.round(calcul, decimals=2)))
                     for key, mean_qscore_stat in mean_qscore_statistics.iteritems():
-                        file_data.write("meanq_score.{}.{}={}".format(key, barcode, mean_qscore_stat))
+                        file_data.write("meanq_score.{} ={}\n".format(key, mean_qscore_stat))
 
-            else:
-                fastq_length_statistics = result_dict['sequence_length_statistics']
-                nucleotide_counter = result_dict['nucleotide_count']
-                mean_qscore_statistics = result_dict['mean_qscore_statistics']
-                total_nucleotide = result_dict['total_nucleotide']
+                    file_data.write("barcode_total_nucleotide={}".format(total_nucleotide))
 
-
-            for index, value in fastq_length_statistics.iteritems():
-                file_data.write("Read.fastq.length.{}={}\n".format(index, np.round(value, decimals=2)))
-
-            for nucleotide, count in nucleotide_counter.items():
-                file_data.write(
-                    "nucleotide.{}.template={}\n".format(nucleotide, np.round(count, decimals=2)))
-                calcul = float(count) / float(total_nucleotide)
-                calcul *= 100
-                file_data.write("nucleotide.{}.proportion={}\n".format(nucleotide, np.round(calcul, decimals=2)))
-            for key, mean_qscore_stat in mean_qscore_statistics.iteritems():
-                file_data.write("meanq_score.{} ={}\n".format(key, mean_qscore_stat))
-
-            file_data.write("barcode_total_nucleotide={}".format(total_nucleotide))
-
+        else:
             channel_occupancy_statistics = result_dict['channel_occupancy_statistics']
             for index, value in channel_occupancy_statistics.iteritems():
                 file_data.write("channel.occupancy.{}={}\n".format(index, value))
 
-                #file_data.write("Number.of.reads={}\n".format(len(result_dict['sequence_length_template'])))
-                file_data.write("flowcell.serial.number={}\n".format(flow_cell_id))
-                file_data.write("minknown.version={}\n".format(minknown_version))
-                file_data.write("hostname={}\n".format(hostname))
-                file_data.write("minion.serial.number={}\n".format(protocol_run_id))
-                file_data.write(("run.id={}\n".format(minion_run_id)))
+            #file_data.write("Number.of.reads={}\n".format(len(result_dict['sequence_length_template'])))
+            file_data.write("flowcell.serial.number={}\n".format(flow_cell_id))
+            file_data.write("minknown.version={}\n".format(minknown_version))
+            file_data.write("hostname={}\n".format(hostname))
+            file_data.write("minion.serial.number={}\n".format(protocol_run_id))
+            file_data.write(("run.id={}\n".format(minion_run_id)))
 
 def save_result_file(config_dictionary, result_dict):
     result_directory = config_dictionary['result_directory']
