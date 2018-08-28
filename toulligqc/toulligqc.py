@@ -33,17 +33,12 @@ import re
 import argparse
 import os
 import time
-from toulligqc import fastq_extractor
-from toulligqc import fast5_extractor
+from toulligqc import toulligqc_extractor
 from toulligqc import statistics_generator
-from toulligqc import albacore_1dsqr_stats_generator
 from toulligqc import html_report
 from toulligqc import version
-from toulligqc import albacore_stats_extractor
-from toulligqc import pipeline_log_extractor
 from pathlib import Path
 from toulligqc import toulligqc_conf
-
 
 def parse_args(config_dictionary):
     '''
@@ -250,43 +245,27 @@ def main():
 
     #Production of the extractors object
 
-    extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
-
-    if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
-        extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-
-    if 'fastq_source' in config_dictionary and config_dictionary['fastq_source']:
-        extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
-
-    # if config_dictionary['is_quicklaunch'].lower() != 'true':
-    #     extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-
-    if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
-        extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
-    else:
-        extractors.append(albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
 
     #Configuration checking and initialisation of the extractors
+    extractors = []
     _show(config_dictionary, "* Initialize extractors")
+
+    result_dict = {}
+    result_dict['unwritten.keys'] = ['unwritten.keys']
+    toulligqc_extractor.toulligqc_extractor.extract(config_dictionary,extractors,result_dict)
+
+    result_dict['toulligc.conf.extract.time'] = []
+    result_dict['toulligc.info.build.date'] = time.strftime("%x %X %Z")
+    result_dict['toulligc.info.output.dir'] = config_dictionary['result_directory']
+    result_dict['toulligc.info.barcode.selection'] = barcode_selection
+
+    graphs = []
+    qc_start = time.time()
+
     for extractor in extractors:
         extractor.check_conf()
         extractor.init()
 
-    result_dict = {}
-    graphs = []
-    qc_start = time.time()
-
-    # Initialisation if --albacore-pipeline-source not in config-dictionnry
-    result_dict['albacore_version'] = "Unknown"
-    result_dict['kit_version'] = "Unknown"
-    result_dict['flowcell_version'] = "Unknown"
-    result_dict['raw_fast5'] = -1
-    result_dict['fast5_failed_to_load_key'] = -1
-    result_dict['fast5_failed_count'] = -1
-    result_dict['fast5_processed'] = -1
-    result_dict['raw_fast5_no_processed'] = -1
-    result_dict['basecalled_error_count'] = -1
-    result_dict['parsing_fastq'] = False
 
     #Information extraction about statistics and generation of the graphs
     for extractor in extractors:
@@ -297,8 +276,12 @@ def main():
         graphs.extend(extractor.graph_generation(result_dict))
         extractor.clean()
         extractor_end = time.time()
+        extract_time = _format_time(extractor_end - extractor_start)
+        result_dict['toulligc.conf.{}.extract.time'.format(extractor.get_name())] = extract_time
+
 
         _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extractor_end - extractor_start)))
+
 
     #HTML report and statistics file generation
     _show(config_dictionary, "* Write HTML report")
@@ -307,7 +290,7 @@ def main():
     if config_dictionary['is_quicklaunch'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         statistics_generator.statistics_generator(config_dictionary, result_dict)
-        statistics_generator.save_result_file(config_dictionary, result_dict)
+        #statistics_generator.save_result_file(config_dictionary, result_dict)
 
     qc_end = time.time()
     _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))
