@@ -26,21 +26,20 @@ from toulligqc import albacore_stats_extractor
 from toulligqc import pipeline_log_extractor
 
 
-def _is_in_result_dict(dict, dict_key, default_value):
-    if dict_key not in dict or not dict[dict_key]:
-        dict[dict_key] = default_value
-
+def _is_in_result_dict(self, result_dict, dict_key, default_value):
+    if dict_key not in dict or not result_dict[dict_key]:
+        result_dict[dict_key] = default_value
 
 class toulligqc_extractor():
     '''
-       Extraction of different informations
-       :param config_dict: toulligqc config dictionnary
-       :param extractors_list: extractors list
-       :return: extractors list
-       '''
+    Extraction of the extractor selected list
+    :param config_dict: toulligqc config dictionnary
+    :param extractors_list: extractors list
+    :return: extractors list
+    '''
 
     def __init__(self, config_dictionary):
-        return
+        self.get_name()
 
     def get_name(self):
         '''
@@ -68,20 +67,22 @@ class toulligqc_extractor():
         :return: extractors_list
        '''
         extractors.append(fast5_extractor.fast5_extractor(config_dictionary))
-        result_dict['toulligqc.conf.extractors'] = ["fast5_extractor"]
+        result_dict['toulligqc.conf.extractors'] = ["fast5.extractor"]
 
         if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
             extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("albacore_log_extractor")
+            result_dict['toulligqc.conf.extractors'].append("albacore.log.extractor")
 
         if 'fastq_source' in config_dictionary and config_dictionary['fastq_source']:
             extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("fastq_extractor")
+            result_dict['toulligqc.conf.extractors'].append("fastq.extractor")
 
         if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
             extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("albacore_1dsqr_stats_extractor")
+            result_dict['toulligqc.conf.extractors'].append("albacore.1dsqr.stats.extractor")
         else:
             extractors.append(albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("albacore_stats_extractor")
+            result_dict['toulligqc.conf.extractors'].append("albacore.stats.extractor")
+
+
 

@@ -29,6 +29,7 @@ import os
 import tarfile
 import shutil
 import tempfile
+import time
 
 class fast5_extractor():
     '''
@@ -41,12 +42,13 @@ class fast5_extractor():
        '''
 
     def __init__(self, config_dictionary):
-        self.config_file_dictionary =config_dictionary
+        self.config_file_dictionary = config_dictionary
         self.fast5_source = config_dictionary['fast5_source']
         self.result_directory = config_dictionary['result_directory']
         self.report_name = config_dictionary['report_name']
         self.fast5_file_extension = ''
         self.fast5_file = ''
+        self.get_report_data_file_id()
 
     def get_name(self):
         '''
@@ -55,6 +57,15 @@ class fast5_extractor():
         '''
         return 'FAST5'
 
+    def get_report_data_file_id(self):
+        '''
+        Get the report.data id of the extractor.
+        :return: the report.data id
+        '''
+        return 'fast5.extractor'
+
+    def add_key_to_result_dict(self, key):
+        return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
     def init(self):
         '''
@@ -83,13 +94,15 @@ class fast5_extractor():
         :return: result_dict
        '''
         h5py_file = self._read_fast5()
-        result_dict['flow_cell_id'] = self._get_fast5_items(h5py_file,'flow_cell_id')
-        result_dict['minknow_version'] = self._get_fast5_items(h5py_file,'version')
-        result_dict['hostname'] = self._get_fast5_items(h5py_file,'hostname')
-        result_dict['minion_run_id'] = self._get_fast5_items(h5py_file,'device_id')
-        result_dict['protocol_run_id'] = self._get_fast5_items(h5py_file,'protocol_run_id')
-        result_dict['exp_start_time'] = self._get_fast5_items(h5py_file,'exp_start_time')
-        result_dict['sample_id'] = self._get_fast5_items(h5py_file,'sample_id')
+        result_dict[self.add_key_to_result_dict('source')] = self.fast5_source
+        result_dict[self.add_key_to_result_dict('flowcell.id')]= self._get_fast5_items(h5py_file,'flow_cell_id')
+        result_dict[self.add_key_to_result_dict('minknow.version')] = self._get_fast5_items(h5py_file,'version')
+        result_dict[self.add_key_to_result_dict('hostname')] = self._get_fast5_items(h5py_file,'hostname')
+        result_dict[self.add_key_to_result_dict('operating.system')] = self._get_fast5_items(h5py_file,'operating_system')
+        result_dict[self.add_key_to_result_dict('device.id')] = self._get_fast5_items(h5py_file,'device_id')
+        result_dict[self.add_key_to_result_dict('protocol.run.id')] = self._get_fast5_items(h5py_file,'protocol_run_id')
+        result_dict[self.add_key_to_result_dict('exp.start.time')] = self._get_fast5_items(h5py_file,'exp_start_time')
+        result_dict[self.add_key_to_result_dict('sample.id')] = self._get_fast5_items(h5py_file,'sample_id')
 
     def check_conf(self):
         '''
