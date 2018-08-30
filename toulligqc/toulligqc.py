@@ -215,6 +215,11 @@ def _format_time(t):
 
     return time.strftime("%H:%M:%S", time.gmtime(t))
 
+
+def add_unwritten_key(result_dict,key):
+    result_dict['unwritten.keys'].append(key)
+
+
 def main():
     '''
     Main function creating graphs and statistics
@@ -254,7 +259,6 @@ def main():
     result_dict['unwritten.keys'] = ['unwritten.keys']
     toulligqc_extractor.toulligqc_extractor.extract(config_dictionary,extractors,result_dict)
 
-    result_dict['toulligc.conf.extract.time'] = []
     result_dict['toulligc.info.build.date'] = time.strftime("%x %X %Z")
     result_dict['toulligc.info.output.dir'] = config_dictionary['result_directory']
     result_dict['toulligc.info.barcode.selection'] = barcode_selection
@@ -276,11 +280,10 @@ def main():
         graphs.extend(extractor.graph_generation(result_dict))
         extractor.clean()
         extractor_end = time.time()
-        extract_time = _format_time(extractor_end - extractor_start)
-        result_dict['toulligc.conf.{}.extract.time'.format(extractor.get_name())] = extract_time
+        extract_time = extractor_end - extractor_start
+        result_dict['{}.extract.time'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)
 
-
-        _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extractor_end - extractor_start)))
+        _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extract_time)))
 
 
     #HTML report and statistics file generation
