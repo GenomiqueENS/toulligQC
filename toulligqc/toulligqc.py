@@ -217,7 +217,7 @@ def _format_time(t):
 
 
 def add_unwritten_key(result_dict,key):
-    result_dict['unwritten.keys'].append(key)
+    result_dict['unwritten.keys'].extend(key)
 
 
 def main():
@@ -261,7 +261,8 @@ def main():
 
     result_dict['toulligc.info.build.date'] = time.strftime("%x %X %Z")
     result_dict['toulligc.info.output.dir'] = config_dictionary['result_directory']
-    result_dict['toulligc.info.barcode.selection'] = barcode_selection
+    if config_dictionary['barcoding'].lower() == 'true':
+        result_dict['toulligc.info.barcode.selection'] = barcode_selection
 
     graphs = []
     qc_start = time.time()
