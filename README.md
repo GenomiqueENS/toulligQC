@@ -15,6 +15,12 @@ This tool will produce a set of graphs, statistic files in txt format and a HTML
 
 Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/report.html) to see an report example! 
 
+## Authors / Support
+
+Bérengère Laffay, Lionel Ferrato-Berberian, Laurent Jourdren, Sophie Lemoine and Stéphane Le Crom.
+
+Support is availlable on [GitHub issue page](https://github.com/GenomicParisCentre/toulligQC/issues) and at **toulligqc** **at** **biologie.ens.fr**.
+
 ## Table of Contents
 
 * 1.[Get ToulligQC](#get-toulligqc)
