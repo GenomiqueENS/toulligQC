@@ -118,15 +118,19 @@ class fast5_extractor():
         '''
         return []
 
-    def clean(self):
+    def clean(self,result_dict):
         '''
         Deleting the temporary fast5 file extracted from the tar archive if used
         :return:
         '''
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
-        else:
-            return
+
+        key_list = []
+        for key in key_list:
+            key_list.extend(self.add_key_to_result_dict(key))
+        result_dict['unwritten.keys'].extend(key_list)
+
 
     def _fast5_tar_bz2_extraction(self, tar_bz2_file, result_directory):
         '''

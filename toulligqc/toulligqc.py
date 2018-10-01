@@ -279,7 +279,7 @@ def main():
         extractor_start = time.time()
         extractor.extract(result_dict)
         graphs.extend(extractor.graph_generation(result_dict))
-        extractor.clean()
+        extractor.clean(result_dict)
         extractor_end = time.time()
         extract_time = extractor_end - extractor_start
         result_dict['{}.extract.time'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)

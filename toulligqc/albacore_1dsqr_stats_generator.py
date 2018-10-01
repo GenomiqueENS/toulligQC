@@ -255,12 +255,27 @@ class albacore_1dsqr_stats_extractor():
                                                                                self.barcode_selection, self.my_dpi,images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1Dsquare reads."))
         return images
 
-    def clean(self):
+    def clean(self, result_dict):
         '''
         Cleaning
         :return:
         '''
-        return
+
+        keys = ['channel.occupancy.statistics','sequence.read.length','read.pass.length','read.fail.length','mean.qscore','read.pass.qscore','read.fail.qscore',
+        'barcode_selection_sequence_length_dataframe','barcode_selection_sequence_length_melted_dataframe','barcode_selection_sequence_phred_dataframe', 'barcode_selection_sequence_phred_melted_dataframe',
+        "barcode.arrangement", "read.pass.barcode", "read.fail.barcode", 'mean.qscore.statistics','sequence.length.statistics']
+        key_list=["albacore.stats.1d.extractor.sequence.length.template",
+                "albacore.stats.1d.extractor.passes.filtering", "albacore.stats.1d.extractor.read.pass",
+                "albacore.stats.1d.extractor.read.fail",
+                "albacore.stats.1d.extractor.start.time.sorted", "albacore.stats.1d.extractor.read.pass.sorted",
+                "albacore.stats.1d.extractor.read.fail.sorted", "albacore.stats.1d.extractor.mean.qscore",
+                "albacore.stats.1d.extractor.qscore.read.pass", "albacore.stats.1d.extractor.qscore.read.fail"]
+        for key in keys :
+            key_list.append(self.add_key_to_result_dict(key))
+
+        print(key_list)
+        result_dict['unwritten.keys'].extend(key_list)
+
 
     def _occupancy_channel(self):
         '''

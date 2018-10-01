@@ -160,6 +160,8 @@ class fastq_extractor():
         else:
             self._read_fastq_without_barcode()
             result_dict.update(self.global_dico)
+            self.add_value_to_unwritten_key(result_dict,'')
+
 
     def graph_generation(self,result_dict):
         '''
@@ -168,12 +170,16 @@ class fastq_extractor():
         '''
         return []
 
-    def clean(self):
+    def clean(self, result_dict):
         '''
         Cleaning
         :return:
         '''
-        return
+
+        key_list = []
+        for key in key_list :
+            key_list.extend(self.add_key_to_result_dict(key))
+        result_dict['unwritten.keys'].extend(key_list)
 
     def _fastq_metrics(self):
         '''

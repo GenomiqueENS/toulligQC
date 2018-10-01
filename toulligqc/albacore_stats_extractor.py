@@ -222,12 +222,19 @@ class albacore_stats_extractor():
                                                                         images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1D reads."))
         return images
 
-    def clean(self):
+    def clean(self, result_dict):
         '''
         Cleaning
         :return:
         '''
-        return
+        keys = ["sequence.length.template","passes.filtering","read.pass","read.fail","start.time.sorted","read.pass.sorted","read.fail.sorted","mean.qscore","qscore.read.pass","qscore.read.fail",'channel.occupancy.statistics',
+                'barcode_selection_sequence_length_dataframe','barcode_selection_sequence_length_melted_dataframe','barcode_selection_sequence_phred_dataframe','barcode_selection_sequence_phred_melted_dataframe',
+                "barcode.arrangement","read.pass.barcode","read.fail.barcode",
+                'mean.qscore.statistics','sequence.length.statistics']
+        key_list=[]
+        for key in keys :
+            key_list.append(self.add_key_to_result_dict(key))
+        result_dict['unwritten.keys'].extend(key_list)
 
     def _occupancy_channel(self):
         '''

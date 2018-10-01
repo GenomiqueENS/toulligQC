@@ -130,9 +130,12 @@ class albacore_log_extractor():
         '''
         return []
 
-    def clean(self):
+    def clean(self, result_dict):
         '''
         Cleaning
         :return:
         '''
-        return
+        key_list = []
+        for key in key_list :
+            key_list.extend(self.add_key_to_result_dict(key))
+        result_dict['unwritten.keys'].extend(key_list)
