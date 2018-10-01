@@ -26,6 +26,13 @@ import re
 import base64
 import dateutil.parser
 import time
+from toulligqc import toulligqc_extractor
+
+
+def _is_in_result_dict(dict, dict_key, default_value):
+    if dict_key not in dict or not dict[dict_key]:
+        dict[dict_key] = default_value
+    return dict[dict_key]
 
 def html_report(config_dictionary, result_dict, graphs):
 
@@ -39,24 +46,24 @@ def html_report(config_dictionary, result_dict, graphs):
     report_name = config_dictionary['report_name']
 
     #from sequence summary file
-    run_time = result_dict["run_time"]
-    report_date= time.strftime("%x %X %Z")
+    run_time = time.strftime("%H:%M:%S", time.gmtime(result_dict["albacore.stats.1d.extractor.run.time"]))
+    report_date=result_dict['toulligc.info.build.date']
 
     #from Fast5 file
-    run_date = result_dict['exp_start_time']
+    run_date = result_dict['fast5.extractor.exp.start.time']
     date = dateutil.parser.parse(run_date)
     run_date = date.strftime("%x %X %Z")
-    flow_cell_id = result_dict['flow_cell_id']
+    flow_cell_id = result_dict['fast5.extractor.flowcell.id']
+    run_id = result_dict['fast5.extractor.sample.id']
+    minknow_version = result_dict['fast5.extractor.minknow.version']
 
-    read_count = result_dict["fastQ_entries"]
-    run_yield = round(result_dict["Yield"],2)
+    read_count = result_dict["albacore.stats.1d.extractor.fastq.entries"]
+    run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000,2)
 
     #from pipeline log file
-    flowcell_version = result_dict['flowcell_version']
-    kit_version = result_dict['kit_version']
-    run_id = result_dict['sample_id']
-    minknow_version = result_dict['minknow_version']
-    albacore_version = result_dict['albacore_version']
+    flowcell_version = _is_in_result_dict(result_dict,'albacore.log.extractor.flowcell.version', "Unknown")
+    kit_version = _is_in_result_dict(result_dict, 'albacore.log.extractor.kit.version', "Unknown")
+    albacore_version = _is_in_result_dict(result_dict, 'albacore.log.extractor.albacore.version', "Unknown")
 
 
     f = open(result_directory + 'report.html', 'w')
@@ -348,7 +355,7 @@ def html_report(config_dictionary, result_dict, graphs):
             <td> {2} </td>
           </tr>
           <tr>
-            <th>Run time (h) </th>
+            <th>Run time </th>
             <td> {3} </td>
           </tr>
           <tr>
