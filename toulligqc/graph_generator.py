@@ -21,7 +21,6 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib
-from scipy import stats
 from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec

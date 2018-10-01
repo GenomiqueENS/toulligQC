@@ -82,6 +82,13 @@ class albacore_1dsqr_stats_extractor():
         '''
         return 'Albacore 1dsqr statistics'
 
+    def get_report_data_file_id(self):
+        '''
+        Get the report.data id of the extractor.
+        :return: the report.data id
+        '''
+        return 'albacore.1dsqr.stats.extractor'
+
     def init(self):
         '''
         Initialisation

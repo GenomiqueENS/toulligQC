@@ -37,6 +37,7 @@ class albacore_stats_extractor():
         self.config_dictionary = config_dictionary
         self.result_directory = config_dictionary['result_directory']
         self.is_barcode = config_dictionary['barcoding']
+        self.get_report_data_file_id()
 
         # panda's object for 1d_summary
         self.albacore_log_1d = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
@@ -72,6 +73,13 @@ class albacore_stats_extractor():
         :return: the name of the extractor
         '''
         return 'Albacore statistics'
+
+    def get_report_data_file_id(self):
+        '''
+        Get the report.data id of the extractor.
+        :return: the report.data id
+        '''
+        return 'albacore.stats.1d.extractor'
 
     def init(self):
         '''
