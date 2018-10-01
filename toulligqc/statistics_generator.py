@@ -55,51 +55,35 @@ def statistics_generator(config_dictionary, result_dict):
             if key not in result_dict['unwritten.keys']:
                 file_data.write("{0}={1}\n".format(key, value))
 
-        file_data.write("ANCIENNEMENT\n")
+        # if config_dictionary['barcoding'].lower() == 'true':
+        #     for barcode in barcode_selection:
+        #         if barcode == 'unclassified':
+        #             pass
+        #         else:
+        #             fastq_length_statistics = result_dict['sequence_length_statistics_' + barcode]
+        #             mean_qscore_statistics = result_dict['mean_qscore_statistics_' + barcode]
+        #             barcode_total_nucleotide = result_dict['fastq.extractor.total.nucleotide.' + barcode]
+        #
+        #             for index, value in fastq_length_statistics.iteritems():
+        #                 file_data.write(
+        #                     "Read.fastq.length.{}.{}={}\n".format(index, barcode, np.round(value, decimals=2)))
+        #
+        #             nucleotide_counter = result_dict['fastq.extractor.nucleotide.count.' + barcode]
+        #             for nucleotide, count in nucleotide_counter.items():
+        #                 file_data.write("nucleotide.{}.{}.template={}\n".format(nucleotide, barcode, np.round(count, decimals=2)))
+        #                 calcul = float(count) / float(barcode_total_nucleotide)
+        #                 calcul *= 100
+        #                 file_data.write("nucleotide.{}.{}.proportion={}\n".format(nucleotide, barcode, np.round(calcul, decimals=2)))
+        #             file_data.write("barcode_total_nucleotide={}\n".format(barcode_total_nucleotide))
+        #
+        #             for key, mean_qscore_stat in mean_qscore_statistics.iteritems():
+        #                 file_data.write("meanq_score.{}.{}={}".format(key, barcode, mean_qscore_stat))
 
-        #qc global info
-        file_data.write("qc.x={}\n".format(""))
-
-        #qc barcode info
-
-
-
-        channel_occupancy_statistics = result_dict['channel_occupancy_statistics']
-        for index, value in channel_occupancy_statistics.iteritems():
-            file_data.write("channel.occupancy.{}={}\n".format(index, value))
-
-            file_data.write("Number.of.reads={}\n".format(len(result_dict['sequence_length_template'])))
-
-
-        if config_dictionary['barcoding'].lower() == 'true':
-            for barcode in barcode_selection:
-                if barcode == 'unclassified':
-                    pass
-                else:
-                    fastq_length_statistics = result_dict['sequence_length_statistics_' + barcode]
-                    mean_qscore_statistics = result_dict['mean_qscore_statistics_' + barcode]
-                    barcode_total_nucleotide = result_dict['fastq.extractor.total.nucleotide.' + barcode]
-
-                    for index, value in fastq_length_statistics.iteritems():
-                        file_data.write(
-                            "Read.fastq.length.{}.{}={}\n".format(index, barcode, np.round(value, decimals=2)))
-
-                    nucleotide_counter = result_dict['fastq.extractor.nucleotide.count.' + barcode]
-                    for nucleotide, count in nucleotide_counter.items():
-                        file_data.write("nucleotide.{}.{}.template={}\n".format(nucleotide, barcode, np.round(count, decimals=2)))
-                        calcul = float(count) / float(barcode_total_nucleotide)
-                        calcul *= 100
-                        file_data.write("nucleotide.{}.{}.proportion={}\n".format(nucleotide, barcode, np.round(calcul, decimals=2)))
-                    file_data.write("barcode_total_nucleotide={}\n".format(barcode_total_nucleotide))
-
-                    for key, mean_qscore_stat in mean_qscore_statistics.iteritems():
-                        file_data.write("meanq_score.{}.{}={}".format(key, barcode, mean_qscore_stat))
-
-        # # else:
-        # #     fastq_length_statistics = result_dict['sequence_length_statistics']
-        # #     nucleotide_counter = result_dict['nucleotide_count']
-        # #     mean_qscore_statistics = result_dict['mean_qscore_statistics']
-        # #     total_nucleotide = result_dict['fastq.extractor.total.nucleotide.']
+        # else:
+        #     fastq_length_statistics = result_dict['sequence_length_statistics']
+        #     nucleotide_counter = result_dict['nucleotide_count']
+        #     mean_qscore_statistics = result_dict['mean_qscore_statistics']
+        #     total_nucleotide = result_dict['fastq.extractor.total.nucleotide.']
         #
         #
         #     for index, value in fastq_length_statistics.iteritems():
@@ -116,12 +100,3 @@ def statistics_generator(config_dictionary, result_dict):
         #
         #     file_data.write("barcode_total_nucleotide={}".format(total_nucleotide))
 
-
-
-#def save_result_file(config_dictionary, result_dict):
-#    result_directory = config_dictionary['result_directory']
-#    completeName = os.path.join(result_directory + 'statistics/', "save_result_statistics.txt")
-#
-#     with open(completeName, 'w') as file_data:
-#         for key,value in result_dict.items():
-#             file_data.write('{}={}'.format(key, value))
