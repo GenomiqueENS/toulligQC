@@ -79,8 +79,6 @@ class albacore_log_extractor():
     def add_key_to_result_dict(self, key):
         return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
-    def add_value_to_unwritten_key(self,result_dict,value):
-        return result_dict['unwritten.keys'].append(value)
 
     def extract(self, result_dict):
         '''

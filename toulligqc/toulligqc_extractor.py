@@ -26,10 +26,6 @@ from toulligqc import albacore_stats_extractor
 from toulligqc import pipeline_log_extractor
 
 
-def _is_in_result_dict(self, result_dict, dict_key, default_value):
-    if dict_key not in dict or not result_dict[dict_key]:
-        result_dict[dict_key] = default_value
-
 class toulligqc_extractor():
     '''
     Extraction of the extractor selected list
