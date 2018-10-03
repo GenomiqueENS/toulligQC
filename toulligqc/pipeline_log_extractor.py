@@ -45,6 +45,7 @@ class albacore_log_extractor():
         self.my_dpi = int(config_dictionary['dpi'])
         self.pipeline_dict = {}
         self.get_report_data_file_id()
+        self.dict={}
 
     def check_conf(self):
         '''
@@ -79,6 +80,10 @@ class albacore_log_extractor():
     def add_key_to_result_dict(self, key):
         return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
+    def _is_in_result_dict(self,result_dict, dict_key, default_value):
+        if dict_key not in result_dict or not result_dict[dict_key]:
+            result_dict[dict_key] = default_value
+        return result_dict[dict_key]
 
     def extract(self, result_dict):
         '''
@@ -121,7 +126,12 @@ class albacore_log_extractor():
 
         result_dict[self.add_key_to_result_dict('raw.fast5.no.processed')] = result_dict[self.add_key_to_result_dict('fast5.submitted')] - result_dict[self.add_key_to_result_dict('fast5.processed')]
         result_dict[self.add_key_to_result_dict('basecalled.error.count')] = result_dict[self.add_key_to_result_dict('raw.fast5.no.processed')] + result_dict[self.add_key_to_result_dict('fast5.failed.toload.key')] + result_dict[self.add_key_to_result_dict('fast5.failed.count')]
+        result_dict[self.add_key_to_result_dict('fast5.prop')] = result_dict[self.add_key_to_result_dict('fast5.submitted')]/result_dict[self.add_key_to_result_dict('fast5.submitted')]*100
+        result_dict[self.add_key_to_result_dict('basecalled.error.prop')] = result_dict[self.add_key_to_result_dict('basecalled.error.count')]/result_dict[self.add_key_to_result_dict('fast5.submitted')]*100
 
+        result_dict[self.add_key_to_result_dict('flowcell.version')] = self._is_in_result_dict(result_dict,'albacore.log.extractor.flowcell.version', "Unknown")
+        result_dict[self.add_key_to_result_dict('kit.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.kit.version', "Unknown")
+        result_dict[self.add_key_to_result_dict('albacore.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.albacore.version', "Unknown")
 
     def graph_generation(self, result_dict):
         '''
@@ -135,7 +145,8 @@ class albacore_log_extractor():
         Cleaning
         :return:
         '''
+        keys = []
         key_list = []
-        for key in key_list :
+        for key in keys:
             key_list.extend(self.add_key_to_result_dict(key))
         result_dict['unwritten.keys'].extend(key_list)

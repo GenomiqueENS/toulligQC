@@ -176,9 +176,10 @@ class fastq_extractor():
         :return:
         '''
 
-        key_list = [self.add_key_to_result_dict('nucleotide.counter')]
-        for key in key_list :
-            key_list.extend(self.add_key_to_result_dict(key))
+        keys = ['nucleotide.counter']
+        key_list=[]
+        for key in keys:
+            key_list.append(self.add_key_to_result_dict(key))
         result_dict['unwritten.keys'].extend(key_list)
 
     def _fastq_metrics(self):
@@ -211,7 +212,6 @@ class fastq_extractor():
                         entry_line = 0
 
         total_nucs_template = sum(template_nucleotide_counter.values())
-        print(template_nucleotide_counter.items())
         return total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter
 
     def _open_compressed_file(self, file_path, file_extension):
@@ -237,16 +237,14 @@ class fastq_extractor():
         :param selected_barcode: barcode selection
         '''
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter = self._fastq_metrics()
-        self.global_dico[self.add_key_to_result_dict('nucleotide.count')] += total_nucs_template
-        self.global_dico[self.add_key_to_result_dict('nucleotide.counter')] += template_nucleotide_counter
-        self.global_dico[self.add_key_to_result_dict('total.nucleotide.') + selected_barcode] = total_nucs_template
-        for key in dict(template_nucleotide_counter):
-            self.global_dico[self.add_key_to_result_dict('nucleotide.count.') + selected_barcode + "." + key] = dict(
-                template_nucleotide_counter)[key]
         series_read_size = pd.Series(barcode_length_array)
         selected_barcode_fastq_size_statistics = pd.Series.describe(series_read_size)
+        self.global_dico[self.add_key_to_result_dict(selected_barcode + '.total.nucleotide')] = total_nucs_template
+        for nucleotide,count in template_nucleotide_counter.items():
+            self.global_dico[self.add_key_to_result_dict(selected_barcode + '.total.nucleotide.') + nucleotide] = template_nucleotide_counter[nucleotide]
+
         for key in dict(selected_barcode_fastq_size_statistics).keys():
-            self.global_dico[self.add_key_to_result_dict('length.') + selected_barcode + "." + key] = dict(selected_barcode_fastq_size_statistics)[key]
+            self.global_dico[self.add_key_to_result_dict(selected_barcode + '.length.') + key] = dict(selected_barcode_fastq_size_statistics)[key]
 
     def _read_fastq_barcoded(self):
         '''
@@ -290,10 +288,8 @@ class fastq_extractor():
         Gets informations about the fastq sequence not barcoded
         '''
 
-        self.global_dico['total_nucleotide'] = 0
         self.global_dico[self.add_key_to_result_dict('nucleotide.count')] = 0
         self.global_dico[self.add_key_to_result_dict('nucleotide.counter')] = Counter()
-        template_nucleotide_counter = Counter()
 
         self.init()
         if os.path.isfile(self.fastq_source):
@@ -323,8 +319,6 @@ class fastq_extractor():
         for nucleotide,count in self.global_dico[self.add_key_to_result_dict('nucleotide.counter')].items():
             self.global_dico[self.add_key_to_result_dict('nucleotide.') + nucleotide] = self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide]
             self.global_dico[self.add_key_to_result_dict('nucleotide.proportion.') + nucleotide] = float(self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide])/float(self.global_dico[self.add_key_to_result_dict('nucleotide.count')]) * 100
-
-
 
     def _fastq_without_barcode_information(self):
         '''

@@ -294,7 +294,6 @@ def main():
     if config_dictionary['is_quicklaunch'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         statistics_generator.statistics_generator(config_dictionary, result_dict)
-        #statistics_generator.save_result_file(config_dictionary, result_dict)
 
     qc_end = time.time()
     _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))

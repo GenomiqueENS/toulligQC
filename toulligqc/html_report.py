@@ -29,10 +29,7 @@ import time
 from toulligqc import toulligqc_extractor
 
 
-def _is_in_result_dict(dict, dict_key, default_value):
-    if dict_key not in dict or not dict[dict_key]:
-        dict[dict_key] = default_value
-    return dict[dict_key]
+
 
 def html_report(config_dictionary, result_dict, graphs):
 
@@ -61,9 +58,14 @@ def html_report(config_dictionary, result_dict, graphs):
     run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000,2)
 
     #from pipeline log file
-    flowcell_version = _is_in_result_dict(result_dict,'albacore.log.extractor.flowcell.version', "Unknown")
-    kit_version = _is_in_result_dict(result_dict, 'albacore.log.extractor.kit.version', "Unknown")
-    albacore_version = _is_in_result_dict(result_dict, 'albacore.log.extractor.albacore.version', "Unknown")
+    if "albacore.log.extractor" in result_dict['toulligqc.conf.extractors']:
+        flowcell_version = result_dict['albacore.log.extractor.flowcell.version']
+        kit_version = result_dict['albacore.log.extractor.kit.version']
+        albacore_version = result_dict['albacore.log.extractor.albacore.version']
+    else:
+        flowcell_version = "Unknown"
+        kit_version = "Unknown"
+        albacore_version = "Unknown"
 
 
     f = open(result_directory + 'report.html', 'w')
