@@ -526,7 +526,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         fig1, ax1 = plt.subplots()
         wedges,texts = ax1.pie(sizes, labels=None, startangle=90, colors=cs,wedgeprops={'linewidth':1,'edgecolor':'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right" , bbox_to_anchor =(1.1,1.18), edgecolor="black")
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right" , bbox_to_anchor =(1.1,1.16), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -536,12 +536,13 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right",bbox_to_anchor =(1.1,1.18))
+        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right",bbox_to_anchor =(1.1,1.16))
 
     plt.savefig(output_file)
     plt.close()
 
     barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
     table_html = pd.DataFrame.to_html(barcode_table)
@@ -572,7 +573,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs,wedgeprops={'linewidth':1,'edgecolor':'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],loc="upper right",bbox_to_anchor =(1.1,1.18),edgecolor='black')
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],loc="upper right",bbox_to_anchor =(1.1,1.16),edgecolor='black')
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -582,12 +583,13 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],loc="upper right",bbox_to_anchor =(1.1,1.18))
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],loc="upper right",bbox_to_anchor =(1.1,1.16))
 
     plt.savefig(output_file)
     plt.close()
 
     barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
     table_html = pd.DataFrame.to_html(barcode_table)
@@ -880,7 +882,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs,wedgeprops={'linewidth':1,'edgecolor':'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right" , bbox_to_anchor =(1.1,1.18), edgecolor="black")
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right" , bbox_to_anchor =(1.1,1.16), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -890,13 +892,13 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
         ax1.bar(length, barcode_count, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right",bbox_to_anchor =(1.1,1.18))
+        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection,sizes)], loc="upper right",bbox_to_anchor =(1.1,1.16))
 
     plt.savefig(output_file)
     plt.close()
     barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
-
     table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
@@ -939,6 +941,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     plt.savefig(output_file)
     plt.close()
     barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
     table_html = pd.DataFrame.to_html(barcode_table)
