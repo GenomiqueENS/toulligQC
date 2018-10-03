@@ -103,10 +103,11 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         label = ("FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
         bars = ax.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
-        d = {"FastQ_entries": result_dict['albacore.stats.1d.extractor.fastq.entries'],
-             "1D": result_dict['albacore.stats.1d.extractor.fast5.template.basecalled'],
-             "1D pass": result_dict["albacore.stats.1d.extractor.read.pass.count"],
-             "1D fail": result_dict["albacore.stats.1d.extractor.read.fail.count"]}
+
+        array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"],result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
+                          [result_dict['albacore.stats.1d.extractor.fastq.entries.prop'],result_dict["albacore.stats.1d.extractor.fast5.template.basecalled.prop"],result_dict["albacore.stats.1d.extractor.read.pass.prop"],result_dict["albacore.stats.1d.extractor.read.fail.prop"]]])
+        dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["FastQ_entries","1D","1D pass","1D fail"])
+
     else:
         read_type = [result_dict['albacore.log.extractor.fast5.submitted'],
                      result_dict['albacore.log.extractor.basecalled.error.count'],
@@ -117,12 +118,12 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
         bars = ax.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
-        d = {"Raw Fast5": result_dict['albacore.log.extractor.fast5.submitted'],
-             "Raw Fast5 with error": result_dict['albacore.log.extractor.basecalled.error.count'],
-             "fastQ_entries": result_dict["albacore.stats.1d.extractor.fastq.entries"],
-             "1D": result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"],
-             "1D pass": result_dict["albacore.stats.1d.extractor.read.pass.count"],
-             "1D fail": result_dict["albacore.stats.1d.extractor.read.fail.count"]}
+
+        array = np.array([[result_dict['albacore.log.extractor.fast5.submitted'], result_dict['albacore.log.extractor.basecalled.error.count'],result_dict["albacore.stats.1d.extractor.fastq.entries"], result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"],
+                           result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
+                          [result_dict['albacore.log.extractor.fast5.prop'], result_dict['albacore.log.extractor.basecalled.error.prop'],result_dict['albacore.stats.1d.extractor.fastq.entries.prop'],result_dict["albacore.stats.1d.extractor.fast5.template.basecalled.prop"],
+                           result_dict["albacore.stats.1d.extractor.read.pass.prop"],result_dict["albacore.stats.1d.extractor.read.fail.prop"]]])
+        dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["Raw Fast5","Raw Fast5 with error","FastQ_entries","1D","1D pass","1D fail"])
 
     plt.xticks(nd, label)
     plt.xlabel("Read type")
@@ -136,8 +137,6 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     plt.savefig(output_file)
     plt.close()
 
-
-    dataframe = pd.DataFrame(d,index=['count'])
     pd.options.display.float_format = '{:.2f}'.format
     table_html = pd.DataFrame.to_html(dataframe)
 

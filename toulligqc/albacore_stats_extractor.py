@@ -107,6 +107,12 @@ class albacore_stats_extractor():
         result_dict[self.add_key_to_result_dict("read.pass.count")] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
         result_dict[self.add_key_to_result_dict("read.fail.count")] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
 
+        #read count prop
+        result_dict[self.add_key_to_result_dict("fastq.entries.prop")] = result_dict[self.add_key_to_result_dict('fastq.entries')]/result_dict[self.add_key_to_result_dict('fastq.entries')]*100
+        result_dict[self.add_key_to_result_dict("fast5.template.basecalled.prop")] = result_dict[self.add_key_to_result_dict("fast5.template.basecalled")]/result_dict[self.add_key_to_result_dict("fast5.template.basecalled")]*100
+        result_dict[self.add_key_to_result_dict("read.pass.prop")] = result_dict[self.add_key_to_result_dict("read.pass.count")]/result_dict[self.add_key_to_result_dict("fast5.template.basecalled")]*100
+        result_dict[self.add_key_to_result_dict("read.fail.prop")] = result_dict[self.add_key_to_result_dict("read.fail.count")]/result_dict[self.add_key_to_result_dict("fast5.template.basecalled")]*100
+
         # read length information
         result_dict[self.add_key_to_result_dict("sequence.length.template")] = self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
         result_dict[self.add_key_to_result_dict("passes.filtering")] = self.albacore_log_1d['passes_filtering']
@@ -227,7 +233,8 @@ class albacore_stats_extractor():
         Cleaning
         :return:
         '''
-        keys = ["sequence.length.template","passes.filtering","read.pass","read.fail","start.time.sorted","read.pass.sorted","read.fail.sorted","mean.qscore","qscore.read.pass","qscore.read.fail",'channel.occupancy.statistics',
+        keys = ["sequence.length.template","passes.filtering","read.pass","read.fail",
+                "start.time.sorted","read.pass.sorted","read.fail.sorted","mean.qscore","qscore.read.pass","qscore.read.fail",'channel.occupancy.statistics',
                 'barcode_selection_sequence_length_dataframe','barcode_selection_sequence_length_melted_dataframe','barcode_selection_sequence_phred_dataframe','barcode_selection_sequence_phred_melted_dataframe',
                 "barcode.arrangement","read.pass.barcode","read.fail.barcode",
                 'mean.qscore.statistics','sequence.length.statistics']

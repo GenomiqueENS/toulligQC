@@ -112,6 +112,12 @@ class albacore_1dsqr_stats_extractor():
         result_dict["albacore.stats.1d.extractor.read.pass.count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
         result_dict["albacore.stats.1d.extractor.read.fail.count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
 
+        #read count prop
+        result_dict["albacore.stats.1d.extractor.fastq.entries.prop"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']*100
+        result_dict["albacore.stats.1d.extractor.fast5.template.basecalled.prop"] = result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"]/result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"]*100
+        result_dict["albacore.stats.1d.extractor.read.pass.prop"] = result_dict["albacore.stats.1d.extractor.read.pass.count"]/result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"]*100
+        result_dict["albacore.stats.1d.extractor.read.fail.prop"] = result_dict["albacore.stats.1d.extractor.read.fail.count"]/result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"]*100
+
         # read length information
         result_dict["albacore.stats.1d.extractor.sequence.length.template"] = self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
         result_dict["albacore.stats.1d.extractor.passes.filtering"] = self.albacore_log_1d['passes_filtering']
@@ -272,8 +278,6 @@ class albacore_1dsqr_stats_extractor():
                 "albacore.stats.1d.extractor.qscore.read.pass", "albacore.stats.1d.extractor.qscore.read.fail"]
         for key in keys :
             key_list.append(self.add_key_to_result_dict(key))
-
-        print(key_list)
         result_dict['unwritten.keys'].extend(key_list)
 
 
