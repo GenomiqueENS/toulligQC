@@ -338,6 +338,8 @@ def html_report(config_dictionary, result_dict, graphs):
     <div class = 'main'>
       <div class=\"module\">
         <h2 id=M{0}>Basic Statistics</h2>
+        <h2 id=M{0}></h2>
+        <h1></h1>
         <table class=\" dataframe \" border="1">
           <thead>
             <th>Measure</th>
