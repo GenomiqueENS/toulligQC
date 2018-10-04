@@ -33,6 +33,8 @@ import re
 import argparse
 import os
 import time
+import platform as pf
+import tempfile as tp
 from toulligqc import toulligqc_extractor
 from toulligqc import statistics_generator
 from toulligqc import html_report
@@ -259,10 +261,23 @@ def main():
     result_dict['unwritten.keys'] = ['unwritten.keys']
     toulligqc_extractor.toulligqc_extractor.extract(config_dictionary,extractors,result_dict)
 
-    result_dict['toulligc.info.build.date'] = time.strftime("%x %X %Z")
-    result_dict['toulligc.info.output.dir'] = config_dictionary['result_directory']
+    result_dict['toulligqc.info.username'] = os.environ.get('USERNAME')
+    result_dict['toulligqc.info.user.home'] = os.environ['HOME']
+    result_dict['toulligqc.info.temporary.directory'] = tp.gettempdir()
+    result_dict['toulligqc.info.operating.system'] = pf.processor()
+    result_dict['toulligqc.info.python.version'] = pf.python_version()
+    result_dict['toulligqc.info.python.implementation'] = pf.python_implementation()
+    result_dict['toulligqc.info.hostname'] = os.uname()[1]
+
+    result_dict['toulligqc.info.start.time'] = time.strftime("%x %X %Z")
+    result_dict['toulligqc.info.command.line'] = sys.argv
+    result_dict['toulligqc.info.executable.path'] = sys.argv[0]
+    result_dict['toulligqc.info.version'] = config_dictionary['app.version']
+    result_dict['toulligqc.info.output.dir'] = config_dictionary['result_directory']
+    result_dict['toulligqc.info.barcode.option'] = "False"
     if config_dictionary['barcoding'].lower() == 'true':
-        result_dict['toulligc.info.barcode.selection'] = barcode_selection
+        result_dict['toulligqc.info.barcode.option'] = "True"
+        result_dict['toulligqc.info.barcode.selection'] = get_barcode(sample_sheet_file)
 
     graphs = []
     qc_start = time.time()
@@ -282,7 +297,7 @@ def main():
         extractor.clean(result_dict)
         extractor_end = time.time()
         extract_time = extractor_end - extractor_start
-        result_dict['{}.extract.time'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)
+        result_dict['{}.duration'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)
 
         _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extract_time)))
 
@@ -291,12 +306,15 @@ def main():
     _show(config_dictionary, "* Write HTML report")
     html_report.html_report(config_dictionary, result_dict, graphs)
 
+    qc_end = time.time()
+    result_dict['toulligqc.info.execution.duration']= round((qc_end - qc_start),2)
+    # result_dict['toulligqc.info.exit.code']=
+
     if config_dictionary['is_quicklaunch'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         statistics_generator.statistics_generator(config_dictionary, result_dict)
+    _show(config_dictionary, "* End of the QC extractor (done in {})".format(_format_time(qc_end - qc_start)))
 
-    qc_end = time.time()
-    _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))
 
 if __name__ == "__main__":
     main()
