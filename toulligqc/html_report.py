@@ -44,7 +44,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
     #from sequence summary file
     run_time = time.strftime("%H:%M:%S", time.gmtime(result_dict["albacore.stats.1d.extractor.run.time"]))
-    report_date=result_dict['toulligc.info.build.date']
+    report_date = result_dict['toulligqc.info.start.time']
 
     #from Fast5 file
     run_date = result_dict['fast5.extractor.exp.start.time']
@@ -58,7 +58,7 @@ def html_report(config_dictionary, result_dict, graphs):
     run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000,2)
 
     #from pipeline log file
-    if "albacore.log.extractor" in result_dict['toulligqc.conf.extractors']:
+    if "albacore.log.extractor" in result_dict['toulligqc.info.extractors']:
         flowcell_version = result_dict['albacore.log.extractor.flowcell.version']
         kit_version = result_dict['albacore.log.extractor.kit.version']
         albacore_version = result_dict['albacore.log.extractor.albacore.version']

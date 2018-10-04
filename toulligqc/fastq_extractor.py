@@ -150,6 +150,7 @@ class fastq_extractor():
         result_dict[self.add_key_to_result_dict('source')] = self.fastq_source
 
         if self.is_barcode:
+            self._read_fastq_without_barcode()
             self._read_fastq_barcoded()
 
             result_dict.update(self.global_dico)
@@ -315,7 +316,6 @@ class fastq_extractor():
             for fastq_files in glob.glob("{}/*.fastq".format(self.fastq_source)):
                 self.fastq_file = fastq_files
                 self._fastq_without_barcode_information()
-
         for nucleotide,count in self.global_dico[self.add_key_to_result_dict('nucleotide.counter')].items():
             self.global_dico[self.add_key_to_result_dict('nucleotide.') + nucleotide] = self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide]
             self.global_dico[self.add_key_to_result_dict('nucleotide.proportion.') + nucleotide] = float(self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide])/float(self.global_dico[self.add_key_to_result_dict('nucleotide.count')]) * 100

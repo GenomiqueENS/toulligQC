@@ -93,36 +93,36 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     plt.mfc = 'white'
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    result_dict['albacore.log.extractor.fast5.submitted'] = _is_in_result_dict(result_dict, 'albacore.log.extractor.fast5.submitted', -1)
+    result_dict['albacore.log.extractor.fast5.files.submitted'] = _is_in_result_dict(result_dict, 'albacore.log.extractor.fast5.files.submitted', -1)
 
-    if result_dict['albacore.log.extractor.fast5.submitted'] == -1:
+    if result_dict['albacore.log.extractor.fast5.files.submitted'] == -1:
         read_type = [result_dict['albacore.stats.1d.extractor.fastq.entries'],
-                     result_dict['albacore.stats.1d.extractor.fast5.template.basecalled'],
+                     result_dict['albacore.stats.1d.extractor.read.count'],
                      result_dict["albacore.stats.1d.extractor.read.pass.count"],
                      result_dict["albacore.stats.1d.extractor.read.fail.count"]]
         label = ("FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
         bars = ax.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
-        array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"],result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.stats.1d.extractor.fastq.entries.prop'],result_dict["albacore.stats.1d.extractor.fast5.template.basecalled.prop"],result_dict["albacore.stats.1d.extractor.read.pass.prop"],result_dict["albacore.stats.1d.extractor.read.fail.prop"]]])
+        array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],result_dict["albacore.stats.1d.extractor.read.count"],result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
+                          [result_dict['albacore.stats.1d.extractor.fastq.entries.percent'],result_dict["albacore.stats.1d.extractor.read.count.percent"],result_dict["albacore.stats.1d.extractor.read.pass.percent"],result_dict["albacore.stats.1d.extractor.read.fail.percent"]]])
         dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["FastQ_entries","1D","1D pass","1D fail"])
 
     else:
-        read_type = [result_dict['albacore.log.extractor.fast5.submitted'],
-                     result_dict['albacore.log.extractor.basecalled.error.count'],
+        read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
+                     result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
                      result_dict['albacore.stats.1d.extractor.fastq.entries'],
-                     result_dict['albacore.stats.1d.extractor.fast5.template.basecalled'],
+                     result_dict['albacore.stats.1d.extractor.read.count'],
                      result_dict["albacore.stats.1d.extractor.read.pass.count"],
                      result_dict["albacore.stats.1d.extractor.read.fail.count"]]
         label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D", "1D pass", "1D fail")
         nd = np.arange(len(read_type))
         bars = ax.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
-        array = np.array([[result_dict['albacore.log.extractor.fast5.submitted'], result_dict['albacore.log.extractor.basecalled.error.count'],result_dict["albacore.stats.1d.extractor.fastq.entries"], result_dict["albacore.stats.1d.extractor.fast5.template.basecalled"],
+        array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],result_dict["albacore.stats.1d.extractor.fastq.entries"], result_dict["albacore.stats.1d.extractor.read.count"],
                            result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.log.extractor.fast5.prop'], result_dict['albacore.log.extractor.basecalled.error.prop'],result_dict['albacore.stats.1d.extractor.fastq.entries.prop'],result_dict["albacore.stats.1d.extractor.fast5.template.basecalled.prop"],
-                           result_dict["albacore.stats.1d.extractor.read.pass.prop"],result_dict["albacore.stats.1d.extractor.read.fail.prop"]]])
+                          [result_dict['albacore.log.extractor.fast5.files.percent'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.percent'],result_dict['albacore.stats.1d.extractor.fastq.entries.percent'],result_dict["albacore.stats.1d.extractor.read.count.percent"],
+                           result_dict["albacore.stats.1d.extractor.read.pass.percent"],result_dict["albacore.stats.1d.extractor.read.fail.percent"]]])
         dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["Raw Fast5","Raw Fast5 with error","FastQ_entries","1D","1D pass","1D fail"])
 
     plt.xticks(nd, label)
@@ -660,10 +660,10 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    read_type = [result_dict['albacore.stats.1d.extractor.fast5.template.basecalled'],
-                 result_dict['albacore.1dsqr.stats.extractor.fast5.count'],
-                 result_dict['albacore.1dsqr.stats.extractor.read.pass.count'],
-                 result_dict['albacore.1dsqr.stats.extractor.read.pass.count']]
+    read_type = [result_dict['albacore.stats.1d.extractor.read.count'],
+                 result_dict['albacore.stats.1dsqr.extractor.read.count'],
+                 result_dict['albacore.stats.1dsqr.extractor.read.pass.count'],
+                 result_dict['albacore.stats.1dsqr.extractor.read.pass.count']]
 
     label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail")
     nd = np.arange(len(read_type))
@@ -691,9 +691,9 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     read_1d = result_dict["albacore.stats.1d.extractor.sequence.length.template"]
-    read_1dsqr = result_dict['albacore.1dsqr.stats.extractor.sequence.read.length']
-    read_pass_1dsqr = result_dict['albacore.1dsqr.stats.extractor.read.pass.length']
-    read_fail_1dsqr = result_dict['albacore.1dsqr.stats.extractor.read.fail.length']
+    read_1dsqr = result_dict['albacore.stats.1dsqr.extractor.sequence.read.length']
+    read_pass_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.pass.length']
+    read_fail_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.fail.length']
 
 
     minimum, maximum = min(result_dict["albacore.stats.1d.extractor.sequence.length.template"]), max(result_dict["albacore.stats.1d.extractor.sequence.length.template"])
@@ -739,9 +739,9 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     plt.subplots_adjust(bottom=0.015, top=1.0)
     mean_qscore_1d = result_dict["albacore.stats.1d.extractor.mean.qscore"]
 
-    mean_qscore_1dsqr = result_dict['albacore.1dsqr.stats.extractor.mean.qscore']
-    read_pass_1dsqr = result_dict['albacore.1dsqr.stats.extractor.read.pass.qscore']
-    read_fail_1dsqr = result_dict['albacore.1dsqr.stats.extractor.read.fail.qscore']
+    mean_qscore_1dsqr = result_dict['albacore.stats.1dsqr.extractor.mean.qscore']
+    read_pass_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
+    read_fail_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
 
     my_pal = {"1D": "salmon","1Dsquare": "goldenrod", "1Dsquare pass": "yellowgreen", "1Dsquare fail": "orangered"}
     order=["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]
@@ -771,7 +771,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
 
-    sns.distplot(result_dict['albacore.1dsqr.stats.extractor.mean.qscore'], bins=15, color='goldenrod',
+    sns.distplot(result_dict['albacore.stats.1dsqr.extractor.mean.qscore'], bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1),hist=True,label="1Dsquare")
 
     plt.legend()
@@ -779,10 +779,10 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1Dsquare": result_dict['albacore.1dsqr.stats.extractor.mean.qscore']})
+    dataframe = pd.DataFrame({"1Dsquare": result_dict['albacore.stats.1dsqr.extractor.mean.qscore']})
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=result_dict['albacore.1dsqr.stats.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
+    plt.axvline(x=result_dict['albacore.stats.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
 
     plt.savefig(output_file)
     plt.close()
@@ -801,9 +801,9 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     qscore_1d = result_dict["albacore.stats.1d.extractor.mean.qscore"]
-    qscore_1dsqr = result_dict['albacore.1dsqr.stats.extractor.mean.qscore']
-    mean_qscore_read_pass = result_dict['albacore.1dsqr.stats.extractor.read.pass.qscore']
-    mean_qscore_read_fail = result_dict['albacore.1dsqr.stats.extractor.read.fail.qscore']
+    qscore_1dsqr = result_dict['albacore.stats.1dsqr.extractor.mean.qscore']
+    mean_qscore_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
+    mean_qscore_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
 
     sns.distplot(mean_qscore_read_pass, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
                  hist=True, label='1Dsquare pass')
@@ -837,16 +837,16 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     #plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    length_1dsqr_read_pass = result_dict['albacore.1dsqr.stats.extractor.read.pass.length']
-    length_1dsqr_read_fail = result_dict['albacore.1dsqr.stats.extractor.read.fail.length']
+    length_1dsqr_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.length']
+    length_1dsqr_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.length']
 
-    qscore_1dsqr_read_pass = result_dict['albacore.1dsqr.stats.extractor.read.pass.qscore']
-    qscore_1dsqr_read_fail = result_dict['albacore.1dsqr.stats.extractor.read.fail.qscore']
+    qscore_1dsqr_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
+    qscore_1dsqr_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
 
     read_pass=plt.scatter(x=length_1dsqr_read_pass, y=qscore_1dsqr_read_pass,color="yellowgreen")
     read_fail=plt.scatter(x=length_1dsqr_read_fail, y=qscore_1dsqr_read_fail,color="orangered")
     plt.legend((read_pass,read_fail),("1Dsquare pass","1Dsquare fail"))
-    plt.xlim(np.min(result_dict['albacore.1dsqr.stats.extractor.sequence.read.length'].loc[result_dict['albacore.1dsqr.stats.extractor.sequence.read.length']>0]),np.max(result_dict['albacore.1dsqr.stats.extractor.sequence.read.length']))
+    plt.xlim(np.min(result_dict['albacore.stats.1dsqr.extractor.sequence.read.length'].loc[result_dict['albacore.stats.1dsqr.extractor.sequence.read.length']>0]),np.max(result_dict['albacore.stats.1dsqr.extractor.sequence.read.length']))
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
@@ -867,11 +867,11 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['albacore.1dsqr.stats.extractor.barcode.arrangement'] != element):
+        if all(result_dict['albacore.stats.1dsqr.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode_count = result_dict["albacore.1dsqr.stats.extractor.read.pass.barcode"].value_counts()
+    barcode_count = result_dict["albacore.stats.1dsqr.extractor.read.pass.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
@@ -911,11 +911,11 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['albacore.1dsqr.stats.extractor.barcode.arrangement'] != element):
+        if all(result_dict['albacore.stats.1dsqr.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode_count = result_dict["albacore.1dsqr.stats.extractor.read.fail.barcode"].value_counts()
+    barcode_count = result_dict["albacore.stats.1dsqr.extractor.read.fail.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
@@ -959,14 +959,14 @@ def barcode_length_boxplot_1dsqr(result_dict, main, barcode_selection, my_dpi, r
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
 
-    ax = sns.boxplot(data=result_dict[('albacore.1dsqr.stats.extractor.barcode_selection_sequence_length_melted_dataframe')],x='barcodes',y='length',hue='passes_filtering', showfliers=False,palette={True : "yellowgreen", False : "orangered"},hue_order=[True,False])
+    ax = sns.boxplot(data=result_dict[('albacore.stats.1dsqr.extractor.barcode_selection_sequence_length_melted_dataframe')],x='barcodes',y='length',hue='passes_filtering', showfliers=False,palette={True : "yellowgreen", False : "orangered"},hue_order=[True,False])
     handles, _ = ax.get_legend_handles_labels()
     plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0.,labels=["Pass","Fail"],handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
     plt.title(main)
 
-    table_html = _make_table_html(result_dict[('albacore.1dsqr.stats.extractor.barcode_selection_sequence_length_dataframe')])
+    table_html = _make_table_html(result_dict[('albacore.stats.1dsqr.extractor.barcode_selection_sequence_length_dataframe')])
     plt.savefig(output_file)
     plt.close()
     return main, output_file, table_html, desc
@@ -983,14 +983,14 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, barcode_selection, m
     ax = plt.subplot(gs[0])
 
 
-    ax = sns.boxplot(data=result_dict[('albacore.1dsqr.stats.extractor.barcode_selection_sequence_phred_melted_dataframe')],x='barcodes',y='qscore',hue='passes_filtering', showfliers=False,palette={True : "yellowgreen", False : "orangered"},hue_order=[True,False])
+    ax = sns.boxplot(data=result_dict[('albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_melted_dataframe')],x='barcodes',y='qscore',hue='passes_filtering', showfliers=False,palette={True : "yellowgreen", False : "orangered"},hue_order=[True,False])
     handles, _ = ax.get_legend_handles_labels()
     plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
     plt.title(main)
 
-    table_html = _make_table_html(result_dict[('albacore.1dsqr.stats.extractor.barcode_selection_sequence_phred_dataframe')])
+    table_html = _make_table_html(result_dict[('albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_dataframe')])
     plt.savefig(output_file)
     plt.close()
 

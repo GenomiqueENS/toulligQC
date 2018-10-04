@@ -95,14 +95,14 @@ class albacore_log_extractor():
         result_dict[self.add_key_to_result_dict('source')] = self.pipeline_source
 
         with open(self.pipeline_file, 'r') as pipeline_file:
-            result_dict[self.add_key_to_result_dict('fast5.failed.toload.key')] = 0
-            result_dict[self.add_key_to_result_dict('fast5.failed.count')] = 0
-            result_dict[self.add_key_to_result_dict('fast5.processed')] = 0
-            result_dict[self.add_key_to_result_dict('fast5.submitted')] = 0
+            result_dict[self.add_key_to_result_dict('fast5.files.failed.toload.key')] = 0
+            result_dict[self.add_key_to_result_dict('fast5.files.failed.count')] = 0
+            result_dict[self.add_key_to_result_dict('fast5.files.processed')] = 0
+            result_dict[self.add_key_to_result_dict('fast5.files.submitted')] = 0
 
             for line in pipeline_file:
                 if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
-                    result_dict[self.add_key_to_result_dict('albacore.version')] = re.compile("\s(\d+\.)(\d+\.)(\d)").search(line).group(0)
+                    result_dict[self.add_key_to_result_dict('albacore.version')] = re.compile("(\d+\.)(\d+\.)(\d)").search(line).group(0)
 
                 if re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line):
                     result_dict[self.add_key_to_result_dict('kit.version')] = re.compile("(SQK)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
@@ -111,23 +111,23 @@ class albacore_log_extractor():
                     result_dict[self.add_key_to_result_dict('flowcell.version')] = re.compile("(FLO)\-([A-Z]{3})([0-9]{3})").search(line).group(0)
 
                 if re.compile("(key\:)\s('(sequence)\_(length)\_(template)')").search(line):
-                    result_dict[self.add_key_to_result_dict('fast5.failed.toload.key')] += 1
+                    result_dict[self.add_key_to_result_dict('fast5.files.failed.toload.key')] += 1
 
                 if re.compile('(ERROR)\s(inserting)\s(read)').search(line):
-                    result_dict[self.add_key_to_result_dict('fast5.failed.count')] += 1
+                    result_dict[self.add_key_to_result_dict('fast5.files.failed.count')] += 1
 
                 if re.compile('(Finished)').search(line):
-                    result_dict[self.add_key_to_result_dict('fast5.processed')] += 1
+                    result_dict[self.add_key_to_result_dict('fast5.files.processed')] += 1
 
                 if re.compile('(Submitting)').search(line):
-                    result_dict[self.add_key_to_result_dict('fast5.submitted')] += 1
+                    result_dict[self.add_key_to_result_dict('fast5.files.submitted')] += 1
 
         pipeline_file.close()
 
-        result_dict[self.add_key_to_result_dict('raw.fast5.no.processed')] = result_dict[self.add_key_to_result_dict('fast5.submitted')] - result_dict[self.add_key_to_result_dict('fast5.processed')]
-        result_dict[self.add_key_to_result_dict('basecalled.error.count')] = result_dict[self.add_key_to_result_dict('raw.fast5.no.processed')] + result_dict[self.add_key_to_result_dict('fast5.failed.toload.key')] + result_dict[self.add_key_to_result_dict('fast5.failed.count')]
-        result_dict[self.add_key_to_result_dict('fast5.prop')] = result_dict[self.add_key_to_result_dict('fast5.submitted')]/result_dict[self.add_key_to_result_dict('fast5.submitted')]*100
-        result_dict[self.add_key_to_result_dict('basecalled.error.prop')] = result_dict[self.add_key_to_result_dict('basecalled.error.count')]/result_dict[self.add_key_to_result_dict('fast5.submitted')]*100
+        result_dict[self.add_key_to_result_dict('raw.fast5.files.not.processed')] = result_dict[self.add_key_to_result_dict('fast5.files.submitted')] - result_dict[self.add_key_to_result_dict('fast5.files.processed')]
+        result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.count')] = result_dict[self.add_key_to_result_dict('raw.fast5.files.not.processed')] + result_dict[self.add_key_to_result_dict('fast5.files.failed.toload.key')] + result_dict[self.add_key_to_result_dict('fast5.files.failed.count')]
+        result_dict[self.add_key_to_result_dict('fast5.files.percent')] = result_dict[self.add_key_to_result_dict('fast5.files.submitted')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]*100
+        result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.percent')] = result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.count')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]*100
 
         result_dict[self.add_key_to_result_dict('flowcell.version')] = self._is_in_result_dict(result_dict,'albacore.log.extractor.flowcell.version', "Unknown")
         result_dict[self.add_key_to_result_dict('kit.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.kit.version', "Unknown")

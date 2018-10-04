@@ -63,22 +63,22 @@ class toulligqc_extractor():
         :return: extractors_list
        '''
         extractors.append(fast5_extractor.fast5_extractor(config_dictionary))
-        result_dict['toulligqc.conf.extractors'] = ["fast5.extractor"]
+        result_dict['toulligqc.info.extractors'] = ["fast5.extractor"]
 
         if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
             extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("albacore.log.extractor")
+            result_dict['toulligqc.info.extractors'].append("albacore.log.extractor")
 
         if 'fastq_source' in config_dictionary and config_dictionary['fastq_source']:
             extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("fastq.extractor")
+            result_dict['toulligqc.info.extractors'].append("fastq.extractor")
 
         if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
             extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("albacore.1dsqr.stats.extractor")
+            result_dict['toulligqc.info.extractors'].append("albacore.1dsqr.stats.extractor")
         else:
             extractors.append(albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
-            result_dict['toulligqc.conf.extractors'].append("albacore.stats.extractor")
+            result_dict['toulligqc.info.extractors'].append("albacore.stats.extractor")
 
 
 
