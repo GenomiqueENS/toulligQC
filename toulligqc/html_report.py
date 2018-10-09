@@ -26,6 +26,7 @@ import re
 import base64
 import dateutil.parser
 import time
+import datetime
 from toulligqc import toulligqc_extractor
 
 
@@ -43,13 +44,15 @@ def html_report(config_dictionary, result_dict, graphs):
     report_name = config_dictionary['report_name']
 
     #from sequence summary file
-    run_time = time.strftime("%H:%M:%S", time.gmtime(result_dict["albacore.stats.1d.extractor.run.time"]))
+
+    td = datetime.timedelta(hours=result_dict["albacore.stats.1d.extractor.run.time"])
+    seconds = td.total_seconds()
+    run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
+
     report_date = result_dict['toulligqc.info.start.time']
 
     #from Fast5 file
     run_date = result_dict['fast5.extractor.exp.start.time']
-    date = dateutil.parser.parse(run_date)
-    run_date = date.strftime("%x %X %Z")
     flow_cell_id = result_dict['fast5.extractor.flowcell.id']
     run_id = result_dict['fast5.extractor.sample.id']
     minknow_version = result_dict['fast5.extractor.minknow.version']

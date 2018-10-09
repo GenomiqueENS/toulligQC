@@ -29,7 +29,7 @@ import os
 import tarfile
 import shutil
 import tempfile
-import time
+import dateutil
 
 class fast5_extractor():
     '''
@@ -101,8 +101,11 @@ class fast5_extractor():
         result_dict[self.add_key_to_result_dict('operating.system')] = self._get_fast5_items(h5py_file,'operating_system')
         result_dict[self.add_key_to_result_dict('device.id')] = self._get_fast5_items(h5py_file,'device_id')
         result_dict[self.add_key_to_result_dict('protocol.run.id')] = self._get_fast5_items(h5py_file,'protocol_run_id')
-        result_dict[self.add_key_to_result_dict('exp.start.time')] = self._get_fast5_items(h5py_file,'exp_start_time')
         result_dict[self.add_key_to_result_dict('sample.id')] = self._get_fast5_items(h5py_file,'sample_id')
+
+        run_date = self._get_fast5_items(h5py_file,'exp_start_time')
+        date = dateutil.parser.parse(run_date)
+        result_dict[self.add_key_to_result_dict('exp.start.time')] = date.strftime("%x %X %Z")
 
     def check_conf(self):
         '''
