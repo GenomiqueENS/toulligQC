@@ -113,10 +113,14 @@ class albacore_1dsqr_stats_extractor():
         result_dict["albacore.stats.1d.extractor.read.fail.count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
 
         #read count prop
-        result_dict["albacore.stats.1d.extractor.fastq.entries.percent"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']*100
-        result_dict["albacore.stats.1d.extractor.read.count.percent"] = result_dict["albacore.stats.1d.extractor.read.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
-        result_dict["albacore.stats.1d.extractor.read.pass.percent"] = result_dict["albacore.stats.1d.extractor.read.pass.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
-        result_dict["albacore.stats.1d.extractor.read.fail.percent"] = result_dict["albacore.stats.1d.extractor.read.fail.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["albacore.stats.1d.extractor.fastq.entries.ratio"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']
+        result_dict["albacore.stats.1d.extractor.read.count.ratio"] = result_dict["albacore.stats.1d.extractor.read.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["albacore.stats.1d.extractor.read.pass.ratio"] = result_dict["albacore.stats.1d.extractor.read.pass.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["albacore.stats.1d.extractor.read.fail.ratio"] = result_dict["albacore.stats.1d.extractor.read.fail.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["albacore.stats.1d.extractor.fastq.entries.frequency"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']*100
+        result_dict["albacore.stats.1d.extractor.read.count.frequency"] = result_dict["albacore.stats.1d.extractor.read.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["albacore.stats.1d.extractor.read.pass.frequency"] = result_dict["albacore.stats.1d.extractor.read.pass.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["albacore.stats.1d.extractor.read.fail.frequency"] = result_dict["albacore.stats.1d.extractor.read.fail.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
 
         # read length information
         result_dict["albacore.stats.1d.extractor.sequence.length.template"] = self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
@@ -149,7 +153,16 @@ class albacore_1dsqr_stats_extractor():
         result_dict[self.add_key_to_result_dict('read.pass.count')] = len(self.albacore_log_1dsqr[self.albacore_log_1dsqr['passes_filtering'] == True])
         result_dict[self.add_key_to_result_dict('read.fail.count')] = len(self.albacore_log_1dsqr[self.albacore_log_1dsqr['passes_filtering'] == False])
 
-        result_dict[self.add_key_to_result_dict('sequence.read.length')] = self.albacore_log_1dsqr.loc[:, "sequence_length_2d"]
+        #read count prop
+        result_dict[self.add_key_to_result_dict("read.count.ratio")] = result_dict[self.add_key_to_result_dict('read.count')]/result_dict[self.add_key_to_result_dict('read.count')]
+        result_dict[self.add_key_to_result_dict("read.pass.ratio")] = result_dict[self.add_key_to_result_dict('read.pass.count')]/result_dict[self.add_key_to_result_dict('read.count')]
+        result_dict[self.add_key_to_result_dict("read.fail.ratio")] = result_dict[self.add_key_to_result_dict('read.fail.count')]/result_dict[self.add_key_to_result_dict('read.count')]
+        result_dict[self.add_key_to_result_dict("read.count.frequency")] = result_dict[self.add_key_to_result_dict('read.count')]/result_dict[self.add_key_to_result_dict('read.count')]*100
+        result_dict[self.add_key_to_result_dict("read.pass.frequency")] = result_dict[self.add_key_to_result_dict('read.pass.count')]/result_dict[self.add_key_to_result_dict('read.count')]*100
+        result_dict[self.add_key_to_result_dict("read.fail.frequency")] = result_dict[self.add_key_to_result_dict('read.fail.count')]/result_dict[self.add_key_to_result_dict('read.count')]*100
+
+        result_dict[self.add_key_to_result_dict('sequence.length')] = self.albacore_log_1dsqr.loc[:, "sequence_length_2d"]
+        result_dict[self.add_key_to_result_dict("passes.filtering")] = self.albacore_log_1dsqr['passes_filtering']
         result_dict[self.add_key_to_result_dict('read.pass.length')] = self.albacore_log_1dsqr.sequence_length_2d.loc[True == self.albacore_log_1dsqr['passes_filtering']]
         result_dict[self.add_key_to_result_dict('read.fail.length')] = self.albacore_log_1dsqr.sequence_length_2d.loc[False == self.albacore_log_1dsqr['passes_filtering']]
 

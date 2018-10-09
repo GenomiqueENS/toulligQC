@@ -105,7 +105,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         bars = ax.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
         array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],result_dict["albacore.stats.1d.extractor.read.count"],result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.stats.1d.extractor.fastq.entries.percent'],result_dict["albacore.stats.1d.extractor.read.count.percent"],result_dict["albacore.stats.1d.extractor.read.pass.percent"],result_dict["albacore.stats.1d.extractor.read.fail.percent"]]])
+                          [result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],result_dict["albacore.stats.1d.extractor.read.count.frequency"],result_dict["albacore.stats.1d.extractor.read.pass.frequency"],result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
         dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["FastQ_entries","1D","1D pass","1D fail"])
 
     else:
@@ -121,8 +121,8 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
         array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],result_dict["albacore.stats.1d.extractor.fastq.entries"], result_dict["albacore.stats.1d.extractor.read.count"],
                            result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.log.extractor.fast5.files.percent'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.percent'],result_dict['albacore.stats.1d.extractor.fastq.entries.percent'],result_dict["albacore.stats.1d.extractor.read.count.percent"],
-                           result_dict["albacore.stats.1d.extractor.read.pass.percent"],result_dict["albacore.stats.1d.extractor.read.fail.percent"]]])
+                          [result_dict['albacore.log.extractor.fast5.files.frequency'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],result_dict["albacore.stats.1d.extractor.read.count.frequency"],
+                           result_dict["albacore.stats.1d.extractor.read.pass.frequency"],result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
         dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["Raw Fast5","Raw Fast5 with error","FastQ_entries","1D","1D pass","1D fail"])
 
     plt.xticks(nd, label)
@@ -137,7 +137,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     plt.savefig(output_file)
     plt.close()
 
-    pd.options.display.float_format = '{:.2f}'.format
+    pd.options.display.float_format = '{:.0f}'.format
     table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc
@@ -324,11 +324,9 @@ def read_quality_multiboxplot(result_dict,main, my_dpi, result_directory, desc):
     plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
     plt.title(main)
-    plt.legend()
 
     dataframe = dataframe[["1D","1D pass","1D fail"]]
     table_html = _make_table_html(dataframe)
-
 
     plt.savefig(output_file)
     plt.close()
@@ -660,15 +658,24 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    read_type = [result_dict['albacore.stats.1d.extractor.read.count'],
-                 result_dict['albacore.stats.1dsqr.extractor.read.count'],
-                 result_dict['albacore.stats.1dsqr.extractor.read.pass.count'],
-                 result_dict['albacore.stats.1dsqr.extractor.read.pass.count']]
+    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+    ax = plt.subplot(gs[0])
+    plt.mec = 'black'
+    plt.mfc = 'white'
+    plt.subplots_adjust(bottom=0.015, top=1.0)
 
+    read_type = [result_dict['albacore.stats.1d.extractor.read.count'],
+                result_dict['albacore.stats.1dsqr.extractor.read.count'],
+                result_dict['albacore.stats.1dsqr.extractor.read.pass.count'],
+                result_dict['albacore.stats.1dsqr.extractor.read.pass.count']]
     label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail")
     nd = np.arange(len(read_type))
+    bars = ax.bar(nd, read_type, align='center',color=["salmon", "orange", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
-    bars = plt.bar(nd, read_type, align='center', color=["salmon", "orange", "yellowgreen", "orangered"])
+    array = np.array([[result_dict['albacore.stats.1d.extractor.read.count'],result_dict['albacore.stats.1dsqr.extractor.read.count'],result_dict['albacore.stats.1dsqr.extractor.read.pass.count'], result_dict["albacore.stats.1dsqr.extractor.read.pass.count"]],
+                      [result_dict['albacore.stats.1d.extractor.read.count.frequency'],result_dict["albacore.stats.1dsqr.extractor.read.count.frequency"],result_dict["albacore.stats.1dsqr.extractor.read.pass.frequency"],result_dict["albacore.stats.1dsqr.extractor.read.fail.frequency"]]])
+    dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["FastQ_entries","1D","1D pass","1D fail"])
+
     plt.xticks(nd, label)
     plt.xlabel("Read type")
     plt.ylabel("Counts")
