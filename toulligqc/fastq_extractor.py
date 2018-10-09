@@ -263,6 +263,9 @@ class fastq_extractor():
                     if selected_barcode in bz2_fastq_file:
                         self.fastq_file = bz2_fastq_file
                         self._barcoded_fastq_informations(selected_barcode)
+                    else:
+                        self.fastq_file = bz2_fastq_file
+                        self._barcoded_fastq_informations('unclassified')
 
         elif self.fastq_file_extension == 'gz':
             for gz_fastq_file in glob.glob("{}/*.gz".format(self.fastq_source)):
@@ -318,7 +321,8 @@ class fastq_extractor():
                 self._fastq_without_barcode_information()
         for nucleotide,count in self.global_dico[self.add_key_to_result_dict('nucleotide.counter')].items():
             self.global_dico[self.add_key_to_result_dict('nucleotide.') + nucleotide] = self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide]
-            self.global_dico[self.add_key_to_result_dict('nucleotide.proportion.') + nucleotide] = float(self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide])/float(self.global_dico[self.add_key_to_result_dict('nucleotide.count')]) * 100
+            self.global_dico[self.add_key_to_result_dict('nucleotide.ratio.') + nucleotide] = float(self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide])/float(self.global_dico[self.add_key_to_result_dict('nucleotide.count')])
+            self.global_dico[self.add_key_to_result_dict('nucleotide.frequency.') + nucleotide] = float(self.global_dico[self.add_key_to_result_dict('nucleotide.counter')][nucleotide])/float(self.global_dico[self.add_key_to_result_dict('nucleotide.count')]) * 100
 
     def _fastq_without_barcode_information(self):
         '''
