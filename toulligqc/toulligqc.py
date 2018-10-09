@@ -269,6 +269,7 @@ def main():
     result_dict['toulligqc.info.python.implementation'] = pf.python_implementation()
     result_dict['toulligqc.info.hostname'] = os.uname()[1]
 
+    result_dict['toulligqc.info.report.name'] = config_dictionary['report_name']
     result_dict['toulligqc.info.start.time'] = time.strftime("%x %X %Z")
     result_dict['toulligqc.info.command.line'] = sys.argv
     result_dict['toulligqc.info.executable.path'] = sys.argv[0]
