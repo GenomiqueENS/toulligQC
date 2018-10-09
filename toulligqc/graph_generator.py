@@ -753,12 +753,14 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     my_pal = {"1D": "salmon","1Dsquare": "goldenrod", "1Dsquare pass": "yellowgreen", "1Dsquare fail": "orangered"}
     order=["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]
     dataframe = pd.DataFrame({"1D": mean_qscore_1d,"1Dsquare": mean_qscore_1dsqr, "1Dsquare pass": read_pass_1dsqr, "1Dsquare fail": read_fail_1dsqr})
-    sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order)
 
+    sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order,linewidth=1)
+    plt.ylabel('Mean Phred score')
 
+    sns.violinplot(data=dataframe, ax=plt.subplot(gs[1]), palette=my_pal, inner=None, cut=0, order=order,linewidth=1)
+    plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
     plt.title(main)
-    plt.legend()
 
     dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
     table_html = _make_table_html(dataframe)
