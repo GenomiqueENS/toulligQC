@@ -126,12 +126,14 @@ class albacore_log_extractor():
 
         result_dict[self.add_key_to_result_dict('raw.fast5.files.not.processed')] = result_dict[self.add_key_to_result_dict('fast5.files.submitted')] - result_dict[self.add_key_to_result_dict('fast5.files.processed')]
         result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.count')] = result_dict[self.add_key_to_result_dict('raw.fast5.files.not.processed')] + result_dict[self.add_key_to_result_dict('fast5.files.failed.toload.key')] + result_dict[self.add_key_to_result_dict('fast5.files.failed.count')]
-        result_dict[self.add_key_to_result_dict('fast5.files.percent')] = result_dict[self.add_key_to_result_dict('fast5.files.submitted')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]*100
-        result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.percent')] = result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.count')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]*100
+        result_dict[self.add_key_to_result_dict('fast5.files.ratio')] = result_dict[self.add_key_to_result_dict('fast5.files.submitted')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]
+        result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.ratio')] = result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.count')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]
+        result_dict[self.add_key_to_result_dict('fast5.files.frequency')] = result_dict[self.add_key_to_result_dict('fast5.files.submitted')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]*100
+        result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.frequency')] = result_dict[self.add_key_to_result_dict('fast5.files.basecalled.error.count')]/result_dict[self.add_key_to_result_dict('fast5.files.submitted')]*100
 
-        result_dict[self.add_key_to_result_dict('flowcell.version')] = self._is_in_result_dict(result_dict,'albacore.log.extractor.flowcell.version', "Unknown")
-        result_dict[self.add_key_to_result_dict('kit.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.kit.version', "Unknown")
-        result_dict[self.add_key_to_result_dict('albacore.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.albacore.version', "Unknown")
+        result_dict[self.add_key_to_result_dict('flowcell.version')] = self._is_in_result_dict(result_dict,'albacore.log.extractor.flowcell.version', "unknown")
+        result_dict[self.add_key_to_result_dict('kit.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.kit.version', "unknown")
+        result_dict[self.add_key_to_result_dict('albacore.version')] = self._is_in_result_dict(result_dict, 'albacore.log.extractor.albacore.version', "unknown")
 
     def graph_generation(self, result_dict):
         '''
