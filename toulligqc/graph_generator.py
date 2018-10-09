@@ -148,7 +148,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    minimum, maximum = min(result_dict["albacore.stats.1d.extractor.sequence.length.template"]), max(result_dict["albacore.stats.1d.extractor.sequence.length.template"])
+    minimum, maximum = min(result_dict["albacore.stats.1d.extractor.sequence.length"]), max(result_dict["albacore.stats.1d.extractor.sequence.length"])
     read_type=['1D','1D pass','1D fail']
 
     fig = plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -156,9 +156,9 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    n, bins, patches = ax.hist([result_dict["albacore.stats.1d.extractor.sequence.length.template"],
-                                result_dict["albacore.stats.1d.extractor.read.pass"],
-                                result_dict["albacore.stats.1d.extractor.read.fail"]],
+    n, bins, patches = ax.hist([result_dict["albacore.stats.1d.extractor.sequence.length"],
+                                result_dict["albacore.stats.1d.extractor.read.pass.length"],
+                                result_dict["albacore.stats.1d.extractor.read.fail.length"]],
                                color=["salmon", "yellowgreen", "orangered"],
                                edgecolor='black', label=read_type,
                                bins=2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30))
@@ -175,7 +175,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax.set_ylabel('Read number')
     ax.set_title(main)
 
-    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.sequence.length.template"], "1D pass": result_dict["albacore.stats.1d.extractor.read.pass"], "1D fail": result_dict["albacore.stats.1d.extractor.read.fail"]})
+    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.sequence.length"], "1D pass": result_dict["albacore.stats.1d.extractor.read.pass.length"], "1D fail": result_dict["albacore.stats.1d.extractor.read.fail.length"]})
     dataframe = dataframe[["1D","1D pass","1D fail"]]
 
     plt.savefig(output_file)
@@ -316,7 +316,7 @@ def read_quality_multiboxplot(result_dict,main, my_dpi, result_directory, desc):
 
     my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
     order=["1D","1D pass","1D fail"]
-    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.qscore.read.pass'], "1D fail": result_dict['albacore.stats.1d.extractor.qscore.read.fail']})
+    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'], "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
     sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order,linewidth=1)
     plt.ylabel('Mean Phred score')
 
@@ -374,21 +374,21 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    sns.distplot(result_dict['albacore.stats.1d.extractor.qscore.read.pass'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
+    sns.distplot(result_dict['albacore.stats.1d.extractor.read.pass.qscore'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
                  hist=True, label='1D pass')
-    sns.distplot(result_dict['albacore.stats.1d.extractor.qscore.read.fail'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
+    sns.distplot(result_dict['albacore.stats.1d.extractor.read.fail.qscore'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
                  hist=True)
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.qscore.read.pass'], "1D fail": result_dict['albacore.stats.1d.extractor.qscore.read.fail']})
+    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'], "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
 
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=result_dict['albacore.stats.1d.extractor.qscore.read.pass'].describe()['50%'], color='yellowgreen')
-    plt.axvline(x=result_dict['albacore.stats.1d.extractor.qscore.read.fail'].describe()['50%'], color='orangered')
+    plt.axvline(x=result_dict['albacore.stats.1d.extractor.read.pass.qscore'].describe()['50%'], color='yellowgreen')
+    plt.axvline(x=result_dict['albacore.stats.1d.extractor.read.fail.qscore'].describe()['50%'], color='orangered')
 
     plt.savefig(output_file)
     plt.close()
@@ -405,10 +405,10 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    read_pass=plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.pass"], y=result_dict["albacore.stats.1d.extractor.qscore.read.pass"],color="yellowgreen")
-    read_fail=plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.fail"], y=result_dict["albacore.stats.1d.extractor.qscore.read.fail"],color="orangered")
+    read_pass=plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.pass.length"], y=result_dict["albacore.stats.1d.extractor.read.pass.qscore"],color="yellowgreen")
+    read_fail=plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.fail.length"], y=result_dict["albacore.stats.1d.extractor.read.fail.qscore"],color="orangered")
     plt.legend((read_pass,read_fail),("1D pass","1D fail"))
-    plt.xlim(np.min(result_dict["albacore.stats.1d.extractor.sequence.length.template"].loc[result_dict["albacore.stats.1d.extractor.sequence.length.template"]>0]),np.max(result_dict["albacore.stats.1d.extractor.sequence.length.template"]))
+    plt.xlim(np.min(result_dict["albacore.stats.1d.extractor.sequence.length"].loc[result_dict["albacore.stats.1d.extractor.sequence.length"]>0]),np.max(result_dict["albacore.stats.1d.extractor.sequence.length"]))
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
@@ -461,7 +461,6 @@ def _minion_flowcell_layout():
             for row in range(4):
                 flowcell_layout.append(s + 128 * block + row)
     return flowcell_layout
-
 
 def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
     """
@@ -684,12 +683,15 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     for bar in bars:
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
-    table_html = None
 
     plt.savefig(output_file)
     plt.close()
 
+    pd.options.display.float_format = '{:.0f}'.format
+    table_html = pd.DataFrame.to_html(dataframe)
+
     return main, output_file, table_html, desc
+
 
 def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
     """
@@ -697,13 +699,13 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    read_1d = result_dict["albacore.stats.1d.extractor.sequence.length.template"]
-    read_1dsqr = result_dict['albacore.stats.1dsqr.extractor.sequence.read.length']
+    read_1d = result_dict["albacore.stats.1d.extractor.sequence.length"]
+    read_1dsqr = result_dict['albacore.stats.1dsqr.extractor.sequence.length']
     read_pass_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.pass.length']
     read_fail_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.fail.length']
 
 
-    minimum, maximum = min(result_dict["albacore.stats.1d.extractor.sequence.length.template"]), max(result_dict["albacore.stats.1d.extractor.sequence.length.template"])
+    minimum, maximum = min(result_dict["albacore.stats.1d.extractor.sequence.length"]), max(result_dict["albacore.stats.1d.extractor.sequence.length"])
     read_type=['1D','1Dsquare','1Dsquare pass','1Dsquare fail']
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -855,7 +857,7 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     read_pass=plt.scatter(x=length_1dsqr_read_pass, y=qscore_1dsqr_read_pass,color="yellowgreen")
     read_fail=plt.scatter(x=length_1dsqr_read_fail, y=qscore_1dsqr_read_fail,color="orangered")
     plt.legend((read_pass,read_fail),("1Dsquare pass","1Dsquare fail"))
-    plt.xlim(np.min(result_dict['albacore.stats.1dsqr.extractor.sequence.read.length'].loc[result_dict['albacore.stats.1dsqr.extractor.sequence.read.length']>0]),np.max(result_dict['albacore.stats.1dsqr.extractor.sequence.read.length']))
+    plt.xlim(np.min(result_dict['albacore.stats.1dsqr.extractor.sequence.length'].loc[result_dict['albacore.stats.1dsqr.extractor.sequence.length']>0]),np.max(result_dict['albacore.stats.1dsqr.extractor.sequence.length']))
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
