@@ -98,6 +98,19 @@ class albacore_stats_extractor():
     def add_value_to_unwritten_key(self,result_dict, value):
         return result_dict['unwritten.keys'].append(value)
 
+    def describe_dict(self,result_dict,attribute):
+        dictionnary = pd.Series.describe(result_dict[attribute]).drop("count")
+        for key in dict(dictionnary):
+            result_dict[attribute + '.' + key] = dictionnary[key]
+
+    def barcode_frequency(self,result_dict,attribute,index=''):
+        barcode_count = result_dict[self.add_key_to_result_dict(attribute)].value_counts()
+        count_sorted = barcode_count.sort_index()[self.barcode_selection]
+        total = sum(count_sorted)
+        for key in dict(count_sorted):
+            result_dict[self.add_key_to_result_dict(index) + key + ".frequency"] = count_sorted[key]*100/total
+
+
     def extract(self, result_dict):
 
 
@@ -140,18 +153,32 @@ class albacore_stats_extractor():
         for index, value in channel_occupancy_statistics.iteritems():
             result_dict[self.add_key_to_result_dict('channel.occupancy.statistics.') + index] = value
 
+        result_dict[self.add_key_to_result_dict('all.read.length')] = self.albacore_log_1d['sequence_length_template'].describe()
+        for index,value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
+            result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
+        self.describe_dict(result_dict,self.add_key_to_result_dict("read.pass.length"))
+        self.describe_dict(result_dict,self.add_key_to_result_dict("read.fail.length"))
 
-        result_dict[self.add_key_to_result_dict('mean.qscore.statistics')] = pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
-        for index,value in result_dict[self.add_key_to_result_dict('mean.qscore.statistics')].iteritems():
-            result_dict[self.add_key_to_result_dict('mean.qscore.statistics.') + index] = value
-        result_dict[self.add_key_to_result_dict('sequence.length.statistics')] = self.albacore_log_1d['sequence_length_template'].describe()
-        for index,value in result_dict[self.add_key_to_result_dict('sequence.length.statistics')].iteritems():
-            result_dict[self.add_key_to_result_dict('sequence.length.statistics.') + index] = value
+        result_dict[self.add_key_to_result_dict('all.read.qscore')] = pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
+        for index,value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
+            result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
+        self.describe_dict(result_dict,self.add_key_to_result_dict("read.pass.qscore"))
+        self.describe_dict(result_dict,self.add_key_to_result_dict("read.fail.qscore"))
 
         if self.is_barcode:
 
 
             self.barcode_selection.append('unclassified')
+
+
+            result_dict[self.add_key_to_result_dict("barcode.arrangement")] = self.albacore_log_1d["barcode_arrangement"]
+            result_dict[self.add_key_to_result_dict("read.pass.barcode")] = self.albacore_log_1d.barcode_arrangement.loc[True == self.albacore_log_1d['passes_filtering']]
+            result_dict[self.add_key_to_result_dict("read.fail.barcode")] = self.albacore_log_1d.barcode_arrangement.loc[False == self.albacore_log_1d['passes_filtering']]
+
+            self.barcode_frequency(result_dict,"barcode.arrangement",'all.read.')
+            self.barcode_frequency(result_dict,"read.pass.barcode",'read.pass.')
+            self.barcode_frequency(result_dict,"read.fail.barcode",'read.fail.')
+
             pattern = '(\d{2})'
             length = {}
             length['passes_filtering'] = result_dict[self.add_key_to_result_dict("passes.filtering")]
