@@ -744,7 +744,7 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+    gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     plt.subplots_adjust(bottom=0.015, top=1.0)
     mean_qscore_1d = result_dict["albacore.stats.1d.extractor.mean.qscore"]
 
