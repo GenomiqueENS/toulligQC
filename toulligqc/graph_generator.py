@@ -370,31 +370,43 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     '''
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
+    gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    sns.distplot(result_dict['albacore.stats.1d.extractor.read.pass.qscore'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
-                 hist=True, label='1D pass')
-    sns.distplot(result_dict['albacore.stats.1d.extractor.read.fail.qscore'], bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
-                 hist=True)
+    sns.distplot(result_dict["albacore.stats.1d.extractor.mean.qscore"], bins=15, ax=ax, color='salmon',
+                 hist_kws=dict(edgecolor="k", linewidth=1),hist=True,label="1D")
+    plt.axvline(x=result_dict["albacore.stats.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
+
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'], "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
+    ax2 = plt.subplot(gs[1])
 
-    rd = dataframe.describe().drop('count').round(2).reset_index()
+    sns.distplot(result_dict['albacore.stats.1d.extractor.read.pass.qscore'], ax=ax2, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
+                 hist=True, label='1D pass')
+    sns.distplot(result_dict['albacore.stats.1d.extractor.read.fail.qscore'],ax=ax2, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
+                 hist=True)
 
+    plt.legend()
+    plt.xlabel("Mean Phred score")
+    plt.ylabel("Frequency")
+    plt.title(main)
     plt.axvline(x=result_dict['albacore.stats.1d.extractor.read.pass.qscore'].describe()['50%'], color='yellowgreen')
     plt.axvline(x=result_dict['albacore.stats.1d.extractor.read.fail.qscore'].describe()['50%'], color='orangered')
+
+    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'], "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
+
+    rd = dataframe.describe().drop('count').round(2)
+    pd.options.display.float_format = '{:.0f}'.format
+    table_html = pd.DataFrame.to_html(rd)
 
     plt.savefig(output_file)
     plt.close()
 
-    dataframe = dataframe[["1D","1D pass","1D fail"]]
-    table_html = _make_table_html(dataframe)
+    # table_html = _make_table_html(dataframe)
 
     return main, output_file, table_html, desc
 
@@ -809,31 +821,39 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     plt.subplots_adjust(bottom=0.015, top=1.0)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
+    gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     qscore_1d = result_dict["albacore.stats.1d.extractor.mean.qscore"]
     qscore_1dsqr = result_dict['albacore.stats.1dsqr.extractor.mean.qscore']
     mean_qscore_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
     mean_qscore_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
 
-    sns.distplot(mean_qscore_read_pass, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
+    ax = plt.subplot(gs[0])
+    sns.distplot(result_dict['albacore.stats.1dsqr.extractor.mean.qscore'],ax=ax, bins=15, color='goldenrod',
+                 hist_kws=dict(edgecolor="k", linewidth=1),hist=True,label="1Dsquare")
+
+    plt.axvline(x=result_dict['albacore.stats.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
+    plt.legend()
+    plt.xlabel("Mean Phred score")
+    plt.ylabel("Frequency")
+    plt.title(main)
+
+    ax2 = plt.subplot(gs[1])
+
+    sns.distplot(mean_qscore_read_pass,ax=ax2, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='yellowgreen',
                  hist=True, label='1Dsquare pass')
-    sns.distplot(mean_qscore_read_fail, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1Dsquare fail',
+    sns.distplot(mean_qscore_read_fail,ax=ax2, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1Dsquare fail',
                  hist=True)
+    plt.axvline(x=mean_qscore_read_pass.describe()['50%'], color='yellowgreen')
+    plt.axvline(x=mean_qscore_read_fail.describe()['50%'], color='orangered')
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
     plt.title(main)
 
     dataframe = pd.DataFrame({"1D": qscore_1d,"1Dsquare": qscore_1dsqr, "1Dsquare pass": mean_qscore_read_pass, "1Dsquare fail": mean_qscore_read_fail})
-
-    rd = dataframe.describe().drop('count').round(2).reset_index()
-
-    plt.axvline(x=mean_qscore_read_pass.describe()['50%'], color='yellowgreen')
-    plt.axvline(x=mean_qscore_read_fail.describe()['50%'], color='orangered')
-
-    rd = rd[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
-    table_html = _make_table_html(rd)
+    rd = dataframe.describe().drop('count').round(2)
+    pd.options.display.float_format = '{:.0f}'.format
+    table_html = pd.DataFrame.to_html(rd)
 
     plt.savefig(output_file)
     plt.close()
