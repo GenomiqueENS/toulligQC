@@ -74,12 +74,15 @@ def html_report(config_dictionary, result_dict, graphs):
     f = open(result_directory + 'report.html', 'w')
 
     # Define the header of the page
-    header = """<!doctype html>
+    title = """<!doctype html>
 <html>
   <head>
-    <title>Rapport run MinION</title>
+    <title>Rapport run MinION : {0} </title>
     <meta charset='UTF-8'>
     <style type="text/css">
+    """.format(report_name)
+
+    header = """
 
   @media screen {
 
@@ -300,11 +303,11 @@ def html_report(config_dictionary, result_dict, graphs):
 
     </style>
   </head>
-  <body>
 """
 
     # Define the footer of the page
     footer = """
+  <body>
     <div class="footer"> Produced by <a href="{0}">{1}</a> (version {2})</div>
   </body>
 
@@ -413,7 +416,7 @@ def html_report(config_dictionary, result_dict, graphs):
     main_report += "    </div>\n"
 
     # Add all the element of the page
-    report = header + banner + summary + main_report + footer
+    report = title + header + banner + summary + main_report + footer
 
     # Write the HTML page
     f.write(report)
