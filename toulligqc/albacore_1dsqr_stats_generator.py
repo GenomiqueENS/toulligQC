@@ -226,6 +226,8 @@ class albacore_1dsqr_stats_extractor():
 
             for index_barcode, barcode in enumerate(self.barcode_selection):
                 barcode_selected_dataframe = self.albacore_log_1dsqr[self.albacore_log_1dsqr['barcode_arrangement'] == barcode]
+                barcode_selected_read_pass_dataframe = barcode_selected_dataframe.loc[barcode_selected_dataframe['passes_filtering'] == True]
+                barcode_selected_read_fail_dataframe = barcode_selected_dataframe.loc[barcode_selected_dataframe['passes_filtering'] == False]
 
                 match = re.search(pattern, barcode)
                 if match:
@@ -233,20 +235,45 @@ class albacore_1dsqr_stats_extractor():
                     phred[match.group(0)] = barcode_selected_dataframe['mean_qscore_2d']
 
                     for index,value in barcode_selected_dataframe['sequence_length_2d'].describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('') + barcode + '.length.' + index] = value
+                        result_dict[self.add_key_to_result_dict('all.read.') + barcode + '.length.' + index] = value
+
+                    for index,value in barcode_selected_read_pass_dataframe['sequence_length_2d'].describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.') + barcode + '.length.' + index] = value
+
+                    for index,value in barcode_selected_read_fail_dataframe['sequence_length_2d'].describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.length.' + index] = value
 
                     for index,value in barcode_selected_dataframe['mean_qscore_2d'].describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('') + barcode + '.qscore.' + index] = value
+                        result_dict[self.add_key_to_result_dict('all.read.') + barcode + '.qscore.' + index] = value
+
+                    for index,value in barcode_selected_read_pass_dataframe['mean_qscore_2d'].describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.') + barcode + '.qscore.' + index] = value
+
+                    for index,value in barcode_selected_read_fail_dataframe['mean_qscore_2d'].describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.qscore.' + index] = value
 
                 else:
                     length['Unclassified'] = barcode_selected_dataframe['sequence_length_2d']
                     phred['Unclassified'] = barcode_selected_dataframe['mean_qscore_2d']
 
-                    for index,value in length['Unclassified'].describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('unclassified.length.') + index] = value
+                    for index,value in barcode_selected_dataframe['sequence_length_2d'].describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('all.read.unclassified.length.') + index] = value
 
-                    for index,value in phred['Unclassified'].describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('unclassified.qscore.') + index] = value
+                    for index,value in barcode_selected_read_pass_dataframe['sequence_length_2d'].describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.unclassified.length.') + index] = value
+
+                    for index,value in barcode_selected_read_fail_dataframe['sequence_length_2d'].describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.unclassified.length.') + index] = value
+
+                    for index,value in barcode_selected_dataframe['mean_qscore_2d'].describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('all.read.unclassified.qscore.') + index] = value
+
+                    for index,value in barcode_selected_read_pass_dataframe['mean_qscore_2d'].describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.unclassified.qscore.') + index] = value
+
+                    for index,value in barcode_selected_read_fail_dataframe['mean_qscore_2d'].describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
+
 
             result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_dataframe')] = pd.DataFrame(
                 dict([(k, pd.Series(v)) for k, v in length.items()]))
