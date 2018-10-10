@@ -33,17 +33,14 @@ import re
 import argparse
 import os
 import time
-from toulligqc import fastq_extractor
-from toulligqc import fast5_extractor
+import platform as pf
+import tempfile as tp
+from toulligqc import toulligqc_extractor
 from toulligqc import statistics_generator
-from toulligqc import albacore_1dsqr_stats_generator
 from toulligqc import html_report
 from toulligqc import version
-from toulligqc import albacore_stats_extractor
-from toulligqc import pipeline_log_extractor
 from pathlib import Path
 from toulligqc import toulligqc_conf
-
 
 def parse_args(config_dictionary):
     '''
@@ -220,6 +217,11 @@ def _format_time(t):
 
     return time.strftime("%H:%M:%S", time.gmtime(t))
 
+
+def add_unwritten_key(result_dict,key):
+    result_dict['unwritten.keys'].extend(key)
+
+
 def main():
     '''
     Main function creating graphs and statistics
@@ -250,43 +252,41 @@ def main():
 
     #Production of the extractors object
 
-    extractors = [fast5_extractor.fast5_extractor(config_dictionary)]
-
-    if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
-        extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-
-    if 'fastq_source' in config_dictionary and config_dictionary['fastq_source']:
-        extractors.append(fastq_extractor.fastq_extractor(config_dictionary))
-
-    # if config_dictionary['is_quicklaunch'].lower() != 'true':
-    #     extractors.append(pipeline_log_extractor.albacore_log_extractor(config_dictionary))
-
-    if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
-        extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
-    else:
-        extractors.append(albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
 
     #Configuration checking and initialisation of the extractors
+    extractors = []
     _show(config_dictionary, "* Initialize extractors")
+
+    result_dict = {}
+    result_dict['unwritten.keys'] = ['unwritten.keys']
+    toulligqc_extractor.toulligqc_extractor.extract(config_dictionary,extractors,result_dict)
+
+    result_dict['toulligqc.info.username'] = os.environ.get('USERNAME')
+    result_dict['toulligqc.info.user.home'] = os.environ['HOME']
+    result_dict['toulligqc.info.temporary.directory'] = tp.gettempdir()
+    result_dict['toulligqc.info.operating.system'] = pf.processor()
+    result_dict['toulligqc.info.python.version'] = pf.python_version()
+    result_dict['toulligqc.info.python.implementation'] = pf.python_implementation()
+    result_dict['toulligqc.info.hostname'] = os.uname()[1]
+
+    result_dict['toulligqc.info.report.name'] = config_dictionary['report_name']
+    result_dict['toulligqc.info.start.time'] = time.strftime("%x %X %Z")
+    result_dict['toulligqc.info.command.line'] = sys.argv
+    result_dict['toulligqc.info.executable.path'] = sys.argv[0]
+    result_dict['toulligqc.info.version'] = config_dictionary['app.version']
+    result_dict['toulligqc.info.output.dir'] = config_dictionary['result_directory']
+    result_dict['toulligqc.info.barcode.option'] = "False"
+    if config_dictionary['barcoding'].lower() == 'true':
+        result_dict['toulligqc.info.barcode.option'] = "True"
+        result_dict['toulligqc.info.barcode.selection'] = get_barcode(sample_sheet_file)
+
+    graphs = []
+    qc_start = time.time()
+
     for extractor in extractors:
         extractor.check_conf()
         extractor.init()
 
-    result_dict = {}
-    graphs = []
-    qc_start = time.time()
-
-    # Initialisation if --albacore-pipeline-source not in config-dictionnry
-    result_dict['albacore_version'] = "Unknown"
-    result_dict['kit_version'] = "Unknown"
-    result_dict['flowcell_version'] = "Unknown"
-    result_dict['raw_fast5'] = -1
-    result_dict['fast5_failed_to_load_key'] = -1
-    result_dict['fast5_failed_count'] = -1
-    result_dict['fast5_processed'] = -1
-    result_dict['raw_fast5_no_processed'] = -1
-    result_dict['basecalled_error_count'] = -1
-    result_dict['parsing_fastq'] = False
 
     #Information extraction about statistics and generation of the graphs
     for extractor in extractors:
@@ -295,22 +295,27 @@ def main():
         extractor_start = time.time()
         extractor.extract(result_dict)
         graphs.extend(extractor.graph_generation(result_dict))
-        extractor.clean()
+        extractor.clean(result_dict)
         extractor_end = time.time()
+        extract_time = extractor_end - extractor_start
+        result_dict['{}.duration'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)
 
-        _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extractor_end - extractor_start)))
+        _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(), _format_time(extract_time)))
+
 
     #HTML report and statistics file generation
     _show(config_dictionary, "* Write HTML report")
     html_report.html_report(config_dictionary, result_dict, graphs)
 
+    qc_end = time.time()
+    result_dict['toulligqc.info.execution.duration']= round((qc_end - qc_start),2)
+    # result_dict['toulligqc.info.exit.code']=
+
     if config_dictionary['is_quicklaunch'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         statistics_generator.statistics_generator(config_dictionary, result_dict)
-        statistics_generator.save_result_file(config_dictionary, result_dict)
+    _show(config_dictionary, "* End of the QC extractor (done in {})".format(_format_time(qc_end - qc_start)))
 
-    qc_end = time.time()
-    _show(config_dictionary, "* End of the QC extractor (done in {1})".format(extractor.get_name(), _format_time(qc_end - qc_start)))
 
 if __name__ == "__main__":
     main()

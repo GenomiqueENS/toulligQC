@@ -26,6 +26,11 @@ import re
 import base64
 import dateutil.parser
 import time
+import datetime
+from toulligqc import toulligqc_extractor
+
+
+
 
 def html_report(config_dictionary, result_dict, graphs):
 
@@ -39,24 +44,31 @@ def html_report(config_dictionary, result_dict, graphs):
     report_name = config_dictionary['report_name']
 
     #from sequence summary file
-    run_time = result_dict["run_time"]
-    report_date= time.strftime("%x %X %Z")
+
+    td = datetime.timedelta(hours=result_dict["albacore.stats.1d.extractor.run.time"])
+    seconds = td.total_seconds()
+    run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
+
+    report_date = result_dict['toulligqc.info.start.time']
 
     #from Fast5 file
-    run_date = result_dict['exp_start_time']
-    date = dateutil.parser.parse(run_date)
-    run_date = date.strftime("%x %X %Z")
-    flow_cell_id = result_dict['flow_cell_id']
+    run_date = result_dict['fast5.extractor.exp.start.time']
+    flow_cell_id = result_dict['fast5.extractor.flowcell.id']
+    run_id = result_dict['fast5.extractor.sample.id']
+    minknow_version = result_dict['fast5.extractor.minknow.version']
 
-    read_count = result_dict["fastQ_entries"]
-    run_yield = round(result_dict["Yield"],2)
+    read_count = result_dict["albacore.stats.1d.extractor.fastq.entries"]
+    run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000,2)
 
     #from pipeline log file
-    flowcell_version = result_dict['flowcell_version']
-    kit_version = result_dict['kit_version']
-    run_id = result_dict['sample_id']
-    minknow_version = result_dict['minknow_version']
-    albacore_version = result_dict['albacore_version']
+    if "albacore.log.extractor" in result_dict['toulligqc.info.extractors']:
+        flowcell_version = result_dict['albacore.log.extractor.flowcell.version']
+        kit_version = result_dict['albacore.log.extractor.kit.version']
+        albacore_version = result_dict['albacore.log.extractor.albacore.version']
+    else:
+        flowcell_version = "Unknown"
+        kit_version = "Unknown"
+        albacore_version = "Unknown"
 
 
     f = open(result_directory + 'report.html', 'w')
@@ -329,6 +341,8 @@ def html_report(config_dictionary, result_dict, graphs):
     <div class = 'main'>
       <div class=\"module\">
         <h2 id=M{0}>Basic Statistics</h2>
+        <h2 id=M{0}></h2>
+        <h1></h1>
         <table class=\" dataframe \" border="1">
           <thead>
             <th>Measure</th>
@@ -348,7 +362,7 @@ def html_report(config_dictionary, result_dict, graphs):
             <td> {2} </td>
           </tr>
           <tr>
-            <th>Run time (h) </th>
+            <th>Run time </th>
             <td> {3} </td>
           </tr>
           <tr>
