@@ -19,7 +19,7 @@ setup(
 
     # Author details
     author='Genomic Paris Centre team',
-    author_email='genomique_bioinfo@biologie.ens.fr',
+    author_email='toulligqc@biologie.ens.fr',
 
     license='GPL V3',
     platforms = 'ALL',
