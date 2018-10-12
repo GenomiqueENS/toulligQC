@@ -25,7 +25,7 @@ from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.ticker import FormatStrFormatter
-from pandas.tools.plotting import table
+# from pandas.tools.plotting import table
 import re
 
 pd.options.display.float_format = '{x:.2f}'.format
@@ -678,7 +678,7 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     read_type = [result_dict['albacore.stats.1d.extractor.read.count'],
                 result_dict['albacore.stats.1dsqr.extractor.read.count'],
                 result_dict['albacore.stats.1dsqr.extractor.read.pass.count'],
-                result_dict['albacore.stats.1dsqr.extractor.read.pass.count']]
+                result_dict['albacore.stats.1dsqr.extractor.read.fail.count']]
     label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail")
     nd = np.arange(len(read_type))
     bars = ax.bar(nd, read_type, align='center',color=["salmon", "orange", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
