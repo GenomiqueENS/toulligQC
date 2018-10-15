@@ -25,11 +25,6 @@ from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.ticker import FormatStrFormatter
-# from pandas.tools.plotting import table
-import re
-
-pd.options.display.float_format = '{x:.2f}'.format
-
 
 def _is_in_result_dict(dict, dict_key, default_value):
     if dict_key not in dict or not dict[dict_key]:
@@ -56,17 +51,19 @@ def _make_table(value, ax, metric_suppression=''):
     the_table.set_fontsize(12)
     the_table.scale(1, 1.2)
 
-def _make_table_html(value):
+def _make_desribe_dataframe(value):
     '''
     Creation of a statistics table printed with the graph in report.html
     :param value: information measured
     :param metric_suppression: suppression of a metric when we use the describe pandas function
     '''
 
-    table=np.round(value.describe(),2)
-    pd.options.display.float_format = '{:.0f}'.format
-    table_html = pd.DataFrame.to_html(table)
-    return table_html
+    desc = value.describe()
+    desc.loc['count'] = desc.loc['count'].astype(int).astype(str)
+    desc.iloc[1:] = desc.iloc[1:].applymap('{:.2f}'.format)
+    desc.rename({"50%": "median"}, axis='index',inplace=True)
+
+    return desc
 
 def _safe_log(x):
     '''
@@ -78,7 +75,9 @@ def _safe_log(x):
         return 0
     return np.log2(x)
 
+#
 #  1D plots
+#
 
 def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     """
@@ -98,32 +97,34 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     if result_dict['albacore.log.extractor.fast5.files.submitted'] == -1:
         read_type = [result_dict['albacore.stats.1d.extractor.fastq.entries'],
                      result_dict['albacore.stats.1d.extractor.read.count'],
+                     result_dict['albacore.stats.1d.extractor.read.with.length.equal.zero.count'],
                      result_dict["albacore.stats.1d.extractor.read.pass.count"],
                      result_dict["albacore.stats.1d.extractor.read.fail.count"]]
-        label = ("FastQ entries", "1D", "1D pass", "1D fail")
+        label = ("FastQ entries", "1D",'Null sequence length', "1D pass", "1D fail")
         nd = np.arange(len(read_type))
-        bars = ax.bar(nd, read_type, align='center',color=["lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
+        bars = ax.bar(nd, read_type, align='center',color=["lightblue", "salmon",'purple', "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
-        array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],result_dict["albacore.stats.1d.extractor.read.count"],result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],result_dict["albacore.stats.1d.extractor.read.count.frequency"],result_dict["albacore.stats.1d.extractor.read.pass.frequency"],result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
-        dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["FastQ_entries","1D","1D pass","1D fail"])
+        array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],result_dict["albacore.stats.1d.extractor.read.count"],result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"],result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
+                          [result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],result_dict["albacore.stats.1d.extractor.read.count.frequency"],result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.frequency"],result_dict["albacore.stats.1d.extractor.read.pass.frequency"],result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
+        dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["FastQ entries","1D", 'Null sequence length',"1D pass","1D fail"])
 
     else:
         read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                      result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
                      result_dict['albacore.stats.1d.extractor.fastq.entries'],
                      result_dict['albacore.stats.1d.extractor.read.count'],
+                     result_dict['albacore.stats.1d.extractor.read.with.length.equal.zero.count'],
                      result_dict["albacore.stats.1d.extractor.read.pass.count"],
                      result_dict["albacore.stats.1d.extractor.read.fail.count"]]
-        label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D", "1D pass", "1D fail")
+        label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",'Null sequence length', "1D pass", "1D fail")
         nd = np.arange(len(read_type))
-        bars = ax.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon", "yellowgreen", "orangered"],edgecolor="black",linewidth=1)
+        bars = ax.bar(nd, read_type, align='center',color=["Green", "yellow", "lightblue", "salmon",'purple' ,"yellowgreen", "orangered"],edgecolor="black",linewidth=1)
 
-        array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],result_dict["albacore.stats.1d.extractor.fastq.entries"], result_dict["albacore.stats.1d.extractor.read.count"],
+        array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],result_dict["albacore.stats.1d.extractor.fastq.entries"], result_dict["albacore.stats.1d.extractor.read.count"],result_dict['albacore.stats.1d.extractor.read.with.length.equal.zero.count'],
                            result_dict["albacore.stats.1d.extractor.read.pass.count"], result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.log.extractor.fast5.files.frequency'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],result_dict["albacore.stats.1d.extractor.read.count.frequency"],
+                          [result_dict['albacore.log.extractor.fast5.files.frequency'], result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],result_dict["albacore.stats.1d.extractor.read.count.frequency"],result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.frequency"],
                            result_dict["albacore.stats.1d.extractor.read.pass.frequency"],result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
-        dataframe = pd.DataFrame(array, index = ['count', 'frequency'],columns=["Raw Fast5","Raw Fast5 with error","FastQ_entries","1D","1D pass","1D fail"])
+        dataframe = pd.DataFrame(array, index=['count', 'frequency'],columns=["Raw Fast5","Raw Fast5 with error", "FastQ_entries", "1D", 'Null sequence length',"1D pass", "1D fail"])
 
     plt.xticks(nd, label)
     plt.xlabel("Read type")
@@ -137,7 +138,8 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     plt.savefig(output_file)
     plt.close()
 
-    pd.options.display.float_format = '{:.0f}'.format
+    dataframe.iloc[0] = dataframe.iloc[0].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc
@@ -181,7 +183,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     plt.savefig(output_file)
     plt.close()
 
-    table_html = _make_table_html(dataframe)
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
     return main, output_file, table_html, desc
 
@@ -208,7 +210,6 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     table_html = None
 
     return main, output_file, table_html, desc
-
 
 def speed_during_the_run(result_dict, main, my_dpi, result_directory, desc):
     """
@@ -326,12 +327,11 @@ def read_quality_multiboxplot(result_dict,main, my_dpi, result_directory, desc):
     plt.title(main)
 
     dataframe = dataframe[["1D","1D pass","1D fail"]]
-    table_html = _make_table_html(dataframe)
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
     plt.savefig(output_file)
     plt.close()
     return main, output_file, table_html, desc
-
 
 def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     '''
@@ -360,7 +360,7 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.savefig(output_file)
     plt.close()
 
-    table_html = _make_table_html(rd)
+    table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc
 
@@ -399,12 +399,12 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
     dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'], "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
 
-    rd = dataframe.describe().drop('count').round(2)
-    pd.options.display.float_format = '{:.0f}'.format
-    table_html = pd.DataFrame.to_html(rd)
-
     plt.savefig(output_file)
     plt.close()
+
+    dataframe = _make_desribe_dataframe(dataframe).drop('count')
+
+    table_html = pd.DataFrame.to_html(dataframe)
 
     # table_html = _make_table_html(dataframe)
 
@@ -509,7 +509,9 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc
 
+#
 # For each barcode 1D
+#
 
 def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
@@ -553,8 +555,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
-
-    table_html = pd.DataFrame.to_html(barcode_table)
+    table_html = pd.DataFrame.to_html(barcode_table.rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
 
     return main, output_file, table_html, desc
 
@@ -601,7 +602,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
-    table_html = pd.DataFrame.to_html(barcode_table)
+    table_html = pd.DataFrame.to_html(barcode_table.rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
 
     return main, output_file, table_html, desc
 
@@ -627,9 +628,19 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.ylabel('Read length(bp)')
     plt.title(main)
 
+    df = result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_length_dataframe']
+    all_read = df.describe().T
+    read_pass = df.loc[df['passes_filtering']==True].describe().T
+    read_fail = df.loc[df['passes_filtering']==False].describe().T
+    concat = pd.concat([all_read,read_pass,read_fail], keys=['1D', '1D pass', '1D fail'])
+    dataframe = concat.T
+
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    table_html = pd.DataFrame.to_html(dataframe)
+
     plt.savefig(output_file)
     plt.close()
-    table_html=_make_table_html(result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_length_dataframe'])
 
     return main, output_file, table_html, desc
 
@@ -652,15 +663,24 @@ def barcoded_phred_score_frequency(result_dict, main,my_dpi, result_directory, d
     plt.ylabel('Mean Phred score')
     plt.title(main)
 
-    table_html=_make_table_html(result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_phred_dataframe'])
+    df = result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_phred_dataframe']
+    all_read = df.describe().T
+    read_pass = df.loc[df['passes_filtering']==True].describe().T
+    read_fail = df.loc[df['passes_filtering']==False].describe().T
+    concat = pd.concat([all_read,read_pass,read_fail], keys=['1D', '1D pass', '1D fail'])
+    dataframe = concat.T
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    table_html = pd.DataFrame.to_html(dataframe)
 
     plt.savefig(output_file)
     plt.close()
 
     return main, output_file, table_html, desc
 
-
-#  1Dsqr plots
+#
+#  1Dsquare plots
+#
 
 def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     """
@@ -699,7 +719,8 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     plt.savefig(output_file)
     plt.close()
 
-    pd.options.display.float_format = '{:.0f}'.format
+    dataframe.iloc[0] = dataframe.iloc[0].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc
@@ -743,7 +764,7 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     dataframe = pd.DataFrame({"1D": read_1d,'1Dsquare': read_1dsqr ,"1Dsquare pass": read_pass_1dsqr, "1Dsquare fail": read_fail_1dsqr})
 
     dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
-    table_html = _make_table_html(dataframe)
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
     plt.savefig(output_file)
     plt.close()
@@ -777,7 +798,7 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     plt.title(main)
 
     dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
-    table_html = _make_table_html(dataframe)
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
     plt.savefig(output_file)
     plt.close()
@@ -810,7 +831,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     plt.savefig(output_file)
     plt.close()
 
-    table_html = _make_table_html(rd)
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(rd))
 
     return main, output_file, table_html, desc
 
@@ -851,9 +872,10 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     plt.title(main)
 
     dataframe = pd.DataFrame({"1D": qscore_1d,"1Dsquare": qscore_1dsqr, "1Dsquare pass": mean_qscore_read_pass, "1Dsquare fail": mean_qscore_read_fail})
-    rd = dataframe.describe().drop('count').round(2)
-    pd.options.display.float_format = '{:.0f}'.format
-    table_html = pd.DataFrame.to_html(rd)
+
+    dataframe = _make_desribe_dataframe(dataframe).drop('count')
+
+    table_html = pd.DataFrame.to_html(dataframe)
 
     plt.savefig(output_file)
     plt.close()
@@ -888,7 +910,9 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     table_html = None
     return main, output_file, table_html, desc
 
+#
 # For eache barcode 1Dsqr
+#
 
 def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
@@ -930,7 +954,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
-    table_html = pd.DataFrame.to_html(barcode_table)
+    table_html = pd.DataFrame.to_html(barcode_table.rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
 
     return main, output_file, table_html, desc
 
@@ -975,11 +999,11 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
-    table_html = pd.DataFrame.to_html(barcode_table)
+    table_html = pd.DataFrame.to_html(barcode_table.rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
 
     return main, output_file, table_html, desc
 
-def barcode_length_boxplot_1dsqr(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the length boxplot for each barcode indicated in the sample sheet
     '''
@@ -997,12 +1021,22 @@ def barcode_length_boxplot_1dsqr(result_dict, main, barcode_selection, my_dpi, r
     plt.ylabel('Read length(bp)')
     plt.title(main)
 
-    table_html = _make_table_html(result_dict[('albacore.stats.1dsqr.extractor.barcode_selection_sequence_length_dataframe')])
+    df = result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_length_dataframe']
+    all_read = df.describe().T
+    read_pass = df.loc[df['passes_filtering']==True].describe().T
+    read_fail = df.loc[df['passes_filtering']==False].describe().T
+    concat = pd.concat([all_read,read_pass,read_fail], keys=['1Dsqr', '1Dsqr pass', '1Dsqr fail'])
+    dataframe = concat.T
+
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    table_html = pd.DataFrame.to_html(dataframe)
+
     plt.savefig(output_file)
     plt.close()
     return main, output_file, table_html, desc
 
-def barcoded_phred_score_frequency_1dsqr(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     '''
     Plot the 1Dsquare phred score distribution boxplot for each barcode indicated in the sample sheet
     '''
@@ -1021,7 +1055,17 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, barcode_selection, m
     plt.ylabel('Mean Phred score')
     plt.title(main)
 
-    table_html = _make_table_html(result_dict[('albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_dataframe')])
+    df = result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_dataframe']
+    all_read = df.describe().T
+    read_pass = df.loc[df['passes_filtering']==True].describe().T
+    read_fail = df.loc[df['passes_filtering']==False].describe().T
+    concat = pd.concat([all_read,read_pass,read_fail], keys=['1Dsquare', '1Dsquare pass', '1Dsquare fail'])
+    dataframe = concat.T
+
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    table_html = pd.DataFrame.to_html(dataframe)
+
     plt.savefig(output_file)
     plt.close()
 
