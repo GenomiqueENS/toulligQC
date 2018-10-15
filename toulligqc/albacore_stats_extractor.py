@@ -119,14 +119,17 @@ class albacore_stats_extractor():
         result_dict[self.add_key_to_result_dict("read.count")] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
         result_dict[self.add_key_to_result_dict("read.pass.count")] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
         result_dict[self.add_key_to_result_dict("read.fail.count")] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
+        result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")] = len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
 
         #read count prop
         result_dict[self.add_key_to_result_dict("fastq.entries.ratio")] = result_dict[self.add_key_to_result_dict('fastq.entries')]/result_dict[self.add_key_to_result_dict('fastq.entries')]
         result_dict[self.add_key_to_result_dict("read.count.ratio")] = result_dict[self.add_key_to_result_dict("read.count")]/result_dict[self.add_key_to_result_dict("read.count")]
+        result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.ratio")] = result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")]/ result_dict[self.add_key_to_result_dict("read.count")]
         result_dict[self.add_key_to_result_dict("read.pass.ratio")] = result_dict[self.add_key_to_result_dict("read.pass.count")]/result_dict[self.add_key_to_result_dict("read.count")]
         result_dict[self.add_key_to_result_dict("read.fail.ratio")] = result_dict[self.add_key_to_result_dict("read.fail.count")]/result_dict[self.add_key_to_result_dict("read.count")]
         result_dict[self.add_key_to_result_dict("fastq.entries.frequency")] = result_dict[self.add_key_to_result_dict('fastq.entries')]/result_dict[self.add_key_to_result_dict('fastq.entries')]*100
         result_dict[self.add_key_to_result_dict("read.count.frequency")] = result_dict[self.add_key_to_result_dict("read.count")]/result_dict[self.add_key_to_result_dict("read.count")]*100
+        result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.frequency")] = result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")]/ result_dict[self.add_key_to_result_dict("read.count")]*100
         result_dict[self.add_key_to_result_dict("read.pass.frequency")] = result_dict[self.add_key_to_result_dict("read.pass.count")]/result_dict[self.add_key_to_result_dict("read.count")]*100
         result_dict[self.add_key_to_result_dict("read.fail.frequency")] = result_dict[self.add_key_to_result_dict("read.fail.count")]/result_dict[self.add_key_to_result_dict("read.count")]*100
 
@@ -284,8 +287,7 @@ class albacore_stats_extractor():
             images.append(graph_generator.barcode_length_boxplot(result_dict,'1D reads size distribution for each barcode',
                                                                        self.my_dpi, images_directory,"Read length boxplot per barcode of pass (in green) and fail (in red) 1D reads."))
             images.append(graph_generator.barcoded_phred_score_frequency(result_dict,'1D reads Mean Phred score distribution for each barcode',
-                                                                               self.my_dpi,
-                                                                        images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1D reads."))
+                                                                               self.my_dpi,images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1D reads."))
         return images
 
     def clean(self, result_dict):

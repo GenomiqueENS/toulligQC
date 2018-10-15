@@ -123,13 +123,16 @@ class albacore_1dsqr_stats_extractor():
         result_dict['albacore.stats.1d.extractor.read.count'] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
         result_dict["albacore.stats.1d.extractor.read.pass.count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == True])
         result_dict["albacore.stats.1d.extractor.read.fail.count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
+        result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"] = len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
 
         #read count prop
         result_dict["albacore.stats.1d.extractor.fastq.entries.ratio"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']
         result_dict["albacore.stats.1d.extractor.read.count.ratio"] = result_dict["albacore.stats.1d.extractor.read.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.ratio"] = result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"]/ result_dict["albacore.stats.1d.extractor.read.count"]
         result_dict["albacore.stats.1d.extractor.read.pass.ratio"] = result_dict["albacore.stats.1d.extractor.read.pass.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
         result_dict["albacore.stats.1d.extractor.read.fail.ratio"] = result_dict["albacore.stats.1d.extractor.read.fail.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
         result_dict["albacore.stats.1d.extractor.fastq.entries.frequency"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']*100
+        result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.frequency"] = result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"]/ result_dict["albacore.stats.1d.extractor.read.count"]*100
         result_dict["albacore.stats.1d.extractor.read.count.frequency"] = result_dict["albacore.stats.1d.extractor.read.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
         result_dict["albacore.stats.1d.extractor.read.pass.frequency"] = result_dict["albacore.stats.1d.extractor.read.pass.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
         result_dict["albacore.stats.1d.extractor.read.fail.frequency"] = result_dict["albacore.stats.1d.extractor.read.fail.count"]/result_dict["albacore.stats.1d.extractor.read.count"]*100
@@ -333,10 +336,10 @@ class albacore_1dsqr_stats_extractor():
                                                                              self.my_dpi, images_directory,"1Dsquare pass reads distribution per barcode."))
             images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(result_dict, "1Dsquare fail reads percentage of different barcodes", self.barcode_selection,
                                                                              self.my_dpi, images_directory,"1Dsquare fail reads distribution per barcode."))
-            images.append(graph_generator.barcode_length_boxplot_1dsqr(result_dict,"1Dsquare read size distribution for each barcode", self.barcode_selection,
+            images.append(graph_generator.barcode_length_boxplot_1dsqr(result_dict,"1Dsquare read size distribution for each barcode",
                                                                        self.my_dpi, images_directory,"Read length boxplot per barcode of pass (in green) and fail (in red) 1Dsquare reads."))
             images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(result_dict, "1Dsquare read phred score distribution for each barcode",
-                                                                               self.barcode_selection, self.my_dpi,images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1Dsquare reads."))
+                                                                               self.my_dpi,images_directory,"Read Mean Phred score boxplot per barcode of pass (in green) and fail (in red) 1Dsquare reads."))
         return images
 
     def clean(self, result_dict):
