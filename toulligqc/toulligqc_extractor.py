@@ -21,8 +21,8 @@
 
 from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
-from toulligqc import albacore_1dsqr_stats_generator
-from toulligqc import albacore_stats_extractor
+from toulligqc import albacore_1dsqr_sequencing_summary_extractor
+from toulligqc import albacore_sequencing_summary_extractor
 from toulligqc import pipeline_log_extractor
 
 
@@ -74,10 +74,10 @@ class toulligqc_extractor():
             result_dict['toulligqc.info.extractors'].append("fastq.extractor")
 
         if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
-            extractors.append(albacore_1dsqr_stats_generator.albacore_1dsqr_stats_extractor(config_dictionary))
+            extractors.append(albacore_1dsqr_sequencing_summary_extractor.albacore_1dsqr_sequencing_summary_extractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("albacore.1dsqr.stats.extractor")
         else:
-            extractors.append(albacore_stats_extractor.albacore_stats_extractor(config_dictionary))
+            extractors.append(albacore_sequencing_summary_extractor.albacore_sequencing_summary_extractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("albacore.stats.extractor")
 
 
