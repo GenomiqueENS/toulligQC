@@ -36,7 +36,7 @@ import time
 import platform as pf
 import tempfile as tp
 from toulligqc import toulligqc_extractor
-from toulligqc import statistics_generator
+from toulligqc import report_data_file_generator
 from toulligqc import html_report
 from toulligqc import version
 from pathlib import Path
@@ -313,7 +313,7 @@ def main():
 
     if config_dictionary['is_quicklaunch'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
-        statistics_generator.statistics_generator(config_dictionary, result_dict)
+        report_data_file_generator.statistics_generator(config_dictionary, result_dict)
     _show(config_dictionary, "* End of the QC extractor (done in {})".format(_format_time(qc_end - qc_start)))
 
 

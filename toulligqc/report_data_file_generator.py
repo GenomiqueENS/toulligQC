@@ -24,8 +24,6 @@
 #Creation of a text file containing statistics retrieved from FAST5, FASTQ files and sequencing_summary.txt file
 
 import os
-import numpy as np
-
 
 def add_values_to_unwritten_key(result_dict, values):
     '''
@@ -42,8 +40,6 @@ def statistics_generator(config_dictionary, result_dict):
     :param config_dictionary:
     '''
     result_directory = config_dictionary['result_directory']
-    barcode_selection = config_dictionary['barcode_selection']
-
 
     completeName = os.path.join(result_directory+'statistics/', "report.data")
 

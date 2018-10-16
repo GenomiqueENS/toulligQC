@@ -22,15 +22,8 @@
 #
 
 #HTML report generation
-import re
 import base64
-import dateutil.parser
-import time
 import datetime
-from toulligqc import toulligqc_extractor
-
-
-
 
 def html_report(config_dictionary, result_dict, graphs):
 

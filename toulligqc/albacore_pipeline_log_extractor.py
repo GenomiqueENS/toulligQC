@@ -25,7 +25,7 @@ import os
 import re
 
 
-class albacore_log_extractor():
+class albacore_pipeline_log_extractor():
     '''
     Extraction of informations from piepline.log file
     :param result_dict:
