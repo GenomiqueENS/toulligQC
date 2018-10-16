@@ -21,13 +21,8 @@
 
 # Extraction of statistics from sequencing_summary.txt file
 
-import glob
-import sys
 import os
-import tarfile
-import shutil
-import tempfile
-import re  # python 3.5 package
+import re
 
 
 class albacore_log_extractor():
