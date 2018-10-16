@@ -159,6 +159,7 @@ class albacore_1dsqr_sequencing_summary_extractor():
         result_dict["albacore.stats.1d.extractor.read.pass.qscore"] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
         result_dict["albacore.stats.1d.extractor.read.fail.qscore"] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
+        #channel occupancy information
         result_dict["albacore.stats.1d.extractor.channel.occupancy.statistics"] = self._occupancy_channel()
         channel_occupancy_statistics = result_dict['albacore.stats.1d.extractor.channel.occupancy.statistics']
         for index, value in channel_occupancy_statistics.iteritems():

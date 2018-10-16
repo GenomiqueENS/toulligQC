@@ -95,9 +95,6 @@ class albacore_sequencing_summary_extractor():
     def add_key_to_result_dict(self, key):
         return self.get_report_data_file_id() + '.' + key
 
-    def add_value_to_unwritten_key(self,result_dict, value):
-        return result_dict['unwritten.keys'].append(value)
-
     def describe_dict(self,result_dict,attribute):
         dictionnary = pd.Series.describe(result_dict[attribute]).drop("count")
         for key in dict(dictionnary):
@@ -152,17 +149,20 @@ class albacore_sequencing_summary_extractor():
         result_dict[self.add_key_to_result_dict("read.pass.qscore")] = self.albacore_log_1d.mean_qscore_template.loc[True == self.albacore_log_1d['passes_filtering']]
         result_dict[self.add_key_to_result_dict("read.fail.qscore")] = self.albacore_log_1d.mean_qscore_template.loc[False == self.albacore_log_1d['passes_filtering']]
 
+        #channel occupancy information
         result_dict[self.add_key_to_result_dict('channel.occupancy.statistics')] = self._occupancy_channel()
         channel_occupancy_statistics = result_dict[self.add_key_to_result_dict('channel.occupancy.statistics')]
         for index, value in channel_occupancy_statistics.iteritems():
             result_dict[self.add_key_to_result_dict('channel.occupancy.statistics.') + index] = value
 
+        #length's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.length')] = self.albacore_log_1d['sequence_length_template'].describe()
         for index,value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
         self.describe_dict(result_dict,self.add_key_to_result_dict("read.pass.length"))
         self.describe_dict(result_dict,self.add_key_to_result_dict("read.fail.length"))
 
+        #qscore's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.qscore')] = pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
         for index,value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
@@ -269,10 +269,8 @@ class albacore_sequencing_summary_extractor():
 
         images.append(graph_generator.read_quality_multiboxplot(result_dict, "Read type quality boxplot", self.my_dpi,images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        #images.append(graph_generator.phred_score_frequency(result_dict, 'Mean Phred score frequency of 1D reads', self.my_dpi, images_directory,"Phred score frequency of 1D reads."))
         images.append(graph_generator.allphred_score_frequency(result_dict, 'Mean Phred score frequency of all 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        #images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell', self.my_dpi,images_directory,"Number of reads sequenced per pore channel."))
