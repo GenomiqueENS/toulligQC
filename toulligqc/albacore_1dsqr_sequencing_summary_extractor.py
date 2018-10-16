@@ -28,7 +28,7 @@ import numpy as np
 import re
 
 
-class albacore_1dsqr_stats_extractor():
+class albacore_1dsqr_sequencing_summary_extractor():
     '''
     Extraction of statistics from sequencing_summary.txt file and graph generation
     '''
@@ -117,7 +117,11 @@ class albacore_1dsqr_stats_extractor():
 
     def extract(self, result_dict):
 
+        #
         # Extract from 1D summary source
+        #
+
+
         # read count
         result_dict['albacore.stats.1d.extractor.fastq.entries'] = len(self.albacore_log_1d['num_events'])
         result_dict['albacore.stats.1d.extractor.read.count'] = len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
@@ -125,7 +129,7 @@ class albacore_1dsqr_stats_extractor():
         result_dict["albacore.stats.1d.extractor.read.fail.count"] = len(self.albacore_log_1d[self.albacore_log_1d['passes_filtering'] == False])
         result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"] = len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
 
-        #read count prop
+        #read count proportion
         result_dict["albacore.stats.1d.extractor.fastq.entries.ratio"] = result_dict['albacore.stats.1d.extractor.fastq.entries']/result_dict['albacore.stats.1d.extractor.fastq.entries']
         result_dict["albacore.stats.1d.extractor.read.count.ratio"] = result_dict["albacore.stats.1d.extractor.read.count"]/result_dict["albacore.stats.1d.extractor.read.count"]
         result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.ratio"] = result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"]/ result_dict["albacore.stats.1d.extractor.read.count"]
@@ -160,27 +164,30 @@ class albacore_1dsqr_stats_extractor():
         for index, value in channel_occupancy_statistics.iteritems():
             result_dict['albacore.stats.1d.extractor.channel.occupancy.statistics.' + index] = value
 
+        #length's statistic information provided in the result_dict
         result_dict["albacore.stats.1d.extractor.all.read.length"] = self.albacore_log_1d['sequence_length_template'].describe()
         for index,value in result_dict["albacore.stats.1d.extractor.all.read.length"].iteritems():
             result_dict["albacore.stats.1d.extractor.all.read.length." + index] = value
         self.describe_dict(result_dict,"albacore.stats.1d.extractor.read.pass.length")
         self.describe_dict(result_dict,"albacore.stats.1d.extractor.read.fail.length")
 
+        #qscore's statistic information provided in the result_dict
         result_dict['albacore.stats.1d.extractor.all.read.qscore'] = pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
         for index,value in result_dict["albacore.stats.1d.extractor.all.read.qscore"].iteritems():
             result_dict["albacore.stats.1d.extractor.all.read.qscore." + index] = value
         self.describe_dict(result_dict,"albacore.stats.1d.extractor.read.pass.qscore")
         self.describe_dict(result_dict,"albacore.stats.1d.extractor.read.fail.qscore")
 
-        # result_dict['sequence_length_2d'] = self.sequence_length_1dsqr
-
+        #
         #Extract from 1dsqr sequencing summary
+        #
 
+        # read count
         result_dict[self.add_key_to_result_dict('read.count')] = len(self.albacore_log_1dsqr['passes_filtering'])
         result_dict[self.add_key_to_result_dict('read.pass.count')] = len(self.albacore_log_1dsqr[self.albacore_log_1dsqr['passes_filtering'] == True])
         result_dict[self.add_key_to_result_dict('read.fail.count')] = len(self.albacore_log_1dsqr[self.albacore_log_1dsqr['passes_filtering'] == False])
 
-        #read count prop
+        #read count proportion
         result_dict[self.add_key_to_result_dict("read.count.ratio")] = result_dict[self.add_key_to_result_dict('read.count')]/result_dict[self.add_key_to_result_dict('read.count')]
         result_dict[self.add_key_to_result_dict("read.pass.ratio")] = result_dict[self.add_key_to_result_dict('read.pass.count')]/result_dict[self.add_key_to_result_dict('read.count')]
         result_dict[self.add_key_to_result_dict("read.fail.ratio")] = result_dict[self.add_key_to_result_dict('read.fail.count')]/result_dict[self.add_key_to_result_dict('read.count')]
@@ -188,21 +195,25 @@ class albacore_1dsqr_stats_extractor():
         result_dict[self.add_key_to_result_dict("read.pass.frequency")] = result_dict[self.add_key_to_result_dict('read.pass.count')]/result_dict[self.add_key_to_result_dict('read.count')]*100
         result_dict[self.add_key_to_result_dict("read.fail.frequency")] = result_dict[self.add_key_to_result_dict('read.fail.count')]/result_dict[self.add_key_to_result_dict('read.count')]*100
 
+        # read length information
         result_dict[self.add_key_to_result_dict('sequence.length')] = self.albacore_log_1dsqr.loc[:, "sequence_length_2d"]
         result_dict[self.add_key_to_result_dict("passes.filtering")] = self.albacore_log_1dsqr['passes_filtering']
         result_dict[self.add_key_to_result_dict('read.pass.length')] = self.albacore_log_1dsqr.sequence_length_2d.loc[True == self.albacore_log_1dsqr['passes_filtering']]
         result_dict[self.add_key_to_result_dict('read.fail.length')] = self.albacore_log_1dsqr.sequence_length_2d.loc[False == self.albacore_log_1dsqr['passes_filtering']]
 
+        #qscore information
         result_dict[self.add_key_to_result_dict('mean.qscore')] = self.albacore_log_1dsqr.loc[:, "mean_qscore_2d"]
         result_dict[self.add_key_to_result_dict('read.pass.qscore')] = self.albacore_log_1dsqr.mean_qscore_2d.loc[True == self.albacore_log_1dsqr['passes_filtering']]
         result_dict[self.add_key_to_result_dict('read.fail.qscore')] = self.albacore_log_1dsqr.mean_qscore_2d.loc[False == self.albacore_log_1dsqr['passes_filtering']]
 
+        #length's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.length')] = self.albacore_log_1dsqr['sequence_length_2d'].describe()
         for index,value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
         self.describe_dict(result_dict,self.add_key_to_result_dict("read.pass.length"))
         self.describe_dict(result_dict,self.add_key_to_result_dict("read.fail.length"))
 
+        #qscore's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.qscore')] = pd.DataFrame.describe(self.albacore_log_1dsqr['mean_qscore_2d']).drop("count")
         for index,value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
@@ -313,17 +324,12 @@ class albacore_1dsqr_stats_extractor():
 
         images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type', self.my_dpi, images_directory,"Yield plot of basecalled reads (1D in orange). The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
 
-        #images.append(graph_generator.read_quality_boxplot(self.albacore_log_1d, 'Boxplot of read quality', self.my_dpi,images_directory))
-
         images.append(graph_generator.read_quality_multiboxplot(result_dict,"1D reads quality boxplot", self.my_dpi, images_directory,"Boxplot of 1D reads (in orange) quality.  The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
         images.append(graph_generator.dsqr_read_quality_multiboxplot(result_dict, "1Dsquare reads quality boxplot", self.my_dpi, images_directory,"Boxplot of 1D (in orange) and 1Dsquare (in gold) reads quality. The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
-        #images.append(graph_generator.phred_score_frequency(result_dict, 'Mean Phred score frequency of the 1D reads', self.my_dpi, images_directory,"Mean Phred score frequency of the 1D reads"))
-        #images.append(graph_generator.dsqr_phred_score_frequency(result_dict, "Mean Phred score frequency of the 1Dsquare reads", self.my_dpi, images_directory,"Mean Phred score frequency of the 1Dsquare reads"))
         images.append(graph_generator.allphred_score_frequency(result_dict, 'Mean Phred score frequency of 1D read type', self.my_dpi,images_directory,"The basecalled reads are filtered with a 7.5 quality score threshold in pass (1D pass in green) or fail (1D fail in red) categories."))
         images.append(graph_generator.dsqr_allphred_score_frequency(result_dict, "Mean Phred score frequency of 1Dsquare read type", self.my_dpi, images_directory,"The 1Dsquare reads are filtered with a 7.5 quality score threshold in pass (1Dsquare pass in green) or fail (1Dsquare fail in red) categories."))
 
-        #images.append(graph_generator.channel_count_histogram(self.albacore_log_1d, 'Channel occupancy', self.my_dpi, images_directory))
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell', self.my_dpi, images_directory,"Number of reads sequenced per pore channel."))
