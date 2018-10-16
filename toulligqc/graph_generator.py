@@ -167,8 +167,8 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     plt.legend()
 
     ax.set_xscale('log', basex=2)
-    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:,.1f}'))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:,.0f}'))
+    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     ax.set_xticks(bins)
 
     for tick in ax.xaxis.get_major_ticks():
@@ -318,10 +318,14 @@ def read_quality_multiboxplot(result_dict,main, my_dpi, result_directory, desc):
     my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
     order=["1D","1D pass","1D fail"]
     dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"], "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'], "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
-    sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order,linewidth=1)
+    ax = plt.subplot(gs[0])
+    sns.boxplot(data=dataframe, ax=ax,palette=my_pal,order=order,linewidth=1)
     plt.ylabel('Mean Phred score')
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
 
-    sns.violinplot(data=dataframe, ax=plt.subplot(gs[1]), palette=my_pal, inner=None, cut=0, order=order,linewidth=1)
+    ax2 = plt.subplot(gs[1])
+    sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order,linewidth=1)
+    ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
     plt.title(main)
@@ -378,6 +382,9 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
                  hist_kws=dict(edgecolor="k", linewidth=1),hist=True,label="1D")
     plt.axvline(x=result_dict["albacore.stats.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
 
+    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
+
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
@@ -389,6 +396,9 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
                  hist=True, label='1D pass')
     sns.distplot(result_dict['albacore.stats.1d.extractor.read.fail.qscore'],ax=ax2, bins=15,hist_kws=dict(edgecolor="k", linewidth=1) ,color='orangered', label='1D fail',
                  hist=True)
+
+    ax2.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
 
     plt.legend()
     plt.xlabel("Mean Phred score")
@@ -415,15 +425,18 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     '''
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(12, 7), dpi=my_dpi)
+    fig = plt.figure(figsize=(12, 6), dpi=my_dpi)
+    ax = plt.gca()
 
-    read_pass=plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.pass.length"], y=result_dict["albacore.stats.1d.extractor.read.pass.qscore"],color="yellowgreen")
-    read_fail=plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.fail.length"], y=result_dict["albacore.stats.1d.extractor.read.fail.qscore"],color="orangered")
+    read_pass = plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.pass.length"], y=result_dict["albacore.stats.1d.extractor.read.pass.qscore"],color="yellowgreen")
+    read_fail = plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.fail.length"], y=result_dict["albacore.stats.1d.extractor.read.fail.qscore"],color="orangered")
     plt.legend((read_pass,read_fail),("1D pass","1D fail"))
     plt.xlim(np.min(result_dict["albacore.stats.1d.extractor.sequence.length"].loc[result_dict["albacore.stats.1d.extractor.sequence.length"]>0]),np.max(result_dict["albacore.stats.1d.extractor.sequence.length"]))
+    plt.yticks()
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.title(main)
     plt.savefig(output_file)
     plt.close()
@@ -751,8 +764,8 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     plt.legend()
 
     ax.set_xscale('log', basex=2)
-    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:,.1f}'))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:,.0f}'))
+    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     ax.set_xticks(bins)
 
     for tick in ax.xaxis.get_major_ticks():
@@ -789,12 +802,16 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     order=["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]
     dataframe = pd.DataFrame({"1D": mean_qscore_1d,"1Dsquare": mean_qscore_1dsqr, "1Dsquare pass": read_pass_1dsqr, "1Dsquare fail": read_fail_1dsqr})
 
-    sns.boxplot(data=dataframe, ax=plt.subplot(gs[0]),palette=my_pal,order=order,linewidth=1)
+    ax = plt.subplot(gs[0])
+    sns.boxplot(data=dataframe, ax=ax ,palette=my_pal,order=order,linewidth=1)
     plt.ylabel('Mean Phred score')
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
 
-    sns.violinplot(data=dataframe, ax=plt.subplot(gs[1]), palette=my_pal, inner=None, cut=0, order=order,linewidth=1)
+    ax2 = plt.subplot(gs[1])
+    sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order,linewidth=1)
     plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
+    ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.title(main)
 
     dataframe = dataframe[["1D","1Dsquare","1Dsquare pass","1Dsquare fail"]]
@@ -852,6 +869,9 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     sns.distplot(result_dict['albacore.stats.1dsqr.extractor.mean.qscore'],ax=ax, bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1),hist=True,label="1Dsquare")
 
+
+    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
     plt.axvline(x=result_dict['albacore.stats.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
     plt.legend()
     plt.xlabel("Mean Phred score")
@@ -866,6 +886,9 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
                  hist=True)
     plt.axvline(x=mean_qscore_read_pass.describe()['50%'], color='yellowgreen')
     plt.axvline(x=mean_qscore_read_fail.describe()['50%'], color='orangered')
+    ax2.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
+
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
@@ -888,7 +911,7 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     '''
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    #plt.subplots_adjust(bottom=0.015, top=1.0)
+    ax = plt.gca()
 
     length_1dsqr_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.length']
     length_1dsqr_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.length']
@@ -903,6 +926,7 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.title(main)
     plt.savefig(output_file)
     plt.close()
