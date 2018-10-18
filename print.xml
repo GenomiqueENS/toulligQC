@@ -1,5 +1,8 @@
 <application>
   <component name="PrintSettings">
-    <option name="printScope" value="4" />
+    <option name="printScope" value="1" />
+    <option name="FONT_NAME" value="Courier" />
+    <option name="FONT_SIZE" value="12" />
+    <option name="PRINT_LINE_NUMBERS" value="false" />
   </component>
 </application>
