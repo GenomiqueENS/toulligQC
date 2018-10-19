@@ -21,34 +21,35 @@
 #
 #
 
-#Creation of a text file containing statistics retrieved from FAST5, FASTQ files and sequencing_summary.txt file
+# Creation of a text file containing statistics retrieved from FAST5, FASTQ files and sequencing_summary.txt file
 
 import os
 
+
 def add_values_to_unwritten_key(result_dict, values):
-    '''
+    """
     :param result_dict:
     :param values: must be a list
     :return:
-    '''
+    """
     return result_dict['unwritten.keys'].extend(values)
 
+
 def statistics_generator(config_dictionary, result_dict):
-    '''
-    Create a log file where different informations and statistics about the minion run are printed
+    """
+    Create a log file where different information and statistics about the minion run are printed
     :param result_dict:
     :param config_dictionary:
-    '''
+    """
     result_directory = config_dictionary['result_directory']
 
-    completeName = os.path.join(result_directory+'statistics/', "report.data")
+    complete_name = os.path.join(result_directory+'statistics/', "report.data")
 
-    add_values_to_unwritten_key(result_dict, ["sequence_length_template","passes_filtering","read_pass","read_fail","start_time_sorted","read_pass_sorted","read_fail_sorted"])
+    add_values_to_unwritten_key(result_dict, ["sequence_length_template", "passes_filtering",
+                                              "read_pass", "read_fail", "start_time_sorted",
+                                              "read_pass_sorted", "read_fail_sorted"])
 
-
-    with open(completeName, 'w') as file_data:
+    with open(complete_name, 'w') as file_data:
         for key, value in result_dict.items():
             if key not in result_dict['unwritten.keys']:
                 file_data.write("{0}={1}\n".format(key, value))
-
-
