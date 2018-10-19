@@ -535,7 +535,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.18), edgecolor="black")
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -546,7 +546,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
         plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.16))
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
@@ -584,7 +584,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.16), edgecolor='black')
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor='black')
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -595,7 +595,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.16))
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
@@ -634,8 +634,8 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
 
     df = result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
-    read_pass = df.loc[df['passes_filtering'] == True].describe().T
-    read_fail = df.loc[df['passes_filtering'] == False].describe().T
+    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
+    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
     concat = pd.concat([all_read, read_pass, read_fail], keys=['1D', '1D pass', '1D fail'])
     dataframe = concat.T
 
@@ -992,7 +992,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.16), edgecolor="black")
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -1003,7 +1003,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
         plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.16))
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
@@ -1040,7 +1040,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.18), edgecolor="black")
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
@@ -1051,7 +1051,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcode_selection)
         plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.18))
+                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
@@ -1127,8 +1127,8 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
 
     df = result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
-    read_pass = df.loc[df['passes_filtering'] == True].describe().T
-    read_fail = df.loc[df['passes_filtering'] == False].describe().T
+    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
+    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
     concat = pd.concat([all_read, read_pass, read_fail], keys=['1Dsquare', '1Dsquare pass', '1Dsquare fail'])
     dataframe = concat.T
 
