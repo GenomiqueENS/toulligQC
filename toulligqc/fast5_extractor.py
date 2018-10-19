@@ -20,7 +20,7 @@
 #
 #
 
-#Extraction of the informations about the FAST5 files
+# Extraction of the information about the FAST5 files
 
 import h5py
 import glob
@@ -29,39 +29,53 @@ import os
 import tarfile
 import shutil
 import tempfile
+import dateutil
 
-class fast5_extractor():
-    '''
-       Extraction of different informations from a FAST5 file
-       :param fast5_source: FAST5 file directory
-       :param result_directory: result directory
-       :param fast5_file_extension: extension used for the storage of the set of FAST5 files if there's one
-       :param report_name: report name
-       :return: a tuple containing the informations about a FAST5 file
-       '''
+
+class Fast5Extractor:
+    """
+    Extraction of different informations from a FAST5 file
+    param fast5_source: FAST5 file directory
+    param result_directory: result directory
+    param fast5_file_extension: extension used for the storage of the set of FAST5 files if there's one
+    param report_name: report name
+    return: a tuple containing the informations about a FAST5 file
+    """
 
     def __init__(self, config_dictionary):
-        self.config_file_dictionary =config_dictionary
+        self.config_file_dictionary = config_dictionary
         self.fast5_source = config_dictionary['fast5_source']
         self.result_directory = config_dictionary['result_directory']
         self.report_name = config_dictionary['report_name']
         self.fast5_file_extension = ''
         self.fast5_file = ''
+        self.get_report_data_file_id()
 
-    def get_name(self):
-        '''
+    @staticmethod
+    def get_name():
+        """
         Get the name of the extractor.
         :return: the name of the extractor
-        '''
+        """
         return 'FAST5'
 
+    @staticmethod
+    def get_report_data_file_id():
+        """
+        Get the report.data id of the extractor.
+        :return: the report.data id
+        """
+        return 'fast5.extractor'
+
+    def _add_key_to_result_dict(self, key):
+        return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
     def init(self):
-        '''
+        """
         Determination of the fast5 file extension
-        '''
+        """
         if os.path.isdir(self.fast5_source):
-           self.fast5_file_extension = 'fast5_directory'
+            self.fast5_file_extension = 'fast5_directory'
 
         elif self.fast5_source.endswith('.tar.gz'):
             self.fast5_file_extension = 'tar.gz'
@@ -73,55 +87,68 @@ class fast5_extractor():
             self.fast5_file_extension = 'tar.bz2'
 
         else:
-            print('The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format)')
+            err_msg = 'The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format)'
+            sys.stderr.write(err_msg)
+            print(err_msg)
             sys.exit(0)
 
     def extract(self, result_dict):
-        '''
-        Extraction of the different informations about the fast5 files
+        """
+        Extraction of the different information about the fast5 files
         :param result_dict:
         :return: result_dict
-       '''
+        """
         h5py_file = self._read_fast5()
-        result_dict['flow_cell_id'] = self._get_fast5_items(h5py_file,'flow_cell_id')
-        result_dict['minknow_version'] = self._get_fast5_items(h5py_file,'version')
-        result_dict['hostname'] = self._get_fast5_items(h5py_file,'hostname')
-        result_dict['minion_run_id'] = self._get_fast5_items(h5py_file,'device_id')
-        result_dict['protocol_run_id'] = self._get_fast5_items(h5py_file,'protocol_run_id')
-        result_dict['exp_start_time'] = self._get_fast5_items(h5py_file,'exp_start_time')
-        result_dict['sample_id'] = self._get_fast5_items(h5py_file,'sample_id')
+        result_dict[self._add_key_to_result_dict('source')] = self.fast5_source
+        result_dict[self._add_key_to_result_dict('flowcell.id')] = self._get_fast5_items(h5py_file, 'flow_cell_id')
+        result_dict[self._add_key_to_result_dict('minknow.version')] = self._get_fast5_items(h5py_file, 'version')
+        result_dict[self._add_key_to_result_dict('hostname')] = self._get_fast5_items(h5py_file, 'hostname')
+        result_dict[self._add_key_to_result_dict('operating.system')] = self._get_fast5_items(h5py_file,
+                                                                                              'operating_system')
+        result_dict[self._add_key_to_result_dict('device.id')] = self._get_fast5_items(h5py_file, 'device_id')
+        result_dict[self._add_key_to_result_dict('protocol.run.id')] = self._get_fast5_items(h5py_file,
+                                                                                             'protocol_run_id')
+        result_dict[self._add_key_to_result_dict('sample.id')] = self._get_fast5_items(h5py_file, 'sample_id')
+
+        run_date = self._get_fast5_items(h5py_file, 'exp_start_time')
+        exp_start_time = dateutil.parser.parse(run_date)
+        result_dict[self._add_key_to_result_dict('exp.start.time')] = exp_start_time.strftime("%x %X %Z")
 
     def check_conf(self):
-        '''
+        """
         Configuration checking
         :return:
-        '''
+        """
         return
 
-    def graph_generation(self,result_dict):
-        '''
+    def graph_generation(self, result_dict):
+        """
         Graph generaiton
         :return:
-        '''
+        """
         return []
 
-    def clean(self):
-        '''
+    def clean(self, result_dict):
+        """
         Deleting the temporary fast5 file extracted from the tar archive if used
         :return:
-        '''
+        """
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
-        else:
-            return
 
+        key_list = []
+        for key in key_list:
+            key_list.extend(self._add_key_to_result_dict(key))
+        result_dict['unwritten.keys'].extend(key_list)
+
+    @staticmethod
     def _fast5_tar_bz2_extraction(self, tar_bz2_file, result_directory):
-        '''
+        """
         Extraction of a FAST5 file from a set of FAST5 files
         :param tar_bz2_file: tar bz2 file containing the set of the raw FAST5 files
         :param result_directory: result directory
         :return: a FAST5 file
-        '''
+        """
         tar_bz2 = tarfile.open(tar_bz2_file, 'r:bz2')
         while True:
             member = tar_bz2.next()
@@ -131,12 +158,12 @@ class fast5_extractor():
         return member.name
 
     def _fast5_tar_gz_extraction(self, tar_gz_file, result_directory):
-        '''
+        """
         Extraction of a FAST5 file from a set of FAST5 files
         :param tar_gz_file: tar gz file containing the set of the raw FAST5 files
         :param result_directory: result directory
         :return: a FAST5 file
-        '''
+        """
         tar_gz = tarfile.open(self, tar_gz_file, 'r:gz')
         while True:
             member = tar_gz.next()
@@ -146,18 +173,20 @@ class fast5_extractor():
         return member.name
 
     def _read_fast5(self):
-        '''
+        """
         Extraction of one fast5 file from the archive and stores it in a h5py object for next retrieving informations
         :return: h5py_file: h5py file
-        '''
+        """
         self.temporary_directory = tempfile.mkdtemp(dir=self.result_directory)
         if self.fast5_file_extension == 'tar.bz2':
             tar_bz2_file = self.fast5_source
-            self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
+            self.fast5_file = \
+                self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
 
         elif self.fast5_file_extension == 'tar.gz':
             tar_gz_file = self.fast5_source
-            self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
+            self.fast5_file = \
+                self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
 
         elif self.fast5_file_extension == 'fast5' or self.fast5_file_extension == '.fast5':
             self.fast5_file = self.fast5_source
@@ -169,27 +198,27 @@ class fast5_extractor():
 
             elif glob.glob(self.fast5_source + '/*.tar.bz2'):
                 tar_bz2_file = self.fast5_source+self.report_name+'.tar.bz2'
-                self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
+                self.fast5_file = \
+                    self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file,
+                                                                                    self.temporary_directory)
             elif glob.glob(self.fast5_source + '/*.tar.gz'):
-                tar_gz_file = self.fast5_source+self.report_name+ '.tar.gz'
-                self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file, self.result_directory)
+                tar_gz_file = self.fast5_source+self.report_name + '.tar.gz'
+                self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file,
+                                                                                                 self.result_directory)
         else:
-            print('There is a problem with the fast5 file or the tar file')
-            sys.exit(0)
+            err_msg = 'There is a problem with the fast5 file or the tar file'
+            sys.exit(err_msg)
         h5py_file = h5py.File(self.fast5_file)
 
         return h5py_file
 
-    def _get_fast5_items(self,h5py_file,params):
-        '''
+    def _get_fast5_items(self, h5py_file, params):
+        """
         Global function to exctract run informations stores in h5py format
         :param h5py_file: fast5 file store in a h5py object
         :param params:  required h5py attributes
         :return: h5py value, for example flow_cell_id : FAE22827
-        '''
+        """
         tracking_id_items = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
         tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
         return tracking_id_dict[params]
-
-
-

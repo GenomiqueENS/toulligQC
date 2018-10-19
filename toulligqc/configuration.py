@@ -29,18 +29,19 @@
 import tempfile
 from toulligqc import version
 
-class toulligqc_conf():
+
+class ToulligqcConf:
     """
     Dictionary for the storage of configuration file
     """
     def __init__(self):
-        self._config_dictionary = {'app.name' : "ToulligQC", \
-                                   'app.url' : "https://github.com/GenomicParisCentre/toulligQC", \
-                                   'app.version' :  version.__version__, \
-                                   'quiet': 'False', \
-                                   'dpi': '100', \
-                                   'tmpdir': tempfile.gettempdir(), \
-                                   'barcoding': 'False', \
+        self._config_dictionary = {'app.name': "ToulligQC",
+                                   'app.url': "https://github.com/GenomicParisCentre/toulligQC",
+                                   'app.version':  version.__version__,
+                                   'quiet': 'False',
+                                   'dpi': '100',
+                                   'tmpdir': tempfile.gettempdir(),
+                                   'barcoding': 'False',
                                    'is_quicklaunch': 'False'}
 
     def __getitem__(self, item):
@@ -74,13 +75,14 @@ class toulligqc_conf():
     def keys(self):
         return self._config_dictionary.keys()
 
-    def load(self,conf_path):
+    def load(self, conf_path):
 
         with open(conf_path, 'r') as config_file:
             for line in config_file:
                 if line.startswith('#'):
                     continue
-                elif line.startswith(('fast5_source', 'albacore_summary_source','albacore_1dsqr_summary_source', 'fastq_source', 'result_directory',
+                elif line.startswith(('fast5_source', 'albacore_summary_source', 'albacore_1dsqr_summary_source',
+                                      'fastq_source', 'result_directory',
                                      'sample_sheet_file')):
                     line = line.replace(" ", "")
                     path_list = line.strip().split('=')

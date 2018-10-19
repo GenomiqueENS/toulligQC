@@ -19,7 +19,7 @@ setup(
 
     # Author details
     author='Genomic Paris Centre team',
-    author_email='genomique_bioinfo@biologie.ens.fr',
+    author_email='toulligqc@biologie.ens.fr',
 
     license='GPL V3',
     platforms = 'ALL',
@@ -48,9 +48,9 @@ setup(
     zip_safe=False,
     include_package_data=True,
 
-    python_requires='>=3',
-    install_requires=['matplotlib>=2.0,<2.1', 'seaborn>=0.7,<0.8', 'h5py>=2.7,<2.8', \
-                      'pandas>=0.19,<0.20', 'numpy>=1.12,<1.13'],
+    python_requires='>=3.5',
+    install_requires=['matplotlib>=2.2,<2.3', 'plotly>=2.2,<2.3' 'seaborn>=0.7,<0.8', 'h5py>=2.7,<2.8',
+                      'pandas>=0.23,<0.24', 'numpy>=1.15,<1.16'],
 
     entry_points={
         'console_scripts': [
