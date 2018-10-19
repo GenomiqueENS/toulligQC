@@ -627,7 +627,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
                      hue_order=[True, False])
 
     handles, _ = ax.get_legend_handles_labels()
-    plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
+    plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
     plt.title(main)
@@ -664,7 +664,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
                      palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
-    plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
+    plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
     plt.title(main)
@@ -1082,7 +1082,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
             x='barcodes', y='length', hue='passes_filtering', showfliers=False,
             palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
-    plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
+    plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
     plt.title(main)
@@ -1120,7 +1120,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
             x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
             palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
-    plt.legend(bbox_to_anchor=(0.92, 1), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
+    plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
     plt.title(main)
