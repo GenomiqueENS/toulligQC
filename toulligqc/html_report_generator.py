@@ -21,22 +21,23 @@
 #
 #
 
-#HTML report generation
+# HTML report generation
 import base64
 import datetime
 
-def html_report(config_dictionary, result_dict, graphs):
 
-    '''
+def html_report(config_dictionary, result_dict, graphs):
+    """
     Creation of a html report
     :param config_dictionary: dictionary containing file or directory paths
     :param result_dict: result dictionary containing all statistics
-    '''
+    :param graphs:
+    """
 
     result_directory = config_dictionary['result_directory']
     report_name = config_dictionary['report_name']
 
-    #from sequence summary file
+    # from sequence summary file
 
     td = datetime.timedelta(hours=result_dict["albacore.stats.1d.extractor.run.time"])
     seconds = td.total_seconds()
@@ -44,16 +45,16 @@ def html_report(config_dictionary, result_dict, graphs):
 
     report_date = result_dict['toulligqc.info.start.time']
 
-    #from Fast5 file
+    # from Fast5 file
     run_date = result_dict['fast5.extractor.exp.start.time']
     flow_cell_id = result_dict['fast5.extractor.flowcell.id']
     run_id = result_dict['fast5.extractor.sample.id']
     minknow_version = result_dict['fast5.extractor.minknow.version']
 
     read_count = result_dict["albacore.stats.1d.extractor.fastq.entries"]
-    run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000,2)
+    run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000, 2)
 
-    #from pipeline log file
+    # from pipeline log file
     if "albacore.log.extractor" in result_dict['toulligqc.info.extractors']:
         flowcell_version = result_dict['albacore.log.extractor.flowcell.version']
         kit_version = result_dict['albacore.log.extractor.kit.version']
@@ -62,7 +63,6 @@ def html_report(config_dictionary, result_dict, graphs):
         flowcell_version = "Unknown"
         kit_version = "Unknown"
         albacore_version = "Unknown"
-
 
     f = open(result_directory + 'report.html', 'w')
 
@@ -327,7 +327,7 @@ def html_report(config_dictionary, result_dict, graphs):
       <ol>
 """
     for i, t in enumerate(graphs):
-      summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0]  + "</a></li>\n"
+        summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
     summary += """      </ol>
     </div>
 """
@@ -340,71 +340,41 @@ def html_report(config_dictionary, result_dict, graphs):
         <h2 id=M{0}></h2>
         <h1></h1>
         <table class=\" dataframe \" border="1">
-          <thead>
-            <th>Measure</th>
-            <th>Value</th>
-          </thead>
+          <thead><th>Measure</th><th>Value</th></thead>      
           <tbody>
-          <tr>
-            <th>Run id</th>
-            <td> {0} </td>
-          </tr>
-          <tr>
-            <th>Report name </th>
-            <td> {1} </td>
-          </tr>
-          <tr>
-            <th>Run date</th>
-            <td> {2} </td>
-          </tr>
-          <tr>
-            <th>Run time </th>
-            <td> {3} </td>
-          </tr>
-          <tr>
-            <th>Flowcell id </th>
-            <td> {4} </td>
-          </tr>
-          <tr>
-            <th>Flowcell version</th>
-            <td> {5} </td>
-          </tr>
-          <tr>
-            <th>Kit</th>
-            <td> {6} </td>
-          </tr>
-          <tr>
-            <th>MinKNOW version </th>
-            <td> {7} </td>
-          </tr>
-          <tr>
-            <th>Albacore version</th>
-            <td> {8} </td>
-          </tr>
-          <tr>
-            <th>ToulligQC version</th>
-            <td> {9} </td>
-          </tr>
-          <tr>
-            <th>Yield (Gbp)</th>
-            <td> {10} </td>
-          </tr>
-          <tr>
-            <th>Read count</th>
-            <td> {11} </td>
-          </tr>
+          <tr><th>Run id</th><td> {0} </td></tr>               
+          <tr><th>Report name </th><td> {1} </td></tr>
+          <tr><th>Run date</th><td> {2} </td></tr>
+          <tr><th>Run time </th><td> {3} </td></tr>
+          <tr><th>Flowcell id </th><td> {4} </td></tr>
+          <tr><th>Flowcell version</th><td> {5} </td></tr>
+          <tr><th>Kit</th><td> {6} </td></tr>
+          <tr><th>MinKNOW version </th><td> {7} </td></tr>
+          <tr><th>Albacore version</th><td> {8} </td></tr>
+          <tr><th>ToulligQC version</th><td> {9} </td></tr>
+          <tr><th>Yield (Gbp)</th><td> {10} </td></tr>
+          <tr><th>Read count</th><td> {11} </td></tr>
           </tbody>
         </table>   
       </div>
-""".format(run_id,report_name, run_date, run_time, flow_cell_id,flowcell_version,kit_version,minknow_version,albacore_version,config_dictionary['app.version'],run_yield,read_count)
+""".format(run_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, minknow_version,
+           albacore_version, config_dictionary['app.version'], run_yield, read_count)
 
     for i, t in enumerate(graphs):
-        main_report += "      <div class=\"module\"><h2 id=M{0}> {1} <img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> </h2></div>".format(i, t[0], _embedded_image(t[1]), t[2],t[3])
-        if(t[2]==None):
-            main_report += "      <div class=\"module\"><p><img src=\"{2}\" alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
+        main_report += "      <div class=\"module\"><h2 id=M{0}> {1} " \
+                       "<img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" " \
+                       "alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> " \
+                       "</h2></div>".format(i, t[0], _embedded_image(t[1]), t[2], t[3])
+        if t[2] is None:
+            main_report += "      <div class=\"module\"><p><img src=\"{2}\" " \
+                           "alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
         else:
-            main_report += "      <div class=\"box\"><img src=\"{2}\"></div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
-            main_report += "      <div class=\"box-left\"><p>{3}</p></div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+            main_report += "      <div class=\"box\"><img src=\"{2}\">" \
+                           "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+
+            main_report += "      <div class=\"box-left\"><p>{3}</p>" \
+                           "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+
             main_report += "      <div class=\"after-box\"><p></p></div>\n"
     main_report += "    </div>\n"
 
@@ -417,14 +387,12 @@ def html_report(config_dictionary, result_dict, graphs):
 
 
 def _embedded_image(image_path):
-    '''
+    """
     Embedded an image
     :param image_path: path of the image
     :return: a string with the image in base64
-    '''
-
+    """
     with open(image_path, "rb") as image_file:
         result = "data:image/png;base64," + base64.b64encode(image_file.read()).decode('ascii')
 
     return result
-
