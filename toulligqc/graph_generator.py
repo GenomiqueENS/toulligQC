@@ -21,10 +21,10 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib
-from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.pyplot import table
 
 
 def _is_in_result_dict(dict, dict_key, default_value):
@@ -39,38 +39,17 @@ def _is_in_result_dict(dict, dict_key, default_value):
     return dict[dict_key]
 
 
-def _make_table(value, ax, metric_suppression=''):
-    """
-    Creation of a statistics table printed with the graph
-    :param value: information measured
-    :param ax: axes used
-    :param metric_suppression: suppression of a metric when we use the describe pandas function
-    """
-
-    if metric_suppression:
-        the_table = table(ax, np.round(value.describe().drop(metric_suppression), 2), loc='center')
-    else:
-        the_table = table(ax, np.round(value.describe(), 2), loc='center')
-
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.axis('off')
-
-    the_table.set_fontsize(12)
-    the_table.scale(1, 1.2)
-
-
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
     :param value: information measured
-    :param metric_suppression: suppression of a metric when we use the describe pandas function
     """
 
     desc = value.describe()
     desc.loc['count'] = desc.loc['count'].astype(int).astype(str)
-    desc.iloc[1:] = desc.iloc[1:].applymap('{:.2f}'.format)
-    desc.rename({"50%": "median"}, axis='index', inplace=True)
+    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: '%.2f' % x)
+    desc.rename({'50%': 'median'}, axis='index', inplace=True)
+    # desc.iloc[1:] = desc.iloc[1:].applymap('{:.2f}'.format) (pandas > 0.23)
 
     return desc
 
@@ -201,12 +180,13 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    n, bins, patches = ax.hist([result_dict["albacore.stats.1d.extractor.sequence.length"],
-                                result_dict["albacore.stats.1d.extractor.read.pass.length"],
-                                result_dict["albacore.stats.1d.extractor.read.fail.length"]],
-                               color=["salmon", "yellowgreen", "orangered"],
+    data = [result_dict["albacore.stats.1d.extractor.sequence.length"],
+            result_dict["albacore.stats.1d.extractor.read.pass.length"],
+            result_dict["albacore.stats.1d.extractor.read.fail.length"]]
+    ls = 2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30)
+    n, bins, patches = ax.hist(data, color=["salmon", "yellowgreen", "orangered"],
                                edgecolor='black', label=read_type,
-                               bins=2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30))
+                               bins=ls)
     plt.legend()
 
     ax.set_xscale('log', basex=2)
@@ -219,12 +199,10 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax.set_xlabel('Read length(bp)')
     ax.set_ylabel('Read number')
     ax.set_title(main)
-
     dataframe = \
         pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.sequence.length"],
                       "1D pass": result_dict["albacore.stats.1d.extractor.read.pass.length"],
                       "1D fail": result_dict["albacore.stats.1d.extractor.read.fail.length"]})
-
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
 
     plt.savefig(output_file)
@@ -442,13 +420,20 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
 
     channel_count = albacore_log['channel']
     total_number_reads_per_channel = pd.value_counts(channel_count)
-    ax2 = plt.subplot(gs[1])
-    _make_table(total_number_reads_per_channel, ax2, metric_suppression=['mean', 'std', '50%', '75%', '25%'])
+    plt.subplot(gs[1])
+
+    dataframe = table(ax, np.round(total_number_reads_per_channel
+                                   .describe().drop(['mean', 'std', '50%', '75%', '25%']), 2), loc='center')
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.axis('off')
+
+    dataframe.set_fontsize(12)
+    dataframe.scale(1, 1.2)
 
     plt.savefig(output_file)
     plt.close()
-    table = total_number_reads_per_channel.describe()
-    table_html = pd.DataFrame.to_html(table)
+    table_html = pd.DataFrame.to_html(total_number_reads_per_channel.describe())
 
     return main, output_file, table_html, desc
 
@@ -492,10 +477,10 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 
     df = pd.DataFrame(d)
 
-    df.pivot("Row number", "Column number", "tot_reads")
+    d = df.pivot("Row number", "Column number", "tot_reads")
     df.pivot("Row number", "Column number", "labels")
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    sns.heatmap(df, fmt="", linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7},
+    sns.heatmap(d, fmt="", linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7},
                 cbar_kws={'label': 'Read number per pore channel', "orientation": "horizontal"})
     plt.title(main)
 
@@ -527,7 +512,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = cm.Spectral(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
@@ -576,7 +561,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = cm.Spectral(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
@@ -984,7 +969,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = cm.Spectral(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
@@ -1032,7 +1017,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = cm.Spectral(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
