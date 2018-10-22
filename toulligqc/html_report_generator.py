@@ -340,7 +340,7 @@ def html_report(config_dictionary, result_dict, graphs):
         <h2 id=M{0}></h2>
         <h1></h1>
         <table class=\" dataframe \" border="1">
-          <thead><th>Measure</th><th>Value</th></thead>      
+          <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
           <tbody>
           <tr><th>Run id</th><td> {0} </td></tr>               
           <tr><th>Report name </th><td> {1} </td></tr>
@@ -372,7 +372,7 @@ def html_report(config_dictionary, result_dict, graphs):
             main_report += "      <div class=\"box\"><img src=\"{2}\">" \
                            "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
 
-            main_report += "      <div class=\"box-left\"><p>{3}</p>" \
+            main_report += "      <div class=\"box-left\">\n {3}" \
                            "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
 
             main_report += "      <div class=\"after-box\"><p></p></div>\n"
