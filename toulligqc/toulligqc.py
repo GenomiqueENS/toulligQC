@@ -268,7 +268,7 @@ def dependancies_version(result_dict):
         elif hasattr(module, 'VERSION'):
             result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.VERSION
     for name, value in os.environ.items():
-        result_dict['toulligqc.info.env.' + name ] = value
+        result_dict['toulligqc.info.env.' + name] = value
 
 
 def main():
@@ -311,13 +311,8 @@ def main():
     toulligqc_extractor.ToulligqcExtractor.init(config_dictionary)
     toulligqc_extractor.ToulligqcExtractor.extract(config_dictionary, extractors_list, result_dict)
 
-
     graphs = []
     qc_start = time.time()
-
-    for extractor in extractors_list:
-        extractor.check_conf()
-        extractor.init()
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
