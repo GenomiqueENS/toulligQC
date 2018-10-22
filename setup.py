@@ -1,7 +1,6 @@
 import os
 from setuptools import setup, find_packages
 from codecs import open
-from os import path
 
 version_py = os.path.join(os.path.dirname(__file__), 'toulligqc', 'version.py')
 version = open(version_py).read().strip().split('=')[-1].strip().replace('\'', '').replace('\"', '')
