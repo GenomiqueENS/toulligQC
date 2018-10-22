@@ -141,7 +141,6 @@ class Fast5Extractor:
             key_list.extend(self._add_key_to_result_dict(key))
         result_dict['unwritten.keys'].extend(key_list)
 
-    @staticmethod
     def _fast5_tar_bz2_extraction(self, tar_bz2_file, result_directory):
         """
         Extraction of a FAST5 file from a set of FAST5 files
