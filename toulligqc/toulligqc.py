@@ -261,6 +261,16 @@ def _extractors_list_and_result_dictionary_initialisation(config_dictionary, res
     return result_dict
 
 
+def dependancies_version(result_dict):
+    for name, module in sorted(sys.modules.items()):
+        if hasattr(module, '__version__'):
+            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.__version__
+        elif hasattr(module, 'VERSION'):
+            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.VERSION
+    for name, value in os.environ.items():
+        result_dict['toulligqc.info.env.' + name ] = value
+
+
 def main():
     """
     Main function creating graphs and statistics
@@ -286,6 +296,7 @@ def main():
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] \
                                                        + config_dictionary['report_name'] + '/sequencing_summary.txt'
 
+
     # Print welcome message
     _welcome(config_dictionary)
 
@@ -295,9 +306,11 @@ def main():
     extractors_list = []
     result_dict = {'unwritten.keys': ['unwritten.keys']}
     result_dict = _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict)
+    dependancies_version(result_dict)
 
     toulligqc_extractor.ToulligqcExtractor.init(config_dictionary)
     toulligqc_extractor.ToulligqcExtractor.extract(config_dictionary, extractors_list, result_dict)
+
 
     graphs = []
     qc_start = time.time()
