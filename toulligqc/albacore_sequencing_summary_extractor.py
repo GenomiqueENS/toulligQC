@@ -145,7 +145,6 @@ class AlbacoreSequencingSummaryExtractor:
         # 1D pass information
         result_dict[self.add_key_to_result_dict("read.pass.count")] = \
             len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(True)])
-        print(result_dict[self.add_key_to_result_dict("read.pass.count")])
         result_dict[self.add_key_to_result_dict("read.pass.length")] = \
             self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
         result_dict[self.add_key_to_result_dict("read.pass.sorted")] = \
@@ -156,7 +155,6 @@ class AlbacoreSequencingSummaryExtractor:
         # 1D fail information
         result_dict[self.add_key_to_result_dict("read.fail.count")] = \
             len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(False)])
-        print(result_dict[self.add_key_to_result_dict("read.fail.count")])
         result_dict[self.add_key_to_result_dict("read.fail.length")] = \
             self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
         result_dict[self.add_key_to_result_dict("read.fail.sorted")] = \
@@ -364,35 +362,30 @@ class AlbacoreSequencingSummaryExtractor:
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-
         images.append(graph_generator.read_length_multihistogram(result_dict, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-
         images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type',
                                                          self.my_dpi, images_directory,
                                                          "Yield plot of basecalled reads (1D in orange)."
                                                          " The basecalled reads are filtered with a 7.5 quality "
                                                          "score threshold in pass (1D pass in green) "
                                                          "or fail (1D fail in red) categories."))
-
         images.append(graph_generator.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
                                                                 self.my_dpi, images_directory,
                                                                 "Boxplot of 1D reads (in orange) quality."
                                                                 "The basecalled reads are filtered with a 7.5 quality "
                                                                 "score threshold in pass (1D pass in green) "
                                                                 "or fail (1D fail in red) categories."))
-
         images.append(graph_generator.allphred_score_frequency(result_dict,
                                                                'Mean Phred score frequency of all 1D read type',
                                                                self.my_dpi, images_directory,
                                                                "The basecalled reads are filtered with a 7.5 quality "
                                                                "score threshold in pass (1D pass in green) "
                                                                "or fail (1D fail in red) categories."))
-
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
@@ -405,7 +398,6 @@ class AlbacoreSequencingSummaryExtractor:
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
-
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict,
                                                                             '1D pass reads percentage of different '
