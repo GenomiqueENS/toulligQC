@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0 (2018-10-23)
+* Report.data log file reviewed
+
 ## 0.10 (2018-07-18)
 * Add pipeline.log parsing option
 
