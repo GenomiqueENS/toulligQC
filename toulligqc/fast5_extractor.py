@@ -114,11 +114,11 @@ class Fast5Extractor:
         result_dict[self._add_key_to_result_dict('hostname')] = self._get_fast5_items(h5py_file, 'hostname')
 
         result_dict[self._add_key_to_result_dict('operating.system')] = \
-            self._get_fast5_items(h5py_file,'operating_system')
+            self._get_fast5_items(h5py_file, 'operating_system')
         result_dict[self._add_key_to_result_dict('device.id')] = self._get_fast5_items(h5py_file, 'device_id')
 
         result_dict[self._add_key_to_result_dict('protocol.run.id')] = \
-            self._get_fast5_items(h5py_file,'protocol_run_id')
+            self._get_fast5_items(h5py_file, 'protocol_run_id')
         result_dict[self._add_key_to_result_dict('sample.id')] = self._get_fast5_items(h5py_file, 'sample_id')
 
         run_date = self._get_fast5_items(h5py_file, 'exp_start_time')
