@@ -43,6 +43,7 @@ import os
 import time
 import platform as pf
 import tempfile as tp
+import warnings
 from toulligqc import toulligqc_extractor
 from toulligqc import report_data_file_generator
 from toulligqc import html_report_generator
@@ -279,6 +280,8 @@ def main():
     _parse_args(config_dictionary)
     _check_conf(config_dictionary)
     _create_output_directories(config_dictionary)
+
+    warnings.simplefilter('ignore')
 
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
