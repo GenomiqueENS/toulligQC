@@ -18,6 +18,10 @@
 #
 #      https://github.com/GenomicParisCentre/toulligQC
 #
+# First author: Bérengère Laffay
+# Maintainer: Bérengère Laffay
+# Since version 0.10
+
 
 from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
@@ -28,9 +32,14 @@ from toulligqc import albacore_pipeline_log_extractor
 
 class ToulligqcExtractor:
     """
-    Extraction of the extractor selected list
-    :return: extractors list : list of modules (extractors) that are called by the user from the command line.
-    It depends on the parse_args function (toulligqc.py) that fills the config_dictionary.
+    Extraction of the extractor selected list.
+    param config_dictionary: (configuration.py)
+    param result_dict: dictionary which gathers all the extracted
+    information that will be reported in the report.data file
+    :return: extractors list : list of modules (extractors)
+    that are called by the user from the command line.
+    It depends on the parse_args function (toulligqc.py)
+    that fills the config_dictionary.
     """
 
     def __init__(self, config_dictionary):
@@ -63,9 +72,9 @@ class ToulligqcExtractor:
         """
         Extraction of the different details about the config dictionary
         to create the extractors list that will be stored in the result_dict dictionary
-        :param config_dictionary:
-        :param extractors_list:
-        :param result_dict:
+        :param config_dictionary: configuration.py source
+        :param extractors_list: list of modules that will be executed
+        :param result_dict: result_dict dictionary
         :return: extractors_list
         """
         extractors_list.append(fast5_extractor.Fast5Extractor(config_dictionary))

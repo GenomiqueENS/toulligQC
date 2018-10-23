@@ -18,8 +18,12 @@
 # visit the home page at:
 #
 #      https://github.com/GenomicParisCentre/toulligQC
+#
+# First author: Bérengère Laffay
+# Maintainer: Bérengère Laffay
+# Since version 0.6
 
-# Extraction of statistics from 1dsqr_sequencing_summary.txt file
+# Extraction of statistics from 1dsqr_sequencing_summary.txt file (1Dsquare chemistry)
 
 import pandas as pd
 import sys
@@ -30,7 +34,7 @@ import re
 
 class Albacore1DsqrSequencingSummaryExtractor:
     """
-    Extraction of statistics from sequencing_summary.txt file and graph generation
+    Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
     """
     def __init__(self, config_dictionary):
 
@@ -169,7 +173,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
         result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"] = \
             len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
 
-        # Read count proportion
+        # Read proportion
         result_dict["albacore.stats.1d.extractor.fastq.entries.ratio"] = \
             result_dict['albacore.stats.1d.extractor.fastq.entries'] / \
             result_dict['albacore.stats.1d.extractor.fastq.entries']
@@ -217,7 +221,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
         result_dict["albacore.stats.1d.extractor.passes.filtering"] = \
             self.albacore_log_1d['passes_filtering']
 
-        # Yield information
+        # Yield
         result_dict["albacore.stats.1d.extractor.yield"] = \
             sum(self.albacore_log_1d['sequence_length_template']/1000000000)
 
@@ -332,6 +336,8 @@ class Albacore1DsqrSequencingSummaryExtractor:
         self.describe_dict(result_dict, self.add_key_to_result_dict("read.pass.qscore"))
         self.describe_dict(result_dict, self.add_key_to_result_dict("read.fail.qscore"))
 
+        # In case of barcoded samples
+
         if self.is_barcode:
             self.barcode_selection.append('unclassified')
 
@@ -420,6 +426,8 @@ class Albacore1DsqrSequencingSummaryExtractor:
                     for index, value in barcode_selected_read_fail_dataframe['mean_qscore_2d']\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
+
+            # Provide statistic per barcode in the result_dict dictionary
 
             result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_dataframe')] = \
                 pd.DataFrame(dict([(k, pd.Series(v)) for k, v in length.items()]))
@@ -568,7 +576,8 @@ class Albacore1DsqrSequencingSummaryExtractor:
 
     def clean(self, result_dict):
         """
-        Cleaning
+        Removing dictionary entries that will not be kept in the report.data file
+        :param result_dict:
         :return:
         """
 

@@ -19,9 +19,11 @@
 #
 #      https://github.com/GenomicParisCentre/toulligQC
 #
-#
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
 
-# HTML report generation
+# Generates a quality control report in HTML format including graphs and statistical tables
 import base64
 import datetime
 

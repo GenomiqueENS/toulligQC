@@ -13,9 +13,12 @@
 # Copyright for this code is held jointly by the Genomic platform
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
+#
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
 
-
-# Graph generation
+# Functions to generate graphs and statistics tables in HTML format, they use the result_dict dictionary.
 
 import pandas as pd
 import seaborn as sns
@@ -29,8 +32,10 @@ from matplotlib.pyplot import table
 
 def _is_in_result_dict(dict, dict_key, default_value):
     """
-    :param dict:
-    :param dict_key:
+    Global function to check for the presence of an entry in a dictionary
+    and give it a default value.
+    :param result_dict: result_dict dictionary
+    :param dict_key: entry (string)
     :param default_value:
     :return:
     """
@@ -42,7 +47,7 @@ def _is_in_result_dict(dict, dict_key, default_value):
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
-    :param value: information measured
+    :param value: information measured (series)
     """
 
     desc = value.describe()
@@ -71,8 +76,12 @@ def _safe_log(x):
 
 def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots the count histograms of count  of the different types of reads eventually available in a Minion run: template,
-     complement, full_2D.
+    Plots the histogram of count of the different types of reads:
+    Fast5 submitted to MinKNOW
+    FastQ return by MinKNOW
+    1D read return by Albacore
+    1D pass read return by Albacore (Qscore > 7.5)
+    1D fail read return by Albacore (Qscore < 7.5)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -111,6 +120,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
                                  columns=["FastQ entries", "1D", 'Null sequence length', "1D pass", "1D fail"])
 
+    # Histogram completed with the number of basecalling errors found in the pipeline.log file
     else:
         read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                      result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
@@ -165,8 +175,8 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
 def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots an histogram of the reads length by bins of 100 for each of the barcodes described
-    in the design file or without barcode
+    Plots an histogram of the read length for the different types of read:
+    1D, 1Dpass, 1D fail
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
@@ -215,7 +225,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
 
 def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots the reads produced along the run against the time(in hour)
+    Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -248,7 +258,7 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
 
 def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots a boxplot of reads quality
+    Plots a boxplot of reads quality per read type (1D, 1D pass, 1D fail)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi, facecolor='white', edgecolor='black')
@@ -282,7 +292,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
 
 def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the distribution of the phred score
+    Plot the distribution of the phred score (not use anymore)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -314,7 +324,7 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
 def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the distribution of the phred score
+    Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -406,7 +416,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
 
 def channel_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
     """
-    Plots an histogram of the channel count according to the channel number
+    Plots an histogram of the channel count according to the channel number (not use anymore)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -440,7 +450,7 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
 
 def _minion_flowcell_layout():
     """
-    Represents the layout of a minion flowcell
+    Represents the layout of a minion flowcell (not use anymore)
     """
     seeds = [125, 121, 117, 113, 109, 105, 101, 97,
              93, 89, 85, 81, 77, 73, 69, 65,
@@ -498,7 +508,8 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 
 def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
-    Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
+    Plots a pie chart of 1D read pass percentage per barcode of a run.
+    Needs the samplesheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
@@ -506,7 +517,6 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
 
         if all(result_dict['albacore.stats.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
-            return False
 
     barcode_count = result_dict["albacore.stats.1d.extractor.read.pass.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
@@ -547,7 +557,8 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
 
 def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
-    Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
+    Plots a pie chart of 1D read fail percentage per barcode of a run.
+    Needs the samplesheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
@@ -597,7 +608,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
 
 def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the length boxplot for each barcode indicated in the sample sheet
+    Plot boxplot of the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
@@ -636,7 +647,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
 
 def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the phred score distribution boxplot for each barcode indicated in the sample sheet
+    Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
@@ -677,7 +688,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
 def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots the count histograms of count  of the different
-    types of reads eventually available in a Minion run: 1D, full_1Dsquare.
+    types of reads: 1D, 1D square, 1D square pass, 1D square fail.
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -731,8 +742,8 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
 
 def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots an histogram of the reads length by bins of 100
-    for each of the barcodes described in the design file or without barcode
+    Plots an histogram of the read length for the different types of read:
+    1D, 1D square, 1D square pass, 1D square fail
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
@@ -784,7 +795,7 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
 
 def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots a boxplot of reads quality
+    Plots a boxplot of reads quality per read type (1D square, 1D square pass, 1D square fail)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -861,7 +872,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
 
 def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the distribution of the phred score
+    Plot the distribution of the phred score per read type (1D square , 1D square pass, 1D square fail)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -919,7 +930,7 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
 
 def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the scatter plot representing the relation between the phred score and the sequence length
+    Plot the scatter plot representing the relation between the phred score and the sequence length converted in log
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -955,7 +966,8 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
 
 def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
-    Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
+    Plots a pie chart of 1D square read pass percentage per barcode of a run.
+    Needs the sample sheet file describing the barcodes to run.
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
@@ -1003,7 +1015,8 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
 
 def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
-    Plots a pie chart of the barcode percentage of a run. Needs the design file describing the barcodes to run
+    Plots a pie chart of 1D square read fail percentage per barcode of a run.
+    Needs the sample sheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
@@ -1011,7 +1024,6 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
 
         if all(result_dict['albacore.stats.1dsqr.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
-            return False
 
     barcode_count = result_dict["albacore.stats.1dsqr.extractor.read.fail.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
@@ -1052,7 +1064,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
 
 def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the length boxplot for each barcode indicated in the sample sheet
+    Plot boxplot of the 1D square pass and fail read length for each barcode indicated in the sample sheet
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
@@ -1090,7 +1102,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
 
 def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plot the 1Dsquare phred score distribution boxplot for each barcode indicated in the sample sheet
+    Plot boxplot of the 1D square pass and fail read qscore for each barcode indicated in the sample sheet
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 

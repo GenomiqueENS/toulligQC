@@ -18,8 +18,13 @@
 # visit the home page at:
 #
 #      https://github.com/GenomicParisCentre/toulligQC
+#
+# First author: Bérengère Laffay
+# Maintainer: Bérengère Laffay
+# Since version 0.10 
 
-# Extraction of statistics from sequencing_summary.txt file
+# Extraction of information from the pipeline.log file
+
 
 import os
 import re
@@ -27,7 +32,10 @@ import re
 
 class AlbacorePipelineLogExtractor:
     """
-    Extraction of informations from piepline.log file
+    Extraction of information from the pipeline.log file
+    like the flowcell version.
+    param pipeline_source: path to the pipeline.log file (config_dictionary)
+    :return result_dict filled
     """
 
     def __init__(self, config_dictionary):
@@ -73,19 +81,32 @@ class AlbacorePipelineLogExtractor:
         return 'albacore.log.extractor'
 
     def add_key_to_result_dict(self, key):
+        """
+        Adding a key to the result_dict dictionary with the module name as a prefix
+        :param key: key suffix
+        :return: result_dict entry (string)
+        """
         return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
     @staticmethod
     def _is_in_result_dict(result_dict, dict_key, default_value):
+        """
+        Global function to check for the presence of an entry in a dictionary
+        and give it a default value.
+        :param result_dict: result_dict dictionary
+        :param dict_key: entry (string)
+        :param default_value:
+        :return:
+        """
         if dict_key not in result_dict or not result_dict[dict_key]:
             result_dict[dict_key] = default_value
         return result_dict[dict_key]
 
     def extract(self, result_dict):
         """
-        Extraction of the different informations about the fast5 files
-        :param result_dict:
-        :return: result_dict
+        Extraction of the different information about the pipeline.log file
+        :param result_dict: result_dict dictionary
+        :return: result_dict filled
         """
 
         result_dict[self.add_key_to_result_dict('source')] = self.pipeline_source
@@ -124,6 +145,7 @@ class AlbacorePipelineLogExtractor:
 
         pipeline_file.close()
 
+        # Count of the read number (Fast5 files) that have not been converted into Fastq
         result_dict[self.add_key_to_result_dict('raw.fast5.files.not.processed')] = \
             result_dict[self.add_key_to_result_dict('fast5.files.submitted')] \
             - result_dict[self.add_key_to_result_dict('fast5.files.processed')]
@@ -132,6 +154,8 @@ class AlbacorePipelineLogExtractor:
             result_dict[self.add_key_to_result_dict('raw.fast5.files.not.processed')] \
             + result_dict[self.add_key_to_result_dict('fast5.files.failed.to.load.key')] \
             + result_dict[self.add_key_to_result_dict('fast5.files.failed.count')]
+
+        # Ration and frequency deduction
 
         result_dict[self.add_key_to_result_dict('fast5.files.ratio')] = \
             result_dict[self.add_key_to_result_dict('fast5.files.submitted')] / \
@@ -160,13 +184,14 @@ class AlbacorePipelineLogExtractor:
     def graph_generation(result_dict):
         """
         Graph generaiton
-        :return:
+        :return: nothing
         """
         return []
 
     def clean(self, result_dict):
         """
-        Cleaning
+        Removing dictionary entries that will not be kept in the report.data file
+        :param result_dict: result_dict dictionary
         :return:
         """
         keys = []
