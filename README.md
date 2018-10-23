@@ -63,6 +63,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 * pandas
 * seaborn
 * numpy
+* plotly
 
 <a name="pypi-installation"></a>
 ### 1.3 Using a PyPi package
@@ -242,7 +243,7 @@ samplesheet.csv example:
 
 index | Reads | 
 ------- | ------- 
- BC01| ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2``` 
+ BC01 | ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2``` 
 
 ## 3.Output
 
@@ -250,24 +251,26 @@ index | Reads |
 
 ToulligQC gives different informations such as:
 
+Found in the HTML report:
 - A graph allowing to locate potential flowcell spatial biaises
 - A read length histogram adapted to transcripts
 - A graph checking that the sequencing was homogeneous during a run
 - Graphs representing the phred score frequency
 - A set of graphs providing quality, length informations and read counts for each barcode
-- Full statistics are provided in a text file for complementary analyses if needed
 
-in a output directory organised like this : 
+Found in the report.data log file: 
+- The information about ToulligQC execution
+- The environment variables
+- Full statistics are provided for complementary analyses if needed : The information by modules is retained in a key-value form, the prefix of a key being the report data file id of the module
+- The nucleotide rate per read or per read and per barcode if FastQ files have been processed 
+
+Organised in a output directory  like this : 
    
 ```
 RUN_ID
 ├── report.html
 ├── statistics
-│   ├── run_statistics_file.txt                                                                                                                                                                                                                                                               
-│   └── save_result_statistics.txt 
-│   └── run_id.fastq
+│   └── report.data                                                                                                                                                                                                                                              
 └── images
     └── graphes.png
 ```
-
-
