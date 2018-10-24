@@ -1,7 +1,7 @@
 # ToulligQC [![Python 3.6](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) 
 
 
-ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biologie of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
+ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
 
 This program is dedicated to the QC analyses of Oxford Nanopore runs.
 Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1Dsquare runs. 
