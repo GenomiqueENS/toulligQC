@@ -1,4 +1,4 @@
-<a href="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png" align="middle" height="45" width="190" > </a> 
+<a href="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png" align="middle" height="50" width="190" > </a> 
 [![PyPI version](https://badge.fury.io/py/toulligqc.svg)](https://badge.fury.io/py/toulligqc) [![Python 3.6](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) 
 
 
