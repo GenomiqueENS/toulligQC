@@ -139,8 +139,8 @@ RUN_ID
 ├── pipeline.log
 ├── configuration.cfg
 └── workspace
-    └── pass
-        └── run_id.fastq
+|   └── pass
+|       └── run_id.fastq
 └── 1dsq_analysis
     └── sequencing_1dsq_summary.txt
  ```
