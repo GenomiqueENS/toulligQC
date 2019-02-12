@@ -19,9 +19,13 @@
 #
 #      https://github.com/GenomicParisCentre/toulligQC
 #
-#
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
 
-# Creation of a text file containing statistics retrieved from FAST5, FASTQ files and sequencing_summary.txt file
+# Creation of a text file containing statistics retrieved from the result_dict dictionary.
+# The information by modules is retained in a key-value form.
+# The prefix of a key being the report data file id of the module.
 
 import os
 

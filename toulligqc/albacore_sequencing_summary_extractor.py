@@ -18,8 +18,12 @@
 # visit the home page at:
 #
 #      https://github.com/GenomicParisCentre/toulligQC
+#
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
 
-# Extraction of statistics from sequencing_summary.txt file
+# Extraction of statistics from sequencing_summary.txt file (1D chemistry)
 
 import pandas as pd
 import sys
@@ -43,7 +47,7 @@ class AlbacoreSequencingSummaryExtractor:
         self.is_barcode = config_dictionary['barcoding']
         self.get_report_data_file_id()
 
-        # panda's object for 1d_summary
+        # Create panda's object for 1d_summary
         self.albacore_log_1d = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
         self.channel = self.albacore_log_1d['channel']
         self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
@@ -63,6 +67,8 @@ class AlbacoreSequencingSummaryExtractor:
         if self.is_barcode:
 
             self.barcode_selection = config_dictionary['barcode_selection']
+
+            # Check barcodes presence
 
             try:
                 self.albacore_log_1d.loc[~self.albacore_log_1d['barcode_arrangement'].isin(
@@ -100,41 +106,45 @@ class AlbacoreSequencingSummaryExtractor:
 
     def add_key_to_result_dict(self, key):
         """
-        :param key:
-        :return:
+        Adding a key to the result_dict dictionary with the module name as a prefix
+        :param key: key suffix
+        :return: result_dict entry (string)
         """
         return self.get_report_data_file_id() + '.' + key
 
     @staticmethod
-    def describe_dict(result_dict, attribute):
+    def describe_dict(result_dict, prefix):
         """
-        :param result_dict:
-        :param attribute:
-        :return:
+        Gives basic statistic like count, mean, max, median filled in the result_dict dictionary
+        :param result_dict: result_dict dictionary
+        :param prefix: Key prefix
+        :return: result_dict dictionary filled
         """
-        dictionnary = pd.Series.describe(result_dict[attribute]).drop("count")
-        for key in dict(dictionnary):
-            result_dict[attribute + '.' + key] = dictionnary[key]
+        dictionary = pd.Series.describe(result_dict[prefix]).drop("count")
+        for key in dict(dictionary):
+            result_dict[prefix + '.' + key] = dictionary[key]
 
-    def barcode_frequency(self, result_dict, attribute, index=''):
+    def barcode_frequency(self, result_dict, entry, prefix=''):
         """
+        Adds barcode frequency to the result_dict dictionary
         :param result_dict:
-        :param attribute:
-        :param index:
-        :return:
+        :param entry:
+        :param prefix: key prefix
+        :return: result_dict dictionary filled
         """
-        barcode_count = result_dict[self.add_key_to_result_dict(attribute)].value_counts()
+        barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
         count_sorted = barcode_count.sort_index()[self.barcode_selection]
         total = sum(count_sorted)
         for key in dict(count_sorted):
-            result_dict[self.add_key_to_result_dict(index) + key + ".frequency"] = count_sorted[key]*100/total
+            result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = count_sorted[key]*100/total
 
     def extract(self, result_dict):
         """
+        Get Phred score (Qscore) and Length details per read
         :param result_dict:
         :return:
         """
-        # read count
+        # Read count
         result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.albacore_log_1d['num_events'])
         result_dict[self.add_key_to_result_dict("read.count")] = \
             len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
@@ -145,7 +155,6 @@ class AlbacoreSequencingSummaryExtractor:
         # 1D pass information
         result_dict[self.add_key_to_result_dict("read.pass.count")] = \
             len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(True)])
-        print(result_dict[self.add_key_to_result_dict("read.pass.count")])
         result_dict[self.add_key_to_result_dict("read.pass.length")] = \
             self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
         result_dict[self.add_key_to_result_dict("read.pass.sorted")] = \
@@ -156,7 +165,6 @@ class AlbacoreSequencingSummaryExtractor:
         # 1D fail information
         result_dict[self.add_key_to_result_dict("read.fail.count")] = \
             len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(False)])
-        print(result_dict[self.add_key_to_result_dict("read.fail.count")])
         result_dict[self.add_key_to_result_dict("read.fail.length")] = \
             self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
         result_dict[self.add_key_to_result_dict("read.fail.sorted")] = \
@@ -164,7 +172,7 @@ class AlbacoreSequencingSummaryExtractor:
         result_dict[self.add_key_to_result_dict("read.fail.qscore")] = \
             self.albacore_log_1d.mean_qscore_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
 
-        # read count prop
+        # Read proportion
         result_dict[self.add_key_to_result_dict("fastq.entries.ratio")] = \
             result_dict[self.add_key_to_result_dict('fastq.entries')] / \
             result_dict[self.add_key_to_result_dict('fastq.entries')]
@@ -205,14 +213,14 @@ class AlbacoreSequencingSummaryExtractor:
             result_dict[self.add_key_to_result_dict("read.fail.count")] / \
             result_dict[self.add_key_to_result_dict("read.count")]*100
 
-        # read length information
+        # Read length information
         result_dict[self.add_key_to_result_dict("sequence.length")] = \
             self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
 
         result_dict[self.add_key_to_result_dict("passes.filtering")] = \
             self.albacore_log_1d['passes_filtering']
 
-        # yield information
+        # Yield
         result_dict[self.add_key_to_result_dict("yield")] = sum(self.albacore_log_1d['sequence_length_template'])
 
         result_dict[self.add_key_to_result_dict("start.time.sorted")] = \
@@ -221,17 +229,17 @@ class AlbacoreSequencingSummaryExtractor:
         result_dict[self.add_key_to_result_dict("run.time")] = \
             (max(result_dict[self.add_key_to_result_dict("start.time.sorted")]))
 
-        # qscore information
+        # Qscore information
         result_dict[self.add_key_to_result_dict("mean.qscore")] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
 
-        # channel occupancy information
+        # Channel occupancy information
         result_dict[self.add_key_to_result_dict('channel.occupancy.statistics')] = self._occupancy_channel()
         channel_occupancy_statistics = result_dict[self.add_key_to_result_dict('channel.occupancy.statistics')]
 
         for index, value in channel_occupancy_statistics.iteritems():
             result_dict[self.add_key_to_result_dict('channel.occupancy.statistics.') + index] = value
 
-        # length's statistic information provided in the result_dict
+        # Length's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.length')] = \
             self.albacore_log_1d['sequence_length_template'].describe()
 
@@ -240,7 +248,7 @@ class AlbacoreSequencingSummaryExtractor:
         self.describe_dict(result_dict, self.add_key_to_result_dict("read.pass.length"))
         self.describe_dict(result_dict, self.add_key_to_result_dict("read.fail.length"))
 
-        # qscore's statistic information provided in the result_dict
+        # Qscore's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.qscore')] = \
             pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
 
@@ -249,6 +257,7 @@ class AlbacoreSequencingSummaryExtractor:
         self.describe_dict(result_dict, self.add_key_to_result_dict("read.pass.qscore"))
         self.describe_dict(result_dict, self.add_key_to_result_dict("read.fail.qscore"))
 
+        # In case of barcoded samples
         if self.is_barcode:
 
             self.barcode_selection.append('unclassified')
@@ -334,6 +343,8 @@ class AlbacoreSequencingSummaryExtractor:
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
 
+            # Provide statistic per barcode in the result_dict dictionary
+
             result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_dataframe')] = pd.DataFrame(
                 dict([(k, pd.Series(v)) for k, v in length.items()]))
             result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_melted_dataframe')] = pd.melt(
@@ -353,7 +364,7 @@ class AlbacoreSequencingSummaryExtractor:
 
     def graph_generation(self, result_dict):
         """
-        Generation of the differents graphs containing in the graph_generator module
+        Generation of the different graphs containing in the graph_generator module
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
@@ -364,35 +375,30 @@ class AlbacoreSequencingSummaryExtractor:
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-
         images.append(graph_generator.read_length_multihistogram(result_dict, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-
         images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type',
                                                          self.my_dpi, images_directory,
                                                          "Yield plot of basecalled reads (1D in orange)."
                                                          " The basecalled reads are filtered with a 7.5 quality "
                                                          "score threshold in pass (1D pass in green) "
                                                          "or fail (1D fail in red) categories."))
-
         images.append(graph_generator.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
                                                                 self.my_dpi, images_directory,
                                                                 "Boxplot of 1D reads (in orange) quality."
                                                                 "The basecalled reads are filtered with a 7.5 quality "
                                                                 "score threshold in pass (1D pass in green) "
                                                                 "or fail (1D fail in red) categories."))
-
         images.append(graph_generator.allphred_score_frequency(result_dict,
                                                                'Mean Phred score frequency of all 1D read type',
                                                                self.my_dpi, images_directory,
                                                                "The basecalled reads are filtered with a 7.5 quality "
                                                                "score threshold in pass (1D pass in green) "
                                                                "or fail (1D fail in red) categories."))
-
         channel_count = self.channel
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
@@ -405,7 +411,6 @@ class AlbacoreSequencingSummaryExtractor:
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
-
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict,
                                                                             '1D pass reads percentage of different '
@@ -435,7 +440,7 @@ class AlbacoreSequencingSummaryExtractor:
 
     def clean(self, result_dict):
         """
-        Cleaning
+        Removing dictionary entries that will not be kept in the report.data file
         :return:
         """
 

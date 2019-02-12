@@ -19,6 +19,9 @@
 #
 #      https://github.com/GenomicParisCentre/toulligQC
 #
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
 
 # Extraction of statistics about the FASTQ files
 
@@ -44,6 +47,12 @@ def _show(config_dictionary, msg):
 
 
 class FastqExtractor:
+    """
+    Uses fastq files to infer the nucleotide rate per read.
+    Also gives the nucleotide rate per read per sample in case of barcoded samples
+    param Fastq_source: Path to the Fastq files
+    return: result_dict dictionary filled
+    """
     def __init__(self, config_dictionary):
         self.config_dictionary = config_dictionary
         self.global_dico = {}
@@ -83,16 +92,18 @@ class FastqExtractor:
 
     def add_key_to_result_dict(self, key):
         """
-        :param key:
-        :return:
+        Adds a key to the result_dict dictionary with the module name as a prefix
+        :param key: key suffix
+        :return: result_dict entry (string)
         """
         return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
     @staticmethod
     def add_value_to_unwritten_key(result_dict, value):
         """
+        Adds a key name to the list of dictionary entries that will not be in the report.data file
         :param result_dict:
-        :param value:
+        :param value: result_dict entry (string)
         :return:
         """
         return result_dict['unwritten.keys'].append(value)
@@ -157,8 +168,9 @@ class FastqExtractor:
 
     def extract(self, result_dict):
         """
-        Extraction of differents information from the fastq file
-        :param result_dict: result dictionary where the informations or statistics are stored
+        Extraction of different information from the fastq file
+        :param result_dict: dictionary which gathers all the extracted
+        information that will be reported in the report.data file
         :return: result_dict
         """
         result_dict[self.add_key_to_result_dict('source')] = self.fastq_source
@@ -187,7 +199,9 @@ class FastqExtractor:
 
     def clean(self, result_dict):
         """
-        Cleaning
+        Removing dictionary entries that will not be kept in the report.data file
+        :param result_dict: dictionary which gathers all the extracted
+        information that will be reported in the report.data file
         :return:
         """
 
@@ -252,7 +266,7 @@ class FastqExtractor:
     def _barcoded_fastq_informations(self, selected_barcode=''):
         """
         Get different information about fastq files
-        :param selected_barcode: barcode selection
+        :param selected_barcode: barcode selection taken from the samplesheet file
         """
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter, read_count = \
             self._fastq_metrics()
@@ -271,7 +285,7 @@ class FastqExtractor:
 
     def _read_fastq_barcoded(self):
         """
-        Get informations about the barcoded fastq sequence
+        Get information about the barcoded fastq sequence
         """
         self.init()
         if os.path.isfile(self.fastq_source):
@@ -311,7 +325,7 @@ class FastqExtractor:
 
     def _read_fastq_without_barcode(self):
         """
-        Gets informations about the fastq sequence not barcoded
+        Get information about the fastq sequence not barcoded
         """
 
         self.global_dico[self.add_key_to_result_dict('nucleotide.count')] = 0
@@ -343,6 +357,7 @@ class FastqExtractor:
                 self.fastq_file = fastq_files
                 self._fastq_without_barcode_information()
 
+        # Fill the result_dict dictionary
         self.global_dico[self.add_key_to_result_dict('mean.nucleotide.count.per.read')] = \
             self.global_dico[self.add_key_to_result_dict('nucleotide.count')] / \
             self.global_dico[self.add_key_to_result_dict('read.count')]
@@ -367,6 +382,8 @@ class FastqExtractor:
         """
         total_nucs_template, self.global_length_array, _, template_nucleotide_counter, read_count = \
             self._fastq_metrics()
+
+        # Fill the result_dict dictionary
         self.global_dico[self.add_key_to_result_dict('read.count')] += read_count
         self.global_dico[self.add_key_to_result_dict('nucleotide.count')] += total_nucs_template
         self.global_dico[self.add_key_to_result_dict('nucleotide.counter')] += template_nucleotide_counter

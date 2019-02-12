@@ -18,7 +18,9 @@
 #
 #      https://github.com/GenomicParisCentre/toulligQC
 #
-#
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
 
 # Extraction of the information about the FAST5 files
 
@@ -34,12 +36,13 @@ import dateutil
 
 class Fast5Extractor:
     """
-    Extraction of different informations from a FAST5 file
+    Extraction of different information from a FAST5 file
     param fast5_source: FAST5 file directory
-    param result_directory: result directory
+    param result_directory: dictionary which gathers all the extracted
+    information that will be reported in the report.data file
     param fast5_file_extension: extension used for the storage of the set of FAST5 files if there's one
     param report_name: report name
-    return: a tuple containing the informations about a FAST5 file
+    return: a tuple containing the information about a FAST5 file
     """
 
     def __init__(self, config_dictionary):
@@ -62,12 +65,17 @@ class Fast5Extractor:
     @staticmethod
     def get_report_data_file_id():
         """
-        Get the report.data id of the extractor.
+        Get the report.data id of the extractor
         :return: the report.data id
         """
         return 'fast5.extractor'
 
     def _add_key_to_result_dict(self, key):
+        """
+        Adding a key to the result_dict dictionary with the module name as a prefix
+        :param key: key suffix
+        :return: result_dict entry (string)
+        """
         return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
     def init(self):
@@ -95,19 +103,22 @@ class Fast5Extractor:
     def extract(self, result_dict):
         """
         Extraction of the different information about the fast5 files
-        :param result_dict:
-        :return: result_dict
+        :param result_dict: Dictionary which gathers all the extracted
+        information that will be reported in the report.data file
+        :return: result_dict filled
         """
         h5py_file = self._read_fast5()
         result_dict[self._add_key_to_result_dict('source')] = self.fast5_source
         result_dict[self._add_key_to_result_dict('flowcell.id')] = self._get_fast5_items(h5py_file, 'flow_cell_id')
         result_dict[self._add_key_to_result_dict('minknow.version')] = self._get_fast5_items(h5py_file, 'version')
         result_dict[self._add_key_to_result_dict('hostname')] = self._get_fast5_items(h5py_file, 'hostname')
-        result_dict[self._add_key_to_result_dict('operating.system')] = self._get_fast5_items(h5py_file,
-                                                                                              'operating_system')
+
+        result_dict[self._add_key_to_result_dict('operating.system')] = \
+            self._get_fast5_items(h5py_file, 'operating_system')
         result_dict[self._add_key_to_result_dict('device.id')] = self._get_fast5_items(h5py_file, 'device_id')
-        result_dict[self._add_key_to_result_dict('protocol.run.id')] = self._get_fast5_items(h5py_file,
-                                                                                             'protocol_run_id')
+
+        result_dict[self._add_key_to_result_dict('protocol.run.id')] = \
+            self._get_fast5_items(h5py_file, 'protocol_run_id')
         result_dict[self._add_key_to_result_dict('sample.id')] = self._get_fast5_items(h5py_file, 'sample_id')
 
         run_date = self._get_fast5_items(h5py_file, 'exp_start_time')
@@ -124,13 +135,16 @@ class Fast5Extractor:
     def graph_generation(self, result_dict):
         """
         Graph generaiton
-        :return:
+        :return: nothing
         """
         return []
 
     def clean(self, result_dict):
         """
         Deleting the temporary fast5 file extracted from the tar archive if used
+        and removing dictionary entries that will not be kept in the report.data file
+        :param result_dict: dictionary which gathers all the extracted
+        information that will be reported in the report.data file
         :return:
         """
         if self.temporary_directory:
@@ -141,12 +155,12 @@ class Fast5Extractor:
             key_list.extend(self._add_key_to_result_dict(key))
         result_dict['unwritten.keys'].extend(key_list)
 
-    @staticmethod
     def _fast5_tar_bz2_extraction(self, tar_bz2_file, result_directory):
         """
-        Extraction of a FAST5 file from a set of FAST5 files
+        Extraction of the FAST5 file stored in tar_bz2 format
         :param tar_bz2_file: tar bz2 file containing the set of the raw FAST5 files
-        :param result_directory: result directory
+        :param result_directory:dictionary which gathers all the extracted
+        information that will be reported in the report.data file
         :return: a FAST5 file
         """
         tar_bz2 = tarfile.open(tar_bz2_file, 'r:bz2')
@@ -159,9 +173,10 @@ class Fast5Extractor:
 
     def _fast5_tar_gz_extraction(self, tar_gz_file, result_directory):
         """
-        Extraction of a FAST5 file from a set of FAST5 files
+        Extraction of a FAST5 file stored in tar_gz format
         :param tar_gz_file: tar gz file containing the set of the raw FAST5 files
-        :param result_directory: result directory
+        :param result_directory: dictionary which gathers all the extracted
+        information that will be reported in the report.data file
         :return: a FAST5 file
         """
         tar_gz = tarfile.open(self, tar_gz_file, 'r:gz')
@@ -174,7 +189,8 @@ class Fast5Extractor:
 
     def _read_fast5(self):
         """
-        Extraction of one fast5 file from the archive and stores it in a h5py object for next retrieving informations
+        Extraction of one fast5 file from the archive and stores
+        it in a h5py object for next retrieving information
         :return: h5py_file: h5py file
         """
         self.temporary_directory = tempfile.mkdtemp(dir=self.result_directory)
@@ -214,7 +230,7 @@ class Fast5Extractor:
 
     def _get_fast5_items(self, h5py_file, params):
         """
-        Global function to exctract run informations stores in h5py format
+        Global function to extract run information stores in h5py format
         :param h5py_file: fast5 file store in a h5py object
         :param params:  required h5py attributes
         :return: h5py value, for example flow_cell_id : FAE22827

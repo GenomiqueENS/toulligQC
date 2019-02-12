@@ -43,6 +43,7 @@ import os
 import time
 import platform as pf
 import tempfile as tp
+import warnings
 from toulligqc import toulligqc_extractor
 from toulligqc import report_data_file_generator
 from toulligqc import html_report_generator
@@ -227,9 +228,9 @@ def _show(config_dictionary, msg):
 
 def _format_time(t):
     """
-    Format a time duration for humans
+    Format a time duration
     :param t: time in milliseconds
-    :return: a string with the duration
+    :return: the duration in string
     """
 
     return time.strftime("%H:%M:%S", time.gmtime(t))
@@ -237,8 +238,10 @@ def _format_time(t):
 
 def _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict):
     """
-    Initialization of the result_dict with the OS parameters and the extractors list
+    Initialization of the result_dict with the OS parameters and the environment variables
     :param config_dictionary: details from command user line
+    :param result_dict: Dictionary which gathers all the extracted
+    information that will be reported in the report.data file
     :return: result_dict dictionary and extractors list
     """
     result_dict['toulligqc.info.username'] = os.environ.get('USERNAME')
@@ -258,7 +261,24 @@ def _extractors_list_and_result_dictionary_initialisation(config_dictionary, res
     if config_dictionary['barcoding'].lower() == 'true':
         result_dict['toulligqc.info.barcode.option'] = "True"
         result_dict['toulligqc.info.barcode.selection'] = _get_barcode(config_dictionary['sample_sheet_file'])
+    dependancies_version(result_dict)
+
     return result_dict
+
+
+def dependancies_version(result_dict):
+    """
+    Get the environment variables
+    :param result_dict: result_dict dictionnary
+    :return: result_dict entries about the environment variable like LANG
+    """
+    for name, module in sorted(sys.modules.items()):
+        if hasattr(module, '__version__'):
+            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.__version__
+        elif hasattr(module, 'VERSION'):
+            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.VERSION
+    for name, value in os.environ.items():
+        result_dict['toulligqc.info.env.' + name] = value
 
 
 def main():
@@ -269,6 +289,8 @@ def main():
     _parse_args(config_dictionary)
     _check_conf(config_dictionary)
     _create_output_directories(config_dictionary)
+
+    warnings.simplefilter('ignore')
 
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
@@ -286,6 +308,7 @@ def main():
         config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] \
                                                        + config_dictionary['report_name'] + '/sequencing_summary.txt'
 
+
     # Print welcome message
     _welcome(config_dictionary)
 
@@ -301,10 +324,6 @@ def main():
 
     graphs = []
     qc_start = time.time()
-
-    for extractor in extractors_list:
-        extractor.check_conf()
-        extractor.init()
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
@@ -323,7 +342,7 @@ def main():
         _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(),
                                                                                _format_time(extract_time)))
 
-    # HTML report and statistics file generation
+    # HTML report and report.data file generation
     _show(config_dictionary, "* Write HTML report")
     html_report_generator.html_report(config_dictionary, result_dict, graphs)
 

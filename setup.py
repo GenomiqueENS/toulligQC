@@ -1,7 +1,6 @@
 import os
 from setuptools import setup, find_packages
 from codecs import open
-from os import path
 
 version_py = os.path.join(os.path.dirname(__file__), 'toulligqc', 'version.py')
 version = open(version_py).read().strip().split('=')[-1].strip().replace('\'', '').replace('\"', '')
@@ -22,7 +21,7 @@ setup(
     author_email='toulligqc@biologie.ens.fr',
 
     license='GPL V3',
-    platforms = 'ALL',
+    platforms='ALL',
     classifiers=[
         'Development Status :: 4 - Beta',
 
@@ -49,8 +48,8 @@ setup(
     include_package_data=True,
 
     python_requires='>=3.5',
-    install_requires=['matplotlib>=2.2,<2.3', 'plotly>=2.2,<2.3' 'seaborn>=0.7,<0.8', 'h5py>=2.7,<2.8',
-                      'pandas>=0.23,<0.24', 'numpy>=1.15,<1.16'],
+    install_requires=['matplotlib>=2.1,<2.2', 'plotly>=2.2,<2.3', 'seaborn>=0.8,<0.9', 'h5py>=2.7,<2.8',
+                      'pandas>=0.22,<0.23', 'numpy>=1.13,<1.14'],
 
     entry_points={
         'console_scripts': [
