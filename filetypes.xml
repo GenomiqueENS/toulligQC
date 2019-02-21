@@ -2,6 +2,7 @@
   <component name="FileTypeManager" version="17">
     <extensionMap>
       <mapping pattern="collapse_isoforms_precise.py" type="Python" />
+      <mapping pattern="pslToBed" type="Python" />
     </extensionMap>
   </component>
 </application>
