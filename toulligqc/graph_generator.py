@@ -96,27 +96,27 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         _is_in_result_dict(result_dict, 'albacore.log.extractor.fast5.files.submitted', -1)
 
     if result_dict['albacore.log.extractor.fast5.files.submitted'] == -1:
-        read_type = [result_dict['albacore.stats.1d.extractor.fastq.entries'],
-                     result_dict['albacore.stats.1d.extractor.read.count'],
-                     result_dict['albacore.stats.1d.extractor.read.with.length.equal.zero.count'],
-                     result_dict["albacore.stats.1d.extractor.read.pass.count"],
-                     result_dict["albacore.stats.1d.extractor.read.fail.count"]]
+        read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                     result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                     result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                     result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                     result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]]
         label = ("FastQ entries", "1D", 'Null sequence length', "1D pass", "1D fail")
         nd = np.arange(len(read_type))
         bars = ax.bar(nd, read_type, align='center',
                       color=["lightblue", "salmon", 'purple', "yellowgreen", "orangered"],
                       edgecolor="black", linewidth=1)
 
-        array = np.array([[result_dict["albacore.stats.1d.extractor.fastq.entries"],
-                           result_dict["albacore.stats.1d.extractor.read.count"],
-                           result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"],
-                           result_dict["albacore.stats.1d.extractor.read.pass.count"],
-                           result_dict["albacore.stats.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],
-                           result_dict["albacore.stats.1d.extractor.read.count.frequency"],
-                           result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.frequency"],
-                           result_dict["albacore.stats.1d.extractor.read.pass.frequency"],
-                           result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
+        array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
+                          [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
                                  columns=["FastQ entries", "1D", 'Null sequence length', "1D pass", "1D fail"])
 
@@ -124,11 +124,11 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     else:
         read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                      result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                     result_dict['albacore.stats.1d.extractor.fastq.entries'],
-                     result_dict['albacore.stats.1d.extractor.read.count'],
-                     result_dict['albacore.stats.1d.extractor.read.with.length.equal.zero.count'],
-                     result_dict["albacore.stats.1d.extractor.read.pass.count"],
-                     result_dict["albacore.stats.1d.extractor.read.fail.count"]]
+                     result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                     result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                     result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                     result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                     result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]]
         label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",
                  'Null sequence length', "1D pass", "1D fail")
         nd = np.arange(len(read_type))
@@ -138,18 +138,18 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
         array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'],
                            result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                           result_dict["albacore.stats.1d.extractor.fastq.entries"],
-                           result_dict["albacore.stats.1d.extractor.read.count"],
-                           result_dict['albacore.stats.1d.extractor.read.with.length.equal.zero.count'],
-                           result_dict["albacore.stats.1d.extractor.read.pass.count"],
-                           result_dict["albacore.stats.1d.extractor.read.fail.count"]],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                           result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
                           [result_dict['albacore.log.extractor.fast5.files.frequency'],
                            result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],
-                           result_dict['albacore.stats.1d.extractor.fastq.entries.frequency'],
-                           result_dict["albacore.stats.1d.extractor.read.count.frequency"],
-                           result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.frequency"],
-                           result_dict["albacore.stats.1d.extractor.read.pass.frequency"],
-                           result_dict["albacore.stats.1d.extractor.read.fail.frequency"]]])
+                           result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
+                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
                                  columns=["Raw Fast5", "Raw Fast5 with error", "FastQ_entries", "1D",
                                           'Null sequence length', "1D pass", "1D fail"])
@@ -181,8 +181,8 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     minimum, maximum = \
-        min(result_dict["albacore.stats.1d.extractor.sequence.length"]), \
-        max(result_dict["albacore.stats.1d.extractor.sequence.length"])
+        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
+        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
     read_type = ['1D', '1D pass', '1D fail']
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -190,9 +190,9 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    data = [result_dict["albacore.stats.1d.extractor.sequence.length"],
-            result_dict["albacore.stats.1d.extractor.read.pass.length"],
-            result_dict["albacore.stats.1d.extractor.read.fail.length"]]
+    data = [result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]]
     ls = 2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30)
     n, bins, patches = ax.hist(data, color=["salmon", "yellowgreen", "orangered"],
                                edgecolor='black', label=read_type,
@@ -210,9 +210,9 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax.set_ylabel('Read number')
     ax.set_title(main)
     dataframe = \
-        pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.sequence.length"],
-                      "1D pass": result_dict["albacore.stats.1d.extractor.read.pass.length"],
-                      "1D fail": result_dict["albacore.stats.1d.extractor.read.fail.length"]})
+        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
+                      "1D pass": result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
+                      "1D fail": result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]})
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
 
     plt.savefig(output_file)
@@ -230,19 +230,19 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    plt.plot(result_dict["albacore.stats.1d.extractor.start.time.sorted"],
-             np.arange(len(result_dict["albacore.stats.1d.extractor.start.time.sorted"])),
+    plt.plot(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"],
+             np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"])),
              color='salmon', linewidth=1, label="1D")
 
-    plt.plot(result_dict["albacore.stats.1d.extractor.read.pass.sorted"],
-             np.arange(len(result_dict["albacore.stats.1d.extractor.read.pass.sorted"])),
+    plt.plot(result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.sorted"],
+             np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.sorted"])),
              color='yellowgreen', linewidth=1, label="1D pass")
 
-    plt.plot(result_dict["albacore.stats.1d.extractor.read.fail.sorted"],
-             np.arange(len(result_dict["albacore.stats.1d.extractor.read.fail.sorted"])),
+    plt.plot(result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"],
+             np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"])),
              color='orangered', linewidth=1, label="1D fail")
 
-    plt.xticks(np.arange(0, max(result_dict["albacore.stats.1d.extractor.start.time.sorted"]), 8))
+    plt.xticks(np.arange(0, max(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"]), 8))
 
     plt.ylabel("Read number")
     plt.xlabel("Time (Hour)")
@@ -267,9 +267,9 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
     order = ["1D", "1D pass", "1D fail"]
     dataframe = \
-        pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"],
-                      "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'],
-                      "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
+        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
+                      "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
+                      "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
     ax = plt.subplot(gs[0])
     sns.boxplot(data=dataframe, ax=ax, palette=my_pal, order=order, linewidth=1)
     plt.ylabel('Mean Phred score')
@@ -301,7 +301,7 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    sns.distplot(result_dict["albacore.stats.1d.extractor.mean.qscore"], bins=15, color='salmon',
+    sns.distplot(result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"], bins=15, color='salmon',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1D")
 
     plt.legend()
@@ -309,10 +309,10 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"]})
+    dataframe = pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]})
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=result_dict["albacore.stats.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
+    plt.axvline(x=result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
 
     plt.savefig(output_file)
     plt.close()
@@ -332,9 +332,9 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     ax = plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    sns.distplot(result_dict["albacore.stats.1d.extractor.mean.qscore"], bins=15, ax=ax, color='salmon',
+    sns.distplot(result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"], bins=15, ax=ax, color='salmon',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1D")
-    plt.axvline(x=result_dict["albacore.stats.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
+    plt.axvline(x=result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
 
     ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
@@ -346,11 +346,11 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
     ax2 = plt.subplot(gs[1])
 
-    sns.distplot(result_dict['albacore.stats.1d.extractor.read.pass.qscore'],
+    sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
                  ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
                  color='yellowgreen', hist=True, label='1D pass')
 
-    sns.distplot(result_dict['albacore.stats.1d.extractor.read.fail.qscore'],
+    sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'],
                  ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
                  color='orangered', label='1D fail', hist=True)
 
@@ -361,13 +361,13 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
     plt.title(main)
-    plt.axvline(x=result_dict['albacore.stats.1d.extractor.read.pass.qscore'].describe()['50%'], color='yellowgreen')
-    plt.axvline(x=result_dict['albacore.stats.1d.extractor.read.fail.qscore'].describe()['50%'], color='orangered')
+    plt.axvline(x=result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].describe()['50%'], color='yellowgreen')
+    plt.axvline(x=result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].describe()['50%'], color='orangered')
 
     dataframe = \
-        pd.DataFrame({"1D": result_dict["albacore.stats.1d.extractor.mean.qscore"],
-                      "1D pass": result_dict['albacore.stats.1d.extractor.read.pass.qscore'],
-                      "1D fail": result_dict['albacore.stats.1d.extractor.read.fail.qscore']})
+        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
+                      "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
+                      "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
 
     plt.savefig(output_file)
     plt.close()
@@ -387,18 +387,18 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(12, 6), dpi=my_dpi)
     ax = plt.gca()
 
-    read_pass = plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.pass.length"],
-                            y=result_dict["albacore.stats.1d.extractor.read.pass.qscore"],
+    read_pass = plt.scatter(x=result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
+                            y=result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"],
                             color="yellowgreen")
 
-    read_fail = plt.scatter(x=result_dict["albacore.stats.1d.extractor.read.fail.length"],
-                            y=result_dict["albacore.stats.1d.extractor.read.fail.qscore"],
+    read_fail = plt.scatter(x=result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"],
+                            y=result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"],
                             color="orangered")
 
     plt.legend((read_pass, read_fail), ("1D pass", "1D fail"))
-    plt.xlim(np.min(result_dict["albacore.stats.1d.extractor.sequence.length"]
-                    .loc[result_dict["albacore.stats.1d.extractor.sequence.length"] > 0]),
-             np.max(result_dict["albacore.stats.1d.extractor.sequence.length"]))
+    plt.xlim(np.min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
+                    .loc[result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] > 0]),
+             np.max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]))
 
     plt.yticks()
     plt.xscale('log')
@@ -515,10 +515,10 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['albacore.stats.1d.extractor.barcode.arrangement'] != element):
+        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
 
-    barcode_count = result_dict["albacore.stats.1d.extractor.read.pass.barcode"].value_counts()
+    barcode_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
@@ -564,11 +564,11 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['albacore.stats.1d.extractor.barcode.arrangement'] != element):
+        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode_count = result_dict["albacore.stats.1d.extractor.read.fail.barcode"].value_counts()
+    barcode_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
@@ -617,7 +617,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.subplot(gs[0])
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    ax = sns.boxplot(data=result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
+    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
                      x='barcodes', y='length', hue='passes_filtering',
                      showfliers=False, palette={True: "yellowgreen", False: "orangered"},
                      hue_order=[True, False])
@@ -628,7 +628,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.ylabel('Read length(bp)')
     plt.title(main)
 
-    df = result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_length_dataframe']
+    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -656,7 +656,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     plt.subplot(gs[0])
 
-    ax = sns.boxplot(data=result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
+    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
                      palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -665,7 +665,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     plt.ylabel('Mean Phred score')
     plt.title(main)
 
-    df = result_dict['albacore.stats.1d.extractor.barcode_selection_sequence_phred_dataframe']
+    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -699,24 +699,24 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     plt.mfc = 'white'
     plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    read_type = [result_dict['albacore.stats.1d.extractor.read.count'],
-                 result_dict['albacore.stats.1dsqr.extractor.read.count'],
-                 result_dict['albacore.stats.1dsqr.extractor.read.pass.count'],
-                 result_dict['albacore.stats.1dsqr.extractor.read.fail.count']]
+    read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                 result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
+                 result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
+                 result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.count']]
     label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail")
     nd = np.arange(len(read_type))
     bars = ax.bar(nd, read_type, align='center', color=["salmon", "orange", "yellowgreen", "orangered"],
                   edgecolor="black", linewidth=1)
 
     array = \
-        np.array([[result_dict['albacore.stats.1d.extractor.read.count'],
-                   result_dict['albacore.stats.1dsqr.extractor.read.count'],
-                   result_dict['albacore.stats.1dsqr.extractor.read.pass.count'],
-                   result_dict["albacore.stats.1dsqr.extractor.read.pass.count"]],
-                  [result_dict['albacore.stats.1d.extractor.read.count.frequency'],
-                   result_dict["albacore.stats.1dsqr.extractor.read.count.frequency"],
-                   result_dict["albacore.stats.1dsqr.extractor.read.pass.frequency"],
-                   result_dict["albacore.stats.1dsqr.extractor.read.fail.frequency"]]])
+        np.array([[result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                   result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
+                   result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
+                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"]],
+                  [result_dict['basecaller.sequencing.summary.1d.extractor.read.count.frequency'],
+                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
+                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
+                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"]]])
 
     dataframe = pd.DataFrame(array, index=['count', 'frequency'],
                              columns=["FastQ_entries", "1D", "1D pass", "1D fail"])
@@ -747,14 +747,14 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    read_1d = result_dict["albacore.stats.1d.extractor.sequence.length"]
-    read_1dsqr = result_dict['albacore.stats.1dsqr.extractor.sequence.length']
-    read_pass_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.pass.length']
-    read_fail_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.fail.length']
+    read_1d = result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
+    read_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
+    read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length']
+    read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length']
 
     minimum, maximum = \
-        min(result_dict["albacore.stats.1d.extractor.sequence.length"]), \
-        max(result_dict["albacore.stats.1d.extractor.sequence.length"])
+        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
+        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
     read_type = ['1D', '1Dsquare', '1Dsquare pass', '1Dsquare fail']
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
@@ -801,11 +801,11 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     plt.subplots_adjust(bottom=0.015, top=1.0)
-    mean_qscore_1d = result_dict["albacore.stats.1d.extractor.mean.qscore"]
+    mean_qscore_1d = result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]
 
-    mean_qscore_1dsqr = result_dict['albacore.stats.1dsqr.extractor.mean.qscore']
-    read_pass_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
-    read_fail_1dsqr = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
+    mean_qscore_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']
+    read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore']
+    read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
 
     my_pal = {"1D": "salmon",
               "1Dsquare": "goldenrod",
@@ -849,7 +849,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
     plt.subplot(gs[0])
 
-    sns.distplot(result_dict['albacore.stats.1dsqr.extractor.mean.qscore'], bins=15, color='goldenrod',
+    sns.distplot(result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'], bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1Dsquare")
 
     plt.legend()
@@ -857,10 +857,10 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     plt.ylabel("Frequency")
     plt.title(main)
 
-    dataframe = pd.DataFrame({"1Dsquare": result_dict['albacore.stats.1dsqr.extractor.mean.qscore']})
+    dataframe = pd.DataFrame({"1Dsquare": result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']})
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=result_dict['albacore.stats.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
+    plt.axvline(x=result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
 
     plt.savefig(output_file)
     plt.close()
@@ -878,18 +878,18 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
-    qscore_1d = result_dict["albacore.stats.1d.extractor.mean.qscore"]
-    qscore_1dsqr = result_dict['albacore.stats.1dsqr.extractor.mean.qscore']
-    mean_qscore_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
-    mean_qscore_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
+    qscore_1d = result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]
+    qscore_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']
+    mean_qscore_read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore']
+    mean_qscore_read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
 
     ax = plt.subplot(gs[0])
-    sns.distplot(result_dict['albacore.stats.1dsqr.extractor.mean.qscore'], ax=ax, bins=15, color='goldenrod',
+    sns.distplot(result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'], ax=ax, bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1Dsquare")
 
     ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
-    plt.axvline(x=result_dict['albacore.stats.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
+    plt.axvline(x=result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
@@ -936,18 +936,18 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     ax = plt.gca()
 
-    length_1dsqr_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.length']
-    length_1dsqr_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.length']
+    length_1dsqr_read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length']
+    length_1dsqr_read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length']
 
-    qscore_1dsqr_read_pass = result_dict['albacore.stats.1dsqr.extractor.read.pass.qscore']
-    qscore_1dsqr_read_fail = result_dict['albacore.stats.1dsqr.extractor.read.fail.qscore']
+    qscore_1dsqr_read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore']
+    qscore_1dsqr_read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
 
     read_pass = plt.scatter(x=length_1dsqr_read_pass, y=qscore_1dsqr_read_pass, color="yellowgreen")
     read_fail = plt.scatter(x=length_1dsqr_read_fail, y=qscore_1dsqr_read_fail, color="orangered")
     plt.legend((read_pass, read_fail), ("1Dsquare pass", "1Dsquare fail"))
-    plt.xlim(np.min(result_dict['albacore.stats.1dsqr.extractor.sequence.length']
-                    .loc[result_dict['albacore.stats.1dsqr.extractor.sequence.length'] > 0]),
-             np.max(result_dict['albacore.stats.1dsqr.extractor.sequence.length']))
+    plt.xlim(np.min(result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
+                    .loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length'] > 0]),
+             np.max(result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']))
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
@@ -973,11 +973,11 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['albacore.stats.1dsqr.extractor.barcode.arrangement'] != element):
+        if all(result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode_count = result_dict["albacore.stats.1dsqr.extractor.read.pass.barcode"].value_counts()
+    barcode_count = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
@@ -1022,10 +1022,10 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     plt.figure(figsize=(800 / my_dpi, 800 / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['albacore.stats.1dsqr.extractor.barcode.arrangement'] != element):
+        if all(result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
 
-    barcode_count = result_dict["albacore.stats.1dsqr.extractor.read.fail.barcode"].value_counts()
+    barcode_count = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcode"].value_counts()
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
@@ -1075,7 +1075,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
 
     ax = \
         sns.boxplot(
-            data=result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_length_melted_dataframe'],
+            data=result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_length_melted_dataframe'],
             x='barcodes', y='length', hue='passes_filtering', showfliers=False,
             palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -1084,7 +1084,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
     plt.ylabel('Read length(bp)')
     plt.title(main)
 
-    df = result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_length_dataframe']
+    df = result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -1113,7 +1113,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
 
     ax = \
         sns.boxplot(
-            data=result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_melted_dataframe'],
+            data=result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_phred_melted_dataframe'],
             x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
             palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -1122,7 +1122,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
     plt.ylabel('Mean Phred score')
     plt.title(main)
 
-    df = result_dict['albacore.stats.1dsqr.extractor.barcode_selection_sequence_phred_dataframe']
+    df = result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T

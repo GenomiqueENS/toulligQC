@@ -41,7 +41,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
     # from sequence summary file
 
-    td = datetime.timedelta(hours=result_dict["albacore.stats.1d.extractor.run.time"])
+    td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
     seconds = td.total_seconds()
     run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
@@ -53,8 +53,8 @@ def html_report(config_dictionary, result_dict, graphs):
     run_id = result_dict['sequencing.telemetry.extractor.sample.id']
     minknow_version = result_dict['sequencing.telemetry.extractor.minknow.version']
 
-    read_count = result_dict["albacore.stats.1d.extractor.fastq.entries"]
-    run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000, 2)
+    read_count = result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"]
+    run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
 
     # from telemetry file
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")

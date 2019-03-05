@@ -33,15 +33,15 @@ import re
 import os.path
 
 
-class Albacore1DsqrSequencingSummaryExtractor:
+class OneDSquareSequencingSummaryExtractor:
     """
     Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
     """
     def __init__(self, config_dictionary):
 
         self.config_dictionary = config_dictionary
-        self.sequencing_summary_source = self.config_dictionary['albacore_summary_source']
-        self.sequencing_1dsqr_summary_source = self.config_dictionary['albacore_1dsqr_summary_source']
+        self.sequencing_summary_source = self.config_dictionary['sequencing_summary_source']
+        self.sequencing_1dsqr_summary_source = self.config_dictionary['sequencing_summary_1dsqr_source']
         self.result_directory = config_dictionary['result_directory']
         self.my_dpi = int(self.config_dictionary['dpi'])
 
@@ -78,28 +78,28 @@ class Albacore1DsqrSequencingSummaryExtractor:
         """
 
         # Panda's object for 1d_summary
-        self.albacore_log_1d = pd.read_csv(self.sequencing_summary_file, sep="\t")
-        self.channel = self.albacore_log_1d['channel']
-        self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
-        self.sequence_length_template = self.albacore_log_1d['sequence_length_template']
-        self.null_event_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] == 0]
-        self.albacore_log_1d = self.albacore_log_1d.replace([np.inf, -np.inf], 0)
-        self.albacore_log_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] != 0]
-        self.fast5_tot_number_1d = len(self.albacore_log_1d)
+        self.dataframe_1d = pd.read_csv(self.sequencing_summary_file, sep="\t")
+        self.channel = self.dataframe_1d['channel']
+        self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
+        self.sequence_length_template = self.dataframe_1d['sequence_length_template']
+        self.null_event_1d = self.dataframe_1d[self.dataframe_1d['num_events'] == 0]
+        self.dataframe_1d = self.dataframe_1d.replace([np.inf, -np.inf], 0)
+        self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
+        self.fast5_tot_number_1d = len(self.dataframe_1d)
 
         # Panda's object for 1dsqr_summary
-        self.albacore_log_1dsqr = pd.read_csv(self.sequencing_1dsqr_summary_file, sep="\t")
-        self.sequence_length_1dsqr = self.albacore_log_1dsqr['sequence_length_2d']
-        self.passes_filtering_1dsqr = self.albacore_log_1dsqr['passes_filtering']
-        self.fast5_tot_number_1dsqr = len(self.albacore_log_1dsqr)
-        self.albacore_log_1d["Yield"] = sum(self.albacore_log_1d['sequence_length_template'])
+        self.dataframe_1dsqr = pd.read_csv(self.sequencing_1dsqr_summary_file, sep="\t")
+        self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length_2d']
+        self.passes_filtering_1dsqr = self.dataframe_1dsqr['passes_filtering']
+        self.fast5_tot_number_1dsqr = len(self.dataframe_1dsqr)
+        self.dataframe_1d["Yield"] = sum(self.dataframe_1d['sequence_length_template'])
 
         if self.is_barcode:
 
             self.barcode_selection = self.config_dictionary['barcode_selection']
 
             try:
-                self.albacore_log_1dsqr.loc[~self.albacore_log_1dsqr['barcode_arrangement'].isin(
+                self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
             except ValueError:
                 sys.exit('No barcode found in sequencing summary file')
@@ -110,7 +110,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'Albacore 1d square sequencing summary'
+        return 'Basecaller 1d square sequencing summary'
 
     @staticmethod
     def get_report_data_file_id():
@@ -118,7 +118,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
         Get the report.data id of the extractor.
         :return: the report.data id
         """
-        return 'albacore.stats.1dsqr.extractor'
+        return 'basecaller.sequencing.summary.1dsqr.extractor'
 
     def add_key_to_result_dict(self, key):
         """
@@ -161,120 +161,120 @@ class Albacore1DsqrSequencingSummaryExtractor:
         #
 
         # Read count
-        result_dict['albacore.stats.1d.extractor.fastq.entries'] = \
-            len(self.albacore_log_1d['num_events'])
+        result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] = \
+            len(self.dataframe_1d['num_events'])
 
         # 1D pass information
-        result_dict["albacore.stats.1d.extractor.read.pass.count"] = \
-            len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(True)])
-        result_dict["albacore.stats.1d.extractor.read.pass.length"] = \
-            self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
-        result_dict["albacore.stats.1d.extractor.read.pass.sorted"] = \
-            sorted(self.albacore_log_1d.start_time.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]/3600)
-        result_dict["albacore.stats.1d.extractor.read.pass.qscore"] = \
-            self.albacore_log_1d.mean_qscore_template.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"] = \
+            len(self.dataframe_1d.loc[self.dataframe_1d['passes_filtering'] == bool(True)])
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"] = \
+            self.dataframe_1d.sequence_length_template.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.sorted"] = \
+            sorted(self.dataframe_1d.start_time.loc[self.dataframe_1d['passes_filtering'] == bool(True)] / 3600)
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"] = \
+            self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
 
         # 1D fail information
-        result_dict["albacore.stats.1d.extractor.read.fail.count"] = \
-            len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(False)])
-        result_dict["albacore.stats.1d.extractor.read.fail.length"] = \
-            self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
-        result_dict["albacore.stats.1d.extractor.read.fail.sorted"] = \
-            sorted(self.albacore_log_1d.start_time.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]/3600)
-        result_dict["albacore.stats.1d.extractor.read.fail.qscore"] = \
-            self.albacore_log_1d.mean_qscore_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"] = \
+            len(self.dataframe_1d.loc[self.dataframe_1d['passes_filtering'] == bool(False)])
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"] = \
+            self.dataframe_1d.sequence_length_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"] = \
+            sorted(self.dataframe_1d.start_time.loc[self.dataframe_1d['passes_filtering'] == bool(False)] / 3600)
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"] = \
+            self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
-        result_dict['albacore.stats.1d.extractor.read.count'] = \
-            len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
-        result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"] = \
-            len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
+        result_dict['basecaller.sequencing.summary.1d.extractor.read.count'] = \
+            len(self.dataframe_1d[self.dataframe_1d["num_called_template"] != 0])
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] = \
+            len(self.dataframe_1d[self.dataframe_1d['sequence_length_template'] == 0])
 
         # Read proportion
-        result_dict["albacore.stats.1d.extractor.fastq.entries.ratio"] = \
-            result_dict['albacore.stats.1d.extractor.fastq.entries'] / \
-            result_dict['albacore.stats.1d.extractor.fastq.entries']
+        result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries.ratio"] = \
+            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] / \
+            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries']
 
-        result_dict["albacore.stats.1d.extractor.read.count.ratio"] = \
-            result_dict["albacore.stats.1d.extractor.read.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.count.ratio"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
 
-        result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.ratio"] = \
-            result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.ratio"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
 
-        result_dict["albacore.stats.1d.extractor.read.pass.ratio"] = \
-            result_dict["albacore.stats.1d.extractor.read.pass.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.ratio"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
 
-        result_dict["albacore.stats.1d.extractor.read.fail.ratio"] = \
-            result_dict["albacore.stats.1d.extractor.read.fail.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.ratio"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
 
-        result_dict["albacore.stats.1d.extractor.fastq.entries.frequency"] = \
-            result_dict['albacore.stats.1d.extractor.fastq.entries'] / \
-            result_dict['albacore.stats.1d.extractor.fastq.entries']*100
+        result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency"] = \
+            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] / \
+            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries']*100
 
-        result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.frequency"] = \
-            result_dict["albacore.stats.1d.extractor.read.with.length.equal.zero.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
 
-        result_dict["albacore.stats.1d.extractor.read.count.frequency"] = \
-            result_dict["albacore.stats.1d.extractor.read.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
 
-        result_dict["albacore.stats.1d.extractor.read.pass.frequency"] = \
-            result_dict["albacore.stats.1d.extractor.read.pass.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
 
-        result_dict["albacore.stats.1d.extractor.read.fail.frequency"] = \
-            result_dict["albacore.stats.1d.extractor.read.fail.count"] / \
-            result_dict["albacore.stats.1d.extractor.read.count"]*100
+        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"] = \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"] / \
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
 
         # Read length information
-        result_dict["albacore.stats.1d.extractor.sequence.length"] = \
-            self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
+        result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] = \
+            self.dataframe_1d.sequence_length_template[self.dataframe_1d['num_called_template'] != 0]
 
-        result_dict["albacore.stats.1d.extractor.passes.filtering"] = \
-            self.albacore_log_1d['passes_filtering']
+        result_dict["basecaller.sequencing.summary.1d.extractor.passes.filtering"] = \
+            self.dataframe_1d['passes_filtering']
 
         # Yield
-        result_dict["albacore.stats.1d.extractor.yield"] = \
-            sum(self.albacore_log_1d['sequence_length_template']/1000000000)
+        result_dict["basecaller.sequencing.summary.1d.extractor.yield"] = \
+            sum(self.dataframe_1d['sequence_length_template'] / 1000000000)
 
-        result_dict["albacore.stats.1d.extractor.start.time.sorted"] = \
-            sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
+        result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"] = \
+            sorted(sorted(self.dataframe_1d['start_time'] / 3600))
 
-        result_dict["albacore.stats.1d.extractor.run.time"] = \
-            int(max(result_dict["albacore.stats.1d.extractor.start.time.sorted"]))
+        result_dict["basecaller.sequencing.summary.1d.extractor.run.time"] = \
+            int(max(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"]))
 
         # Qscore information
-        result_dict["albacore.stats.1d.extractor.mean.qscore"] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
+        result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"] = self.dataframe_1d.loc[:, "mean_qscore_template"]
 
         # Channel occupancy information
-        result_dict["albacore.stats.1d.extractor.channel.occupancy.statistics"] = self._occupancy_channel()
-        channel_occupancy_statistics = result_dict['albacore.stats.1d.extractor.channel.occupancy.statistics']
+        result_dict["basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics"] = self._occupancy_channel()
+        channel_occupancy_statistics = result_dict['basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics']
 
         for index, value in channel_occupancy_statistics.iteritems():
-            result_dict['albacore.stats.1d.extractor.channel.occupancy.statistics.' + index] = value
+            result_dict['basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics.' + index] = value
 
         # Length's statistic information provided in the result_dict
-        result_dict["albacore.stats.1d.extractor.all.read.length"] = \
-            self.albacore_log_1d['sequence_length_template'].describe()
+        result_dict["basecaller.sequencing.summary.1d.extractor.all.read.length"] = \
+            self.dataframe_1d['sequence_length_template'].describe()
 
-        for index, value in result_dict["albacore.stats.1d.extractor.all.read.length"].iteritems():
-            result_dict["albacore.stats.1d.extractor.all.read.length." + index] = value
-        self.describe_dict(result_dict, "albacore.stats.1d.extractor.read.pass.length")
-        self.describe_dict(result_dict, "albacore.stats.1d.extractor.read.fail.length")
+        for index, value in result_dict["basecaller.sequencing.summary.1d.extractor.all.read.length"].iteritems():
+            result_dict["basecaller.sequencing.summary.1d.extractor.all.read.length." + index] = value
+        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.pass.length")
+        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.fail.length")
 
         # Qscore's statistic information provided in the result_dict
-        result_dict['albacore.stats.1d.extractor.all.read.qscore'] = \
-            pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
+        result_dict['basecaller.sequencing.summary.1d.extractor.all.read.qscore'] = \
+            pd.DataFrame.describe(self.dataframe_1d['mean_qscore_template']).drop("count")
 
-        for index, value in result_dict["albacore.stats.1d.extractor.all.read.qscore"].iteritems():
-            result_dict["albacore.stats.1d.extractor.all.read.qscore." + index] = value
+        for index, value in result_dict["basecaller.sequencing.summary.1d.extractor.all.read.qscore"].iteritems():
+            result_dict["basecaller.sequencing.summary.1d.extractor.all.read.qscore." + index] = value
 
-        self.describe_dict(result_dict, "albacore.stats.1d.extractor.read.pass.qscore")
-        self.describe_dict(result_dict, "albacore.stats.1d.extractor.read.fail.qscore")
+        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.pass.qscore")
+        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.fail.qscore")
 
         #
         # Extract from 1dsqr sequencing summary
@@ -282,23 +282,23 @@ class Albacore1DsqrSequencingSummaryExtractor:
 
         # Read count
         result_dict[self.add_key_to_result_dict('read.count')] = \
-            len(self.albacore_log_1dsqr['passes_filtering'])
+            len(self.dataframe_1dsqr['passes_filtering'])
 
         # 1Dsquare pass information
         result_dict[self.add_key_to_result_dict('read.pass.count')] = \
-            len(self.albacore_log_1dsqr.loc[self.albacore_log_1dsqr['passes_filtering'] == bool(True)])
+            len(self.dataframe_1dsqr.loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)])
         result_dict[self.add_key_to_result_dict('read.pass.length')] = \
-            self.albacore_log_1dsqr.sequence_length_2d.loc[self.albacore_log_1dsqr['passes_filtering'] == bool(True)]
+            self.dataframe_1dsqr.sequence_length_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)]
         result_dict[self.add_key_to_result_dict('read.pass.qscore')] = \
-            self.albacore_log_1dsqr.mean_qscore_2d.loc[self.albacore_log_1dsqr['passes_filtering'] == bool(True)]
+            self.dataframe_1dsqr.mean_qscore_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)]
 
         # 1Dsquare fail information
         result_dict[self.add_key_to_result_dict('read.fail.count')] = \
-            len(self.albacore_log_1dsqr.loc[self.albacore_log_1dsqr['passes_filtering'] == bool(False)])
+            len(self.dataframe_1dsqr.loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)])
         result_dict[self.add_key_to_result_dict('read.fail.length')] = \
-            self.albacore_log_1dsqr.sequence_length_2d.loc[self.albacore_log_1dsqr['passes_filtering'] == bool(False)]
+            self.dataframe_1dsqr.sequence_length_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)]
         result_dict[self.add_key_to_result_dict('read.fail.qscore')] = \
-            self.albacore_log_1dsqr.mean_qscore_2d.loc[self.albacore_log_1dsqr['passes_filtering'] == bool(False)]
+            self.dataframe_1dsqr.mean_qscore_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)]
 
         # Read count proportion
         result_dict[self.add_key_to_result_dict("read.count.ratio")] = \
@@ -327,16 +327,16 @@ class Albacore1DsqrSequencingSummaryExtractor:
 
         # Read length information
         result_dict[self.add_key_to_result_dict('sequence.length')] = \
-            self.albacore_log_1dsqr.loc[:, "sequence_length_2d"]
+            self.dataframe_1dsqr.loc[:, "sequence_length_2d"]
 
-        result_dict[self.add_key_to_result_dict("passes.filtering")] = self.albacore_log_1dsqr['passes_filtering']
+        result_dict[self.add_key_to_result_dict("passes.filtering")] = self.dataframe_1dsqr['passes_filtering']
 
         # Qscore information
-        result_dict[self.add_key_to_result_dict('mean.qscore')] = self.albacore_log_1dsqr.loc[:, "mean_qscore_2d"]
+        result_dict[self.add_key_to_result_dict('mean.qscore')] = self.dataframe_1dsqr.loc[:, "mean_qscore_2d"]
 
         # Length's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.length')] = \
-            self.albacore_log_1dsqr['sequence_length_2d'].describe()
+            self.dataframe_1dsqr['sequence_length_2d'].describe()
 
         for index, value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
@@ -345,7 +345,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
 
         # Qscore's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.qscore')] = \
-            pd.DataFrame.describe(self.albacore_log_1dsqr['mean_qscore_2d']).drop("count")
+            pd.DataFrame.describe(self.dataframe_1dsqr['mean_qscore_2d']).drop("count")
 
         for index, value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
@@ -358,15 +358,15 @@ class Albacore1DsqrSequencingSummaryExtractor:
             self.barcode_selection.append('unclassified')
 
             result_dict[self.add_key_to_result_dict("barcode.arrangement")] = \
-                self.albacore_log_1dsqr["barcode_arrangement"]
+                self.dataframe_1dsqr["barcode_arrangement"]
 
             result_dict[self.add_key_to_result_dict("read.pass.barcode")] = \
-                self.albacore_log_1dsqr.barcode_arrangement.loc[
-                    self.albacore_log_1dsqr['passes_filtering'] == bool(True)]
+                self.dataframe_1dsqr.barcode_arrangement.loc[
+                    self.dataframe_1dsqr['passes_filtering'] == bool(True)]
 
             result_dict[self.add_key_to_result_dict("read.fail.barcode")] = \
-                self.albacore_log_1dsqr.barcode_arrangement.loc[
-                    self.albacore_log_1dsqr['passes_filtering'] == bool(False)]
+                self.dataframe_1dsqr.barcode_arrangement.loc[
+                    self.dataframe_1dsqr['passes_filtering'] == bool(False)]
 
             self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
             self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
@@ -378,7 +378,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
 
             for index_barcode, barcode in enumerate(self.barcode_selection):
                 barcode_selected_dataframe = \
-                    self.albacore_log_1dsqr[self.albacore_log_1dsqr['barcode_arrangement'] == barcode]
+                    self.dataframe_1dsqr[self.dataframe_1dsqr['barcode_arrangement'] == barcode]
 
                 barcode_selected_read_pass_dataframe = \
                     barcode_selected_dataframe.loc[barcode_selected_dataframe['passes_filtering'] == bool(True)]
@@ -604,14 +604,14 @@ class Albacore1DsqrSequencingSummaryExtractor:
                 'barcode_selection_sequence_length_dataframe', 'barcode_selection_sequence_length_melted_dataframe',
                 'barcode_selection_sequence_phred_dataframe', 'barcode_selection_sequence_phred_melted_dataframe']
 
-        key_list = ["albacore.stats.1d.extractor.sequence.length", "albacore.stats.1d.extractor.passes.filtering",
-                    "albacore.stats.1d.extractor.read.pass.length", "albacore.stats.1d.extractor.read.fail.length",
-                    "albacore.stats.1d.extractor.start.time.sorted",
-                    "albacore.stats.1d.extractor.read.pass.sorted", "albacore.stats.1d.extractor.read.fail.sorted",
-                    "albacore.stats.1d.extractor.mean.qscore", "albacore.stats.1d.extractor.read.pass.qscore",
-                    "albacore.stats.1d.extractor.read.fail.qscore",
-                    "albacore.stats.1d.extractor.channel.occupancy.statistics",
-                    "albacore.stats.1d.extractor.all.read.qscore", "albacore.stats.1d.extractor.all.read.length"]
+        key_list = ["basecaller.sequencing.summary.1d.extractor.sequence.length", "basecaller.sequencing.summary.1d.extractor.passes.filtering",
+                    "basecaller.sequencing.summary.1d.extractor.read.pass.length", "basecaller.sequencing.summary.1d.extractor.read.fail.length",
+                    "basecaller.sequencing.summary.1d.extractor.start.time.sorted",
+                    "basecaller.sequencing.summary.1d.extractor.read.pass.sorted", "basecaller.sequencing.summary.1d.extractor.read.fail.sorted",
+                    "basecaller.sequencing.summary.1d.extractor.mean.qscore", "basecaller.sequencing.summary.1d.extractor.read.pass.qscore",
+                    "basecaller.sequencing.summary.1d.extractor.read.fail.qscore",
+                    "basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics",
+                    "basecaller.sequencing.summary.1d.extractor.all.read.qscore", "basecaller.sequencing.summary.1d.extractor.all.read.length"]
 
         for key in keys:
             key_list.append(self.add_key_to_result_dict(key))

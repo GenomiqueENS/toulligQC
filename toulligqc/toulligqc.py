@@ -63,12 +63,12 @@ def _parse_args(config_dictionary):
     parser.add_argument("-c", "--conf-file", help="Specify config file", metavar="FILE")
     parser.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
-    parser.add_argument('-a', '--sequencing-summary-source', action='append', dest='albacore_summary_source',
+    parser.add_argument('-a', '--sequencing-summary-source', '--albacore-summary-source', action='append', dest='sequencing_summary_source',
                         help='Basecaller sequencing summary source')
-    parser.add_argument('-d', '--albacore-1dsqr-summary-source', action='store', dest='albacore_1dsqr_summary_source',
-                        help='Albacore 1dsq summary source', default=False)
+    parser.add_argument('-d', '--sequencing-summary-1dsqr-source', '--albacore-1dsqr-summary-source', action='store', dest='summary_summary_1dsqr_source',
+                        help='Basecaller 1dsq summary source', default=False)
     parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
-                        help='Albacore pipeline source', default=False)
+                        help='Albacore pipeline log source', default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source',
                         help='Fastq file source', default=False)
     parser.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
@@ -88,8 +88,8 @@ def _parse_args(config_dictionary):
     argument_value = parser.parse_args()
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
-    albacore_summary_source = argument_value.albacore_summary_source
-    albacore_1dsqr_summary_source = argument_value.albacore_1dsqr_summary_source
+    sequencing_summary_source = argument_value.sequencing_summary_source
+    summary_summary_1dsqr_source = argument_value.summary_summary_1dsqr_source
     albacore_pipeline_source = argument_value.albacore_pipeline_source
     sequencing_telemetry_source = argument_value.telemetry_source
     fastq_source = argument_value.fastq_source
@@ -111,8 +111,8 @@ def _parse_args(config_dictionary):
     # Rewrite the configuration file value if argument option is present
     source_file = {
         ('fast5_source', fast5_source),
-        ('albacore_summary_source', '\t'.join(albacore_summary_source)),
-        ('albacore_1dsqr_summary_source', albacore_1dsqr_summary_source),
+        ('sequencing_summary_source', '\t'.join(sequencing_summary_source)),
+        ('sequencing_summary_1dsqr_source', summary_summary_1dsqr_source),
         ('albacore_pipeline_source', albacore_pipeline_source),
         ('sequencing_telemetry_source',sequencing_telemetry_source),
         ('fastq_source', fastq_source),
@@ -150,8 +150,8 @@ def _check_conf(config_dictionary):
        ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
         sys.exit('The fast5 source argument and telemetry source are empty')
 
-    if 'albacore_summary_source' not in config_dictionary or not config_dictionary['albacore_summary_source']:
-        sys.exit('The albacore summary source argument is empty')
+    if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
+        sys.exit('The sequencing summary source argument is empty')
 
     if config_dictionary['barcoding'] == 'True':
         if not config_dictionary['sample_sheet_file']:
