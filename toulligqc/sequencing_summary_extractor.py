@@ -504,8 +504,6 @@ class SequencingSummaryExtractor:
         if len(files) == 1:
             return pd.read_csv(files[0], sep="\t")
 
-        print("files: " + str(files))
-
         summary_df = None
         barcode_df = None
 
