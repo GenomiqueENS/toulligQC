@@ -92,26 +92,26 @@ class SequencingTelemetryExtractor:
         with open(self.telemetry_source, 'r') as f:
             array = json.load(f)
 
-            result_dict['fast5.extractor.source'] = self.telemetry_source
-            result_dict['fast5.extractor.flowcell.id'] = array[0]['tracking_id']['flow_cell_id']
-            result_dict['fast5.extractor.minknow.version'] = array[0]['tracking_id']['version']
-            result_dict['fast5.extractor.hostname'] = array[0]['tracking_id']['hostname']
-            result_dict['fast5.extractor.operating.system'] = array[0]['tracking_id']['operating_system']
-            result_dict['fast5.extractor.device.id'] = array[0]['tracking_id']['hostname']
-            result_dict['fast5.extractor.protocol.run.id'] = array[0]['tracking_id']['protocol_run_id']
-            result_dict['fast5.extractor.sample.id'] = array[0]['tracking_id']['sample_id']
-            result_dict['fast5.extractor.exp.start.time'] = array[0]['tracking_id']['exp_start_time']
+            result_dict[self.get_report_data_file_id() + '.source'] = self.telemetry_source
+            result_dict[self.get_report_data_file_id() + '.flowcell.id'] = array[0]['tracking_id']['flow_cell_id']
+            result_dict[self.get_report_data_file_id() + '.minknow.version'] = array[0]['tracking_id']['version']
+            result_dict[self.get_report_data_file_id() + '.hostname'] = array[0]['tracking_id']['hostname']
+            result_dict[self.get_report_data_file_id() + '.operating.system'] = array[0]['tracking_id']['operating_system']
+            result_dict[self.get_report_data_file_id() + '.device.id'] = array[0]['tracking_id']['hostname']
+            result_dict[self.get_report_data_file_id() + '.protocol.run.id'] = array[0]['tracking_id']['protocol_run_id']
+            result_dict[self.get_report_data_file_id() + '.sample.id'] = array[0]['tracking_id']['sample_id']
+            result_dict[self.get_report_data_file_id() + '.exp.start.time'] = array[0]['tracking_id']['exp_start_time']
 
             # TODO Add software and protocol name
-            #result_dict['albacore.log.extractor.albacore.version'] = array[0]['software']['analysis']
-            #result_dict['albacore.log.extractor.albacore.version'] = array[0]['software']['name']
-            result_dict['albacore.log.extractor.albacore.version'] = array[0]['software']['version']
+            result_dict[self.get_report_data_file_id() + '.software.name'] = array[0]['software']['name']
+            result_dict[self.get_report_data_file_id() + '.software.version'] = array[0]['software']['version']
+            result_dict[self.get_report_data_file_id() + '.software.analysis'] = array[0]['software']['analysis']
 
             if 'albacore_opts' in array[0]:
-                result_dict['albacore.log.extractor.kit.version'] = array[0]['albacore_opts']['kit']
-                result_dict['albacore.log.extractor.flowcell.version'] = array[0]['albacore_opts']['flowcell']
+                result_dict[self.get_report_data_file_id() + '.kit.version'] = array[0]['albacore_opts']['kit']
+                result_dict[self.get_report_data_file_id() + '.flowcell.version'] = array[0]['albacore_opts']['flowcell']
             else:
-                result_dict['albacore.log.extractor.kit.version'] = array[0]['opts']['kit']
-                result_dict['albacore.log.extractor.flowcell.version'] = array[0]['opts']['flowcell']
+                result_dict[self.get_report_data_file_id() + '.kit.version'] = array[0]['opts']['kit']
+                result_dict[self.get_report_data_file_id() + '.flowcell.version'] = array[0]['opts']['flowcell']
 
         return

@@ -119,15 +119,16 @@ class AlbacorePipelineLogExtractor:
 
             for line in pipeline_file:
                 if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
-                    result_dict[self.add_key_to_result_dict('albacore.version')] = \
+                    result_dict['sequencing.telemetry.extractor.software.version'] = \
                         re.compile("(\d+\.)(\d+\.)(\d)").search(line).group(0)
+                    result_dict['sequencing.telemetry.extractor.software.name'] = "albacore-basecalling"
 
                 if re.compile("(SQK)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line):
-                    result_dict[self.add_key_to_result_dict('kit.version')] = \
+                    result_dict['sequencing.telemetry.extractor.kit.version'] = \
                         re.compile("(SQK)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line).group(0)
 
                 if re.compile("(FLO)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line):
-                    result_dict[self.add_key_to_result_dict('flowcell.version')] = \
+                    result_dict['sequencing.telemetry.extractor.flowcell.version'] = \
                         re.compile("(FLO)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line).group(0)
 
                 if re.compile("(key)" + re.escape(':') + " \s('(sequence) " + re.escape('_')

@@ -144,6 +144,10 @@ class AlbacoreSequencingSummaryExtractor:
         :param result_dict:
         :return:
         """
+        # Basecaller analysis
+        if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
+            result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
+
         # Read count
         result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.albacore_log_1d['num_events'])
         result_dict[self.add_key_to_result_dict("read.count")] = \
