@@ -30,6 +30,7 @@ import sys
 from toulligqc import graph_generator
 import numpy as np
 import re
+import os.path
 
 
 class AlbacoreSequencingSummaryExtractor:
@@ -40,15 +41,39 @@ class AlbacoreSequencingSummaryExtractor:
         """
         :param config_dictionary:
         """
-
-        self.global_dictionnary = {}
         self.config_dictionary = config_dictionary
+        self.sequencing_summary_source = self.config_dictionary['albacore_summary_source']
         self.result_directory = config_dictionary['result_directory']
-        self.is_barcode = config_dictionary['barcoding']
-        self.get_report_data_file_id()
+
+        if config_dictionary['barcoding'] == 'True':
+            self.is_barcode = True
+        else:
+            self.is_barcode = False
+
+        self.my_dpi = int(self.config_dictionary['dpi'])
+
+        if os.path.isdir(self.sequencing_summary_source):
+            self.sequencing_summary_file = self.sequencing_summary_source + "/sequencing_summary.txt"
+        else:
+            self.sequencing_summary_file = self.sequencing_summary_source
+
+
+    def check_conf(self):
+        """Configuration checking"""
+
+        if not os.path.isfile(self.sequencing_summary_file):
+            return False, "Sequencing summary file does not exists: " + self.sequencing_summary_file
+
+        return True, ""
+
+    def init(self):
+        """
+        Initialisation
+        :return:
+        """
 
         # Create panda's object for 1d_summary
-        self.albacore_log_1d = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
+        self.albacore_log_1d = pd.read_csv(self.sequencing_summary_file, sep="\t")
         self.channel = self.albacore_log_1d['channel']
         self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
         self.sequence_length_template = self.albacore_log_1d['sequence_length_template']
@@ -57,19 +82,11 @@ class AlbacoreSequencingSummaryExtractor:
         self.albacore_log_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] != 0]
         self.fast5_tot_number_1d = len(self.albacore_log_1d)
 
-        if self.is_barcode == 'True':
-            self.is_barcode = True
-        elif self.is_barcode == 'False':
-            self.is_barcode = False
-
-        self.my_dpi = int(config_dictionary['dpi'])
-
         if self.is_barcode:
 
-            self.barcode_selection = config_dictionary['barcode_selection']
+            self.barcode_selection = self.config_dictionary['barcode_selection']
 
-            # Check barcodes presence
-
+            # Check if there are barcodes in data
             try:
                 self.albacore_log_1d.loc[~self.albacore_log_1d['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
@@ -83,7 +100,7 @@ class AlbacoreSequencingSummaryExtractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'Albacore statistics'
+        return 'Albacore sequencing summary'
 
     @staticmethod
     def get_report_data_file_id():
@@ -93,16 +110,7 @@ class AlbacoreSequencingSummaryExtractor:
         """
         return 'albacore.stats.1d.extractor'
 
-    def init(self):
-        """
-        Initialisation
-        :return:
-        """
-        return
 
-    def check_conf(self):
-        """Configuration checking"""
-        return
 
     def add_key_to_result_dict(self, key):
         """

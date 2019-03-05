@@ -54,26 +54,13 @@ class Fast5Extractor:
         self.fast5_file = ''
         self.get_report_data_file_id()
 
-    @staticmethod
-    def get_name():
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
-        """
-        return 'FAST5'
 
-    @staticmethod
-    def get_report_data_file_id():
+    def check_conf(self):
         """
-        Get the report.data id of the extractor
-        :return: the report.data id
+        Configuration checking
+        :return:
         """
-        return 'fast5.extractor'
 
-    def init(self):
-        """
-        Determination of the fast5 file extension
-        """
         if os.path.isdir(self.fast5_source):
             self.fast5_file_extension = 'fast5_directory'
 
@@ -87,10 +74,34 @@ class Fast5Extractor:
             self.fast5_file_extension = 'tar.bz2'
 
         else:
-            err_msg = 'The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format)'
-            sys.stderr.write(err_msg)
-            print(err_msg)
-            sys.exit(0)
+            return False, 'The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format)'
+
+        if self.fast5_file_extension != 'fast5_directory' and not os.path.isfile(self.fast5_source):
+            return False, "The Fast5 source does not exists: " + self.fast5_source
+
+        return True, ""
+
+    def init(self):
+        """
+        Determination of the fast5 file extension
+        """
+        return
+
+    @staticmethod
+    def get_name():
+        """
+        Get the name of the extractor.
+        :return: the name of the extractor
+        """
+        return 'Fast5'
+
+    @staticmethod
+    def get_report_data_file_id():
+        """
+        Get the report.data id of the extractor
+        :return: the report.data id
+        """
+        return 'fast5.extractor'
 
     def extract(self, result_dict):
         """
@@ -117,12 +128,6 @@ class Fast5Extractor:
         exp_start_time = dateutil.parser.parse(run_date)
         result_dict['sequencing.telemetry.extractor.exp.start.time'] = exp_start_time.strftime("%x %X %Z")
 
-    def check_conf(self):
-        """
-        Configuration checking
-        :return:
-        """
-        return
 
     def graph_generation(self, result_dict):
         """

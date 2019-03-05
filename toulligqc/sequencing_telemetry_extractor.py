@@ -34,7 +34,28 @@ class SequencingTelemetryExtractor:
     def __init__(self, config_dictionary):
         self.config_file_dictionary = config_dictionary
         self.telemetry_source = config_dictionary['sequencing_telemetry_source']
-        self.telemetry_file = ''
+
+        if os.path.isdir(self.telemetry_source):
+            self.telemetry_file = self.telemetry_source + "/sequencing_telemetry.js"
+        else:
+            self.telemetry_file = self.telemetry_source
+
+    def check_conf(self):
+        """
+        Configuration checking
+        :return: nothing
+        """
+
+        if not os.path.isfile(self.telemetry_file):
+            return False, "Telemetry file does not exists: " + self.telemetry_file
+
+        return True, ""
+
+    def init(self):
+        """
+        Determination of the telemetry file
+        """
+        return
 
     @staticmethod
     def get_name():
@@ -51,22 +72,6 @@ class SequencingTelemetryExtractor:
         :return: the report.data id
         """
         return 'sequencing.telemetry.extractor'
-
-    def init(self):
-        """
-        Determination of the telemetry file
-        """
-        if os.path.isdir(self.telemetry_source):
-            self.telemetry_file = self.telemetry_source + "/sequencing_telemetry.js"
-        else:
-            telemetry_file = self.telemetry_source
-
-    def check_conf(self):
-        """
-        Configuration checking
-        :return: nothing
-        """
-        return
 
     def graph_generation(self, result_dict):
         """
@@ -89,10 +94,10 @@ class SequencingTelemetryExtractor:
         :return: result_dict filled
         """
 
-        with open(self.telemetry_source, 'r') as f:
+        with open(self.telemetry_file, 'r') as f:
             array = json.load(f)
 
-            result_dict[self.get_report_data_file_id() + '.source'] = self.telemetry_source
+            result_dict[self.get_report_data_file_id() + '.source'] = self.telemetry_file
             result_dict[self.get_report_data_file_id() + '.flowcell.id'] = array[0]['tracking_id']['flow_cell_id']
             result_dict[self.get_report_data_file_id() + '.minknow.version'] = array[0]['tracking_id']['version']
             result_dict[self.get_report_data_file_id() + '.hostname'] = array[0]['tracking_id']['hostname']

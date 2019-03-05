@@ -30,6 +30,7 @@ import sys
 from toulligqc import graph_generator
 import numpy as np
 import re
+import os.path
 
 
 class Albacore1DsqrSequencingSummaryExtractor:
@@ -38,13 +39,46 @@ class Albacore1DsqrSequencingSummaryExtractor:
     """
     def __init__(self, config_dictionary):
 
-        self.global_dictionnary = {}
         self.config_dictionary = config_dictionary
+        self.sequencing_summary_source = self.config_dictionary['albacore_summary_source']
+        self.sequencing_1dsqr_summary_source = self.config_dictionary['albacore_1dsqr_summary_source']
         self.result_directory = config_dictionary['result_directory']
-        self.is_barcode = config_dictionary['barcoding']
+        self.my_dpi = int(self.config_dictionary['dpi'])
 
-    # Panda's object for 1d_summary
-        self.albacore_log_1d = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
+        if config_dictionary['barcoding'] == 'True':
+            self.is_barcode = True
+        else:
+            self.is_barcode = False
+
+        if os.path.isdir(self.sequencing_summary_source):
+            self.sequencing_summary_file = self.sequencing_summary_source + "/sequencing_summary.txt"
+        else:
+            self.sequencing_summary_file = self.sequencing_summary_source
+
+        if os.path.isdir(self.sequencing_1dsqr_summary_source):
+            self.sequencing_1dsqr_summary_file = self.sequencing_1dsqr_summary_source + "/sequencing_1dsq_summary.txt"
+        else:
+            self.sequencing_1dsqr_summary_file = self.sequencing_1dsqr_summary_source
+
+    def check_conf(self):
+        """Configuration checking"""
+
+        if not os.path.isfile(self.sequencing_summary_file):
+            return False, "Sequencing summary file does not exists: " + self.sequencing_summary_file
+
+        if not os.path.isfile(self.sequencing_1dsqr_summary_source):
+            return False, "Sequencing 1D2 summary file does not exists: " + self.sequencing_1dsqr_summary_source
+
+        return True, ""
+
+    def init(self):
+        """
+        Initialisation
+        :return:
+        """
+
+        # Panda's object for 1d_summary
+        self.albacore_log_1d = pd.read_csv(self.sequencing_summary_file, sep="\t")
         self.channel = self.albacore_log_1d['channel']
         self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
         self.sequence_length_template = self.albacore_log_1d['sequence_length_template']
@@ -53,23 +87,16 @@ class Albacore1DsqrSequencingSummaryExtractor:
         self.albacore_log_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] != 0]
         self.fast5_tot_number_1d = len(self.albacore_log_1d)
 
-    # Panda's object for 1dsqr_summary
-        self.albacore_log_1dsqr = pd.read_csv(config_dictionary['albacore_1dsqr_summary_source'], sep="\t")
+        # Panda's object for 1dsqr_summary
+        self.albacore_log_1dsqr = pd.read_csv(self.sequencing_1dsqr_summary_file, sep="\t")
         self.sequence_length_1dsqr = self.albacore_log_1dsqr['sequence_length_2d']
         self.passes_filtering_1dsqr = self.albacore_log_1dsqr['passes_filtering']
         self.fast5_tot_number_1dsqr = len(self.albacore_log_1dsqr)
         self.albacore_log_1d["Yield"] = sum(self.albacore_log_1d['sequence_length_template'])
 
-        if self.is_barcode == 'True':
-            self.is_barcode = True
-        elif self.is_barcode == 'False':
-            self.is_barcode = False
-
-        self.my_dpi = int(config_dictionary['dpi'])
-
         if self.is_barcode:
 
-            self.barcode_selection = config_dictionary['barcode_selection']
+            self.barcode_selection = self.config_dictionary['barcode_selection']
 
             try:
                 self.albacore_log_1dsqr.loc[~self.albacore_log_1dsqr['barcode_arrangement'].isin(
@@ -83,7 +110,7 @@ class Albacore1DsqrSequencingSummaryExtractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'Albacore 1dsqr statistics'
+        return 'Albacore 1d square sequencing summary'
 
     @staticmethod
     def get_report_data_file_id():
@@ -92,17 +119,6 @@ class Albacore1DsqrSequencingSummaryExtractor:
         :return: the report.data id
         """
         return 'albacore.stats.1dsqr.extractor'
-
-    def init(self):
-        """
-        Initialisation
-        :return:
-        """
-        return
-
-    def check_conf(self):
-        """Configuration checking"""
-        return
 
     def add_key_to_result_dict(self, key):
         """

@@ -309,11 +309,6 @@ def main():
     else:
         config_dictionary['barcode_selection'] = ''
 
-    if os.path.isdir(config_dictionary['albacore_summary_source']):
-        config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] \
-                                                       + config_dictionary['report_name'] + '/sequencing_summary.txt'
-
-
     # Print welcome message
     _welcome(config_dictionary)
 
@@ -327,19 +322,27 @@ def main():
     toulligqc_extractor.ToulligqcExtractor.init(config_dictionary)
     toulligqc_extractor.ToulligqcExtractor.extract(config_dictionary, extractors_list, result_dict)
 
+    # Check extractor configuration
+    for extractor in extractors_list:
+        (check_result, error_message) = extractor.check_conf()
+        if not check_result:
+            sys.exit("Error while checking " + extractor.get_name() + " configuration: " + error_message)
+
     graphs = []
     qc_start = time.time()
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
-        extractor.check_conf()
-        extractor.init()
-        _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
 
+        _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
         extractor_start = time.time()
+
+        # Execute extractor
+        extractor.init()
         extractor.extract(result_dict)
         graphs.extend(extractor.graph_generation(result_dict))
         extractor.clean(result_dict)
+
         extractor_end = time.time()
         extract_time = extractor_end - extractor_start
         result_dict['{}.duration'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)

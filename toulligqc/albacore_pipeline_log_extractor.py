@@ -48,21 +48,27 @@ class AlbacorePipelineLogExtractor:
         self.get_report_data_file_id()
         self.dict = {}
 
+        if os.path.isdir(self.pipeline_source):
+            self.pipeline_file = self.pipeline_source + "/pipeline.log"
+        else:
+            self.pipeline_file = self.pipeline_source
+
     def check_conf(self):
         """
         Configuration checking
         :return:
         """
-        return
+
+        if not os.path.isfile(self.pipeline_file):
+            return False, "Pipeline log file does not exists: " + self.pipeline_file
+
+        return True, ""
 
     def init(self):
         """
         Determination of the pipeline.log file extension
         """
-        if os.path.isdir(self.pipeline_source):
-            self.pipeline_file = self.pipeline_source + "/pipeline.log"
-        else:
-            self.pipeline_file = self.pipeline_source
+        return
 
     @staticmethod
     def get_name():
@@ -70,7 +76,7 @@ class AlbacorePipelineLogExtractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'ALBACORE PIPELINE LOG'
+        return 'Albacore pipeline log'
 
     @staticmethod
     def get_report_data_file_id():
