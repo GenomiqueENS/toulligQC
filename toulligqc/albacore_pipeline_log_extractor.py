@@ -111,6 +111,15 @@ class AlbacorePipelineLogExtractor:
 
         result_dict[self.add_key_to_result_dict('source')] = self.pipeline_source
 
+        albacore_version_regex = re.compile("(version)\s(\d+\.)(\d+\.)(\d)")
+        kit_version_regex = re.compile("(SQK)" + re.escape('-') + "([A-Z]{3})([0-9]{3})")
+        flowcell_version_regex = re.compile("(FLO)" + re.escape('-') + "([A-Z]{3})([0-9]{3})")
+        fail_to_load_regex = re.compile("(key)" + re.escape(':') + " \s('(sequence) " + re.escape('_')
+                                      + "(length)" + re.escape('_') + "(template)')")
+        error_regex = re.compile('(ERROR)\s(inserting)\s(read)')
+        finished_regex = re.compile('(Finished)')
+        submitting_regex = re.compile('(Submitting)')
+
         with open(self.pipeline_file, 'r') as pipeline_file:
             result_dict[self.add_key_to_result_dict('fast5.files.failed.to.load.key')] = 0
             result_dict[self.add_key_to_result_dict('fast5.files.failed.count')] = 0
@@ -118,30 +127,29 @@ class AlbacorePipelineLogExtractor:
             result_dict[self.add_key_to_result_dict('fast5.files.submitted')] = 0
 
             for line in pipeline_file:
-                if re.compile("(version)\s(\d+\.)(\d+\.)(\d)").search(line):
+                if albacore_version_regex.search(line):
                     result_dict['sequencing.telemetry.extractor.software.version'] = \
                         re.compile("(\d+\.)(\d+\.)(\d)").search(line).group(0)
                     result_dict['sequencing.telemetry.extractor.software.name'] = "albacore-basecalling"
 
-                if re.compile("(SQK)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line):
+                if kit_version_regex.search(line):
                     result_dict['sequencing.telemetry.extractor.kit.version'] = \
                         re.compile("(SQK)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line).group(0)
 
-                if re.compile("(FLO)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line):
+                if flowcell_version_regex.search(line):
                     result_dict['sequencing.telemetry.extractor.flowcell.version'] = \
                         re.compile("(FLO)" + re.escape('-') + "([A-Z]{3})([0-9]{3})").search(line).group(0)
 
-                if re.compile("(key)" + re.escape(':') + " \s('(sequence) " + re.escape('_')
-                                      + "(length)" + re.escape('_') + "(template)')").search(line):
+                if fail_to_load_regex.search(line):
                     result_dict[self.add_key_to_result_dict('fast5.files.failed.to.load.key')] += 1
 
-                if re.compile('(ERROR)\s(inserting)\s(read)').search(line):
+                if error_regex.search(line):
                     result_dict[self.add_key_to_result_dict('fast5.files.failed.count')] += 1
 
-                if re.compile('(Finished)').search(line):
+                if finished_regex.search(line):
                     result_dict[self.add_key_to_result_dict('fast5.files.processed')] += 1
 
-                if re.compile('(Submitting)').search(line):
+                if submitting_regex.search(line):
                     result_dict[self.add_key_to_result_dict('fast5.files.submitted')] += 1
 
         pipeline_file.close()
