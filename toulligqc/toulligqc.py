@@ -71,6 +71,8 @@ def _parse_args(config_dictionary):
                         help='Albacore pipeline source', default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source',
                         help='Fastq file source', default=False)
+    parser.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
+                        help='Telemetry file source', default=False)
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
                         help='Path to sample sheet file')
@@ -89,6 +91,7 @@ def _parse_args(config_dictionary):
     albacore_summary_source = argument_value.albacore_summary_source
     albacore_1dsqr_summary_source = argument_value.albacore_1dsqr_summary_source
     albacore_pipeline_source = argument_value.albacore_pipeline_source
+    sequencing_telemetry_source = argument_value.telemetry_source
     fastq_source = argument_value.fastq_source
     report_name = argument_value.report_name
     is_barcode = argument_value.is_barcode
@@ -111,6 +114,7 @@ def _parse_args(config_dictionary):
         ('albacore_summary_source', albacore_summary_source),
         ('albacore_1dsqr_summary_source', albacore_1dsqr_summary_source),
         ('albacore_pipeline_source', albacore_pipeline_source),
+        ('sequencing_telemetry_source',sequencing_telemetry_source),
         ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
@@ -142,8 +146,9 @@ def _check_conf(config_dictionary):
     :param config_dictionary: configuration dictionary containing the file or directory paths
     """
 
-    if 'fast5_source' not in config_dictionary or not config_dictionary['fast5_source']:
-        sys.exit('The fast5 source argument is empty')
+    if ('fast5_source' not in config_dictionary or not config_dictionary['fast5_source']) and \
+       ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
+        sys.exit('The fast5 source argument and telemetry source are empty')
 
     if 'albacore_summary_source' not in config_dictionary or not config_dictionary['albacore_summary_source']:
         sys.exit('The albacore summary source argument is empty')
