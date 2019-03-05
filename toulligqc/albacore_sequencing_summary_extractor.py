@@ -45,6 +45,14 @@ class AlbacoreSequencingSummaryExtractor:
         self.sequencing_summary_source = self.config_dictionary['albacore_summary_source']
         self.result_directory = config_dictionary['result_directory']
 
+        self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
+
+        if len(self.sequencing_summary_files) == 1:
+            if os.path.isdir(self.sequencing_summary_source):
+                self.sequencing_summary_files = [self.sequencing_summary_source + "/sequencing_summary.txt"]
+            else:
+                self.sequencing_summary_files = [self.sequencing_summary_source]
+
         if config_dictionary['barcoding'] == 'True':
             self.is_barcode = True
         else:
@@ -52,17 +60,13 @@ class AlbacoreSequencingSummaryExtractor:
 
         self.my_dpi = int(self.config_dictionary['dpi'])
 
-        if os.path.isdir(self.sequencing_summary_source):
-            self.sequencing_summary_file = self.sequencing_summary_source + "/sequencing_summary.txt"
-        else:
-            self.sequencing_summary_file = self.sequencing_summary_source
-
 
     def check_conf(self):
         """Configuration checking"""
 
-        if not os.path.isfile(self.sequencing_summary_file):
-            return False, "Sequencing summary file does not exists: " + self.sequencing_summary_file
+        for f in self.sequencing_summary_files:
+            if not os.path.isfile(f):
+                return False, "Sequencing summary file does not exists: " + f
 
         return True, ""
 
@@ -73,7 +77,7 @@ class AlbacoreSequencingSummaryExtractor:
         """
 
         # Create panda's object for 1d_summary
-        self.albacore_log_1d = pd.read_csv(self.sequencing_summary_file, sep="\t")
+        self.albacore_log_1d = self._load_sequencing_summary_data()
         self.channel = self.albacore_log_1d['channel']
         self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
         self.sequence_length_template = self.albacore_log_1d['sequence_length_template']
@@ -158,8 +162,15 @@ class AlbacoreSequencingSummaryExtractor:
 
         # Read count
         result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.albacore_log_1d['num_events'])
+
+        # The field  "num_called_template" has been renamed "num_events_template" in Guppy
+        if "num_called_template" in self.albacore_log_1d.columns:
+            num_called_template_field = "num_called_template"
+        else:
+            num_called_template_field = "num_events_template"
+
         result_dict[self.add_key_to_result_dict("read.count")] = \
-            len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
+            len(self.albacore_log_1d[self.albacore_log_1d[num_called_template_field] != 0])
 
         result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")] = \
             len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
@@ -227,7 +238,7 @@ class AlbacoreSequencingSummaryExtractor:
 
         # Read length information
         result_dict[self.add_key_to_result_dict("sequence.length")] = \
-            self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
+            self.albacore_log_1d.sequence_length_template[self.albacore_log_1d[num_called_template_field] != 0]
 
         result_dict[self.add_key_to_result_dict("passes.filtering")] = \
             self.albacore_log_1d['passes_filtering']
@@ -481,3 +492,59 @@ class AlbacoreSequencingSummaryExtractor:
         total_number_reads_per_channel = pd.value_counts(channel_count)
         channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
         return channel_count_statistics
+
+    def _load_sequencing_summary_data(self):
+        """
+        Load sequencing summary data frame.
+        :return: a Pandas DataFrame object
+        """
+
+        files = self.sequencing_summary_files
+
+        if len(files) == 1:
+            return pd.read_csv(files[0], sep="\t")
+
+        print("files: " + str(files))
+
+        summary_df = None
+        barcode_df = None
+
+        for f in files:
+            if self._is_barcode_file(f):
+                df = pd.read_csv(f, sep="\t")
+
+                if barcode_df is None:
+                    barcode_df = df
+                else:
+                    barcode_df = barcode_df.append(df, ignore_index=True)
+
+            else:
+                df = pd.read_csv(f, sep="\t")
+
+                if summary_df is None:
+                    summary_df = df
+                else:
+                    summary_df = summary_df.append(df, ignore_index=True)
+
+        if summary_df is None:
+            sys.exit("Only barcode sequencing summary found")
+
+        if barcode_df is None:
+            return summary_df
+
+        result = summary_df.merge(barcode_df, on="read_id", how="left")
+
+        return result
+
+    def _is_barcode_file(self, filename):
+        """
+        Chech if a sequencing summary file is a barcode summary file.
+        :param filename: path of the file to test
+        :return: True if the sequencing summary file is a barcode summary file
+        """
+
+        with open(filename) as f:
+            line = f.readline()
+            if not line.startswith('filename'):
+                return True
+            return False

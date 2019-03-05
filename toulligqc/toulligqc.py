@@ -63,8 +63,8 @@ def _parse_args(config_dictionary):
     parser.add_argument("-c", "--conf-file", help="Specify config file", metavar="FILE")
     parser.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
-    parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
-                        help='Albacore summary source')
+    parser.add_argument('-a', '--sequencing-summary-source', action='append', dest='albacore_summary_source',
+                        help='Basecaller sequencing summary source')
     parser.add_argument('-d', '--albacore-1dsqr-summary-source', action='store', dest='albacore_1dsqr_summary_source',
                         help='Albacore 1dsq summary source', default=False)
     parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
@@ -111,7 +111,7 @@ def _parse_args(config_dictionary):
     # Rewrite the configuration file value if argument option is present
     source_file = {
         ('fast5_source', fast5_source),
-        ('albacore_summary_source', albacore_summary_source),
+        ('albacore_summary_source', '\t'.join(albacore_summary_source)),
         ('albacore_1dsqr_summary_source', albacore_1dsqr_summary_source),
         ('albacore_pipeline_source', albacore_pipeline_source),
         ('sequencing_telemetry_source',sequencing_telemetry_source),
