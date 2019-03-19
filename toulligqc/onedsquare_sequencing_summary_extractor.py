@@ -61,10 +61,10 @@ class OneDSquareSequencingSummaryExtractor:
         self.sequencing_1dsqr_summary_files = self.sequencing_1dsqr_summary_source.split('\t')
 
         if len(self.sequencing_1dsqr_summary_files) == 1:
-            if os.path.isdir(self.sequencing_summary_source):
-                self.sequencing_1dsqr_summary_files = [self.sequencing_summary_source + "/sequencing_1dsq_summary.txt"]
+            if os.path.isdir(self.sequencing_1dsqr_summary_source):
+                self.sequencing_1dsqr_summary_files = [self.sequencing_1dsqr_summary_source + "/sequencing_1dsq_summary.txt"]
             else:
-                self.sequencing_1dsqr_summary_files = [self.sequencing_summary_source]
+                self.sequencing_1dsqr_summary_files = [self.sequencing_1dsqr_summary_source]
 
     def check_conf(self):
         """Configuration checking"""
@@ -107,12 +107,6 @@ class OneDSquareSequencingSummaryExtractor:
 
         # Panda's object for 1dsqr_summary
         self.dataframe_1dsqr = self._load_sequencing_summary_data()
-
-        # The field  "sequence_length_2d" has been renamed "sequence_length" in Guppy
-        if "sequence_length_2d" in self.dataframe_1dsqr.columns:
-            sequence_length_field = "sequence_length"
-        else:
-            sequence_length_field = "sequence_length"
 
         self.sequence_length_1dsqr = self.dataframe_1dsqr[sequence_length_field]
         self.passes_filtering_1dsqr = self.dataframe_1dsqr['passes_filtering']
