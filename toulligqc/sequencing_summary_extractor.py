@@ -64,6 +64,10 @@ class SequencingSummaryExtractor:
     def check_conf(self):
         """Configuration checking"""
 
+        # Check if a sequencing summary file has been defined
+        if len(self.sequencing_summary_files) == 0:
+            return False, "No sequencing summary file defined"
+
         for f in self.sequencing_summary_files:
             if not os.path.isfile(f):
                 return False, "Sequencing summary file does not exists: " + f
