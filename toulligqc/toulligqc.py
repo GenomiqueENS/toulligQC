@@ -65,8 +65,8 @@ def _parse_args(config_dictionary):
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--sequencing-summary-source', '--albacore-summary-source', action='append', dest='sequencing_summary_source',
                         help='Basecaller sequencing summary source')
-    parser.add_argument('-d', '--sequencing-summary-1dsqr-source', '--albacore-1dsqr-summary-source', action='store', dest='summary_summary_1dsqr_source',
-                        help='Basecaller 1dsq summary source', default=False)
+    parser.add_argument('-d', '--sequencing-summary-1dsqr-source', '--albacore-1dsqr-summary-source', action='append', dest='sequencing_summary_1dsqr_source',
+                        help='Basecaller 1dsq summary source')
     parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
                         help='Albacore pipeline log source', default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source',
@@ -89,7 +89,7 @@ def _parse_args(config_dictionary):
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
     sequencing_summary_source = argument_value.sequencing_summary_source
-    summary_summary_1dsqr_source = argument_value.summary_summary_1dsqr_source
+    sequencing_summary_1dsqr_source = argument_value.sequencing_summary_1dsqr_source
     albacore_pipeline_source = argument_value.albacore_pipeline_source
     sequencing_telemetry_source = argument_value.telemetry_source
     fastq_source = argument_value.fastq_source
@@ -112,7 +112,7 @@ def _parse_args(config_dictionary):
     source_file = {
         ('fast5_source', fast5_source),
         ('sequencing_summary_source', '\t'.join(sequencing_summary_source)),
-        ('sequencing_summary_1dsqr_source', summary_summary_1dsqr_source),
+        ('sequencing_summary_1dsqr_source', '\t'.join(sequencing_summary_1dsqr_source)),
         ('albacore_pipeline_source', albacore_pipeline_source),
         ('sequencing_telemetry_source',sequencing_telemetry_source),
         ('fastq_source', fastq_source),

@@ -50,24 +50,42 @@ class OneDSquareSequencingSummaryExtractor:
         else:
             self.is_barcode = False
 
-        if os.path.isdir(self.sequencing_summary_source):
-            self.sequencing_summary_file = self.sequencing_summary_source + "/sequencing_summary.txt"
-        else:
-            self.sequencing_summary_file = self.sequencing_summary_source
+        self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
 
-        if os.path.isdir(self.sequencing_1dsqr_summary_source):
-            self.sequencing_1dsqr_summary_file = self.sequencing_1dsqr_summary_source + "/sequencing_1dsq_summary.txt"
-        else:
-            self.sequencing_1dsqr_summary_file = self.sequencing_1dsqr_summary_source
+        if len(self.sequencing_summary_files) == 1:
+            if os.path.isdir(self.sequencing_summary_source):
+                self.sequencing_summary_files = [self.sequencing_summary_source + "/sequencing_summary.txt"]
+            else:
+                self.sequencing_summary_files = [self.sequencing_summary_source]
+
+        self.sequencing_1dsqr_summary_files = self.sequencing_1dsqr_summary_source.split('\t')
+
+        if len(self.sequencing_1dsqr_summary_files) == 1:
+            if os.path.isdir(self.sequencing_summary_source):
+                self.sequencing_1dsqr_summary_files = [self.sequencing_summary_source + "/sequencing_1dsq_summary.txt"]
+            else:
+                self.sequencing_1dsqr_summary_files = [self.sequencing_summary_source]
 
     def check_conf(self):
         """Configuration checking"""
 
-        if not os.path.isfile(self.sequencing_summary_file):
-            return False, "Sequencing summary file does not exists: " + self.sequencing_summary_file
+        # Check if a sequencing summary file has been defined
+        if len(self.sequencing_summary_files) == 0:
+            return False, "No sequencing summary file defined"
 
-        if not os.path.isfile(self.sequencing_1dsqr_summary_source):
-            return False, "Sequencing 1D2 summary file does not exists: " + self.sequencing_1dsqr_summary_source
+        # Check if sequencing summary files exists
+        for f in self.sequencing_summary_files:
+            if not os.path.isfile(f):
+                return False, "Sequencing summary file does not exists: " + f
+
+        # Check if a 1d2 sequencing summary file has been defined
+        if len(self.sequencing_1dsqr_summary_files) == 0:
+            return False, "No 1dsqr sequencing summary file defined"
+
+        # Check if 1d2 sequencing summary files exists
+        for f in self.sequencing_1dsqr_summary_files:
+            if not os.path.isfile(f):
+                return False, "Sequencing summary file does not exists: " + f
 
         return True, ""
 
@@ -78,7 +96,7 @@ class OneDSquareSequencingSummaryExtractor:
         """
 
         # Panda's object for 1d_summary
-        self.dataframe_1d = pd.read_csv(self.sequencing_summary_file, sep="\t")
+        self.dataframe_1d = pd.read_csv(self.sequencing_summary_files[0], sep="\t")
         self.channel = self.dataframe_1d['channel']
         self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
         self.sequence_length_template = self.dataframe_1d['sequence_length_template']
@@ -88,8 +106,15 @@ class OneDSquareSequencingSummaryExtractor:
         self.fast5_tot_number_1d = len(self.dataframe_1d)
 
         # Panda's object for 1dsqr_summary
-        self.dataframe_1dsqr = pd.read_csv(self.sequencing_1dsqr_summary_file, sep="\t")
-        self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length_2d']
+        self.dataframe_1dsqr = self._load_sequencing_summary_data()
+
+        # The field  "sequence_length_2d" has been renamed "sequence_length" in Guppy
+        if "sequence_length_2d" in self.dataframe_1dsqr.columns:
+            sequence_length_field = "sequence_length"
+        else:
+            sequence_length_field = "sequence_length"
+
+        self.sequence_length_1dsqr = self.dataframe_1dsqr[sequence_length_field]
         self.passes_filtering_1dsqr = self.dataframe_1dsqr['passes_filtering']
         self.fast5_tot_number_1dsqr = len(self.dataframe_1dsqr)
         self.dataframe_1d["Yield"] = sum(self.dataframe_1d['sequence_length_template'])
@@ -184,8 +209,14 @@ class OneDSquareSequencingSummaryExtractor:
         result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"] = \
             self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
+        # The field  "num_called_template" has been renamed "num_events_template" in Guppy
+        if "num_called_template" in self.dataframe_1d:
+            num_called_template_field = "num_called_template"
+        else:
+            num_called_template_field = "num_events_template"
+
         result_dict['basecaller.sequencing.summary.1d.extractor.read.count'] = \
-            len(self.dataframe_1d[self.dataframe_1d["num_called_template"] != 0])
+            len(self.dataframe_1d[self.dataframe_1d[num_called_template_field] != 0])
         result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] = \
             len(self.dataframe_1d[self.dataframe_1d['sequence_length_template'] == 0])
 
@@ -232,7 +263,7 @@ class OneDSquareSequencingSummaryExtractor:
 
         # Read length information
         result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] = \
-            self.dataframe_1d.sequence_length_template[self.dataframe_1d['num_called_template'] != 0]
+            self.dataframe_1d.sequence_length_template[self.dataframe_1d[num_called_template_field] != 0]
 
         result_dict["basecaller.sequencing.summary.1d.extractor.passes.filtering"] = \
             self.dataframe_1d['passes_filtering']
@@ -280,6 +311,18 @@ class OneDSquareSequencingSummaryExtractor:
         # Extract from 1dsqr sequencing summary
         #
 
+        # The field  "sequence_length_2d" has been renamed "sequence_length" in Guppy
+        if "sequence_length_2d" in self.dataframe_1dsqr.columns:
+            sequence_length_field = "sequence_length_2d"
+        else:
+            sequence_length_field = "sequence_length"
+
+        # The field  "mean_qscore_2d" has been renamed "mean_qscore" in Guppy
+        if "mean_qscore_2d" in self.dataframe_1dsqr.columns:
+            mean_qscore_field = "mean_qscore_2d"
+        else:
+            mean_qscore_field = "mean_qscore"
+
         # Read count
         result_dict[self.add_key_to_result_dict('read.count')] = \
             len(self.dataframe_1dsqr['passes_filtering'])
@@ -288,17 +331,17 @@ class OneDSquareSequencingSummaryExtractor:
         result_dict[self.add_key_to_result_dict('read.pass.count')] = \
             len(self.dataframe_1dsqr.loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)])
         result_dict[self.add_key_to_result_dict('read.pass.length')] = \
-            self.dataframe_1dsqr.sequence_length_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)]
+            self.dataframe_1dsqr[sequence_length_field].loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)]
         result_dict[self.add_key_to_result_dict('read.pass.qscore')] = \
-            self.dataframe_1dsqr.mean_qscore_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)]
+            self.dataframe_1dsqr[mean_qscore_field].loc[self.dataframe_1dsqr['passes_filtering'] == bool(True)]
 
         # 1Dsquare fail information
         result_dict[self.add_key_to_result_dict('read.fail.count')] = \
             len(self.dataframe_1dsqr.loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)])
         result_dict[self.add_key_to_result_dict('read.fail.length')] = \
-            self.dataframe_1dsqr.sequence_length_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)]
+            self.dataframe_1dsqr[sequence_length_field].loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)]
         result_dict[self.add_key_to_result_dict('read.fail.qscore')] = \
-            self.dataframe_1dsqr.mean_qscore_2d.loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)]
+            self.dataframe_1dsqr[mean_qscore_field].loc[self.dataframe_1dsqr['passes_filtering'] == bool(False)]
 
         # Read count proportion
         result_dict[self.add_key_to_result_dict("read.count.ratio")] = \
@@ -327,16 +370,16 @@ class OneDSquareSequencingSummaryExtractor:
 
         # Read length information
         result_dict[self.add_key_to_result_dict('sequence.length')] = \
-            self.dataframe_1dsqr.loc[:, "sequence_length_2d"]
+            self.dataframe_1dsqr.loc[:, sequence_length_field]
 
         result_dict[self.add_key_to_result_dict("passes.filtering")] = self.dataframe_1dsqr['passes_filtering']
 
         # Qscore information
-        result_dict[self.add_key_to_result_dict('mean.qscore')] = self.dataframe_1dsqr.loc[:, "mean_qscore_2d"]
+        result_dict[self.add_key_to_result_dict('mean.qscore')] = self.dataframe_1dsqr.loc[:, mean_qscore_field]
 
         # Length's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.length')] = \
-            self.dataframe_1dsqr['sequence_length_2d'].describe()
+            self.dataframe_1dsqr[sequence_length_field].describe()
 
         for index, value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
@@ -345,7 +388,7 @@ class OneDSquareSequencingSummaryExtractor:
 
         # Qscore's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.qscore')] = \
-            pd.DataFrame.describe(self.dataframe_1dsqr['mean_qscore_2d']).drop("count")
+            pd.DataFrame.describe(self.dataframe_1dsqr[mean_qscore_field]).drop("count")
 
         for index, value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
@@ -388,58 +431,58 @@ class OneDSquareSequencingSummaryExtractor:
 
                 match = re.search(pattern, barcode)
                 if match:
-                    length[match.group(0)] = barcode_selected_dataframe['sequence_length_2d']
-                    phred[match.group(0)] = barcode_selected_dataframe['mean_qscore_2d']
+                    length[match.group(0)] = barcode_selected_dataframe[sequence_length_field]
+                    phred[match.group(0)] = barcode_selected_dataframe[mean_qscore_field]
 
-                    for index, value in barcode_selected_dataframe['sequence_length_2d']\
+                    for index, value in barcode_selected_dataframe[sequence_length_field]\
                             .describe().iteritems():
                         result_dict[self.add_key_to_result_dict('all.read.') + barcode + '.length.' + index] = value
 
-                    for index, value in barcode_selected_read_pass_dataframe['sequence_length_2d']\
+                    for index, value in barcode_selected_read_pass_dataframe[sequence_length_field]\
                             .describe().iteritems():
                         result_dict[self.add_key_to_result_dict('read.pass.') + barcode + '.length.' + index] = value
 
-                    for index, value in barcode_selected_read_fail_dataframe['sequence_length_2d']\
+                    for index, value in barcode_selected_read_fail_dataframe[sequence_length_field]\
                             .describe().iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.length.' + index] = value
 
-                    for index, value in barcode_selected_dataframe['mean_qscore_2d']\
+                    for index, value in barcode_selected_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('all.read.') + barcode + '.qscore.' + index] = value
 
-                    for index, value in barcode_selected_read_pass_dataframe['mean_qscore_2d']\
+                    for index, value in barcode_selected_read_pass_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.pass.') + barcode + '.qscore.' + index] = value
 
-                    for index, value in barcode_selected_read_fail_dataframe['mean_qscore_2d']\
+                    for index, value in barcode_selected_read_fail_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.qscore.' + index] = value
 
                 else:
-                    length['Unclassified'] = barcode_selected_dataframe['sequence_length_2d']
-                    phred['Unclassified'] = barcode_selected_dataframe['mean_qscore_2d']
+                    length['Unclassified'] = barcode_selected_dataframe[sequence_length_field]
+                    phred['Unclassified'] = barcode_selected_dataframe[mean_qscore_field]
 
-                    for index, value in barcode_selected_dataframe['sequence_length_2d']\
+                    for index, value in barcode_selected_dataframe[sequence_length_field]\
                             .describe().iteritems():
                         result_dict[self.add_key_to_result_dict('all.read.unclassified.length.') + index] = value
 
-                    for index, value in barcode_selected_read_pass_dataframe['sequence_length_2d']\
+                    for index, value in barcode_selected_read_pass_dataframe[sequence_length_field]\
                             .describe().iteritems():
                         result_dict[self.add_key_to_result_dict('read.pass.unclassified.length.') + index] = value
 
-                    for index, value in barcode_selected_read_fail_dataframe['sequence_length_2d']\
+                    for index, value in barcode_selected_read_fail_dataframe[sequence_length_field]\
                             .describe().iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.unclassified.length.') + index] = value
 
-                    for index, value in barcode_selected_dataframe['mean_qscore_2d']\
+                    for index, value in barcode_selected_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('all.read.unclassified.qscore.') + index] = value
 
-                    for index, value in barcode_selected_read_pass_dataframe['mean_qscore_2d']\
+                    for index, value in barcode_selected_read_pass_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.pass.unclassified.qscore.') + index] = value
 
-                    for index, value in barcode_selected_read_fail_dataframe['mean_qscore_2d']\
+                    for index, value in barcode_selected_read_fail_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
 
@@ -626,3 +669,57 @@ class OneDSquareSequencingSummaryExtractor:
         total_number_reads_per_channel = pd.value_counts(channel_count)
         channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
         return channel_count_statistics
+
+    def _load_sequencing_summary_data(self):
+        """
+        Load sequencing summary data frame.
+        :return: a Pandas DataFrame object
+        """
+
+        files = self.sequencing_1dsqr_summary_files
+
+        if len(files) == 1:
+            return pd.read_csv(files[0], sep="\t")
+
+        summary_df = None
+        barcode_df = None
+
+        for f in files:
+            if self._is_barcode_file(f):
+                df = pd.read_csv(f, sep="\t")
+
+                if barcode_df is None:
+                    barcode_df = df
+                else:
+                    barcode_df = barcode_df.append(df, ignore_index=True)
+
+            else:
+                df = pd.read_csv(f, sep="\t")
+
+                if summary_df is None:
+                    summary_df = df
+                else:
+                    summary_df = summary_df.append(df, ignore_index=True)
+
+        if summary_df is None:
+            sys.exit("Only barcode sequencing summary found")
+
+        if barcode_df is None:
+            return summary_df
+
+        result = summary_df.merge(barcode_df, left_on="read_id1", right_on="read_id", how="left")
+
+        return result
+
+    def _is_barcode_file(self, filename):
+        """
+        Chech if a sequencing summary file is a barcode summary file.
+        :param filename: path of the file to test
+        :return: True if the sequencing summary file is a barcode summary file
+        """
+
+        with open(filename) as f:
+            line = f.readline()
+            if not line.startswith('filename'):
+                return True
+            return False
