@@ -45,6 +45,12 @@ class OneDSquareSequencingSummaryExtractor:
         self.result_directory = config_dictionary['result_directory']
         self.my_dpi = int(self.config_dictionary['dpi'])
 
+        # Attribute initialized in the init() method
+        self.dataframe_1d = None
+        self.channel = None
+        self.dataframe_1dsqr = None
+        self.barcode_selection = None
+
         if config_dictionary['barcoding'] == 'True':
             self.is_barcode = True
         else:
@@ -98,20 +104,12 @@ class OneDSquareSequencingSummaryExtractor:
         # Panda's object for 1d_summary
         self.dataframe_1d = pd.read_csv(self.sequencing_summary_files[0], sep="\t")
         self.channel = self.dataframe_1d['channel']
-        self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
-        self.sequence_length_template = self.dataframe_1d['sequence_length_template']
-        self.null_event_1d = self.dataframe_1d[self.dataframe_1d['num_events'] == 0]
         self.dataframe_1d = self.dataframe_1d.replace([np.inf, -np.inf], 0)
         self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
-        self.fast5_tot_number_1d = len(self.dataframe_1d)
+        self.dataframe_1d["Yield"] = sum(self.dataframe_1d['sequence_length_template'])
 
         # Panda's object for 1dsqr_summary
         self.dataframe_1dsqr = self._load_sequencing_summary_data()
-
-        self.sequence_length_1dsqr = self.dataframe_1dsqr[sequence_length_field]
-        self.passes_filtering_1dsqr = self.dataframe_1dsqr['passes_filtering']
-        self.fast5_tot_number_1dsqr = len(self.dataframe_1dsqr)
-        self.dataframe_1d["Yield"] = sum(self.dataframe_1d['sequence_length_template'])
 
         if self.is_barcode:
 
@@ -669,7 +667,6 @@ class OneDSquareSequencingSummaryExtractor:
         Load sequencing summary data frame.
         :return: a Pandas DataFrame object
         """
-
         files = self.sequencing_1dsqr_summary_files
 
         if len(files) == 1:
