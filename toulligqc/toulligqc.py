@@ -111,8 +111,8 @@ def _parse_args(config_dictionary):
     # Rewrite the configuration file value if argument option is present
     source_file = {
         ('fast5_source', fast5_source),
-        ('sequencing_summary_source', '\t'.join(sequencing_summary_source)),
-        ('sequencing_summary_1dsqr_source', '\t'.join(sequencing_summary_1dsqr_source)),
+        ('sequencing_summary_source', _join_parameter_arguments(sequencing_summary_source)),
+        ('sequencing_summary_1dsqr_source', _join_parameter_arguments(sequencing_summary_1dsqr_source)),
         ('albacore_pipeline_source', albacore_pipeline_source),
         ('sequencing_telemetry_source',sequencing_telemetry_source),
         ('fastq_source', fastq_source),
@@ -239,6 +239,18 @@ def _format_time(t):
     """
 
     return time.strftime("%H:%M:%S", time.gmtime(t))
+
+
+def _join_parameter_arguments(arg):
+    """
+    Join parameter arguments
+    :param arg: argument to join
+    :return: a string with arguments separated by tab character or None if the input parameter is None
+    """
+
+    if (arg is None):
+        return None
+    return '\t'.join(arg)
 
 
 def _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict):
