@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 MAINTAINER Laurent Jourdren <jourdren@biologie.ens.fr>
-
+ARG VERSION=1.1
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
                     python3 \
@@ -17,7 +17,7 @@ RUN apt update && \
     cd /tmp && \
     git clone https://github.com/GenomicParisCentre/toulligQC && \
     cd toulligQC && \
-    git checkout v1.0 && \
+    git checkout v$VERSION && \
     python3 setup.py build install && \
     apt remove --yes git && \
     apt clean
