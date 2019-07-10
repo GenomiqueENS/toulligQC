@@ -325,16 +325,16 @@ def html_report(config_dictionary, result_dict, graphs):
       <h2>Summary</h2>
       <ol>
 """
+    summary += "<li><a href=\"#Basic-statistics" "\"> Basic Statistics </li>\n"
     for i, t in enumerate(graphs):
         summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
     summary += """      </ol>
     </div>
 """
-
     # Compose the main of the page
     main_report = """
     <div class = 'main'>
-      <div class=\"module\">
+      <div class=\"module\" id="Basic-statistics">
         <h2 id=M{0}>Basic Statistics</h2>
         <h2 id=M{0}></h2>
         <h1></h1>
@@ -362,7 +362,7 @@ def html_report(config_dictionary, result_dict, graphs):
            basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'], run_yield, read_count)
 
     for i, t in enumerate(graphs):
-        main_report += "      <div class=\"module\"><h2 id=M{0}> {1} " \
+        main_report += "      <div class=\"module\" id=M{0}><h2> {1} " \
                        "<img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" " \
                        "alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> " \
                        "</h2></div>".format(i, t[0], _embedded_image(t[1]), t[2], t[3])
