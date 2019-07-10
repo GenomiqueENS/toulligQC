@@ -209,9 +209,8 @@ def _create_output_directories(config_dictionary):
     :param config_dictionary: configuration dictionary
     """
     image_directory = config_dictionary['result_directory'] + 'images/'
-    statistic_directory = config_dictionary['result_directory'] + 'statistics/'
     os.makedirs(image_directory)
-    os.makedirs(statistic_directory)
+
 
 
 def _welcome(config_dictionary):

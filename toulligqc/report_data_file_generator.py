@@ -47,7 +47,7 @@ def statistics_generator(config_dictionary, result_dict):
     """
     result_directory = config_dictionary['result_directory']
 
-    complete_name = os.path.join(result_directory+'statistics/', "report.data")
+    complete_name = os.path.join(result_directory, "report.data")
 
     add_values_to_unwritten_key(result_dict, ["sequence_length_template", "passes_filtering",
                                               "read_pass", "read_fail", "start_time_sorted",
