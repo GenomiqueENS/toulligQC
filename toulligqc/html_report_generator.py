@@ -69,7 +69,7 @@ def html_report(config_dictionary, result_dict, graphs):
     title = """<!doctype html>
 <html>
   <head>
-    <title>Rapport run MinION : {0} </title>
+    <title>Report run MinION : {0} </title>
     <meta charset='UTF-8'>
     <style type="text/css">
     """.format(report_name)
@@ -312,7 +312,7 @@ def html_report(config_dictionary, result_dict, graphs):
       <div id="header_title">ToulligQC report for {0} <br/></div>
       <div id="header_filename">
         Run id: {0} <br>
-        Repport name: {1} <br>
+        Report name: {1} <br>
         Run date: {2} <br>
         Report date : {3} <br>
       </div>
