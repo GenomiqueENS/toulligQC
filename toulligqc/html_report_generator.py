@@ -41,30 +41,27 @@ def html_report(config_dictionary, result_dict, graphs):
 
     # from sequence summary file
 
-    td = datetime.timedelta(hours=result_dict["albacore.stats.1d.extractor.run.time"])
+    td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
     seconds = td.total_seconds()
     run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
     report_date = result_dict['toulligqc.info.start.time']
 
     # from Fast5 file
-    run_date = result_dict['fast5.extractor.exp.start.time']
-    flow_cell_id = result_dict['fast5.extractor.flowcell.id']
-    run_id = result_dict['fast5.extractor.sample.id']
-    minknow_version = result_dict['fast5.extractor.minknow.version']
+    run_date = result_dict['sequencing.telemetry.extractor.exp.start.time']
+    flow_cell_id = result_dict['sequencing.telemetry.extractor.flowcell.id']
+    run_id = result_dict['sequencing.telemetry.extractor.sample.id']
+    minknow_version = result_dict['sequencing.telemetry.extractor.minknow.version']
 
-    read_count = result_dict["albacore.stats.1d.extractor.fastq.entries"]
-    run_yield = round(result_dict["albacore.stats.1d.extractor.yield"]/1000000000, 2)
+    read_count = result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"]
+    run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
 
-    # from pipeline log file
-    if "albacore.log.extractor" in result_dict['toulligqc.info.extractors']:
-        flowcell_version = result_dict['albacore.log.extractor.flowcell.version']
-        kit_version = result_dict['albacore.log.extractor.kit.version']
-        albacore_version = result_dict['albacore.log.extractor.albacore.version']
-    else:
-        flowcell_version = "Unknown"
-        kit_version = "Unknown"
-        albacore_version = "Unknown"
+    # from telemetry file
+    flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
+    kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
+    basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
+    basecaller_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.version', "Unknown")
+    basecaller_analysis = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.analysis', "Unknown")
 
     f = open(result_directory + 'report.html', 'w')
 
@@ -352,15 +349,17 @@ def html_report(config_dictionary, result_dict, graphs):
           <tr><th>Flowcell version</th><td> {5} </td></tr>
           <tr><th>Kit</th><td> {6} </td></tr>
           <tr><th>MinKNOW version </th><td> {7} </td></tr>
-          <tr><th>Albacore version</th><td> {8} </td></tr>
-          <tr><th>ToulligQC version</th><td> {9} </td></tr>
-          <tr><th>Yield (Gbp)</th><td> {10} </td></tr>
-          <tr><th>Read count</th><td> {11} </td></tr>
+          <tr><th>Basecaller name</th><td> {8} </td></tr>
+          <tr><th>Basecaller version</th><td> {9} </td></tr>
+          <tr><th>Basecaller analysis</th><td> {10} </td></tr>
+          <tr><th>ToulligQC version</th><td> {11} </td></tr>
+          <tr><th>Yield (Gbp)</th><td> {12} </td></tr>
+          <tr><th>Read count</th><td> {13} </td></tr>
           </tbody>
         </table>   
       </div>
 """.format(run_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, minknow_version,
-           albacore_version, config_dictionary['app.version'], run_yield, read_count)
+           basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'], run_yield, read_count)
 
     for i, t in enumerate(graphs):
         main_report += "      <div class=\"module\"><h2 id=M{0}> {1} " \
@@ -398,3 +397,16 @@ def _embedded_image(image_path):
         result = "data:image/png;base64," + base64.b64encode(image_file.read()).decode('ascii')
 
     return result
+
+def _get_result_value(result_dict, key , default_value = ""):
+    """
+    Get the value of the result dictionary or a default value if the key does not exists.
+    :param result_dict: result dictionary
+    :param key: the key to use
+    :param default_value: the default value
+    :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
+    """
+    if key in result_dict:
+        return result_dict[key]
+    else:
+        return default_value

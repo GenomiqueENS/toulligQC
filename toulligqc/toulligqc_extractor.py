@@ -25,9 +25,10 @@
 
 from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
-from toulligqc import albacore_1dsqr_sequencing_summary_extractor
-from toulligqc import albacore_sequencing_summary_extractor
+from toulligqc import onedsquare_sequencing_summary_extractor
+from toulligqc import sequencing_summary_extractor
 from toulligqc import albacore_pipeline_log_extractor
+from toulligqc import sequencing_telemetry_extractor
 
 
 class ToulligqcExtractor:
@@ -57,15 +58,15 @@ class ToulligqcExtractor:
         """
         return 'Toulligqc extractors'
 
+    def check_conf(self):
+        """Configuration checking"""
+        return True, ""
+
     def init(self):
         """
         Initialisation
         :return:
         """
-        return
-
-    def check_conf(self):
-        """Configuration checking"""
         return
 
     def extract(config_dictionary, extractors_list, result_dict):
@@ -77,8 +78,17 @@ class ToulligqcExtractor:
         :param result_dict: result_dict dictionary
         :return: extractors_list
         """
-        extractors_list.append(fast5_extractor.Fast5Extractor(config_dictionary))
-        result_dict['toulligqc.info.extractors'] = ["fast5.extractor"]
+
+        # Initialize the list of extractors
+        result_dict['toulligqc.info.extractors'] = []
+
+        if 'sequencing_telemetry_source' in config_dictionary and config_dictionary['sequencing_telemetry_source']:
+            extractors_list.append(sequencing_telemetry_extractor.SequencingTelemetryExtractor(config_dictionary))
+            result_dict['toulligqc.info.extractors'].append("sequencing.telemetry.extractor")
+
+        if 'fast5_source' in config_dictionary and config_dictionary['fast5_source']:
+            extractors_list.append(fast5_extractor.Fast5Extractor(config_dictionary))
+            result_dict['toulligqc.info.extractors'].append("fast5.extractor")
 
         if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
             extractors_list.append(albacore_pipeline_log_extractor.AlbacorePipelineLogExtractor(config_dictionary))
@@ -88,11 +98,11 @@ class ToulligqcExtractor:
             extractors_list.append(fastq_extractor.FastqExtractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("fastq.extractor")
 
-        if 'albacore_1dsqr_summary_source' in config_dictionary and config_dictionary['albacore_1dsqr_summary_source']:
-            extractors_list.append(albacore_1dsqr_sequencing_summary_extractor.
-                                   Albacore1DsqrSequencingSummaryExtractor(config_dictionary))
-            result_dict['toulligqc.info.extractors'].append("albacore.1dsqr.stats.extractor")
+        if 'sequencing_summary_1dsqr_source' in config_dictionary and config_dictionary['sequencing_summary_1dsqr_source']:
+            extractors_list.append(onedsquare_sequencing_summary_extractor.
+                                   OneDSquareSequencingSummaryExtractor(config_dictionary))
+            result_dict['toulligqc.info.extractors'].append("sequencing.summary.1dsqr.extractor")
         else:
-            extractors_list.append(albacore_sequencing_summary_extractor.
-                                   AlbacoreSequencingSummaryExtractor(config_dictionary))
-            result_dict['toulligqc.info.extractors'].append("albacore.stats.extractor")
+            extractors_list.append(sequencing_summary_extractor.
+                                   SequencingSummaryExtractor(config_dictionary))
+            result_dict['toulligqc.info.extractors'].append("sequencing.summary.extractor")

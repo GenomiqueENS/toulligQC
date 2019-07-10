@@ -36,16 +36,6 @@ import sys
 import re
 
 
-def _show(config_dictionary, msg):
-    """
-    Print a message on the screen
-    :param config_dictionary: configuration dictionnary
-    :param msg: message to print
-    """
-    if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
-        print(msg)
-
-
 class FastqExtractor:
     """
     Uses fastq files to infer the nucleotide rate per read.
@@ -73,6 +63,66 @@ class FastqExtractor:
         self.selection_global = []
 
         self.fastq_file_extension = ''
+
+    def check_conf(self):
+        """Configuration checking"""
+
+        if os.path.isdir(self.fastq_source):
+            if glob.glob(self.fastq_source + '/*.fastq') \
+                    or glob.glob(self.fastq_source + self.report_name + '/*.fastq'):
+                self.fastq_file_extension = 'fastq'
+
+            elif glob.glob(self.fastq_source + '/*.fq') or glob.glob(self.fastq_source + self.report_name + '/*.fq'):
+                self.fastq_file_extension = 'fq'
+
+            elif glob.glob(self.fastq_source + '/*.gz') or glob.glob(self.fastq_source + self.report_name + '/*.gz'):
+                self.fastq_file_extension = 'gz'
+
+            elif glob.glob(self.fastq_source + '/*.bz2') or glob.glob(self.fastq_source + self.report_name + '/*.bz2'):
+                self.fastq_file_extension = 'bz2'
+
+            elif glob.glob(self.fastq_source + self.report_name + '/*.fastq'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
+                self.fastq_file_extension = 'fastq'
+
+            elif glob.glob(self.fastq_source + self.report_name + '/*.fq'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
+                self.fastq_file_extension = 'fq'
+
+            elif glob.glob(self.fastq_source + self.report_name + '/*.gz'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
+                self.fastq_file_extension = 'gz'
+
+            elif glob.glob(self.fastq_source + self.report_name + '/*.bz2'):
+                self.fastq_source = self.fastq_source + self.report_name + '/'
+                self.fastq_file_extension = 'bz2'
+
+            else:
+                return False, 'The fastq source extension is not supported (fast5, tar.bz2 or tar.gz format)'
+
+        elif self.fastq_source.endswith('.fastq'):
+            self.fastq_file_extension = 'fastq'
+
+        elif self.fastq_source.endswith('.fq'):
+            self.fastq_file_extension = 'fq'
+
+        elif self.fastq_source.endswith('.bz2') or self.fastq_source.endswith('.gz') or self.fastq_source.endswith(
+                '.zip'):
+            pattern = '\.(gz|bz2|zip)$'
+            if re.search(pattern, self.fastq_source):
+                match = re.search(pattern, self.fastq_source)
+                self.fastq_file_extension = match.groups()[0]
+        else:
+            return False, 'The fastq source extension is not supported (fast5, bz2 or gz format)'
+
+        return True, ""
+
+    def init(self):
+        """
+        Initialization and determination of the fastq file extension
+        :return:
+        """
+        return
 
     @staticmethod
     def get_name():
@@ -107,64 +157,6 @@ class FastqExtractor:
         :return:
         """
         return result_dict['unwritten.keys'].append(value)
-
-    def init(self):
-        """
-        Initialization and determination of the fastq file extension
-        :return:
-        """
-        if os.path.isdir(self.fastq_source):
-            if glob.glob(self.fastq_source + '/*.fastq') \
-                    or glob.glob(self.fastq_source + self.report_name + '/*.fastq'):
-                self.fastq_file_extension = 'fastq'
-
-            elif glob.glob(self.fastq_source + '/*.fq') or glob.glob(self.fastq_source + self.report_name + '/*.fq'):
-                self.fastq_file_extension = 'fq'
-
-            elif glob.glob(self.fastq_source + '/*.gz') or glob.glob(self.fastq_source + self.report_name + '/*.gz'):
-                self.fastq_file_extension = 'gz'
-
-            elif glob.glob(self.fastq_source + '/*.bz2') or glob.glob(self.fastq_source + self.report_name + '/*.bz2'):
-                self.fastq_file_extension = 'bz2'
-
-            elif glob.glob(self.fastq_source + self.report_name + '/*.fastq'):
-                self.fastq_source = self.fastq_source + self.report_name + '/'
-                self.fastq_file_extension = 'fastq'
-
-            elif glob.glob(self.fastq_source + self.report_name + '/*.fq'):
-                self.fastq_source = self.fastq_source + self.report_name + '/'
-                self.fastq_file_extension = 'fq'
-
-            elif glob.glob(self.fastq_source + self.report_name + '/*.gz'):
-                self.fastq_source = self.fastq_source + self.report_name + '/'
-                self.fastq_file_extension = 'gz'
-
-            elif glob.glob(self.fastq_source + self.report_name + '/*.bz2'):
-                self.fastq_source = self.fastq_source + self.report_name + '/'
-                self.fastq_file_extension = 'bz2'
-
-            else:
-                print('The fastq source extension is not supported (fast5, tar.bz2 or tar.gz format)')
-                sys.exit(0)
-
-        elif self.fastq_source.endswith('.fastq'):
-            self.fastq_file_extension = 'fastq'
-
-        elif self.fastq_source.endswith('.fq'):
-            self.fastq_file_extension = 'fq'
-
-        elif self.fastq_source.endswith('.bz2') or self.fastq_source.endswith('.gz') or self.fastq_source.endswith(
-                '.zip'):
-            pattern = '\.(gz|bz2|zip)$'
-            if re.search(pattern, self.fastq_source):
-                match = re.search(pattern, self.fastq_source)
-                self.fastq_file_extension = match.groups()[0]
-        else:
-            sys.exit('The fastq source extension is not supported (fast5, bz2 or gz format)')
-
-    def check_conf(self):
-        """Configuration checking"""
-        return
 
     def extract(self, result_dict):
         """
