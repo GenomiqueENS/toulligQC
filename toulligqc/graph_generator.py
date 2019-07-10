@@ -546,11 +546,11 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     plt.savefig(output_file)
     plt.close()
 
-    barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
+                                 "read count": barcode_count})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
-    table_html = pd.DataFrame.to_html(barcode_table
-                                      .rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
+    table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
 
@@ -596,12 +596,12 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     plt.savefig(output_file)
     plt.close()
 
-    barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
+                                  "read count": barcode_count})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
-    table_html = pd.DataFrame.to_html(barcode_table
-                                      .rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
+    table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
 
@@ -1004,11 +1004,12 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
 
     plt.savefig(output_file)
     plt.close()
-    barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
+                                  "read count": barcode_count})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
     table_html = \
-        pd.DataFrame.to_html(barcode_table.rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
+        pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
 
@@ -1052,12 +1053,13 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
 
     plt.savefig(output_file)
     plt.close()
-    barcode_table = pd.DataFrame(barcode_count/sum(barcode_count)*100)
+    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
+                                  "read count": barcode_count})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
     table_html = \
-        pd.DataFrame.to_html(barcode_table.rename(index=str, columns={"barcode_arrangement": "barcode arrangement"}))
+        pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc
 
