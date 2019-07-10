@@ -344,7 +344,7 @@ def html_report(config_dictionary, result_dict, graphs):
           <tr><th>Run id</th><td> {0} </td></tr>               
           <tr><th>Report name </th><td> {1} </td></tr>
           <tr><th>Run date</th><td> {2} </td></tr>
-          <tr><th>Run time </th><td> {3} </td></tr>
+          <tr><th>Run duration </th><td> {3} </td></tr>
           <tr><th>Flowcell id </th><td> {4} </td></tr>
           <tr><th>Flowcell version</th><td> {5} </td></tr>
           <tr><th>Kit</th><td> {6} </td></tr>
