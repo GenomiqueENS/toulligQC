@@ -30,9 +30,10 @@ import sys
 from toulligqc import graph_generator
 import numpy as np
 import re
+import os.path
 
 
-class AlbacoreSequencingSummaryExtractor:
+class SequencingSummaryExtractor:
     """
     Extraction of statistics from sequencing_summary.txt file and graph generation
     """
@@ -40,38 +41,62 @@ class AlbacoreSequencingSummaryExtractor:
         """
         :param config_dictionary:
         """
-
-        self.global_dictionnary = {}
         self.config_dictionary = config_dictionary
+        self.sequencing_summary_source = self.config_dictionary['sequencing_summary_source']
         self.result_directory = config_dictionary['result_directory']
-        self.is_barcode = config_dictionary['barcoding']
-        self.get_report_data_file_id()
 
-        # Create panda's object for 1d_summary
-        self.albacore_log_1d = pd.read_csv(config_dictionary['albacore_summary_source'], sep="\t")
-        self.channel = self.albacore_log_1d['channel']
-        self.passes_filtering_1d = self.albacore_log_1d['passes_filtering']
-        self.sequence_length_template = self.albacore_log_1d['sequence_length_template']
-        self.null_event_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] == 0]
-        self.albacore_log_1d = self.albacore_log_1d.replace([np.inf, -np.inf], 0)
-        self.albacore_log_1d = self.albacore_log_1d[self.albacore_log_1d['num_events'] != 0]
-        self.fast5_tot_number_1d = len(self.albacore_log_1d)
+        self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
 
-        if self.is_barcode == 'True':
+        if len(self.sequencing_summary_files) == 1:
+            if os.path.isdir(self.sequencing_summary_source):
+                self.sequencing_summary_files = [self.sequencing_summary_source + "/sequencing_summary.txt"]
+            else:
+                self.sequencing_summary_files = [self.sequencing_summary_source]
+
+        if config_dictionary['barcoding'] == 'True':
             self.is_barcode = True
-        elif self.is_barcode == 'False':
+        else:
             self.is_barcode = False
 
-        self.my_dpi = int(config_dictionary['dpi'])
+        self.my_dpi = int(self.config_dictionary['dpi'])
+
+
+    def check_conf(self):
+        """Configuration checking"""
+
+        # Check if a sequencing summary file has been defined
+        if len(self.sequencing_summary_files) == 0:
+            return False, "No sequencing summary file defined"
+
+        for f in self.sequencing_summary_files:
+            if not os.path.isfile(f):
+                return False, "Sequencing summary file does not exists: " + f
+
+        return True, ""
+
+    def init(self):
+        """
+        Initialisation
+        :return:
+        """
+
+        # Create panda's object for 1d_summary
+        self.dataframe_1d = self._load_sequencing_summary_data()
+        self.channel = self.dataframe_1d['channel']
+        self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
+        self.sequence_length_template = self.dataframe_1d['sequence_length_template']
+        self.null_event_1d = self.dataframe_1d[self.dataframe_1d['num_events'] == 0]
+        self.dataframe_1d = self.dataframe_1d.replace([np.inf, -np.inf], 0)
+        self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
+        self.fast5_tot_number_1d = len(self.dataframe_1d)
 
         if self.is_barcode:
 
-            self.barcode_selection = config_dictionary['barcode_selection']
+            self.barcode_selection = self.config_dictionary['barcode_selection']
 
-            # Check barcodes presence
-
+            # Check if there are barcodes in data
             try:
-                self.albacore_log_1d.loc[~self.albacore_log_1d['barcode_arrangement'].isin(
+                self.dataframe_1d.loc[~self.dataframe_1d['barcode_arrangement'].isin(
                     self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
 
             except ValueError:
@@ -83,7 +108,7 @@ class AlbacoreSequencingSummaryExtractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'Albacore statistics'
+        return 'Basecaller sequencing summary'
 
     @staticmethod
     def get_report_data_file_id():
@@ -91,18 +116,9 @@ class AlbacoreSequencingSummaryExtractor:
         Get the report.data id of the extractor.
         :return: the report.data id
         """
-        return 'albacore.stats.1d.extractor'
+        return 'basecaller.sequencing.summary.1d.extractor'
 
-    def init(self):
-        """
-        Initialisation
-        :return:
-        """
-        return
 
-    def check_conf(self):
-        """Configuration checking"""
-        return
 
     def add_key_to_result_dict(self, key):
         """
@@ -130,13 +146,28 @@ class AlbacoreSequencingSummaryExtractor:
         :param result_dict:
         :param entry:
         :param prefix: key prefix
-        :return: result_dict dictionary filled
+        :return: result_dict dictionary filled and barcodes frequency in pandas series type
         """
         barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
         count_sorted = barcode_count.sort_index()[self.barcode_selection]
-        total = sum(count_sorted)
         for key in dict(count_sorted):
-            result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = count_sorted[key]*100/total
+            result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
+                count_sorted[key]*100/sum(count_sorted)
+        return count_sorted
+
+    def add_other_category_to_barcode_frequency(self, result_dict, entry, prefix=''):
+        """
+        Add the other category to the barcode frequency to the result_dict dictionary
+        :param result_dict:
+        :param entry:
+        :param prefix: key prefix
+        :return: result_dict dictionary filled
+        """
+        result_dict[self.add_key_to_result_dict(entry) + ".with.other.barcodes.count"] = result_dict[self.add_key_to_result_dict(prefix)] - sum(result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"])
+        other_barcode_count = pd.Series([result_dict[self.add_key_to_result_dict(entry) + ".with.other.barcodes.count"]], index=['other'])
+        result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"] = result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"].append(other_barcode_count)
+
+        return result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"].sort_index()
 
     def extract(self, result_dict):
         """
@@ -144,33 +175,44 @@ class AlbacoreSequencingSummaryExtractor:
         :param result_dict:
         :return:
         """
+        # Basecaller analysis
+        if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
+            result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
+
         # Read count
-        result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.albacore_log_1d['num_events'])
+        result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.dataframe_1d['num_events'])
+
+        # The field  "num_called_template" has been renamed "num_events_template" in Guppy
+        if "num_called_template" in self.dataframe_1d.columns:
+            num_called_template_field = "num_called_template"
+        else:
+            num_called_template_field = "num_events_template"
+
         result_dict[self.add_key_to_result_dict("read.count")] = \
-            len(self.albacore_log_1d[self.albacore_log_1d["num_called_template"] != 0])
+            len(self.dataframe_1d[self.dataframe_1d[num_called_template_field] != 0])
 
         result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")] = \
-            len(self.albacore_log_1d[self.albacore_log_1d['sequence_length_template'] == 0])
+            len(self.dataframe_1d[self.dataframe_1d['sequence_length_template'] == 0])
 
         # 1D pass information
         result_dict[self.add_key_to_result_dict("read.pass.count")] = \
-            len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(True)])
+            len(self.dataframe_1d.loc[self.dataframe_1d['passes_filtering'] == bool(True)])
         result_dict[self.add_key_to_result_dict("read.pass.length")] = \
-            self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
+            self.dataframe_1d.sequence_length_template.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
         result_dict[self.add_key_to_result_dict("read.pass.sorted")] = \
-            sorted(self.albacore_log_1d.start_time.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]/3600)
+            sorted(self.dataframe_1d.start_time.loc[self.dataframe_1d['passes_filtering'] == bool(True)] / 3600)
         result_dict[self.add_key_to_result_dict("read.pass.qscore")] = \
-            self.albacore_log_1d.mean_qscore_template.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
+            self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
 
         # 1D fail information
         result_dict[self.add_key_to_result_dict("read.fail.count")] = \
-            len(self.albacore_log_1d.loc[self.albacore_log_1d['passes_filtering'] == bool(False)])
+            len(self.dataframe_1d.loc[self.dataframe_1d['passes_filtering'] == bool(False)])
         result_dict[self.add_key_to_result_dict("read.fail.length")] = \
-            self.albacore_log_1d.sequence_length_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
+            self.dataframe_1d.sequence_length_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
         result_dict[self.add_key_to_result_dict("read.fail.sorted")] = \
-            sorted(self.albacore_log_1d.start_time.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]/3600)
+            sorted(self.dataframe_1d.start_time.loc[self.dataframe_1d['passes_filtering'] == bool(False)] / 3600)
         result_dict[self.add_key_to_result_dict("read.fail.qscore")] = \
-            self.albacore_log_1d.mean_qscore_template.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
+            self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
         # Read proportion
         result_dict[self.add_key_to_result_dict("fastq.entries.ratio")] = \
@@ -215,22 +257,22 @@ class AlbacoreSequencingSummaryExtractor:
 
         # Read length information
         result_dict[self.add_key_to_result_dict("sequence.length")] = \
-            self.albacore_log_1d.sequence_length_template[self.albacore_log_1d['num_called_template'] != 0]
+            self.dataframe_1d.sequence_length_template[self.dataframe_1d[num_called_template_field] != 0]
 
         result_dict[self.add_key_to_result_dict("passes.filtering")] = \
-            self.albacore_log_1d['passes_filtering']
+            self.dataframe_1d['passes_filtering']
 
         # Yield
-        result_dict[self.add_key_to_result_dict("yield")] = sum(self.albacore_log_1d['sequence_length_template'])
+        result_dict[self.add_key_to_result_dict("yield")] = sum(self.dataframe_1d['sequence_length_template'])
 
         result_dict[self.add_key_to_result_dict("start.time.sorted")] = \
-            sorted(sorted(self.albacore_log_1d['start_time'] / 3600))
+            sorted(sorted(self.dataframe_1d['start_time'] / 3600))
 
         result_dict[self.add_key_to_result_dict("run.time")] = \
             (max(result_dict[self.add_key_to_result_dict("start.time.sorted")]))
 
         # Qscore information
-        result_dict[self.add_key_to_result_dict("mean.qscore")] = self.albacore_log_1d.loc[:, "mean_qscore_template"]
+        result_dict[self.add_key_to_result_dict("mean.qscore")] = self.dataframe_1d.loc[:, "mean_qscore_template"]
 
         # Channel occupancy information
         result_dict[self.add_key_to_result_dict('channel.occupancy.statistics')] = self._occupancy_channel()
@@ -241,7 +283,7 @@ class AlbacoreSequencingSummaryExtractor:
 
         # Length's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.length')] = \
-            self.albacore_log_1d['sequence_length_template'].describe()
+            self.dataframe_1d['sequence_length_template'].describe()
 
         for index, value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
@@ -250,7 +292,7 @@ class AlbacoreSequencingSummaryExtractor:
 
         # Qscore's statistic information provided in the result_dict
         result_dict[self.add_key_to_result_dict('all.read.qscore')] = \
-            pd.DataFrame.describe(self.albacore_log_1d['mean_qscore_template']).drop("count")
+            pd.DataFrame.describe(self.dataframe_1d['mean_qscore_template']).drop("count")
 
         for index, value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
             result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
@@ -263,15 +305,21 @@ class AlbacoreSequencingSummaryExtractor:
             self.barcode_selection.append('unclassified')
 
             result_dict[self.add_key_to_result_dict("barcode.arrangement")] = \
-                self.albacore_log_1d["barcode_arrangement"]
+                self.dataframe_1d["barcode_arrangement"]
             result_dict[self.add_key_to_result_dict("read.pass.barcode")] = \
-                self.albacore_log_1d.barcode_arrangement.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
+                self.dataframe_1d.barcode_arrangement.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
             result_dict[self.add_key_to_result_dict("read.fail.barcode")] = \
-                self.albacore_log_1d.barcode_arrangement.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
+                self.dataframe_1d.barcode_arrangement.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
-            self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
-            self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
-            self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
+            # Get barcodes frequency by read type
+            result_dict[self.add_key_to_result_dict("all.read.barcodes.series")] = self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
+            result_dict[self.add_key_to_result_dict("read.pass.barcodes.series")] = self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
+            result_dict[self.add_key_to_result_dict("read.fail.barcodes.series")] = self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
+
+            # Add the other category to the barcodes frequency
+            result_dict[self.add_key_to_result_dict("all.read.barcodes.series")] = self.add_other_category_to_barcode_frequency(result_dict, "all.read", 'read.count')
+            result_dict[self.add_key_to_result_dict("read.pass.barcodes.series")] = self.add_other_category_to_barcode_frequency(result_dict, "read.pass", 'read.pass.count')
+            result_dict[self.add_key_to_result_dict("read.fail.barcodes.series")] = self.add_other_category_to_barcode_frequency(result_dict, "read.fail", 'read.fail.count')
 
             pattern = '(\d{2})'
             length = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
@@ -280,13 +328,13 @@ class AlbacoreSequencingSummaryExtractor:
             for index_barcode, barcode in enumerate(self.barcode_selection):
 
                 barcode_selected_dataframe = \
-                    self.albacore_log_1d[self.albacore_log_1d['barcode_arrangement'] == barcode]
+                    self.dataframe_1d[self.dataframe_1d['barcode_arrangement'] == barcode]
 
                 barcode_selected_read_pass_dataframe = \
-                    barcode_selected_dataframe.loc[self.albacore_log_1d['passes_filtering'] == bool(True)]
+                    barcode_selected_dataframe.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
 
                 barcode_selected_read_fail_dataframe = \
-                    barcode_selected_dataframe.loc[self.albacore_log_1d['passes_filtering'] == bool(False)]
+                    barcode_selected_dataframe.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
                 match = re.search(pattern, barcode)
                 if match:
@@ -453,7 +501,11 @@ class AlbacoreSequencingSummaryExtractor:
                 'barcode_selection_sequence_length_dataframe',
                 'barcode_selection_sequence_length_melted_dataframe',
                 'barcode_selection_sequence_phred_dataframe',
-                'barcode_selection_sequence_phred_melted_dataframe']
+                'barcode_selection_sequence_phred_melted_dataframe',
+                "all.read.barcodes.series",
+                "read.pass.barcodes.series",
+                "read.fail.barcodes.series"
+        ]
 
         key_list = []
         for key in keys:
@@ -469,3 +521,57 @@ class AlbacoreSequencingSummaryExtractor:
         total_number_reads_per_channel = pd.value_counts(channel_count)
         channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
         return channel_count_statistics
+
+    def _load_sequencing_summary_data(self):
+        """
+        Load sequencing summary data frame.
+        :return: a Pandas DataFrame object
+        """
+
+        files = self.sequencing_summary_files
+
+        if len(files) == 1:
+            return pd.read_csv(files[0], sep="\t")
+
+        summary_df = None
+        barcode_df = None
+
+        for f in files:
+            if self._is_barcode_file(f):
+                df = pd.read_csv(f, sep="\t")
+
+                if barcode_df is None:
+                    barcode_df = df
+                else:
+                    barcode_df = barcode_df.append(df, ignore_index=True)
+
+            else:
+                df = pd.read_csv(f, sep="\t")
+
+                if summary_df is None:
+                    summary_df = df
+                else:
+                    summary_df = summary_df.append(df, ignore_index=True)
+
+        if summary_df is None:
+            sys.exit("Only barcode sequencing summary found")
+
+        if barcode_df is None:
+            return summary_df
+
+        result = summary_df.merge(barcode_df, on="read_id", how="left")
+
+        return result
+
+    def _is_barcode_file(self, filename):
+        """
+        Chech if a sequencing summary file is a barcode summary file.
+        :param filename: path of the file to test
+        :return: True if the sequencing summary file is a barcode summary file
+        """
+
+        with open(filename) as f:
+            line = f.readline()
+            if not line.startswith('filename'):
+                return True
+            return False

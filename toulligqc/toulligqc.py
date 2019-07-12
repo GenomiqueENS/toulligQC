@@ -63,14 +63,16 @@ def _parse_args(config_dictionary):
     parser.add_argument("-c", "--conf-file", help="Specify config file", metavar="FILE")
     parser.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
-    parser.add_argument('-a', '--albacore-summary-source', action='store', dest='albacore_summary_source',
-                        help='Albacore summary source')
-    parser.add_argument('-d', '--albacore-1dsqr-summary-source', action='store', dest='albacore_1dsqr_summary_source',
-                        help='Albacore 1dsq summary source', default=False)
+    parser.add_argument('-a', '--sequencing-summary-source', '--albacore-summary-source', action='append', dest='sequencing_summary_source',
+                        help='Basecaller sequencing summary source')
+    parser.add_argument('-d', '--sequencing-summary-1dsqr-source', '--albacore-1dsqr-summary-source', action='append', dest='sequencing_summary_1dsqr_source',
+                        help='Basecaller 1dsq summary source')
     parser.add_argument('-p', '--albacore-pipeline-source', action='store', dest='albacore_pipeline_source',
-                        help='Albacore pipeline source', default=False)
+                        help='Albacore pipeline log source', default=False)
     parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source',
                         help='Fastq file source', default=False)
+    parser.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
+                        help='Telemetry file source', default=False)
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
     parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
                         help='Path to sample sheet file')
@@ -86,9 +88,10 @@ def _parse_args(config_dictionary):
     argument_value = parser.parse_args()
     conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
-    albacore_summary_source = argument_value.albacore_summary_source
-    albacore_1dsqr_summary_source = argument_value.albacore_1dsqr_summary_source
+    sequencing_summary_source = argument_value.sequencing_summary_source
+    sequencing_summary_1dsqr_source = argument_value.sequencing_summary_1dsqr_source
     albacore_pipeline_source = argument_value.albacore_pipeline_source
+    sequencing_telemetry_source = argument_value.telemetry_source
     fastq_source = argument_value.fastq_source
     report_name = argument_value.report_name
     is_barcode = argument_value.is_barcode
@@ -108,9 +111,10 @@ def _parse_args(config_dictionary):
     # Rewrite the configuration file value if argument option is present
     source_file = {
         ('fast5_source', fast5_source),
-        ('albacore_summary_source', albacore_summary_source),
-        ('albacore_1dsqr_summary_source', albacore_1dsqr_summary_source),
+        ('sequencing_summary_source', _join_parameter_arguments(sequencing_summary_source)),
+        ('sequencing_summary_1dsqr_source', _join_parameter_arguments(sequencing_summary_1dsqr_source)),
         ('albacore_pipeline_source', albacore_pipeline_source),
+        ('sequencing_telemetry_source',sequencing_telemetry_source),
         ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
@@ -142,11 +146,12 @@ def _check_conf(config_dictionary):
     :param config_dictionary: configuration dictionary containing the file or directory paths
     """
 
-    if 'fast5_source' not in config_dictionary or not config_dictionary['fast5_source']:
-        sys.exit('The fast5 source argument is empty')
+    if ('fast5_source' not in config_dictionary or not config_dictionary['fast5_source']) and \
+       ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
+        sys.exit('The fast5 source argument and telemetry source are empty')
 
-    if 'albacore_summary_source' not in config_dictionary or not config_dictionary['albacore_summary_source']:
-        sys.exit('The albacore summary source argument is empty')
+    if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
+        sys.exit('The sequencing summary source argument is empty')
 
     if config_dictionary['barcoding'] == 'True':
         if not config_dictionary['sample_sheet_file']:
@@ -204,9 +209,8 @@ def _create_output_directories(config_dictionary):
     :param config_dictionary: configuration dictionary
     """
     image_directory = config_dictionary['result_directory'] + 'images/'
-    statistic_directory = config_dictionary['result_directory'] + 'statistics/'
     os.makedirs(image_directory)
-    os.makedirs(statistic_directory)
+
 
 
 def _welcome(config_dictionary):
@@ -234,6 +238,18 @@ def _format_time(t):
     """
 
     return time.strftime("%H:%M:%S", time.gmtime(t))
+
+
+def _join_parameter_arguments(arg):
+    """
+    Join parameter arguments
+    :param arg: argument to join
+    :return: a string with arguments separated by tab character or None if the input parameter is None
+    """
+
+    if (arg is None):
+        return None
+    return '\t'.join(arg)
 
 
 def _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict):
@@ -304,11 +320,6 @@ def main():
     else:
         config_dictionary['barcode_selection'] = ''
 
-    if os.path.isdir(config_dictionary['albacore_summary_source']):
-        config_dictionary['albacore_summary_source'] = config_dictionary['albacore_summary_source'] \
-                                                       + config_dictionary['report_name'] + '/sequencing_summary.txt'
-
-
     # Print welcome message
     _welcome(config_dictionary)
 
@@ -322,19 +333,27 @@ def main():
     toulligqc_extractor.ToulligqcExtractor.init(config_dictionary)
     toulligqc_extractor.ToulligqcExtractor.extract(config_dictionary, extractors_list, result_dict)
 
+    # Check extractor configuration
+    for extractor in extractors_list:
+        (check_result, error_message) = extractor.check_conf()
+        if not check_result:
+            sys.exit("Error while checking " + extractor.get_name() + " configuration: " + error_message)
+
     graphs = []
     qc_start = time.time()
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
-        extractor.check_conf()
-        extractor.init()
-        _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
 
+        _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
         extractor_start = time.time()
+
+        # Execute extractor
+        extractor.init()
         extractor.extract(result_dict)
         graphs.extend(extractor.graph_generation(result_dict))
         extractor.clean(result_dict)
+
         extractor_end = time.time()
         extract_time = extractor_end - extractor_start
         result_dict['{}.duration'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)

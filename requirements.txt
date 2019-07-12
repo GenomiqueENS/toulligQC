@@ -1,6 +1,0 @@
-plotly
-matplotlib
-seaborn
-numpy
-h5py
-pandas
