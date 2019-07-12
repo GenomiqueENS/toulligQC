@@ -146,13 +146,28 @@ class SequencingSummaryExtractor:
         :param result_dict:
         :param entry:
         :param prefix: key prefix
-        :return: result_dict dictionary filled
+        :return: result_dict dictionary filled and barcodes frequency in pandas series type
         """
         barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
         count_sorted = barcode_count.sort_index()[self.barcode_selection]
-        total = sum(count_sorted)
         for key in dict(count_sorted):
-            result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = count_sorted[key]*100/total
+            result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
+                count_sorted[key]*100/sum(count_sorted)
+        return count_sorted
+
+    def add_other_category_to_barcode_frequency(self, result_dict, entry, prefix=''):
+        """
+        Add the other category to the barcode frequency to the result_dict dictionary
+        :param result_dict:
+        :param entry:
+        :param prefix: key prefix
+        :return: result_dict dictionary filled
+        """
+        result_dict[self.add_key_to_result_dict(entry) + ".with.other.barcodes.count"] = result_dict[self.add_key_to_result_dict(prefix)] - sum(result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"])
+        other_barcode_count = pd.Series([result_dict[self.add_key_to_result_dict(entry) + ".with.other.barcodes.count"]], index=['other'])
+        result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"] = result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"].append(other_barcode_count)
+
+        return result_dict[self.add_key_to_result_dict(entry) + ".barcodes.series"].sort_index()
 
     def extract(self, result_dict):
         """
@@ -296,9 +311,15 @@ class SequencingSummaryExtractor:
             result_dict[self.add_key_to_result_dict("read.fail.barcode")] = \
                 self.dataframe_1d.barcode_arrangement.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
-            self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
-            self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
-            self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
+            # Get barcodes frequency by read type
+            result_dict[self.add_key_to_result_dict("all.read.barcodes.series")] = self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
+            result_dict[self.add_key_to_result_dict("read.pass.barcodes.series")] = self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
+            result_dict[self.add_key_to_result_dict("read.fail.barcodes.series")] = self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
+
+            # Add the other category to the barcodes frequency
+            result_dict[self.add_key_to_result_dict("all.read.barcodes.series")] = self.add_other_category_to_barcode_frequency(result_dict, "all.read", 'read.count')
+            result_dict[self.add_key_to_result_dict("read.pass.barcodes.series")] = self.add_other_category_to_barcode_frequency(result_dict, "read.pass", 'read.pass.count')
+            result_dict[self.add_key_to_result_dict("read.fail.barcodes.series")] = self.add_other_category_to_barcode_frequency(result_dict, "read.fail", 'read.fail.count')
 
             pattern = '(\d{2})'
             length = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
@@ -480,7 +501,11 @@ class SequencingSummaryExtractor:
                 'barcode_selection_sequence_length_dataframe',
                 'barcode_selection_sequence_length_melted_dataframe',
                 'barcode_selection_sequence_phred_dataframe',
-                'barcode_selection_sequence_phred_melted_dataframe']
+                'barcode_selection_sequence_phred_melted_dataframe',
+                "all.read.barcodes.series",
+                "read.pass.barcodes.series",
+                "read.fail.barcodes.series"
+        ]
 
         key_list = []
         for key in keys:

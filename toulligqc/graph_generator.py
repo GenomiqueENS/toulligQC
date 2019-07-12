@@ -518,36 +518,35 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
 
-    barcode_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcode"].value_counts()
-    count_sorted = barcode_count.sort_index()[barcode_selection]
-    total = sum(count_sorted)
+    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcodes.series"]
+    barcodes = count_sorted.index.values.tolist()
 
-    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
 
-    sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
+    sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
-        length = np.arange(0, len(barcode_count))
+        length = np.arange(0, len(count_sorted))
         ax1.set_title(main)
-        ax1.bar(length, barcode_count, color=cs)
+        ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
-        ax1.set_xticklabels(barcode_selection)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.set_xticklabels(barcodes)
+        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
 
-    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
-                                 "read count": barcode_count})
+    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+                                 "read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
     table_html = pd.DataFrame.to_html(barcode_table)
@@ -568,36 +567,35 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    barcode_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcode"].value_counts()
-    count_sorted = barcode_count.sort_index()[barcode_selection]
-    total = sum(count_sorted)
+    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcodes.series"]
+    barcodes = count_sorted.index.values.tolist()
 
-    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
 
-    sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
+    sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor='black')
 
     else:
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
-        length = np.arange(0, len(barcode_count))
+        length = np.arange(0, len(count_sorted))
         ax1.set_title(main)
-        ax1.bar(length, barcode_count, color=cs)
+        ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
-        ax1.set_xticklabels(barcode_selection)
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.set_xticklabels(barcodes)
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
 
-    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
-                                  "read count": barcode_count})
+    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+                                  "read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
@@ -981,31 +979,36 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
+    other_barcode_count = pd.Series([sum(barcode_count) - len(result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcode"])], index=['other'])
+    count_sorted = count_sorted.append(other_barcode_count)
+    count_sorted = count_sorted.sort_index()
+    barcodes = count_sorted.index.values.tolist()
+
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
-        length = np.arange(0, len(barcode_count))
+        length = np.arange(0, len(count_sorted))
         ax1.set_title(main)
-        ax1.bar(length, barcode_count, color=cs)
+        ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
-        ax1.set_xticklabels(barcode_selection)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.set_xticklabels(barcodes)
+        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
-    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
-                                  "read count": barcode_count})
+    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+                                  "read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
     table_html = \
@@ -1030,31 +1033,36 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     count_sorted = barcode_count.sort_index()[barcode_selection]
     total = sum(count_sorted)
 
-    cs = plt.get_cmap('Spectral')(np.arange(len(barcode_selection)) / len(barcode_selection))
+    other_barcode_count = pd.Series([sum(barcode_count) - len(result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcode"])], index=['other'])
+    count_sorted = count_sorted.append(other_barcode_count)
+    count_sorted = count_sorted.sort_index()
+    barcodes = count_sorted.index.values.tolist()
+
+    cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
 
     sizes = [(100 * chiffre) / total for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
-        length = np.arange(0, len(barcode_count))
+        length = np.arange(0, len(count_sorted))
         ax1.set_title(main)
-        ax1.bar(length, barcode_count, color=cs)
+        ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
-        ax1.set_xticklabels(barcode_selection)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcode_selection, sizes)],
+        ax1.set_xticklabels(barcodes)
+        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.savefig(output_file)
     plt.close()
-    barcode_table = pd.DataFrame({"barcode arrangement": barcode_count/sum(barcode_count)*100,
-                                  "read count": barcode_count})
+    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+                                  "read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = '{:.2f}%'.format
 
