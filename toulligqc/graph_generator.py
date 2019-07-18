@@ -518,7 +518,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcodes.series"]
+    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -567,7 +567,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcodes.series"]
+    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -975,7 +975,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcodes.series"]
+    count_sorted = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -1023,7 +1023,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
         if all(result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcodes.series"]
+    count_sorted = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
