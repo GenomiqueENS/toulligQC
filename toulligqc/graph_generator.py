@@ -84,75 +84,167 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     1D fail read return by Albacore (Qscore < 7.5)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(12, 7), dpi=my_dpi)
-
-    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
-    plt.mec = 'black'
-    plt.mfc = 'white'
-    plt.subplots_adjust(bottom=0.015, top=1.0)
-
-    result_dict['albacore.log.extractor.fast5.files.submitted'] = \
-        _is_in_result_dict(result_dict, 'albacore.log.extractor.fast5.files.submitted', -1)
-
-    if result_dict['albacore.log.extractor.fast5.files.submitted'] == -1:
-        read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
-                     result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-                     result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
-                     result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-                     result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]]
-        label = ("FastQ entries", "1D", 'Null sequence length', "1D pass", "1D fail")
-        nd = np.arange(len(read_type))
-        bars = ax.bar(nd, read_type, align='center',
-                      color=["lightblue", "salmon", 'purple', "yellowgreen", "orangered"],
-                      edgecolor="black", linewidth=1)
-
-        array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
-                          [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["FastQ entries", "1D", 'Null sequence length', "1D pass", "1D fail"])
 
     # Histogram completed with the number of basecalling errors found in the pipeline.log file
-    else:
-        read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
-                     result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                     result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
-                     result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-                     result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
-                     result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-                     result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]]
-        label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",
-                 'Null sequence length', "1D pass", "1D fail")
-        nd = np.arange(len(read_type))
-        bars = ax.bar(nd, read_type, align='center', color=["Green", "yellow", "lightblue", "salmon",
-                                                            'purple', "yellowgreen", "orangered"],
-                      edgecolor="black", linewidth=1)
 
-        array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'],
-                           result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
-                           result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
-                          [result_dict['albacore.log.extractor.fast5.files.frequency'],
-                           result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],
-                           result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Raw Fast5", "Raw Fast5 with error", "FastQ_entries", "1D",
-                                          'Null sequence length', "1D pass", "1D fail"])
+    if 'albacore.log.extractor.fast5.files.submitted' in result_dict or result_dict.keys().__contains__('albacore.log.extractor.fast5.files.submitted'):
+
+        # Histogram completed with the number of basecalling reads (is.barcode == True)
+        if 'basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count' in result_dict or result_dict.keys().__contains__('basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count'):
+
+            plt.figure(figsize=(16, 7), dpi=my_dpi)
+            gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+            ax = plt.subplot(gs[0])
+            plt.mec = 'black'
+            plt.mfc = 'white'
+            plt.subplots_adjust(bottom=0.015, top=1.0)
+
+            read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
+                         result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]
+                         ]
+            label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",
+                     'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
+            nd = np.arange(len(read_type))
+            bars = ax.bar(nd, read_type, align='center', color=["Green", "yellow", "lightblue", "salmon",
+                                                                'purple', "yellowgreen", "lightgoldenrodyellow", "orangered","darksalmon"],
+                          edgecolor="black", linewidth=1)
+
+            array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'],
+                               result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                               result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]],
+                              [result_dict['albacore.log.extractor.fast5.files.frequency'],
+                               result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],
+                               result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"]]])
+            dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+                                     columns=["Raw Fast5", "Raw Fast5 with error", "FastQ_entries", "1D",
+                                              'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded"])
+
+        else:
+
+            plt.figure(figsize=(12, 7), dpi=my_dpi)
+            gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+            ax = plt.subplot(gs[0])
+            plt.mec = 'black'
+            plt.mfc = 'white'
+            plt.subplots_adjust(bottom=0.015, top=1.0)
+
+            read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
+                             result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
+                             result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                             result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                             result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                             result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                             result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
+                             ]
+            label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",
+                     'Null sequence length', "1D pass","1D fail")
+            nd = np.arange(len(read_type))
+            bars = ax.bar(nd, read_type, align='center', color=["Green", "yellow", "lightblue", "salmon",
+                                                                'purple', "yellowgreen", "orangered"],
+                          edgecolor="black", linewidth=1)
+
+            array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'],
+                               result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                               result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
+                              [result_dict['albacore.log.extractor.fast5.files.frequency'],
+                               result_dict['albacore.log.extractor.fast5.files.basecalled.error.frequency'],
+                               result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
+            dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+                                     columns=["Raw Fast5", "Raw Fast5 with error", "FastQ_entries", "1D",
+                                              'Null sequence length', "1D pass","1D fail"])
+
+    else:
+        plt.figure(figsize=(12, 7), dpi=my_dpi)
+        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+        plt.mec = 'black'
+        plt.mfc = 'white'
+        plt.subplots_adjust(bottom=0.015, top=1.0)
+
+        # Histogram completed with the number of basecalling reads (is.barcode == True)
+        if 'basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count' in result_dict or result_dict.keys().__contains__('basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count'):
+
+            read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]
+                         ]
+            label = ("FastQ entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
+            nd = np.arange(len(read_type))
+            bars = ax.bar(nd, read_type, align='center', color=["lightblue", "salmon",'purple', "yellowgreen", "lightgoldenrodyellow", "orangered","darksalmon"],
+                          edgecolor="black", linewidth=1)
+
+            array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                               result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]],
+                              [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"]]])
+            dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+                                     columns=["FastQ_entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded"])
+        else:
+
+            read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                         result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
+                         ]
+            label = ("FastQ entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
+            nd = np.arange(len(read_type))
+            bars = ax.bar(nd, read_type, align='center', color=["lightblue", "salmon",'purple', "yellowgreen","orangered"],
+                          edgecolor="black", linewidth=1)
+
+            array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                               result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
+                              [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency'],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
+            dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+                                     columns=["FastQ_entries", "1D", 'Null sequence length', "1D pass", "1D fail"])
 
     plt.xticks(nd, label)
     plt.xlabel("Read type")

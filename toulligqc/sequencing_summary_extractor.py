@@ -90,17 +90,18 @@ class SequencingSummaryExtractor:
         self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
         self.fast5_tot_number_1d = len(self.dataframe_1d)
 
+
         if self.is_barcode:
 
             self.barcode_selection = self.config_dictionary['barcode_selection']
 
             # Check if there are barcodes in data
-            try:
-                self.dataframe_1d.loc[~self.dataframe_1d['barcode_arrangement'].isin(
-                    self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
-
-            except ValueError:
-                sys.exit('No barcode found in sequencing summary file')
+            # try:
+            #     self.dataframe_1d.loc[~self.dataframe_1d['barcode_arrangement'].isin(
+            #         self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
+            #
+            # except ValueError:
+            #     sys.exit('No barcode found in sequencing summary file')
 
     @staticmethod
     def get_name():
@@ -151,13 +152,14 @@ class SequencingSummaryExtractor:
         barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
         count_sorted = barcode_count.sort_index()[self.barcode_selection]
         result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted.drop("unclassified"))
-        result_dict[self.add_key_to_result_dict(prefix + ".with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
-        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + ".with.other.barcodes.count")], index=['other'])
+        result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
+        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")], index=['other'])
         count_sorted = count_sorted.append(other_barcode_count).sort_index()
 
         for key in dict(count_sorted):
             result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
                 count_sorted[key]*100/sum(count_sorted)
+
         return count_sorted
 
     def extract(self, result_dict):
@@ -306,6 +308,9 @@ class SequencingSummaryExtractor:
             result_dict[self.add_key_to_result_dict("all.read.barcoded")] = self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
             result_dict[self.add_key_to_result_dict("read.pass.barcoded")] = self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
             result_dict[self.add_key_to_result_dict("read.fail.barcoded")] = self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
+
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"]/result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] *100
+            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]/result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] *100
 
             pattern = '(\d{2})'
             length = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
