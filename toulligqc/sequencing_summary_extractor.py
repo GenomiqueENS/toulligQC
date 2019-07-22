@@ -313,8 +313,19 @@ class SequencingSummaryExtractor:
             result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]/result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] *100
 
             pattern = '(\d{2})'
+
+            self.dataframe_1d.loc[~self.dataframe_1d['barcode_arrangement'].isin(
+                self.barcode_selection), 'barcode_arrangement'] = 'other'
+
+            result_dict[self.add_key_to_result_dict("passes.filtering")] = \
+                self.dataframe_1d['passes_filtering']
+
+
             length = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
             phred = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
+
+
+            self.barcode_selection.append('other')
 
             for index_barcode, barcode in enumerate(self.barcode_selection):
 
@@ -328,6 +339,7 @@ class SequencingSummaryExtractor:
                     barcode_selected_dataframe.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
 
                 match = re.search(pattern, barcode)
+
                 if match:
                     length[match.group(0)] = barcode_selected_dataframe['sequence_length_template']
                     phred[match.group(0)] = barcode_selected_dataframe['mean_qscore_template']
@@ -355,7 +367,7 @@ class SequencingSummaryExtractor:
                     for index, value in barcode_selected_read_fail_dataframe['mean_qscore_template']\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.qscore.' + index] = value
-                else:
+                if barcode == 'unclassified':
                     length['Unclassified'] = barcode_selected_dataframe['sequence_length_template']
                     phred['Unclassified'] = barcode_selected_dataframe['mean_qscore_template']
 
@@ -381,6 +393,33 @@ class SequencingSummaryExtractor:
                     for index, value in barcode_selected_read_fail_dataframe['mean_qscore_template']\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
+
+                if barcode == 'other':
+                    length['Other Barcodes'] = barcode_selected_dataframe['sequence_length_template']
+                    phred['Other Barcodes'] = barcode_selected_dataframe['mean_qscore_template']
+
+                    for index, value in barcode_selected_dataframe['sequence_length_template'].describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('all.read.with.other.barcodes.length.') + index] = value
+
+                    for index, value in barcode_selected_read_pass_dataframe['sequence_length_template'] \
+                            .describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.with.other.barcodes.length.') + index] = value
+
+                    for index, value in barcode_selected_read_fail_dataframe['sequence_length_template'] \
+                            .describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.with.other.barcodes.length.') + index] = value
+
+                    for index, value in barcode_selected_dataframe['mean_qscore_template'] \
+                            .describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('all.read.with.other.barcodes.qscore.') + index] = value
+
+                    for index, value in barcode_selected_read_pass_dataframe['mean_qscore_template'] \
+                            .describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.with.other.barcodes.qscore.') + index] = value
+
+                    for index, value in barcode_selected_read_fail_dataframe['mean_qscore_template'] \
+                            .describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.with.other.barcodes.qscore.') + index] = value
 
             # Provide statistic per barcode in the result_dict dictionary
 
