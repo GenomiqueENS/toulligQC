@@ -438,13 +438,27 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
     ax2 = plt.subplot(gs[1])
 
-    sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-                 ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
-                 color='yellowgreen', hist=True, label='1D pass')
+    max_frequency_pass = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].value_counts(normalize=True))
 
-    sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'],
-                 ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
-                 color='orangered', label='1D fail', hist=True)
+    max_frequency_fail = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].value_counts(normalize=True))
+
+    if max_frequency_pass > max_frequency_fail:
+        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
+                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
+                     color='yellowgreen', hist=True, label='1D pass')
+
+        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'],
+                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
+                     color='orangered', label='1D fail', hist=True)
+
+    else:
+        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'],
+                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
+                     color='orangered', label='1D fail', hist=True)
+
+        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
+                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
+                     color='yellowgreen', hist=True, label='1D pass')
 
     ax2.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
