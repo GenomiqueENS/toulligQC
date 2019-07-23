@@ -227,6 +227,12 @@ class Fast5Extractor:
         :param params:  required h5py attributes
         :return: h5py value, for example flow_cell_id : FAE22827
         """
-        tracking_id_items = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-        tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
+        if [key for key in h5py_file['/'].keys()][0] == 'Raw':
+            tracking_id_items = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
+            tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
+
+        else:
+            tracking_id_items = list(h5py_file[[key for key in h5py_file['/'].keys()][0]+'/tracking_id'].attrs.items())
+            tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
+
         return tracking_id_dict[params]
