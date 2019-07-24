@@ -369,20 +369,21 @@ def html_report(config_dictionary, result_dict, graphs):
             <table class=\" dataframe \" border="1">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
               <tbody>
-              <tr><th>Run id</th><td> {0} </td></tr>               
-              <tr><th>Report name </th><td> {1} </td></tr>
-              <tr><th>Run date</th><td> {2} </td></tr>
-              <tr><th>Run duration </th><td> {3} </td></tr>
-              <tr><th>Flowcell id </th><td> {4} </td></tr>
-              <tr><th>Flowcell version</th><td> {5} </td></tr>
-              <tr><th>Kit</th><td> {6} </td></tr>
-              <tr><th>Yield (Gbp)</th><td> {7} </td></tr>
-              <tr><th>Read count</th><td> {8} </td></tr>
+              <tr><th>Run id</th><td> {0} </td></tr>  
+              <tr><th>Sample</th><td> {1} </td></tr>                      
+              <tr><th>Report name </th><td> {2} </td></tr>
+              <tr><th>Run date</th><td> {3} </td></tr>
+              <tr><th>Run duration </th><td> {4} </td></tr>
+              <tr><th>Flowcell id </th><td> {5} </td></tr>
+              <tr><th>Flowcell version</th><td> {6} </td></tr>
+              <tr><th>Kit</th><td> {7} </td></tr>
+              <tr><th>Yield (Gbp)</th><td> {8} </td></tr>
+              <tr><th>Read count</th><td> {9} </td></tr>
               </tbody>
             </table> 
         </div> <!-- end .info-box -->
       </div>
-    """.format(run_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count)
+    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count)
 
     main_report += """
       <div class=\"module\">
@@ -401,14 +402,13 @@ def html_report(config_dictionary, result_dict, graphs):
                 <tr><th>Hostname</th><td> {5} </td></tr>
                 <tr><th>Device</th><td> {6} </td></tr>
                 <tr><th>Device ID</th><td> {7} </td></tr>
-                <tr><th>Sample</th><td> {8} </td></tr>
-                <tr><th>Model file</th><td> {9} </td></tr>
+                <tr><th>Model file</th><td> {8} </td></tr>
                 </tbody>
             </table>
         </div> <!-- end .info-box-left -->
         <div class=\"after-box\"><p></p></div>
       </div>
-    """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,sample_id,model_file)
+    """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,model_file)
 
     for i, t in enumerate(graphs):
         main_report += "      <div class=\"module\" id=M{0}><h2> {1} " \
