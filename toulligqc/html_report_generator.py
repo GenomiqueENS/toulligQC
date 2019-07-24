@@ -62,10 +62,15 @@ def html_report(config_dictionary, result_dict, graphs):
     basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
     basecaller_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.version', "Unknown")
     basecaller_analysis = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.analysis', "Unknown")
+    hostname = _get_result_value(result_dict, 'sequencing.telemetry.extractor.hostname', "Unknown")
+    device_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.id', "Unknown")
+    device_type = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.type', "Unknown")
+    model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
+    sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
 
     f = open(result_directory + 'report.html', 'w')
 
-    # Define the header of the page
+# Define the header of the page
     title = """<!doctype html>
 <html>
   <head>
@@ -209,6 +214,28 @@ def html_report(config_dictionary, result_dict, graphs):
     padding-top:1.5em;
   }
   
+  .info-box {
+    float:left;
+    min-width: 400px;
+    height: 350px;
+    margin: 0em;
+    padding-bottom:1.5em;
+    padding-top:0em;
+    top: 0 auto;
+    bottom: 0 auto;
+  }
+  
+  .info-box-left {
+    float:left;
+    min-width: 400px;
+    height: 350px;
+    margin: 0em;
+    padding-bottom:1.5em;
+    padding-top:0em;
+    top: 0 auto;
+    bottom: 0 auto;
+  }
+  
   .box {
     float:left;
     min-width: 1150px;
@@ -222,8 +249,8 @@ def html_report(config_dictionary, result_dict, graphs):
   
     .box-left {
     float:left;
-    min-width: 430px;
-    height: 460px;
+    min-width: 350px;
+    height: 250px;
     margin: 0em;
     padding-bottom:1.5em;
     padding-top:1.5em;
@@ -335,31 +362,53 @@ def html_report(config_dictionary, result_dict, graphs):
     main_report = """
     <div class = 'main'>
       <div class=\"module\" id="Basic-statistics">
-        <h2 id=M{0}>Basic Statistics</h2>
-        <h2 id=M{0}></h2>
-        <h1></h1>
-        <table class=\" dataframe \" border="1">
-          <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
-          <tbody>
-          <tr><th>Run id</th><td> {0} </td></tr>               
-          <tr><th>Report name </th><td> {1} </td></tr>
-          <tr><th>Run date</th><td> {2} </td></tr>
-          <tr><th>Run duration </th><td> {3} </td></tr>
-          <tr><th>Flowcell id </th><td> {4} </td></tr>
-          <tr><th>Flowcell version</th><td> {5} </td></tr>
-          <tr><th>Kit</th><td> {6} </td></tr>
-          <tr><th>MinKNOW version </th><td> {7} </td></tr>
-          <tr><th>Basecaller name</th><td> {8} </td></tr>
-          <tr><th>Basecaller version</th><td> {9} </td></tr>
-          <tr><th>Basecaller analysis</th><td> {10} </td></tr>
-          <tr><th>ToulligQC version</th><td> {11} </td></tr>
-          <tr><th>Yield (Gbp)</th><td> {12} </td></tr>
-          <tr><th>Read count</th><td> {13} </td></tr>
-          </tbody>
-        </table>   
+        <div class = "info-box"> 
+            <h2 id=M{0}>Basic Statistics</h2>
+            <h2 id=M{0}></h2>
+            <h3>Run info</h3>
+            <table class=\" dataframe \" border="1">
+              <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
+              <tbody>
+              <tr><th>Run id</th><td> {0} </td></tr>               
+              <tr><th>Report name </th><td> {1} </td></tr>
+              <tr><th>Run date</th><td> {2} </td></tr>
+              <tr><th>Run duration </th><td> {3} </td></tr>
+              <tr><th>Flowcell id </th><td> {4} </td></tr>
+              <tr><th>Flowcell version</th><td> {5} </td></tr>
+              <tr><th>Kit</th><td> {6} </td></tr>
+              <tr><th>Yield (Gbp)</th><td> {7} </td></tr>
+              <tr><th>Read count</th><td> {8} </td></tr>
+              </tbody>
+            </table> 
+        </div> <!-- end .info-box -->
       </div>
-""".format(run_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, minknow_version,
-           basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'], run_yield, read_count)
+    """.format(run_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count)
+
+    main_report += """
+      <div class=\"module\">
+        <div class = "info-box-left">
+            <h2 id=M{0}></h2>
+            <h2 id=M{0}></h2>
+            <h3>Software info</h3>
+            <table class=\" dataframe \" border="1">
+                <thead><tr><th>Measure</th><th>Value</th></tr></thead>
+                <tbody>
+                <tr><th>MinKNOW version </th><td> {0} </td></tr>
+                <tr><th>Basecaller name</th><td> {1} </td></tr>
+                <tr><th>Basecaller version</th><td> {2} </td></tr>
+                <tr><th>Basecaller analysis</th><td> {3} </td></tr>
+                <tr><th>ToulligQC version</th><td> {4} </td></tr>
+                <tr><th>Hostname</th><td> {5} </td></tr>
+                <tr><th>Device</th><td> {6} </td></tr>
+                <tr><th>Device ID</th><td> {7} </td></tr>
+                <tr><th>Sample</th><td> {8} </td></tr>
+                <tr><th>Model file</th><td> {9} </td></tr>
+                </tbody>
+            </table>
+        </div> <!-- end .info-box-left -->
+        <div class=\"after-box\"><p></p></div>
+      </div>
+    """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,sample_id,model_file)
 
     for i, t in enumerate(graphs):
         main_report += "      <div class=\"module\" id=M{0}><h2> {1} " \
@@ -397,6 +446,7 @@ def _embedded_image(image_path):
         result = "data:image/png;base64," + base64.b64encode(image_file.read()).decode('ascii')
 
     return result
+
 
 def _get_result_value(result_dict, key , default_value = ""):
     """
