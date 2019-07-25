@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 MAINTAINER Laurent Jourdren <jourdren@biologie.ens.fr>
-ARG VERSION=1.1
+ARG VERSION=1.2
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
                     python3 \
