@@ -795,35 +795,77 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     types of reads: 1D, 1D square, 1D square pass, 1D square fail.
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
-    plt.mec = 'black'
-    plt.mfc = 'white'
-    plt.subplots_adjust(bottom=0.015, top=1.0)
+    # Histogram completed with the number of basecalling reads (is.barcode == True)
+    if 'basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count' in result_dict or result_dict.keys().__contains__('basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count'):
 
-    read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-                 result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
-                 result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
-                 result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.count']]
-    label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail")
-    nd = np.arange(len(read_type))
-    bars = ax.bar(nd, read_type, align='center', color=["salmon", "orange", "yellowgreen", "orangered"],
-                  edgecolor="black", linewidth=1)
+        plt.figure(figsize=(13, 7), dpi=my_dpi)
 
-    array = \
-        np.array([[result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-                   result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
-                   result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
-                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"]],
-                  [result_dict['basecaller.sequencing.summary.1d.extractor.read.count.frequency'],
-                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
-                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
-                   result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"]]])
+        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+        plt.mec = 'black'
+        plt.mfc = 'white'
+        plt.subplots_adjust(bottom=0.015, top=1.0)
 
-    dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                             columns=["FastQ_entries", "1D", "1D pass", "1D fail"])
+        read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count']]
+
+        label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare pass barcoded", "1Dsquare fail","1Dsquare fail barcoded")
+        nd = np.arange(len(read_type))
+        bars = ax.bar(nd, read_type, align='center', color=["salmon", "orange", "yellowgreen", "lightgoldenrodyellow", "orangered","darksalmon"],
+                      edgecolor="black", linewidth=1)
+
+        array = \
+            np.array([[result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                       result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
+                       result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
+                       result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count'],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
+                       result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count']],
+                      [result_dict['basecaller.sequencing.summary.1d.extractor.read.count.frequency'],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.frequency"],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.frequency"]]])
+
+        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+                                 columns=["FastQ_entries", "1D square", "1D square pass","1D square pass barcoded", "1D square fail" , "1D square fail barcoded"])
+
+    else:
+        plt.figure(figsize=(12, 7), dpi=my_dpi)
+
+        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
+        ax = plt.subplot(gs[0])
+        plt.mec = 'black'
+        plt.mfc = 'white'
+        plt.subplots_adjust(bottom=0.015, top=1.0)
+
+        read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
+                     result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.count']]
+        label = ("1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail")
+        nd = np.arange(len(read_type))
+        bars = ax.bar(nd, read_type, align='center', color=["salmon", "orange", "yellowgreen", "orangered"],
+                      edgecolor="black", linewidth=1)
+
+        array = \
+            np.array([[result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                       result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
+                       result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"]],
+                      [result_dict['basecaller.sequencing.summary.1d.extractor.read.count.frequency'],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
+                       result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"]]])
+
+        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+                                 columns=["FastQ_entries", "1D", "1D pass", "1D fail"])
 
     plt.xticks(nd, label)
     plt.xlabel("Read type")
