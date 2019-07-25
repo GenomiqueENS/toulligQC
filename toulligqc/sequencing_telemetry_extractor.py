@@ -107,7 +107,6 @@ class SequencingTelemetryExtractor:
             result_dict[self.get_report_data_file_id() + '.exp.start.time'] = array[0]['tracking_id']['exp_start_time']
             result_dict[self.get_report_data_file_id() + '.device.id'] = array[0]['tracking_id']['device_id']
             result_dict[self.get_report_data_file_id() + '.device.type'] = array[0]['tracking_id']['device_type']
-            result_dict[self.get_report_data_file_id() + '.model.file'] = array[0]['opts']['model_file']
             result_dict[self.get_report_data_file_id() + '.software.name'] = array[0]['software']['name']
             result_dict[self.get_report_data_file_id() + '.software.version'] = array[0]['software']['version']
             result_dict[self.get_report_data_file_id() + '.software.analysis'] = array[0]['software']['analysis']
@@ -115,8 +114,10 @@ class SequencingTelemetryExtractor:
             if 'albacore_opts' in array[0]:
                 result_dict[self.get_report_data_file_id() + '.kit.version'] = array[0]['albacore_opts']['kit']
                 result_dict[self.get_report_data_file_id() + '.flowcell.version'] = array[0]['albacore_opts']['flowcell']
+                result_dict[self.get_report_data_file_id() + '.model.file'] = array[0]['context_tags']['local_bc_temp_model']
             else:
                 result_dict[self.get_report_data_file_id() + '.kit.version'] = array[0]['opts']['kit']
                 result_dict[self.get_report_data_file_id() + '.flowcell.version'] = array[0]['opts']['flowcell']
+                result_dict[self.get_report_data_file_id() + '.model.file'] = array[0]['opts']['model_file']
 
         return
