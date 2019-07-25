@@ -115,11 +115,11 @@ class OneDSquareSequencingSummaryExtractor:
 
             self.barcode_selection = self.config_dictionary['barcode_selection']
 
-            try:
-                self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
-                    self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
-            except ValueError:
-                sys.exit('No barcode found in sequencing summary file')
+            # try:
+            #     self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
+            #         self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
+            # except ValueError:
+            #     sys.exit('No barcode found in sequencing summary file')
 
     @staticmethod
     def get_name():
@@ -166,8 +166,8 @@ class OneDSquareSequencingSummaryExtractor:
         barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
         count_sorted = barcode_count.sort_index()[self.barcode_selection]
         result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted.drop("unclassified"))
-        result_dict[self.add_key_to_result_dict(prefix + ".with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
-        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + ".with.other.barcodes.count")], index=['other'])
+        result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
+        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")], index=['other'])
         count_sorted = count_sorted.append(other_barcode_count).sort_index()
 
         for key in dict(count_sorted):
@@ -415,9 +415,19 @@ class OneDSquareSequencingSummaryExtractor:
             result_dict[self.add_key_to_result_dict("read.pass.barcoded")] = self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
             result_dict[self.add_key_to_result_dict("read.fail.barcoded")] = self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
 
+            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count"]/result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"] *100
+            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]/result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"] *100
+
+            self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
+                    self.barcode_selection), 'barcode_arrangement'] = 'other'
+
+            result_dict[self.add_key_to_result_dict("passes.filtering")] = self.dataframe_1dsqr['passes_filtering']
+
             pattern = '(\d{2})'
             length = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
             phred = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
+
+            self.barcode_selection.append('other')
 
             for index_barcode, barcode in enumerate(self.barcode_selection):
                 barcode_selected_dataframe = \
@@ -458,7 +468,7 @@ class OneDSquareSequencingSummaryExtractor:
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.qscore.' + index] = value
 
-                else:
+                if barcode == 'unclassified':
                     length['Unclassified'] = barcode_selected_dataframe[sequence_length_field]
                     phred['Unclassified'] = barcode_selected_dataframe[mean_qscore_field]
 
@@ -485,6 +495,35 @@ class OneDSquareSequencingSummaryExtractor:
                     for index, value in barcode_selected_read_fail_dataframe[mean_qscore_field]\
                             .describe().drop('count').iteritems():
                         result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
+
+                if barcode == 'other':
+
+                    length['Other Barcodes'] = barcode_selected_dataframe[sequence_length_field]
+                    phred['Other Barcodes'] = barcode_selected_dataframe[mean_qscore_field]
+
+                    for index, value in barcode_selected_dataframe[sequence_length_field] \
+                            .describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('all.read.with.other.barcodes.length.') + index] = value
+
+                    for index, value in barcode_selected_read_pass_dataframe[sequence_length_field] \
+                            .describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.with.other.barcodes.length.') + index] = value
+
+                    for index, value in barcode_selected_read_fail_dataframe[sequence_length_field] \
+                            .describe().iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.with.other.barcodes.length.') + index] = value
+
+                    for index, value in barcode_selected_dataframe[mean_qscore_field] \
+                            .describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('all.read.with.other.barcodes.qscore.') + index] = value
+
+                    for index, value in barcode_selected_read_pass_dataframe[mean_qscore_field] \
+                            .describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.pass.with.other.barcodes.qscore.') + index] = value
+
+                    for index, value in barcode_selected_read_fail_dataframe[mean_qscore_field] \
+                            .describe().drop('count').iteritems():
+                        result_dict[self.add_key_to_result_dict('read.fail.with.other.barcodes.qscore.') + index] = value
 
             # Provide statistic per barcode in the result_dict dictionary
 

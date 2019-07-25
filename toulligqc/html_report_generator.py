@@ -250,7 +250,7 @@ def html_report(config_dictionary, result_dict, graphs):
     .box-left {
     float:left;
     min-width: 350px;
-    height: 250px;
+    height: 350px;
     margin: 0em;
     padding-bottom:1.5em;
     padding-top:1.5em;
