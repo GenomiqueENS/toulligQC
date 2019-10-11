@@ -243,7 +243,6 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     plt.xticks(nd, label)
     plt.xlabel("Read type")
     plt.ylabel("Counts")
-    plt.title(main)
 
     for bar in bars:
         height = bar.get_height()
@@ -293,7 +292,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
         tick.label.set_rotation('vertical')
     ax.set_xlabel('Read length(bp)')
     ax.set_ylabel('Read number')
-    ax.set_title(main)
+
     dataframe = \
         pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
                       "1D pass": result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
@@ -366,7 +365,6 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order, linewidth=1)
     ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.ylabel('Mean Phred score')
-    plt.title(main)
 
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
@@ -391,7 +389,6 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
-    plt.title(main)
 
     dataframe = pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]})
     rd = dataframe.describe().drop('count').round(2).reset_index()
@@ -426,7 +423,6 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
-    plt.title(main)
 
     ax2 = plt.subplot(gs[1])
 
@@ -458,7 +454,6 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
-    plt.title(main)
     plt.axvline(x=result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].describe()['50%'], color='yellowgreen')
     plt.axvline(x=result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].describe()['50%'], color='orangered')
 
@@ -504,7 +499,6 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    plt.title(main)
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -527,7 +521,6 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
             bins=range(min(albacore_log['channel']), max(albacore_log['channel']) + 64, 64))
     ax.set_xlabel("Channel number")
     ax.set_ylabel("Count")
-    ax.set_title(main)
 
     channel_count = albacore_log['channel']
     total_number_reads_per_channel = pd.value_counts(channel_count)
@@ -594,7 +587,6 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     sns.heatmap(d, fmt="", linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7},
                 cbar_kws={'label': 'Read number per pore channel', "orientation": "horizontal"})
-    plt.title(main)
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -688,7 +680,6 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
         length = np.arange(0, len(count_sorted))
-        ax1.set_title(main)
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
@@ -727,7 +718,6 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
-    plt.title(main)
 
     df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
@@ -763,7 +753,6 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
-    plt.title(main)
 
     df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
@@ -863,7 +852,6 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     plt.xticks(nd, label)
     plt.xlabel("Read type")
     plt.ylabel("Counts")
-    plt.title(main)
 
     for bar in bars:
         height = bar.get_height()
@@ -915,7 +903,6 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
         tick.label.set_rotation('vertical')
     ax.set_xlabel('Read length(bp)')
     ax.set_ylabel('Read number')
-    ax.set_title(main)
 
     dataframe = \
         pd.DataFrame({"1D": read_1d, '1Dsquare': read_1dsqr,
@@ -965,7 +952,6 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order, linewidth=1)
     plt.ylabel('Mean Phred score')
     ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    plt.title(main)
 
     dataframe = dataframe[["1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail"]]
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
@@ -991,7 +977,6 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
-    plt.title(main)
 
     dataframe = pd.DataFrame({"1Dsquare": result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']})
     rd = dataframe.describe().drop('count').round(2).reset_index()
@@ -1029,7 +1014,6 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
-    plt.title(main)
 
     ax2 = plt.subplot(gs[1])
 
@@ -1046,7 +1030,6 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
-    plt.title(main)
 
     dataframe = \
         pd.DataFrame({"1D": qscore_1d,
@@ -1089,7 +1072,6 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    plt.title(main)
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -1133,7 +1115,6 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
         length = np.arange(0, len(count_sorted))
-        ax1.set_title(main)
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
@@ -1182,7 +1163,6 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(111)
         length = np.arange(0, len(count_sorted))
-        ax1.set_title(main)
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
@@ -1221,7 +1201,6 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
     plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
-    plt.title(main)
 
     df = result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
@@ -1258,7 +1237,6 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
     plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
-    plt.title(main)
 
     df = result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
