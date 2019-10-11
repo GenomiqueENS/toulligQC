@@ -360,8 +360,8 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
     ax = plt.subplot(gs[0])
     sns.boxplot(data=dataframe, ax=ax, palette=my_pal, order=order, linewidth=1)
-    plt.ylabel('Mean Phred score')
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    plt.ylabel('Mean Phred score')
 
     ax2 = plt.subplot(gs[1])
     sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order, linewidth=1)
@@ -614,6 +614,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
 
         if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
+            return False
 
     count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
@@ -622,22 +623,18 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
 
     sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
-        fig1, ax1 = plt.subplots()
+        ax1 = plt.subplot()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
+                   loc="upper right", edgecolor="black")
 
     else:
-        fig = plt.figure(figsize=(20, 10))
-        ax1 = fig.add_subplot(111)
+        ax1 = plt.subplot()
         length = np.arange(0, len(count_sorted))
-        ax1.set_title(main)
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -672,21 +669,18 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
 
     sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
-        fig1, ax1 = plt.subplots()
+        ax1 = plt.subplot()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor='black')
+                   loc="upper right", edgecolor='black')
 
     else:
-        fig = plt.figure(figsize=(20, 10))
-        ax1 = fig.add_subplot(111)
+        ax1 = plt.subplot()
         length = np.arange(0, len(count_sorted))
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -1107,25 +1101,23 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
 
     sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
-        fig1, ax1 = plt.subplots()
+        ax1 = plt.subplot()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
+                   loc="upper right", edgecolor="black")
 
     else:
-        fig = plt.figure(figsize=(20, 10))
-        ax1 = fig.add_subplot(111)
+        ax1 = plt.subplot()
         length = np.arange(0, len(count_sorted))
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
+
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
                                   "read count": count_sorted})
     barcode_table.sort_index(inplace=True)
@@ -1155,25 +1147,23 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
 
     sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
     if len(barcode_selection) <= 10:
-        fig1, ax1 = plt.subplots()
+        ax1 = plt.subplot()
         ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
         ax1.axis('equal')
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175), edgecolor="black")
 
     else:
-        fig = plt.figure(figsize=(20, 10))
-        ax1 = fig.add_subplot(111)
+        ax1 = plt.subplot()
         length = np.arange(0, len(count_sorted))
         ax1.bar(length, count_sorted, color=cs)
         ax1.set_xticks(length)
         ax1.set_xticklabels(barcodes)
-        plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
     plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
+
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
                                   "read count": count_sorted})
     barcode_table.sort_index(inplace=True)
