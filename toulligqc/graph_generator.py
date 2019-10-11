@@ -93,11 +93,9 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         if 'basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count' in result_dict or result_dict.keys().__contains__('basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count'):
 
             plt.figure(figsize=(16, 7), dpi=my_dpi)
-            gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-            ax = plt.subplot(gs[0])
+            ax = plt.subplot()
             plt.mec = 'black'
             plt.mfc = 'white'
-            plt.subplots_adjust(bottom=0.015, top=1.0)
 
             read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                          result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
@@ -141,11 +139,9 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         else:
 
             plt.figure(figsize=(12, 7), dpi=my_dpi)
-            gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-            ax = plt.subplot(gs[0])
+            ax = plt.subplot()
             plt.mec = 'black'
             plt.mfc = 'white'
-            plt.subplots_adjust(bottom=0.015, top=1.0)
 
             read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                              result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
@@ -182,11 +178,9 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
     else:
         plt.figure(figsize=(12, 7), dpi=my_dpi)
-        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-        ax = plt.subplot(gs[0])
+        ax = plt.subplot()
         plt.mec = 'black'
         plt.mfc = 'white'
-        plt.subplots_adjust(bottom=0.015, top=1.0)
 
         # Histogram completed with the number of basecalling reads (is.barcode == True)
         if 'basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count' in result_dict or result_dict.keys().__contains__('basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count'):
@@ -255,6 +249,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -278,9 +273,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     read_type = ['1D', '1D pass', '1D fail']
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
-    plt.subplots_adjust(bottom=0.015, top=1.0)
+    ax = plt.subplot()
 
     data = [result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
@@ -307,6 +300,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
                       "1D fail": result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]})
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -340,6 +334,7 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
     plt.xlabel("Time (Hour)")
     plt.legend()
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -370,13 +365,13 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     ax2 = plt.subplot(gs[1])
     sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order, linewidth=1)
     ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
     plt.title(main)
 
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
     return main, output_file, table_html, desc
@@ -388,10 +383,7 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    plt.subplot(gs[0])
-    plt.subplots_adjust(bottom=0.015, top=1.0)
+    plt.subplot()
 
     sns.distplot(result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"], bins=15, color='salmon',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1D")
@@ -406,6 +398,7 @@ def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
     plt.axvline(x=result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -422,7 +415,6 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     ax = plt.subplot(gs[0])
-    plt.subplots_adjust(bottom=0.015, top=1.0)
 
     sns.distplot(result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"], bins=15, ax=ax, color='salmon',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1D")
@@ -475,6 +467,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
                       "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -512,6 +505,8 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     plt.ylabel("Mean Phred score")
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.title(main)
+
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -547,6 +542,7 @@ def channel_count_histogram(albacore_log, main, my_dpi, result_directory, desc):
     dataframe.set_fontsize(12)
     dataframe.scale(1, 1.2)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
     table_html = pd.DataFrame.to_html(total_number_reads_per_channel.describe())
@@ -600,6 +596,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
                 cbar_kws={'label': 'Read number per pore channel', "orientation": "horizontal"})
     plt.title(main)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -648,6 +645,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
         plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -697,6 +695,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
         ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -717,9 +716,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    plt.subplot(gs[0])
-    plt.subplots_adjust(bottom=0.015, top=1.0)
+    plt.subplot()
 
     ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
                      x='barcodes', y='length', hue='passes_filtering',
@@ -743,6 +740,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -756,9 +754,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    plt.subplot(gs[0])
+    plt.subplot()
 
     ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
@@ -779,6 +775,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -801,11 +798,9 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
 
         plt.figure(figsize=(13, 7), dpi=my_dpi)
 
-        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-        ax = plt.subplot(gs[0])
+        ax = plt.subplot()
         plt.mec = 'black'
         plt.mfc = 'white'
-        plt.subplots_adjust(bottom=0.015, top=1.0)
 
         read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                      result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
@@ -839,11 +834,9 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     else:
         plt.figure(figsize=(12, 7), dpi=my_dpi)
 
-        gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-        ax = plt.subplot(gs[0])
+        ax = plt.subplot()
         plt.mec = 'black'
         plt.mfc = 'white'
-        plt.subplots_adjust(bottom=0.015, top=1.0)
 
         read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                      result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
@@ -876,6 +869,7 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2., 1 * height, '%d' % int(height), ha='center', va='bottom')
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -904,9 +898,7 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     read_type = ['1D', '1Dsquare', '1Dsquare pass', '1Dsquare fail']
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
-    plt.subplots_adjust(bottom=0.015, top=1)
+    ax = plt.subplot()
 
     n, bins, patches = ax.hist([read_1d, read_1dsqr, read_pass_1dsqr, read_fail_1dsqr],
                                color=["salmon", "goldenrod", "yellowgreen", "orangered"],
@@ -933,6 +925,7 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     dataframe = dataframe[["1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail"]]
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -946,7 +939,6 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
-    plt.subplots_adjust(bottom=0.015, top=1.0)
     mean_qscore_1d = result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]
 
     mean_qscore_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']
@@ -971,7 +963,6 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
 
     ax2 = plt.subplot(gs[1])
     sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order, linewidth=1)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
     plt.ylabel('Mean Phred score')
     ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.title(main)
@@ -979,6 +970,7 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     dataframe = dataframe[["1D", "1Dsquare", "1Dsquare pass", "1Dsquare fail"]]
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -991,9 +983,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    plt.subplot(gs[0])
+    plt.subplot()
 
     sns.distplot(result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'], bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1Dsquare")
@@ -1008,6 +998,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
 
     plt.axvline(x=result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -1022,7 +1013,6 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     qscore_1d = result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]
     qscore_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']
@@ -1068,6 +1058,7 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
 
     table_html = pd.DataFrame.to_html(dataframe)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -1099,6 +1090,8 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     plt.ylabel("Mean Phred score")
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     plt.title(main)
+
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 
@@ -1147,6 +1140,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
         plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
@@ -1195,6 +1189,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
         plt.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
                    loc="upper right", bbox_to_anchor=(1.1, 1.175))
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
@@ -1215,9 +1210,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    plt.subplot(gs[0])
+    plt.subplot()
 
     ax = \
         sns.boxplot(
@@ -1241,6 +1234,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
     return main, output_file, table_html, desc
@@ -1253,9 +1247,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     plt.figure(figsize=(12, 7), dpi=my_dpi)
-    plt.subplots_adjust(bottom=0.015, top=1.0)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    plt.subplot(gs[0])
+    plt.subplot()
 
     ax = \
         sns.boxplot(
@@ -1279,6 +1271,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
+    plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
 

@@ -239,7 +239,6 @@ def html_report(config_dictionary, result_dict, graphs):
   .box {
     float:left;
     min-width: 1150px;
-    height: 450px;
     margin: 0em;
     padding-bottom:1.5em;
     padding-top:1.8em;
