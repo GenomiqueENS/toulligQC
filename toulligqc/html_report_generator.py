@@ -410,10 +410,9 @@ def html_report(config_dictionary, result_dict, graphs):
     """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,model_file)
 
     for i, t in enumerate(graphs):
-        main_report += "      <div class=\"module\" id=M{0}><h2> {1} " \
-                       "<img src=\"http://mikecavaliere.com/wp-content/uploads/2015/05/Question-300x300.png\" " \
-                       "alt=\"Smiley face\" width=\"20\" height=\"25\" title=\"{4}\"> " \
-                       "</h2></div>".format(i, t[0], _embedded_image(t[1]), t[2], t[3])
+        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"{4}\">&#x1F263;</a></h2></div>" \
+            .format(i, t[0], _embedded_image(t[1]), t[2], t[3])
+
         if t[2] is None:
             main_report += "      <div class=\"module\"><p><img src=\"{2}\" " \
                            "alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
