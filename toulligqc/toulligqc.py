@@ -74,13 +74,15 @@ def _parse_args(config_dictionary):
     parser.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
                         help='Telemetry file source', default=False)
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
-    parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
-                        help='Path to sample sheet file')
     parser.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Barcode usage",
                         default=False)
+    parser.add_argument('-s', '--samplesheet-file', action='store', dest='sample_sheet_file',
+                        help='Path to sample sheet file')
+    parser.add_argument('-l', '--barcodes', action='store', dest='barcodes',
+                        help='Coma separated barcode list')
     parser.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                         default=False)
-    parser.add_argument("-l", "--devel-quick-launch", action='store_true', dest='is_quicklaunch',
+    parser.add_argument("--devel-quick-launch", action='store_true', dest='is_quicklaunch',
                         help=argparse.SUPPRESS, default=False)
     parser.add_argument('--version', action='version', version=version.__version__)
 
@@ -99,6 +101,7 @@ def _parse_args(config_dictionary):
     sample_sheet_file = argument_value.sample_sheet_file
     is_quiet = argument_value.is_quiet
     is_quicklaunch = argument_value.is_quicklaunch
+    barcodes = argument_value.barcodes
 
     config_dictionary['report_name'] = report_name
 
@@ -119,6 +122,7 @@ def _parse_args(config_dictionary):
         ('result_directory', result_directory),
         ('sample_sheet_file', sample_sheet_file),
         ('barcoding', is_barcode),
+        ('barcodes', barcodes),
         ('quiet', is_quiet),
         ('is_quicklaunch', is_quicklaunch)
     }
@@ -154,8 +158,8 @@ def _check_conf(config_dictionary):
         sys.exit('The sequencing summary source argument is empty')
 
     if config_dictionary['barcoding'] == 'True':
-        if not config_dictionary['sample_sheet_file']:
-            sys.exit('The sample sheet source argument is empty')
+        if not 'barcodes' in config_dictionary and not 'sample_sheet_file' in config_dictionary:
+            sys.exit('No barcode list or sample sheet source argument provided')
 
     if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
         sys.exit('The output directory argument is empty')
@@ -175,7 +179,7 @@ def _check_conf(config_dictionary):
         os.makedirs(config_dictionary['result_directory'])
 
 
-def _get_barcode(samplesheet):
+def _get_barcodes_from_samplesheet(samplesheet):
     """
     Get the barcode from the samplesheet file given in input
     :param samplesheet: sample sheet directory
@@ -194,7 +198,7 @@ def _get_barcode(samplesheet):
             if row[0].startswith('#'):
                 continue
 
-            pattern = re.search(r'BC(\d{2})', row[0])
+            pattern = re.search(r'BC(\d{2})', row[0].upper())
 
             if pattern:
                 barcode = 'barcode{}'.format(pattern.group(1))
@@ -276,7 +280,7 @@ def _extractors_list_and_result_dictionary_initialisation(config_dictionary, res
     result_dict['toulligqc.info.barcode.option'] = "False"
     if config_dictionary['barcoding'].lower() == 'true':
         result_dict['toulligqc.info.barcode.option'] = "True"
-        result_dict['toulligqc.info.barcode.selection'] = _get_barcode(config_dictionary['sample_sheet_file'])
+        result_dict['toulligqc.info.barcode.selection'] = config_dictionary['barcode_selection']
     dependancies_version(result_dict)
 
     return result_dict
@@ -311,12 +315,25 @@ def main():
     if not config_dictionary:
         sys.exit("Error, dico_path is empty")
 
+    # Get barcode selection
     if config_dictionary['barcoding'].lower() == 'true':
-        sample_sheet_file = config_dictionary['sample_sheet_file']
-        barcode_selection = _get_barcode(sample_sheet_file)
+
+        if 'barcodes' in config_dictionary:
+            # Barcodes are defined in the command line
+            barcode_set = set()
+            for b in config_dictionary['barcodes'].strip().split(','):
+                pattern = re.search(r'BC(\d{2})', b.strip().upper())
+                if pattern:
+                    barcode = 'barcode{}'.format(pattern.group(1))
+                    barcode_set.add(barcode)
+            barcode_selection = sorted(barcode_set)
+        else:
+            # Barcodes are defined in a samplesheet file
+            sample_sheet_file = config_dictionary['sample_sheet_file']
+            barcode_selection = _get_barcodes_from_samplesheet(sample_sheet_file)
         config_dictionary['barcode_selection'] = barcode_selection
         if barcode_selection == '':
-            sys.exit("Sample sheet is empty")
+            sys.exit("No barcode selected defined")
     else:
         config_dictionary['barcode_selection'] = ''
 
