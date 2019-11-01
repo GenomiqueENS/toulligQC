@@ -9,7 +9,7 @@ Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1
 It can work with Albacore or Guppy outputs. 
 It also needs a single FAST5 file (to catch the flowcell Id and the run date) if a telemetry file is not provided and the Albacore outputted FASTQ file (to compute the sequence statistics).
 Flow cells and kits version are retrieved using the telemetry file (Albacore and Guppy) or using the pipeline.log file (Albacore only).
-ToulligQC can take barcoding samples into account with a samplesheet.csv describing the barcodes used.
+ToulligQC can take barcoding samples into account with a samplesheet.csv file describing the barcodes used or by adding the barcode list as a command line option.
 
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
 This tool will produce a set of graphs, statistic files in txt format and a HTML report.
@@ -155,36 +155,40 @@ RUN_ID
 
 General Options:
 ```
-toulligqc  [-h] [-c FILE] [-n REPORT_NAME] [-f FAST5_SOURCE]
-                [-a SEQUENCING_SUMMARY_SOURCE] [-d SUMMARY_SUMMARY_1DSQR_SOURCE]
-                [-p ALBACORE_PIPELINE_SOURCE] [-q FASTQ_SOURCE] [-t TELEMETRY_SOURCE]
-                [-o OUTPUT] [-s SAMPLE_SHEET_FILE] [-b] [--quiet] [--version]
+usage:  [-h] [-c FILE] [-n REPORT_NAME] [-f FAST5_SOURCE]
+        [-a SEQUENCING_SUMMARY_SOURCE] [-d SEQUENCING_SUMMARY_1DSQR_SOURCE]
+        [-p ALBACORE_PIPELINE_SOURCE] [-q FASTQ_SOURCE] [-t TELEMETRY_SOURCE]
+        [-o OUTPUT] [-b] [-s SAMPLE_SHEET_FILE] [-l BARCODES] [--quiet]
+        [--version]
 
 optional arguments:
   -h, --help                                                       show this help message and exit
-  -c FILE, 
+  -c FILE,
   --conf-file FILE                                                 Specify config file
-  -n REPORT_NAME, 
+  -n REPORT_NAME,
   --report-name REPORT_NAME                                        Report name
-  -f FAST5_SOURCE, 
+  -f FAST5_SOURCE,
   --fast5-source FAST5_SOURCE                                      Fast5 file source
   -a SEQUENCING_SUMMARY_SOURCE,
-  --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE, 
+  --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE,
   --albacore-summary-source SEQUENCING_SUMMARY_SOURCE              Basecaller sequencing summary source
-  -d SUMMARY_SUMMARY_1DSQR_SOURCE, 
-  --sequencing-summary-1dsqr-source SUMMARY_SUMMARY_1DSQR_SOURCE, 
-  --albacore-1dsqr-summary-source SUMMARY_SUMMARY_1DSQR_SOURCE     Basecaller 1dsq summary source
+  -d SEQUENCING_SUMMARY_1DSQR_SOURCE,
+  --sequencing-summary-1dsqr-source SEQUENCING_SUMMARY_1DSQR_SOURCE,
+  --albacore-1dsqr-summary-source SEQUENCING_SUMMARY_1DSQR_SOURCE  Basecaller 1dsq summary source
   -p ALBACORE_PIPELINE_SOURCE,
-  --albacore-pipeline-source ALBACORE_PIPELINE_SOURCE              Albacore pipeline log source
+   --albacore-pipeline-source ALBACORE_PIPELINE_SOURCE             Albacore pipeline log source
   -q FASTQ_SOURCE,
   --fastq-source FASTQ_SOURCE                                      Fastq file source
   -t TELEMETRY_SOURCE,
    --telemetry-source TELEMETRY_SOURCE                             Telemetry file source
   -o OUTPUT,
-   --output OUTPUT                                                 Output directory
+  --output OUTPUT                                                  Output directory
+  -b,
+  --barcoding                                                      Barcode usage
   -s SAMPLE_SHEET_FILE,
-   --samplesheet-file SAMPLE_SHEET_FILE                            Path to sample sheet file
-  -b, --barcoding                                                  Barcode usage
+  --samplesheet-file SAMPLE_SHEET_FILE                             Path to sample sheet file
+  -l BARCODES,
+  --barcodes BARCODES                                              Coma separated barcode list
   --quiet                                                          Quiet mode
   --version                                                        show program's version number and exit
 
@@ -254,7 +258,7 @@ fastq_source=/path/to/fastq/directory/or/file
 sample_sheet_file=/path/to/sample/sheet/file
 ```
 
-The samplesheet directory can be omitted if barcodes were not used in the run.
+The samplesheet file can be omitted if barcodes were not used in the run.
 
 <a name="sample-sheet-for-barcoded-samples"></a>
 ### 2.3 Samplesheet
@@ -262,6 +266,9 @@ The samplesheet directory can be omitted if barcodes were not used in the run.
 The sample sheet file describes the different barcodes and their corresponding samples.
 The **Index column is mandatory** and  must contain the Oxford Nanopore Technology **barcode number** like **BC01**.
 The other columns are optional but can be useful to define your samples for the following analyses. They can be modified at your convenience.
+
+**Note:** The samplesheet file creation can be avoided by using the <code>--barcodes</code> command line option.
+This command line option takes a list of barcodes separated by comas as argument.
 
 samplesheet.csv example:
 
