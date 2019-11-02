@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3 (TBD)
+* Add a --barcodes option that allow to avoid samplesheet file creation
+* The size of the graph are now set to 1000x600px
+* Many small fixes in graph generation (remove title, fix grids and layouts...)
+* In the HTML report, replace the tooltip icon by an unicode character
+
 ## 1.2 (2019-07-25)
 * MultiFast5 file can now be used to retrieve run information
 * Reporting other barcodes in the "other" category
