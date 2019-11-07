@@ -1,9 +1,9 @@
 # Changelog
 
-## 1.3 (TBD)
+## 1.3 (2019-11-07)
 * Add a --barcodes option that allow to avoid samplesheet file creation
-* The size of the graph are now set to 1000x600px
-* Many small fixes in graph generation (remove title, fix grids and layouts...)
+* The size of the graphs are now set to 1000x600px
+* Many small fixes in graph generation (remove titles, fix grids and layouts...)
 * In the HTML report, replace the tooltip icon by an unicode character
 
 ## 1.2 (2019-07-25)
