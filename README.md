@@ -39,6 +39,7 @@ Support is availlable on [GitHub issue page](https://github.com/GenomicParisCent
       * [Examples](#examples)
   * 2.2 [Configuration file](#configuration-file)
   * 2.3 [Sample sheet for barcoded samples](#sample-sheet-for-barcoded-samples)
+  * 2.4 [Sample data](#sample-data)
   
 * 3.[Output](#output) 
 
@@ -275,6 +276,45 @@ samplesheet.csv example:
 index | Reads | 
 ------- | ------- 
  BC01 | ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2``` 
+
+<a name="sample-data"></a>
+### 2.4 Sample data
+
+We provide [sample raw data](http://outils.genomique.biologie.ens.fr/leburon/downloads/toulligqc-example/toulligqc_demo_data.tar.bz2) that can be used to launch and evaluate our software.
+This demo data has been generated using a MinION MKIb with a R9.4.1 flowcell (FLO-MIN106) in 1D (SQK-LSK108) mode with barcoded samples (BC01, BC02, BC03, BC04, BC05 andBC07).
+Data acquisition was performed using MinKNOW 1.11.5 and basecalling/demultiplexing was completed using Guppy 3.2.4.
+
+* First download and uncompress sample data:
+```bash
+$ wget http://outils.genomique.biologie.ens.fr/leburon/downloads/toulligqc-example/toulligqc_demo_data.tar.bz2
+$ tar -xzf toulligqc_demo_data.tar.bz2
+$ cd toulligqc_demo_data
+```
+* Then, you can launch the ToulligQC analysis of the demo data with the `run-toulligqc-with-docker.sh` script if you want to use a Docker container:
+```bash
+$ ./run-toulligqc-with-docker.sh
+```
+* Or with `run-toulligqc.sh` script if ToulligQC is already installed on your system:
+```bash
+$ ./run-toulligqc.sh
+```
+* Of course, you can also launch manually ToulligQC on the sample data with the following command line:
+```bash
+$ toulligqc \
+    --report-name               ToulligQC_Demo_Data \
+    --barcoding \
+    --telemetry-source          sequencing_telemetry.js \
+    --sequencing-summary-source sequencing_summary.txt \
+    --sequencing-summary-source barcoding_summary_pass.txt \
+    --sequencing-summary-source barcoding_summary_fail.txt \
+    --samplesheet-file          samplesheet.tsv \
+    --output                    output
+```
+
+With this scripts or command line, ToulligQC will create an `output` directory with output HTML report.
+More information about this sample data and scripts can be found in the `README` file of the tar archive.
+
+
 
 ## 3.Output
 
