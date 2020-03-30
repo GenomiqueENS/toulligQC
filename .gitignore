@@ -110,6 +110,8 @@ fabric.properties
 __pycache__/
 *.py[cod]
 *$py.class
+# for local use
+__main__.py
 
 # C extensions
 *.so
