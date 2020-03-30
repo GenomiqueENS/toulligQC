@@ -34,24 +34,30 @@ import os.path
 
 
 class SequencingSummaryExtractor:
+
     """
-    Extraction of statistics from sequencing_summary.txt file and graph generation
+    Extraction of data from sequencing_summary.txt and optional barcoding files.
+    The data is extracted from dataframes and placed in the result_dict in the form of key-value pairs
     """
+
     def __init__(self, config_dictionary):
         """
-        :param config_dictionary:
+        Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in 
+          sequencing_summary_source if the path points to a file, the others cases are managed in check_conf 
+        and _load_sequencing_summary_data methods
+        :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary.txt and barcoding files
         """
+
         self.config_dictionary = config_dictionary
         self.sequencing_summary_source = self.config_dictionary['sequencing_summary_source']
         self.result_directory = config_dictionary['result_directory']
-
         self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
 
         if len(self.sequencing_summary_files) == 1:
-            if os.path.isdir(self.sequencing_summary_source):
-                self.sequencing_summary_files = [self.sequencing_summary_source + "/sequencing_summary.txt"]
-            else:
+            if os.path.isfile(self.sequencing_summary_source):
                 self.sequencing_summary_files = [self.sequencing_summary_source]
+            elif os.path.isdir(self.sequencing_summary_source):
+                raise ValueError("The sequencing summary file must be a file path not a directory path")
 
         if config_dictionary['barcoding'] == 'True':
             self.is_barcode = True
@@ -60,48 +66,39 @@ class SequencingSummaryExtractor:
 
         self.my_dpi = int(self.config_dictionary['dpi'])
 
-
     def check_conf(self):
-        """Configuration checking"""
+        """
+        Check if the sequencing summary source contains files
+        If true, check for sequencing_summary_file within the sequencing_summary_source
+        """
 
-        # Check if a sequencing summary file has been defined
         if len(self.sequencing_summary_files) == 0:
-            return False, "No sequencing summary file defined"
+            return False, "No sequencing summary file has been defined"
 
         for f in self.sequencing_summary_files:
             if not os.path.isfile(f):
-                return False, "Sequencing summary file does not exists: " + f
+                return False, "The sequencing summary file is not a file: " + f
+
+            if not self._is_sequencing_summary_file(f):
+                return False, "There is no sequencing summary file in sequencing_summary_source"
 
         return True, ""
 
     def init(self):
         """
-        Initialisation
-        :return:
+        Creation of the dataframe containing all info from sequencing_summary.txt
+        :return: pd.Dataframe object
         """
-
-        # Create panda's object for 1d_summary
+        #TODO: garder le nom "dataframe_1d" ??
         self.dataframe_1d = self._load_sequencing_summary_data()
         self.channel = self.dataframe_1d['channel']
         self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
         self.sequence_length_template = self.dataframe_1d['sequence_length_template']
         self.null_event_1d = self.dataframe_1d[self.dataframe_1d['num_events'] == 0]
-        self.dataframe_1d = self.dataframe_1d.replace([np.inf, -np.inf], 0)
         self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
-        self.fast5_tot_number_1d = len(self.dataframe_1d)
-
 
         if self.is_barcode:
-
             self.barcode_selection = self.config_dictionary['barcode_selection']
-
-            # Check if there are barcodes in data
-            # try:
-            #     self.dataframe_1d.loc[~self.dataframe_1d['barcode_arrangement'].isin(
-            #         self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
-            #
-            # except ValueError:
-            #     sys.exit('No barcode found in sequencing summary file')
 
     @staticmethod
     def get_name():
@@ -111,19 +108,20 @@ class SequencingSummaryExtractor:
         """
         return 'Basecaller sequencing summary'
 
+
     @staticmethod
     def get_report_data_file_id():
         """
         Get the report.data id of the extractor.
-        :return: the report.data id
+        :return: a string with the name of the ID of the extractor
         """
+        #changer la valeur du report data file ??
         return 'basecaller.sequencing.summary.1d.extractor'
-
 
 
     def add_key_to_result_dict(self, key):
         """
-        Adding a key to the result_dict dictionary with the module name as a prefix
+        Add a key to the result_dict dictionary with the module name as a prefix
         :param key: key suffix
         :return: result_dict entry (string)
         """
@@ -132,35 +130,53 @@ class SequencingSummaryExtractor:
     @staticmethod
     def describe_dict(result_dict, prefix):
         """
-        Gives basic statistic like count, mean, max, median filled in the result_dict dictionary
+        Gives basic statistic like count, mean, max, median etc. filled in the result_dict dictionary without NaN values
         :param result_dict: result_dict dictionary
         :param prefix: Key prefix
-        :return: result_dict dictionary filled
+        :return: result_dict dictionary filled with statistics values
         """
-        dictionary = pd.Series.describe(result_dict[prefix]).drop("count")
-        for key in dict(dictionary):
-            result_dict[prefix + '.' + key] = dictionary[key]
+        dictionary_statistics = pd.Series.describe(result_dict[prefix]).drop("count")
+        for key in dict(dictionary_statistics):
+            result_dict[prefix + '.' + key] = dictionary_statistics[key]
+
 
     def barcode_frequency(self, result_dict, entry, prefix=''):
+        #Karine : entry : barcode_arrangement
+        #Karine : prefix : read.pass/read.fail
         """
         Adds barcode frequency to the result_dict dictionary
         :param result_dict:
-        :param entry:
-        :param prefix: key prefix
-        :return: result_dict dictionary filled and barcodes frequency in pandas series type
+        #TODO: what is the parameter entry ??
+        :param entry: barcode in
+        :param prefix: The prefix of a key i.e. the report data file id of the module
+        #TODO: réécrire le return
+        :return: the result_dict filled and barcodes frequency in pandas series type
         """
+        # Returns a Series count of unique values by descending order
         barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
-        count_sorted = barcode_count.sort_index()[self.barcode_selection]
-        result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted.drop("unclassified"))
-        result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
-        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")], index=['other'])
-        count_sorted = count_sorted.append(other_barcode_count).sort_index()
+        # Sort the counts by their index
+        count_sorted_by_barcode = barcode_count.sort_index()[self.barcode_selection]
 
-        for key in dict(count_sorted):
+        result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted_by_barcode.drop("unclassified"))
+
+        #Faut-il changer la valeur de la clé "with other barcode count ?" plutôt "non.used.barcodes.count" ?
+        result_dict[self.add_key_to_result_dict(
+            prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted_by_barcode))
+
+        #Karine : ajouter une colonne other au dataframe = pd.Series(dictionary[key], index=[column_name])
+        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(
+            prefix + "with.other.barcodes.count")], index=['other'])
+
+        # Concatenation of the 2 Series (reads per barcodes sorted without unclassified + other non-used barcodes)
+        count_sorted_by_barcode = count_sorted_by_barcode.append(other_barcode_count).sort_index()
+
+        #TODO: test with pd.Series.value_counts(normalize = True) -> renvoie les fréquences relatives (donc en %)
+        for key in dict(count_sorted_by_barcode):
             result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
-                count_sorted[key]*100/sum(count_sorted)
+                count_sorted_by_barcode[key]*100/sum(count_sorted_by_barcode)
 
-        return count_sorted
+        return count_sorted_by_barcode
+
 
     def extract(self, result_dict):
         """
@@ -440,6 +456,7 @@ class SequencingSummaryExtractor:
             length.clear()
             phred.clear()
 
+    
     def graph_generation(self, result_dict):
         """
         Generation of the different graphs containing in the graph_generator module
@@ -516,6 +533,7 @@ class SequencingSummaryExtractor:
                                                                          "pass (in green) and fail (in red) 1D reads."))
         return images
 
+
     def clean(self, result_dict):
         """
         Removing dictionary entries that will not be kept in the report.data file
@@ -542,66 +560,110 @@ class SequencingSummaryExtractor:
             key_list.append(self.add_key_to_result_dict(key))
         result_dict['unwritten.keys'].extend(key_list)
 
+
     def _occupancy_channel(self):
         """
-        Statistics about the channels
-        :return: channel_count_statistics containing statistics description about the channel occupancy
+          Statistics about the channels of the flowcell
+        :return: pd.Series object containing statistics about the channel occupancy
         """
-        channel_count = self.channel
-        total_number_reads_per_channel = pd.value_counts(channel_count)
-        channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
-        return channel_count_statistics
+          # Returns a pd.Series containing counts of unique values, by descending order
+        total_reads_per_channel = pd.value_counts(self.channel)
+        return pd.DataFrame.describe(total_reads_per_channel)
 
     def _load_sequencing_summary_data(self):
         """
-        Load sequencing summary data frame.
-        :return: a Pandas DataFrame object
+        Check if 1 or multiple files to load :
+        - if 1, check the type file and load to dataframe useful columns
+        - if multiples, check the type file. For each iteration check if there's been any dataframes created before
+        if not, load useful columns to dataframe otherwise append the current data to the previous dataframe
+        Finally, merge all dataframes of seq_summary and barcoding_summary into one
+        :return: a Pandas dataframe object with all the data gathered from sequencing_summary and barcoding_summary files
         """
-
+        # Initialization
         files = self.sequencing_summary_files
 
-        if len(files) == 1:
-            return pd.read_csv(files[0], sep="\t")
+        summary_dataframe = None
+        barcode_dataframe = None
 
-        summary_df = None
-        barcode_df = None
+        # Columns to load, read_id is only used for merging dataframes on that common column
+        # TODO: Adapter les colonnes à charger selon le séquenceur ONT utilisé
+        sequencing_summary_columns = ['read_id', 'channel', 'start_time', 'duration',
+        'num_events', 'sequence_length_template', 'mean_qscore_template']
 
+        sequencing_summary_datatypes = {
+        'read_id' : object,
+        'channel': np.int16,
+        'start_time': np.float,
+        'duration': np.float,
+        'num_events': np.int16,
+        'sequence_length_template': np.int16,
+        'mean_qscore_template': np.float}
+
+        barcoding_summary_columns = ['read_id', 'barcode_arrangement']
+
+        barcoding_summary_datatypes = {
+            'read_id' : object,
+            'barcode_arrangement' : object
+            }
+
+        # If only one file and it's a sequencing_summary.txt
+        if (len(files) == 1 and self._is_sequencing_summary_file(files[0])):
+            return pd.read_csv(files[0], sep="\t", usecols=sequencing_summary_columns, dtype=sequencing_summary_datatypes)
+
+        elif (len(files) == 1) :
+            raise ValueError("The sequencing summary file was not found")
+
+        # If multiple files, check if there's a barcoding one and a sequencing one :
         for f in files:
+            # check if barcoding_summary is in files
             if self._is_barcode_file(f):
-                df = pd.read_csv(f, sep="\t")
-
-                if barcode_df is None:
-                    barcode_df = df
+                dataframe = pd.read_csv(f, sep="\t", usecols=barcoding_summary_columns, dtype=barcoding_summary_datatypes)
+                if barcode_dataframe is None:
+                    barcode_dataframe = dataframe
+                # if a barcoding file has already been read, append the 2 dataframes
+                #TODO: how to differenciate the multiples files of barcoding ? rename columns with pass/fail or insert col with value pass/fail but the info is in the filename
                 else:
-                    barcode_df = barcode_df.append(df, ignore_index=True)
+                    barcode_dataframe.append(dataframe, ignore_index=True)
 
+            # when barcoding_summary is not here, check if the files contain a sequencing_summary
             else:
-                df = pd.read_csv(f, sep="\t")
+                if self._is_sequencing_summary_file(f):
+                    dataframe = pd.read_csv(f, sep="\t", usecols=sequencing_summary_columns, dtype=sequencing_summary_datatypes)
+                    if summary_dataframe is None:
+                        summary_dataframe = dataframe
+                    else:
+                        summary_dataframe = summary_dataframe.append(dataframe, ignore_index=True)
 
-                if summary_df is None:
-                    summary_df = df
-                else:
-                    summary_df = summary_df.append(df, ignore_index=True)
+        if (summary_dataframe is None and barcode_dataframe is None):
+            raise ValueError("Sequencing summary file not found nor barcoding summary file(s)")
 
-        if summary_df is None:
-            sys.exit("Only barcode sequencing summary found")
+        elif barcode_dataframe is None:
+            return summary_dataframe
+        else:
+            #anterior version : result = summary_dataframe.merge(barcode_dataframe, on="read_id", how="left")
+            dataframes_merged = pd.merge(summary_dataframe, barcode_dataframe, on='read_id', how = 'inner')
+            #delete column read_id after merging
+            del dataframes_merged['read_id']
 
-        if barcode_df is None:
-            return summary_df
-
-        result = summary_df.merge(barcode_df, on="read_id", how="left")
-
-        return result
+            return dataframes_merged
 
     def _is_barcode_file(self, filename):
         """
-        Chech if a sequencing summary file is a barcode summary file.
+        Check if input is a barcoding summary file i.e. has the column barcode_arrangement
         :param filename: path of the file to test
-        :return: True if the sequencing summary file is a barcode summary file
+        :return: True if the filename is a barcoding summary file
         """
+        with open(filename, 'r') as f:
+            header = f.readline()
+            return "barcode_arrangement" in header
 
-        with open(filename) as f:
-            line = f.readline()
-            if not line.startswith('filename'):
-                return True
-            return False
+
+    def _is_sequencing_summary_file(self, filename):
+        """
+        Check if input is a sequencing summary file i.e. first word is "filename"
+        :param filename: path of the file to test
+        :return: True if the file is indeed a sequencing summary file
+        """
+        with open(filename, 'r') as f:
+            header = f.readline()
+        return header.startswith("filename")
