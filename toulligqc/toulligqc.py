@@ -44,12 +44,12 @@ import time
 import platform as pf
 import tempfile as tp
 import warnings
-from toulligqc import toulligqc_extractor
-from toulligqc import report_data_file_generator
-from toulligqc import html_report_generator
-from toulligqc import version
+import toulligqc_extractor
+import report_data_file_generator
+import html_report_generator
+import version
 from pathlib import Path
-from toulligqc import configuration
+import configuration
 
 
 def _parse_args(config_dictionary):
