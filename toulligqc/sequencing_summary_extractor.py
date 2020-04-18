@@ -588,7 +588,7 @@ class SequencingSummaryExtractor:
         # Columns to load, read_id is only used for merging dataframes on that common column
         # TODO: Adapter les colonnes à charger selon le séquenceur ONT utilisé
         sequencing_summary_columns = ['read_id', 'channel', 'start_time', 'duration',
-        'num_events', 'sequence_length_template', 'mean_qscore_template']
+        'num_events', 'passes_filtering', 'sequence_length_template', 'mean_qscore_template']
 
         sequencing_summary_datatypes = {
         'read_id' : object,
@@ -596,6 +596,7 @@ class SequencingSummaryExtractor:
         'start_time': np.float,
         'duration': np.float,
         'num_events': np.int16,
+        'passes_filtering': np.bool,
         'sequence_length_template': np.int16,
         'mean_qscore_template': np.float}
 
