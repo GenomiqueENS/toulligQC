@@ -79,10 +79,11 @@ class SequencingSummaryExtractor:
             if not os.path.isfile(f):
                 return False, "The sequencing summary file is not a file: " + f
 
-            if not self._is_sequencing_summary_file(f):
-                return False, "There is no sequencing summary file in sequencing_summary_source"
+            if self._is_sequencing_summary_file(f):
+                return True, ""
 
-        return True, ""
+        return False, "There is no sequencing summary file in sequencing_summary_source"
+
 
     def init(self):
         """
