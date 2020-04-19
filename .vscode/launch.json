@@ -1,0 +1,73 @@
+{
+    // Configuration for debugging current file
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Current file debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        // Basic configuration for debugging ToulligQC
+        {
+            "name": "debug : multiple files",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test",
+                "--barcodes",
+                "barcode01,barcode02,barcode03,barcode04",
+                "--telemetry-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt",
+                "--output",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Debugging ToulligQC with only one sequencing summary file
+        {
+            "name": "debug : 1 seq summary file",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_seq_summayr_only",
+                "--telemetry-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                "--output",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "debug : 1 random file",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_random-file",
+                "--telemetry-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/test.txt",
+                "--output",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

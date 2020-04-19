@@ -1,0 +1,55 @@
+{
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "editor.detectIndentation": true,
+    "editor.autoIndent": "full",
+    "editor.colorDecorators": true,
+
+    "python.pythonPath": "/usr/bin/python3.5",
+    "python.venvFolders": [
+        "/home/karine/src/python/toulligqc2/toulligQC/",
+        "/home/karine/Bureau/"
+    ],
+        "env": {
+            "PYTHONPATH": "${workspaceRoot}"
+        },
+        "window.zoomLevel": -1,
+        // all necessary/required ?
+        "python.autoComplete.extraPaths": [
+            "/usr/lib/python3.8",
+            "/usr/lib/python3.5/plat-x86_64-linux-gnu",
+            "/usr/lib/python3.5/lib-dynload",
+            "/home/karine/.local/lib/python3.5/site-packages",
+            "/usr/local/lib/python3.5/dist-packages",
+            "/usr/lib/python3/dist-packages"
+
+        ],
+
+        "python.linting.pylintEnabled": false,
+        "editor.tokenColorCustomizations": {
+            "comments":"#5bd75b",
+        },
+        "better-comments.multilineComments": true,
+        "better-comments.highlightPlainText": false,
+        "better-comments.tags": [
+            {
+              "tag": "TODO:",
+              "color": "#ffff66",
+              "strikethrough": false,
+              "backgroundColor": "transparent"
+            },
+            {
+            "tag": "Karine",
+              "color": "#c6538c",
+              "strikethrough": false,
+              "backgroundColor": "transparent"
+            }
+        ],
+        "window.menuBarVisibility": "toggle",
+        "todo-tree.tree.showScanModeButton": false,
+        "todo-tree.highlights.enabled": false,
+        "launch": {
+        
+        }
+
+}
+
