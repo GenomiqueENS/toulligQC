@@ -192,14 +192,14 @@ class SequencingSummaryExtractor:
         # Read count
         result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.dataframe_1d['num_events'])
 
-        # The field  "num_called_template" has been renamed "num_events_template" in Guppy
-        if "num_called_template" in self.dataframe_1d.columns:
-            num_called_template_field = "num_called_template"
-        else:
-            num_called_template_field = "num_events_template"
+        # # The field  "num_called_template" has been renamed "num_events_template" in Guppy
+        # if "num_called_template" in self.dataframe_1d.columns:
+        #     num_called_template_field = "num_called_template"
+        # else:
+        #     num_called_template_field = "num_events_template"
 
         result_dict[self.add_key_to_result_dict("read.count")] = \
-            len(self.dataframe_1d[self.dataframe_1d[num_called_template_field] != 0])
+            len(self.dataframe_1d[self.dataframe_1d["num_events"] != 0])
 
         result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")] = \
             len(self.dataframe_1d[self.dataframe_1d['sequence_length_template'] == 0])
@@ -267,7 +267,7 @@ class SequencingSummaryExtractor:
 
         # Read length information
         result_dict[self.add_key_to_result_dict("sequence.length")] = \
-            self.dataframe_1d.sequence_length_template[self.dataframe_1d[num_called_template_field] != 0]
+            self.dataframe_1d.sequence_length_template[self.dataframe_1d["num_events"] != 0]
 
         result_dict[self.add_key_to_result_dict("passes.filtering")] = \
             self.dataframe_1d['passes_filtering']
@@ -571,14 +571,11 @@ class SequencingSummaryExtractor:
         total_reads_per_channel = pd.value_counts(self.channel)
         return pd.DataFrame.describe(total_reads_per_channel)
 
+    
     def _load_sequencing_summary_data(self):
         """
-        Check if 1 or multiple files to load :
-        - if 1, check the type file and load to dataframe useful columns
-        - if multiples, check the type file. For each iteration check if there's been any dataframes created before
-        if not, load useful columns to dataframe otherwise append the current data to the previous dataframe
-        Finally, merge all dataframes of seq_summary and barcoding_summary into one
-        :return: a Pandas dataframe object with all the data gathered from sequencing_summary and barcoding_summary files
+        Load sequencing summary data frame.
+        :return: a Pandas DataFrame object
         """
         # Initialization
         files = self.sequencing_summary_files
@@ -586,8 +583,6 @@ class SequencingSummaryExtractor:
         summary_dataframe = None
         barcode_dataframe = None
 
-        # Columns to load, read_id is only used for merging dataframes on that common column
-        # TODO: Adapter les colonnes à charger selon le séquenceur ONT utilisé
         sequencing_summary_columns = ['read_id', 'channel', 'start_time', 'duration',
         'num_events', 'passes_filtering', 'sequence_length_template', 'mean_qscore_template']
 
@@ -611,10 +606,7 @@ class SequencingSummaryExtractor:
         # If only one file and it's a sequencing_summary.txt
         if (len(files) == 1 and self._is_sequencing_summary_file(files[0])):
             return pd.read_csv(files[0], sep="\t", usecols=sequencing_summary_columns, dtype=sequencing_summary_datatypes)
-
-        elif (len(files) == 1) :
-            raise ValueError("The sequencing summary file was not found")
-
+        
         # If multiple files, check if there's a barcoding one and a sequencing one :
         for f in files:
             # check if barcoding_summary is in files
@@ -623,7 +615,6 @@ class SequencingSummaryExtractor:
                 if barcode_dataframe is None:
                     barcode_dataframe = dataframe
                 # if a barcoding file has already been read, append the 2 dataframes
-                #TODO: how to differenciate the multiples files of barcoding ? rename columns with pass/fail or insert col with value pass/fail but the info is in the filename
                 else:
                     barcode_dataframe.append(dataframe, ignore_index=True)
 
@@ -642,12 +633,12 @@ class SequencingSummaryExtractor:
         elif barcode_dataframe is None:
             return summary_dataframe
         else:
-            #anterior version : result = summary_dataframe.merge(barcode_dataframe, on="read_id", how="left")
-            dataframes_merged = pd.merge(summary_dataframe, barcode_dataframe, on='read_id', how = 'inner')
-            #delete column read_id after merging
+            dataframes_merged = pd.merge(summary_dataframe, barcode_dataframe, on='read_id', how = 'left')
+            # delete column read_id after merging
             del dataframes_merged['read_id']
 
             return dataframes_merged
+
 
     def _is_barcode_file(self, filename):
         """
