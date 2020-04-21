@@ -141,42 +141,74 @@ class SequencingSummaryExtractor:
             result_dict[prefix + '.' + key] = dictionary_statistics[key]
 
 
+    # def barcode_frequency(self, result_dict, entry, prefix=''):
+    #     #Karine : entry : barcode.arrangement
+    #     #Karine : prefix : read.pass/read.fail
+    #     """
+    #     Adds barcode frequency to the result_dict dictionary
+    #     :param result_dict:
+    #     #TODO: what is the parameter entry ??
+    #     :param entry: barcode in
+    #     :param prefix: The prefix of a key i.e. the report data file id of the module
+    #     #TODO: réécrire le return
+    #     :return: the result_dict filled and barcodes frequency in pandas series type
+    #     """
+    #     # Returns a Series count of unique values by descending order
+    #     barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
+    #     #Karine: erreur ici quand appel read.fail car Series[] vide
+    #     count_sorted_by_barcode = barcode_count.sort_index()[self.barcode_selection]
+    #     print("Entry " + str(entry) + ", Prefix " + str(prefix))
+    #     print(count_sorted_by_barcode)
+    #     result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted_by_barcode.drop("unclassified"))
+    
+        #     barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(entry)]).value_counts(dropna=False)
+        # print(barcode_count)
+        # count_sorted = barcode_count.sort_values(ascending=False)
+        # print(count_sorted)
+        # #count_sorted_1.dropna().empty
+        # if not (count_sorted.index.isna):
+        #     count_sorted = count_sorted[self.barcode_selection]
+        # else:
+        #     count_sorted.replace("NaN", "other")
+
+    #     #Faut-il changer la valeur de la clé "with other barcode count ?" plutôt "non.used.barcodes.count" ?
+    #     result_dict[self.add_key_to_result_dict(
+    #         prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted_by_barcode))
+
+    #     other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(
+    #         prefix + "with.other.barcodes.count")], index=['other'])
+    #     #other_barcode_count.transform
+    #     # Trie les barcodestrouvés par ordre alphabétique (donc selection + unclassified + other)
+    #     count_sorted_by_barcode = count_sorted_by_barcode.append(other_barcode_count).sort_index()
+
+    #     #TODO: test with pd.Series.value_counts(normalize = True) -> renvoie les fréquences relatives (donc en %)
+    #     for key in dict(count_sorted_by_barcode):
+    #         result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
+    #             count_sorted_by_barcode[key]*100/sum(count_sorted_by_barcode)
+
+    #     return count_sorted_by_barcode
+
+
     def barcode_frequency(self, result_dict, entry, prefix=''):
-        #Karine : entry : barcode_arrangement
-        #Karine : prefix : read.pass/read.fail
         """
         Adds barcode frequency to the result_dict dictionary
         :param result_dict:
-        #TODO: what is the parameter entry ??
-        :param entry: barcode in
-        :param prefix: The prefix of a key i.e. the report data file id of the module
-        #TODO: réécrire le return
-        :return: the result_dict filled and barcodes frequency in pandas series type
+        :param entry:
+        :param prefix: key prefix
+        :return: result_dict dictionary filled and barcodes frequency in pandas series type
         """
-        # Returns a Series count of unique values by descending order
         barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
-        # Sort the counts by their index
-        count_sorted_by_barcode = barcode_count.sort_index()[self.barcode_selection]
+        count_sorted = barcode_count.sort_index()[self.barcode_selection]
+        result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted.drop("unclassified"))
+        result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
+        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")], index=['other'])
+        count_sorted = count_sorted.append(other_barcode_count).sort_index()
 
-        result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted_by_barcode.drop("unclassified"))
-
-        #Faut-il changer la valeur de la clé "with other barcode count ?" plutôt "non.used.barcodes.count" ?
-        result_dict[self.add_key_to_result_dict(
-            prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted_by_barcode))
-
-        #Karine : ajouter une colonne other au dataframe = pd.Series(dictionary[key], index=[column_name])
-        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(
-            prefix + "with.other.barcodes.count")], index=['other'])
-
-        # Concatenation of the 2 Series (reads per barcodes sorted without unclassified + other non-used barcodes)
-        count_sorted_by_barcode = count_sorted_by_barcode.append(other_barcode_count).sort_index()
-
-        #TODO: test with pd.Series.value_counts(normalize = True) -> renvoie les fréquences relatives (donc en %)
-        for key in dict(count_sorted_by_barcode):
+        for key in dict(count_sorted):
             result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
-                count_sorted_by_barcode[key]*100/sum(count_sorted_by_barcode)
+                count_sorted[key]*100/sum(count_sorted)
 
-        return count_sorted_by_barcode
+        return count_sorted
 
 
     def extract(self, result_dict):
@@ -191,12 +223,6 @@ class SequencingSummaryExtractor:
 
         # Read count
         result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.dataframe_1d['num_events'])
-
-        # # The field  "num_called_template" has been renamed "num_events_template" in Guppy
-        # if "num_called_template" in self.dataframe_1d.columns:
-        #     num_called_template_field = "num_called_template"
-        # else:
-        #     num_called_template_field = "num_events_template"
 
         result_dict[self.add_key_to_result_dict("read.count")] = \
             len(self.dataframe_1d[self.dataframe_1d["num_events"] != 0])
@@ -616,7 +642,7 @@ class SequencingSummaryExtractor:
                     barcode_dataframe = dataframe
                 # if a barcoding file has already been read, append the 2 dataframes
                 else:
-                    barcode_dataframe.append(dataframe, ignore_index=True)
+                    barcode_dataframe = barcode_dataframe.append(dataframe, ignore_index=True)
 
             # when barcoding_summary is not here, check if the files contain a sequencing_summary
             else:

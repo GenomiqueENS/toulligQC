@@ -17,9 +17,10 @@
             "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
             "args": [
                 "--report-name",
-                "Toulligqc-test",
+                "Toulligqc-test-multiple-files",
+                "--barcoding",
                 "--barcodes",
-                "barcode01,barcode02,barcode03,barcode04",
+                "BC07, BC08, BC09, BC10, BC11, BC12",
                 "--telemetry-source",
                 "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
                 "--sequencing-summary-source",
