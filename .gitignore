@@ -223,4 +223,7 @@ dmypy.json
 # Ignore all local history of files
 .history
 
+ ### Ignore test directory
+ test/
+
 # End of https://www.gitignore.io/api/git,python,pycharm,visualstudiocode
