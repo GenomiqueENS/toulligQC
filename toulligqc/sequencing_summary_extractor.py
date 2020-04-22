@@ -43,7 +43,7 @@ class SequencingSummaryExtractor:
     def __init__(self, config_dictionary):
         """
         Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in 
-          sequencing_summary_source if the path points to a file, the others cases are managed in check_conf 
+        sequencing_summary_source if the path points to a file, the others cases are managed in check_conf 
         and _load_sequencing_summary_data methods
         :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary.txt and barcoding files
         """
@@ -66,6 +66,26 @@ class SequencingSummaryExtractor:
 
         self.my_dpi = int(self.config_dictionary['dpi'])
 
+
+    def check_conf_new(self):
+        """
+        Check if the sequencing summary source contains files
+        If true, check for sequencing_summary_file within the sequencing_summary_source
+        """
+
+        if len(self.sequencing_summary_files) == 0:
+            return False, "No sequencing summary file has been defined"
+
+        for f in self.sequencing_summary_files:
+            if not os.path.isfile(f):
+                return False, "The sequencing summary file is not a file: " + f
+
+            if self._is_sequencing_summary_file(f):
+                return True, ""
+
+        return False, "There is no sequencing summary file in sequencing_summary_source"
+        
+        
     def check_conf(self):
         """
         Check if the sequencing summary source contains files
@@ -185,7 +205,7 @@ class SequencingSummaryExtractor:
         result_dict[self.add_key_to_result_dict("fastq.entries")] = len(self.dataframe_1d['num_events'])
 
         result_dict[self.add_key_to_result_dict("read.count")] = \
-            len(self.dataframe_1d[self.dataframe_1d["num_events"] != 0])
+            len(self.dataframe_1d[self.dataframe_1d["num_events_template"] != 0])
 
         result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.count")] = \
             len(self.dataframe_1d[self.dataframe_1d['sequence_length_template'] == 0])
@@ -253,7 +273,7 @@ class SequencingSummaryExtractor:
 
         # Read length information
         result_dict[self.add_key_to_result_dict("sequence.length")] = \
-            self.dataframe_1d.sequence_length_template[self.dataframe_1d["num_events"] != 0]
+            self.dataframe_1d.sequence_length_template[self.dataframe_1d["num_events_template"] != 0]
 
         result_dict[self.add_key_to_result_dict("passes.filtering")] = \
             self.dataframe_1d['passes_filtering']
@@ -570,7 +590,7 @@ class SequencingSummaryExtractor:
         barcode_dataframe = None
 
         sequencing_summary_columns = ['read_id', 'channel', 'start_time', 'duration',
-        'num_events', 'passes_filtering', 'sequence_length_template', 'mean_qscore_template']
+        'num_events', 'num_events_template', 'passes_filtering', 'sequence_length_template', 'mean_qscore_template']
 
         sequencing_summary_datatypes = {
         'read_id' : object,
@@ -578,6 +598,7 @@ class SequencingSummaryExtractor:
         'start_time': np.float,
         'duration': np.float,
         'num_events': np.int16,
+        'num_events_template' : np.int16,
         'passes_filtering': np.bool,
         'sequence_length_template': np.int16,
         'mean_qscore_template': np.float}
