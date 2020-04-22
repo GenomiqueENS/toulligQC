@@ -131,7 +131,7 @@ class SequencingSummaryExtractor:
     @staticmethod
     def describe_dict(result_dict, prefix):
         """
-        Gives basic statistic like count, mean, max, median etc. filled in the result_dict dictionary without NaN values
+        Gives basic statistic like mean, min, max, median and percentiles (without the count value) filled in the result_dict dictionary
         :param result_dict: result_dict dictionary
         :param prefix: Key prefix
         :return: result_dict dictionary filled with statistics values
