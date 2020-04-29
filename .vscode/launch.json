@@ -69,6 +69,42 @@
                 "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
             ],
             "console": "integratedTerminal"
+        },
+
+        {
+            "name": "debug check_conf_new",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_ceck_conf_new",
+                "--telemetry-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt",
+                //last 4th file is the sequencing summary one
+                "--sequencing-summary-source",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                "--output",
+                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        }
+
+        // Configuration for Unit tests
+
+        {
+            "name": "Debug Tests",
+            "type": "python",
+            "request": "test",
+            "console": "integratedTerminal",
+            //"envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "env": {"PYTHONPATH": "${workspaceFolder}"},
+            "justMyCode": false
         }
     ]
 }

@@ -4,13 +4,12 @@
     "editor.autoIndent": "full",
     "editor.colorDecorators": true,
 
-    "python.pythonPath": "/usr/bin/python3.5",
+    "python.pythonPath": "/usr/bin/python3.8",
     "python.venvFolders": [
-        "/home/karine/src/python/toulligqc2/toulligQC/",
-        "/home/karine/Bureau/"
+        "/home/karine/src/python/toulligqc2/toulligQC/"
     ],
         "env": {
-            "PYTHONPATH": "${workspaceRoot}"
+            "PYTHONPATH": "${workspaceRoot}/toulligqc/"
         },
         "window.zoomLevel": -1,
         // all necessary/required ?
@@ -42,14 +41,32 @@
               "color": "#c6538c",
               "strikethrough": false,
               "backgroundColor": "transparent"
-            }
+            },
+            {
+                "tag": "Refactor",
+                  "color": "#ff1a1a",
+                  "strikethrough": false,
+                  "backgroundColor": "transparent"
+                }
         ],
         "window.menuBarVisibility": "toggle",
         "todo-tree.tree.showScanModeButton": false,
         "todo-tree.highlights.enabled": false,
-        "launch": {
-        
-        }
+        "launch": { 
+            //TODO: régler pb d'imports lors du debug des tests lorsqu'il loade la classe à tester --> fonctionne si dans la classe à tester les imports sont importés avec from toulligqc import X et non import X
+            //TODO: remettre la configuration comme avant avec from toulligqc import --> ne fonctionne pas ??
+            "debug": "${workspaceRoot}/test/"
+        },
+        "python.testing.unittestArgs": [
+            "-v",
+            "-s",
+            "./test",
+            "-p",
+            "test_*.py"
+        ],
+        "python.testing.pytestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.unittestEnabled": true
 
 }
 

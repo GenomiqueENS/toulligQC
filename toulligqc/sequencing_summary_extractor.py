@@ -27,7 +27,6 @@
 
 import pandas as pd
 import sys
-import graph_generator
 import numpy as np
 import re
 import os.path
@@ -67,7 +66,7 @@ class SequencingSummaryExtractor:
         self.my_dpi = int(self.config_dictionary['dpi'])
 
 
-    def check_conf_new(self):
+    def check_conf2(self):
         """
         Check if the sequencing summary source contains files
         If true, check for sequencing_summary_file within the sequencing_summary_source
@@ -76,16 +75,20 @@ class SequencingSummaryExtractor:
         if len(self.sequencing_summary_files) == 0:
             return False, "No sequencing summary file has been defined"
 
-        for f in self.sequencing_summary_files:
-            if not os.path.isfile(f):
-                return False, "The sequencing summary file is not a file: " + f
+        found = False
+        while not found:
+            for f in self.sequencing_summary_files:
+                try:
+                    if self._is_sequencing_summary_file(f):
+                        found = True
+                except IsADirectoryError as exception:
+                        return False, "There is a path that points to a directory : " + f
+        if not found:
+            return False, "There is no sequencing summary file in sequencing_summary_source"
+        else:
+            return found, ""
+                        
 
-            if self._is_sequencing_summary_file(f):
-                return True, ""
-
-        return False, "There is no sequencing summary file in sequencing_summary_source"
-        
-        
     def check_conf(self):
         """
         Check if the sequencing summary source contains files
@@ -191,7 +194,7 @@ class SequencingSummaryExtractor:
         return count_sorted
 
 
-    def extract(self, result_dict):
+    def extract_old(self, result_dict):
         """
         Get Phred score (Qscore) and Length details per read
         :param result_dict:
@@ -462,8 +465,159 @@ class SequencingSummaryExtractor:
 
             length.clear()
             phred.clear()
-
     
+
+    def _count_elements(self, dataframe, column):
+        """
+        Returns the number of values in the dataframe's column
+        """
+        return len(dataframe[column])
+    
+        
+    def _count_not_zero_elements(self, dataframe, column):
+        """
+        Returns the number of values different than zero in the dataframe's column
+        """
+        return len(dataframe[dataframe[column] != 0])
+    
+    
+    def _count_zero_elements(self, dataframe, column):
+        """
+        Returns the number of values equals to zero in the dataframe's column
+        """
+        return len(dataframe[dataframe[column] == 0])
+    
+    
+    def _count_boolean_elements(self, dataframe, column, boolean_value):
+        """
+        Returns the number of values of a column filtered by a boolean
+        """
+        return len(dataframe.loc[dataframe[column] == bool(boolean_value)])
+    
+    
+    def _series_cols_boolean_elements(self, dataframe, column1, column2, boolean_value):
+        """
+        Returns the number of values of different columns filtered by a boolean
+        """
+        return dataframe[column1].loc[dataframe[column2] == bool(boolean_value)]
+    
+    
+    def _count_sorted_boolean_elements(self, dataframe, column1, column2, boolean_value):
+        """
+        Returns a sorted list of values of different columns filtered by a boolean
+        """
+        return sorted(dataframe[column1].loc[dataframe[column2] == bool(boolean_value)])
+    
+    
+    def _count_sorted_boolean_elements_divided(self, dataframe, column1, column2, boolean_value, denominator):
+        """
+        Returns a sorted list of values of different columns filtered by a boolean and divided by the denominator
+        """
+        return sorted(dataframe[column1].loc[dataframe[column2] == bool(boolean_value)] / denominator)
+        
+
+    def _set_result_to_dict(self, result_dict, key, function, *args):
+        """
+        Add a new item in result_dict : {key : value returned by function}
+        """
+        result_dict[self.add_key_to_result_dict(key)] = function
+    
+    
+    def extract(self, result_dict):
+        """
+        Get Phred score (Qscore) and Length details per read
+        :param result_dict:
+        :return: None, info is saved in result_dict
+        """
+        # Basecaller analysis
+
+        if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
+            result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
+
+        # Fastq entries
+        self._set_result_to_dict(result_dict, "fastq.entries", self._count_elements(self.dataframe_1d, 'num_events'))
+        # Read count
+        self._set_result_to_dict(result_dict, "read.count", self._count_not_zero_elements(self.dataframe_1d, "num_events_template"))
+        # Read count with length equals zero
+        self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count", self._count_zero_elements(self.dataframe_1d, 'sequence_length_template'))
+        
+        # 1D pass information : count, length, qscore values and sorted Series
+        self._set_result_to_dict(result_dict, "read.pass.count", self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
+        self._set_result_to_dict(result_dict, "read.pass.length", self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length_template', 'passes_filtering', True))
+        self._set_result_to_dict(result_dict, "read.pass.qscore", self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore_template', 'passes_filtering', True))
+        self._set_result_to_dict(result_dict, "read.pass.sorted", self._count_sorted_boolean_elements_divided(self.dataframe_1d, 'start_time', 'passes_filtering', True, 3600))
+        
+        # 1D fail information : count, length, qscore values and sorted Series
+        self._set_result_to_dict(result_dict, "read.fail.count", self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
+        self._set_result_to_dict(result_dict, "read.fail.length", self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length_template', 'passes_filtering', False))
+        self._set_result_to_dict(result_dict, "read.fail.qscore", self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore_template', 'passes_filtering', False))
+        self._set_result_to_dict(result_dict, "read.fail.sorted", self._count_sorted_boolean_elements_divided(self.dataframe_1d, 'start_time', 'passes_filtering', False, 3600))
+        
+        total_reads = result_dict.get("basecaller.sequencing.summary.1d.extractor.read.count")
+        
+        # Ratios 
+        result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.ratio")] = \
+        result_dict.get("basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count") / total_reads
+
+        result_dict[self.add_key_to_result_dict("read.pass.ratio")] = \
+        result_dict.get("basecaller.sequencing.summary.1d.extractor.read.pass.count") / total_reads
+
+        result_dict[self.add_key_to_result_dict("read.fail.ratio")] = \
+        result_dict.get("basecaller.sequencing.summary.1d.extractor.read.fail.count") / total_reads
+
+        # Frequencies
+        result_dict[self.add_key_to_result_dict("read.with.length.equal.zero.frequency")] = \
+        (result_dict.get("basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count") / total_reads) * 100
+
+        result_dict[self.add_key_to_result_dict("read.pass.frequency")] = \
+        (result_dict.get("basecaller.sequencing.summary.1d.extractor.read.pass.count") / total_reads) * 100
+        
+        result_dict[self.add_key_to_result_dict("read.fail.frequency")] = \
+        (result_dict.get("basecaller.sequencing.summary.1d.extractor.read.fail.count") / total_reads) * 100
+
+        # Read length information
+        result_dict[self.add_key_to_result_dict("sequence.length")] = \
+            self.dataframe_1d.sequence_length_template[self.dataframe_1d["num_events_template"] != 0]
+
+        result_dict[self.add_key_to_result_dict("passes.filtering")] = self.dataframe_1d['passes_filtering']
+        
+        # Yield
+        result_dict[self.add_key_to_result_dict("yield")] = sum(self.dataframe_1d['sequence_length_template'])
+
+        start_time_sorted = sorted(self.dataframe_1d['start_time'] / 3600)
+        self._set_result_to_dict(result_dict, "start.time.sorted", sorted(start_time_sorted))
+
+        result_dict[self.add_key_to_result_dict("run.time")] = max(result_dict.get("basecaller.sequencing.summary.1d.extractor.start.time.sorted"))
+        
+        # Retrieve Qscore column information and save it in mean.qscore entry
+        result_dict[self.add_key_to_result_dict("mean.qscore")] = self.dataframe_1d['mean_qscore_template']
+        
+        # Get channel occupancy statistics and store each value into result_dict
+        channel_statistics = self._occupancy_channel()
+        for index, value in channel_statistics.items():
+            result_dict[self.add_key_to_result_dict('channel.occupancy.statistics.') + index] = value
+
+        # Get statistics about all reads and store each value into result_dict
+        sequence_length_statistics = self.dataframe_1d['sequence_length_template'].describe()
+        
+        for index, value in sequence_length_statistics.items():
+            result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
+        
+        # Add statistics (without count) about read pass/fail length in the result_dict
+        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.pass.length")
+        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.fail.length")
+        
+        # Get Qscore statistics without count value and store them into result_dict
+        qscore_statistics = self.dataframe_1d['mean_qscore_template'].describe().drop("count")
+        
+        for index, value in qscore_statistics.items():
+            result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
+        
+        # In case of barcoded samples, call extract_barcode_method
+        if self._is_barcode_file:
+            extract_barcode_info(self, result_dict)
+ 
+        
     def graph_generation(self, result_dict):
         """
         Generation of the different graphs containing in the graph_generator module
@@ -550,8 +704,8 @@ class SequencingSummaryExtractor:
         keys = ["sequence.length", "passes.filtering", "read.pass.length", "read.fail.length",
                 "start.time.sorted", "read.pass.sorted", "read.fail.sorted",
                 "mean.qscore", "read.pass.qscore", "read.fail.qscore",
-                'channel.occupancy.statistics',
-                'all.read.qscore', 'all.read.length',
+                'channel.occupancy.statistics', #TODO: delete key 'channel.occupancy.statistics' if not useful after refactoring
+                'all.read.qscore', 'all.read.length', #TODO: delete keys 'all.read.qscore' & 'all.read.length' if not useful after refactoring
                 "barcode.arrangement", "read.pass.barcode", "read.fail.barcode",
                 'barcode_selection_sequence_length_dataframe',
                 'barcode_selection_sequence_length_melted_dataframe',
