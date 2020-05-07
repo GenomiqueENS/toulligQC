@@ -92,7 +92,7 @@
                 "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
             ],
             "console": "integratedTerminal"
-        }
+        },
 
         // Configuration for Unit tests
 
@@ -104,7 +104,7 @@
             //"envFile": "${workspaceFolder}/.env",
             "cwd": "${workspaceFolder}",
             "env": {"PYTHONPATH": "${workspaceFolder}"},
-            "justMyCode": false
+            "justMyCode": true
         }
     ]
 }

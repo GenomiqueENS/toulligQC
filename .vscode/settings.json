@@ -11,7 +11,7 @@
         "env": {
             "PYTHONPATH": "${workspaceRoot}/toulligqc/"
         },
-        "window.zoomLevel": -1,
+        "window.zoomLevel": -2,
         // all necessary/required ?
         "python.autoComplete.extraPaths": [
             "/usr/lib/python3.8",
