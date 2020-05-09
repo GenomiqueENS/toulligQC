@@ -1,11 +1,10 @@
-import sys
-import os
+import sys, os, re
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../toulligqc")
 from toulligqc import sequencing_summary_extractor as sse
 import unittest
-from unittest.mock import patch
+import config as cfg
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
+import pandas.util.testing as testing
 import numpy as np
 from distutils import util
 
@@ -22,40 +21,17 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
     """ Test SequencingSummaryExtractor class with complete configuration files """
 
     @classmethod 
-    def setUpClass(self):
-        
-        config= {
-        "barcoding": "True",
-        "result_directory": "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debugging/",
-        "dpi": "100",
-        "sequencing_summary_source": "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt\t/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt\t/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt"
-        }
-
-        self.sse_instance = sse.SequencingSummaryExtractor(config)
-
-    #Tests for check_conf()
-    def test_check_conf_whole_config(self):
+    def setUpClass(cls):
         """
-        Test for configuration with a sequencing_summary_file and barcoding files (pass + fail)
-        """
-        actual = sse.SequencingSummaryExtractor.check_conf(self.sse_instance)
-        self.assertEqual((True, ""), actual)
-
-
-    # Tests for _load_sequencing_summary_data()
-
-    def test_load_sequencing_summary_data_dataframes(self):
-        """
-        Compare two Dataframes :
+        Setup for comparing two dataframes (10 first rows):
         - number of columns
         - correct names of columns
         - correct merging of dataframes
         - values returned
         """
 
-        actual_df = sse.SequencingSummaryExtractor._load_sequencing_summary_data(
-            self.sse_instance).head(11)
-
+        cls.config = cfg.whole_config
+        
         data_test = np.array([[20, 8.92175, 1.22075, 2441, True, 1564, 257, 14.379014999999999, "barcode12"],
                               [61, 9.2585, 1.31325, 2626, False, 2447,
                                   388, 4.8182160000000005, "unclassified"],
@@ -77,7 +53,7 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
                                761, 13.403101000000001, "barcode12"],
                               [204, 10.84925, 1.63625, 3272, True, 2816, 583, 11.399572000000001, "barcode10"]])
 
-        expected_df = pd.DataFrame(data=data_test, columns=[
+        cls.expected_df = pd.DataFrame(data=data_test, columns=[
             'channel',
             'start_time',
             'duration',
@@ -87,63 +63,111 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
             'sequence_length_template',
             'mean_qscore_template',
             'barcode_arrangement'], index=pd.Int64Index(data=pd.RangeIndex(0, 11)))
-
         
-        expected_df = expected_df.astype({
+        # Convert explicitly string values of passes_filtering into booleans
+        cls.expected_df.passes_filtering.replace({'True': True, 'False': False}, inplace=True)
+        
+        cls.expected_df = cls.expected_df.astype({
             'channel': np.int16,
             'start_time': np.float,
             'duration': np.float,
             'num_events': np.int16,
             'num_events_template': np.int16,
-            'passes_filtering': str, # set to str, because np.bool converts all string to True
+            'passes_filtering': np.bool,
             'sequence_length_template': np.int16,
             'mean_qscore_template': np.float,
             'barcode_arrangement': object
         })
-        # transform strings to bool type in column passes_filtering 
-        for values in expected_df['passes_filtering']:
-            values = bool(util.strtobool(values))
-            
-        print(expected_df.dtypes)
-        print(actual_df.dtypes)
+
+
+    #Tests for check_conf()
+    def test_check_conf_whole_config(self):
+        """
+        Test for configuration with a sequencing_summary_file and barcoding files (pass + fail)
+        """
+        actual = sse.SequencingSummaryExtractor(self.config).check_conf()
+        self.assertEqual((True, ""), actual)
+
+
+    # Tests for _load_sequencing_summary_data()
+    def test_load_sequencing_summary_data_columns(self):
+        """
+        Test if dataframe return by _load_sequencing_summary_data has 
+        the expected number and names of columns 
+        """
+
+        actual_df_col = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data().columns
+
+        assert self.expected_df.columns.equals(actual_df_col)
+        assert len(self.expected_df.columns) == len(actual_df_col)
+
+
+    def test_load_sequencing_summary_data_assert_equal(self):
+        """
+        Test correct merging of dataframes in _load_sequencing_summary_data
+        """
+
+        actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data().head(11)
         
-        assert_frame_equal(expected_df, actual_df, check_names=True, check_like=True, check_dtype=False)
+        testing.assert_frame_equal(self.expected_df, actual_df, check_exact=True)
 
+
+    def test_load_sequencing_summary_data_col_types (self):
+        """
+        Test column types of dataframe returned by load_sequencing_summary_data
+        """
+
+        actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data()
+        testing.is_bool(actual_df['passes_filtering'].dtype)
+        
+        # test if all columns are filled with number values except passes_filtering & barcode_arrangement
+        actual_df_types = actual_df.drop(['passes_filtering', 'barcode_arrangement'], axis=1, inplace=False).dtypes
+        testing.is_number(actual_df_types)
+        
+    def test_load_sequencing_summary_data_barcode_data (self):
+        """
+        Test if values of barcode_arrangement column are correct
+        """
+        
+        actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data()
+        random_values = actual_df['barcode_arrangement'].sample(n=10)
+        
+        for index, value in random_values.iteritems():
+            assert re.match("(^barcode)|(^unclassified)", value)
 
         
 
+###########################################
+# Tests with only sequencing_summary_file # 
+###########################################
 
-# #TODO:
-# ###########################################
-# # Tests with only sequencing_summary_file # 
-# ###########################################
+class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
 
-# class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
+    """ 
+    Test SequencingSummaryExtractor class with only sequencing summary file 
+    """
 
-#     """ 
-#     Test SequencingSummaryExtractor class with only sequencing summary file 
-#     """
+    @classmethod 
+    def setUpClass(cls):
 
-#     @classmethod 
-#     def setUpClass(self):
-
-#         pass
+        cls.config = cfg.only_seq_summary_config
+    
 
     
 
 # #TODO:
-# ###################################
-# # Tests with only barcoding files # 
-# ###################################
+###################################
+# Tests with only barcoding files # 
+###################################
 
-# class TestSequencingSummaryExtractorBarcodingFiles (unittest.TestCase):
+class TestSequencingSummaryExtractorBarcodingFiles (unittest.TestCase):
 
-#     """ Test SequencingSummaryExtractor class with only barcoding files """
+    """ Test SequencingSummaryExtractor class with only barcoding files """
 
-#     @classmethod 
-#     def setUpClass(self):
+    @classmethod 
+    def setUpClass(cls):
 
-#         pass
+        pass
 
 
 
@@ -155,24 +179,18 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
 class TestSequencingSummaryExtractorDirectory (unittest.TestCase):
 
     """ Test SequencingSummaryExtractor class with a directory """
-
+   
     @classmethod 
-    def setUpClass(self):
+    def setUpClass(cls):
         
-        self.config= {
-        "barcoding": "True",
-        "result_directory": "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debugging/",
-        "dpi": "100",
-        "sequencing_summary_source": "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/"
-        }
+        cls.config = cfg.directory_config
 
         
     def test_init_should_raise_Value_Error(self):
         """Test if init method returns a ValueError when passing a directory"""
-        
+
         with self.assertRaises(ValueError) as context:
-            
-            sse_instance = sse.SequencingSummaryExtractor(self.config)
+            sse.SequencingSummaryExtractor(self.config).__init__()
             self.assertTrue("ValueError: The sequencing summary file must be a file path not a directory path" in context.exception)
 
 
@@ -181,11 +199,11 @@ class TestSequencingSummaryExtractorDirectory (unittest.TestCase):
         
         with self.assertRaises(ValueError) as context:
             
-            sse_instance = sse.SequencingSummaryExtractor(self.config)
-            self.assertTrue((False, "The sequencing summary file is not a file: " + "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/") in context.exception)
-
+            sse.SequencingSummaryExtractor(self.config).check_conf()
+            self.assertTrue((False, "The sequencing summary file is not a file: " + self.config.get('sequencing_summary_source')) in context.exception)
     
-#TODO:
+
+
 ##################################
 # Tests with no sequencing files # 
 ##################################
@@ -195,39 +213,29 @@ class TestSequencingSummaryExtractorNoFiles(unittest.TestCase):
     """ Test SequencingSummaryExtractor class with a directory """
 
     @classmethod 
-    def setUpClass(self):
+    def setUpClass(cls):
 
-        config= {
-        "barcoding": "True",
-        "result_directory": "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debugging/",
-        "dpi": "100",
-        "sequencing_summary_source": "\t" #TODO: test this config
-        }
-        self.sse_instance = sse.SequencingSummaryExtractor(config)
-    
+        cls.config = cfg.no_seq_summary_source_config
+        
     def test_check_conf_no_file(self):
         """
         Test check conf method with no sequencing_summary_source
         """
         
         actual = sse.SequencingSummaryExtractor.check_conf(self.sse_instance)
-        #TODO: test fails because when sequencing_summary_source is empty (ie ""), len(seq_summ_files) != 0
-        #TODO: and condition "if not os.path.isfile(f):" is met
         self.assertEqual((False, 'The sequencing summary file is not a file: '), actual)
 
 
     def test_load_sequencing_summary_data_should_raise_exception(self):
         """
-        Test case of no sequencing_summary_file and no barcoding one
+        Test load_sequencing_summary_data method with no sequencing_summary_file and no barcoding one
         """
 
         actual = sse.SequencingSummaryExtractor._load_sequencing_summary_data(self.sse_instance)
-        
-        # ValueError("Sequencing summary file not found nor barcoding summary file(s)")
-        #self.assertRaises(ValueError, actual)
-        
         with self.assertRaises(ValueError) as context:
             actual_dataframe = sse.SequencingSummaryExtractor._load_sequencing_summary_data(sse_instance)
             
             self.assertTrue("Sequencing summary file not found nor barcoding summary file(s)" in context.exception)
-
+        #returns FAILED, because error is catched by _is_barcode_file method on 
+        #with open(filename, 'r') as f:
+        # FileNotFoundError: [Errno 2] No such file or directory: ''
