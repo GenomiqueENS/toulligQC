@@ -14,7 +14,7 @@ no_seq_summary_source_config= {
 "barcoding": "True",
 "result_directory": "/home/karine/src/python/toulligqc2/data/output/",
 "dpi": "100",
-"sequencing_summary_source": "\t"
+"sequencing_summary_source": ""
 }
 
 directory_config= {

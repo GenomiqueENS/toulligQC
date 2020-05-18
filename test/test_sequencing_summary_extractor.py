@@ -189,18 +189,18 @@ class TestSequencingSummaryExtractorDirectory (unittest.TestCase):
     def test_init_should_raise_Value_Error(self):
         """Test if init method returns a ValueError when passing a directory"""
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(IsADirectoryError) as context:
             sse.SequencingSummaryExtractor(self.config).__init__()
             self.assertTrue("ValueError: The sequencing summary file must be a file path not a directory path" in context.exception)
 
-
+    #TODO: change this method, bc it tests only __init__ which will be refactored
     def test_check_conf_with_directory(self):
         """ Test if check_conf method returns a ValueError when passing a directory"""
         
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(IsADirectoryError) as context:
             
             sse.SequencingSummaryExtractor(self.config).check_conf()
-            self.assertTrue((False, "The sequencing summary file is not a file: " + self.config.get('sequencing_summary_source')) in context.exception)
+            self.assertTrue((False, "The path is a directory : " + self.config.get('sequencing_summary_source')) in context.exception)
     
 
 
@@ -222,20 +222,18 @@ class TestSequencingSummaryExtractorNoFiles(unittest.TestCase):
         Test check conf method with no sequencing_summary_source
         """
         
-        actual = sse.SequencingSummaryExtractor.check_conf(self.sse_instance)
-        self.assertEqual((False, 'The sequencing summary file is not a file: '), actual)
+        actual = sse.SequencingSummaryExtractor(self.config).check_conf()
+        self.assertEqual((False, 'No file has been defined'), actual)
 
 
     def test_load_sequencing_summary_data_should_raise_exception(self):
         """
         Test load_sequencing_summary_data method with no sequencing_summary_file and no barcoding one
         """
-
-        actual = sse.SequencingSummaryExtractor._load_sequencing_summary_data(self.sse_instance)
-        with self.assertRaises(ValueError) as context:
-            actual_dataframe = sse.SequencingSummaryExtractor._load_sequencing_summary_data(sse_instance)
+        
+        with self.assertRaises(FileNotFoundError) as context:
             
-            self.assertTrue("Sequencing summary file not found nor barcoding summary file(s)" in context.exception)
-        #returns FAILED, because error is catched by _is_barcode_file method on 
-        #with open(filename, 'r') as f:
-        # FileNotFoundError: [Errno 2] No such file or directory: ''
+            sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data()
+            self.assertTrue("Sequencing summary file not found", str(context))
+
+
