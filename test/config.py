@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-
-###Configuration file for all unit tests###
+"""
+Listing of all configurations required for unit tests
+"""
 
 whole_config= {
 "barcoding": "True",
@@ -11,7 +11,7 @@ whole_config= {
 
 
 no_seq_summary_source_config= {
-"barcoding": "True",
+"barcoding": "False",
 "result_directory": "/home/karine/src/python/toulligqc2/data/output/",
 "dpi": "100",
 "sequencing_summary_source": ""
