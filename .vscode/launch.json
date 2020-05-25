@@ -22,15 +22,56 @@
                 "--barcodes",
                 "BC07, BC08, BC09, BC10, BC11, BC12",
                 "--telemetry-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
                 "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt",
+                "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
                 "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt",
+                "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
                 "--output",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+                "/home/karine/src/python/toulligqc2/data/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Config sequencing_summary with barcode info
+        {
+            "name": "debug : 1 seq summary file with barcodes",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-seq_summary_barcode",
+                "--barcoding",
+                "--barcodes",
+                "BC01, BC02, BC03, BC04, BC05, BC06, BC07",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_barcode_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Debugging ToulligQC with multiple sequencing summary but no barcodes
+        {
+            "name": "debug : multiple sequencing summaries",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_mulitple-seq_summary",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/20181005_GVUMLC1_A2018-guppy-3.4.4/sequencing_summary_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output/"
             ],
             "console": "integratedTerminal"
         },
@@ -42,13 +83,13 @@
             "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
             "args": [
                 "--report-name",
-                "Toulligqc-test_seq_summayr_only",
+                "Toulligqc-test_seq_summary_only",
                 "--telemetry-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
                 "--output",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+                "/home/karine/src/python/toulligqc2/data/output/"
             ],
             "console": "integratedTerminal"
         },
@@ -70,9 +111,8 @@
             ],
             "console": "integratedTerminal"
         },
-
         {
-            "name": "debug check_conf_new",
+            "name": "debug no file",
             "type": "python",
             "request": "launch",
             "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
@@ -82,20 +122,19 @@
                 "--telemetry-source",
                 "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt",
-                "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt",
-                //last 4th file is the sequencing summary one
-                "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                "",
+                // "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt",
+                // "--sequencing-summary-source",
+                // "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt",
+                // //last 4th file is the sequencing summary one
+                // "--sequencing-summary-source",
+                // "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
                 "--output",
                 "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
             ],
             "console": "integratedTerminal"
         },
-
         // Configuration for Unit tests
-
         {
             "name": "Debug Tests",
             "type": "python",
@@ -103,7 +142,9 @@
             "console": "integratedTerminal",
             //"envFile": "${workspaceFolder}/.env",
             "cwd": "${workspaceFolder}",
-            "env": {"PYTHONPATH": "${workspaceFolder}"},
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
             "justMyCode": true
         }
     ]
