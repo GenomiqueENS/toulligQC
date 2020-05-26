@@ -63,8 +63,8 @@ class SequencingSummaryExtractor:
 
     def check_conf(self):
         """
-        Check if the sequencing summary source contains files
-        If true, search for sequencing_summary file with or without barcodes
+        Check if the sequencing summary source contains a sequencing summary file
+        :return: boolean and a string for error message
         """
 
         if not self.sequencing_summary_files[0]:
@@ -87,14 +87,16 @@ class SequencingSummaryExtractor:
     def init(self):
         """
         Creation of the dataframe containing all info from sequencing_summary.txt
-        :return: pd.Dataframe object
+        :return: Panda's Dataframe object
         """
         self.dataframe_1d = self._load_sequencing_summary_data()
         self.channel = self.dataframe_1d['channel']
         self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
         self.sequence_length_template = self.dataframe_1d['sequence_length_template']
         self.null_event_1d = self.dataframe_1d[self.dataframe_1d['num_events'] == 0]
-        self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]      
+        self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]    
+        # Dictionary for storing all pd.Series and pd.Dataframe entries
+        self.dataframe_dict = {}
 
         if self.is_barcode:
             self.barcode_selection = self.config_dictionary['barcode_selection']
@@ -171,7 +173,7 @@ class SequencingSummaryExtractor:
     
     
     @staticmethod
-    def _count_elements(dataframe, column):
+    def _count_elements(dataframe, column: str) -> int:
         """
         Returns the number of values in the dataframe's column
         """
@@ -179,7 +181,7 @@ class SequencingSummaryExtractor:
     
     
     @staticmethod
-    def _count_not_zero_elements(dataframe, column):
+    def _count_not_zero_elements(dataframe, column : str) -> int:
         """
         Returns the number of values different than zero in the dataframe's column
         """
@@ -187,7 +189,7 @@ class SequencingSummaryExtractor:
     
     
     @staticmethod
-    def _count_zero_elements(dataframe, column):
+    def _count_zero_elements(dataframe, column: str) -> int:
         """
         Returns the number of values equals to zero in the dataframe's column
         """
@@ -195,7 +197,7 @@ class SequencingSummaryExtractor:
     
     
     @staticmethod
-    def _count_boolean_elements(dataframe, column, boolean_value):
+    def _count_boolean_elements(dataframe, column: str, boolean_value: bool) -> int:
         """
         Returns the number of values of a column filtered by a boolean
         """
@@ -203,9 +205,9 @@ class SequencingSummaryExtractor:
     
     
     @staticmethod
-    def _series_cols_boolean_elements(dataframe, column1, column2, boolean_value):
+    def _series_cols_boolean_elements(dataframe, column1: str, column2: str, boolean_value: bool) -> pd.Series:
         """
-        Returns the number of values of different columns filtered by a boolean
+        Returns a Panda's Series object with the number of values of different columns filtered by a boolean
         """
         return dataframe[column1].loc[dataframe[column2] == bool(boolean_value)]
     
@@ -218,36 +220,32 @@ class SequencingSummaryExtractor:
         :param column1: 1st column to filter
         :param column2: 2nd column to filter
         :param boolean_value: access columns of dataframe by boolean array
-        :
         """
         return sorted(dataframe[column1].loc[dataframe[column2] == bool(boolean_value)] / denominator)
         
 
-    def _set_result_value(self, result_dict, key: str, value):
+    def _set_result_value(self, dict, key: str, value):
         """
         Set a key, value pair to the result_dict
         :param result_dict:
         :param key: string entry to add to result_dict
+        :param value: int, float, list, pd.Series or pd.Dataframe value of the corresponding key
         """
-        # if (not isinstance(key, str) or not isinstance(value, (int, float, list, pd.Series, pd.DataFrame)):
-        #      raise TypeError("Invalid type for key {0} or value {1} ".format(type(key), type(value)))
-        # Verify is key and value are not empty
-        # if type(value)==pd.Series or pd.DataFrame and value.empty():
-        #     raise TypeError
-        # if not key or not value:
-        #     raise TypeError
-        result_dict[self.get_report_data_file_id() + '.' + key] = value
+        if not isinstance(key, str) or not isinstance(value, (int, float, list, pd.Series)):
+             raise TypeError("Invalid type for key {0} or value {1} ".format(type(key), type(value)))
 
-    
-    def _get_result_value(self, result_dict, key: str) -> str:
+        dict[self.get_report_data_file_id() + '.' + key] = value
+
+
+    def _get_result_value(self, dict, key: str) -> str:
         """
         :param result_dict:
         :param key: string entry to add to result_dict
         Returns the value associated with the result_dict key
         """
-        if not (self.get_report_data_file_id() + '.' + key) in result_dict.keys():
+        if not (self.get_report_data_file_id() + '.' + key) in dict.keys():
             raise KeyError("Key " + key + " not found")
-        return result_dict.get(self.get_report_data_file_id() + '.' + key)
+        return dict.get(self.get_report_data_file_id() + '.' + key)
     
 
     def _set_result_to_dict(self, result_dict, key: str, function, *args):
@@ -257,7 +255,6 @@ class SequencingSummaryExtractor:
         :param key: string entry to add to result_dict
         :param function: function returning key's value
         """
-        
         self._set_result_value(result_dict, key, function)
         
     
@@ -265,7 +262,6 @@ class SequencingSummaryExtractor:
         """
         Get Phred score (Qscore) and Length details per read
         :param result_dict:
-        :return: None, info is saved in result_dict
         """
         # Basecaller analysis
         if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
@@ -358,24 +354,23 @@ class SequencingSummaryExtractor:
         """
         :param result_dict:
         Gather all barcode info for graphs : reads pass/fail and frequency per barcodes
-        Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
-        Create long format dataframes to display barcode, read type and read length or phred score per read
+
         """
         # Add values unclassified and other to barcode list
         self.barcode_selection.append("unclassified")
         
         # Create keys barcode_arrangement, and read.pass/fail.barcode with all values of column barcode_arrangement when reads are passed/failed
-        self._set_result_value(result_dict, "barcode.arrangement", self.dataframe_1d["barcode_arrangement"])
+        self._set_result_value(self.dataframe_dict, "barcode.arrangement", self.dataframe_1d["barcode_arrangement"])
         
         # Get barcodes frequency by read type
         series_read_pass_barcode = self._series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement", "passes_filtering", True)
-        self._set_result_to_dict(result_dict,"read.pass.barcoded", self._barcode_frequency(result_dict, "read.pass.barcoded", series_read_pass_barcode))
+        self._set_result_to_dict(self.dataframe_dict, "read.pass.barcoded", self._barcode_frequency(self.dataframe_dict, "read.pass.barcoded", series_read_pass_barcode))
 
         series_read_fail_barcode = self._series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement", "passes_filtering", False)
-        self._set_result_to_dict(result_dict,"read.fail.barcoded", self._barcode_frequency(result_dict, "read.fail.barcoded", series_read_fail_barcode))
+        self._set_result_to_dict(self.dataframe_dict, "read.fail.barcoded", self._barcode_frequency(self.dataframe_dict, "read.fail.barcoded", series_read_fail_barcode))
 
-        read_pass_barcoded_count = self._get_result_value(result_dict, "read.pass.barcoded.count")
-        read_fail_barcoded_count = self._get_result_value(result_dict, "read.fail.barcoded.count")
+        read_pass_barcoded_count = self._get_result_value(self.dataframe_dict, "read.pass.barcoded.count")
+        read_fail_barcoded_count = self._get_result_value(self.dataframe_dict, "read.fail.barcoded.count")
         
         # Add key "read.pass.barcoded.frequency"
         total_reads = self._get_result_value(result_dict, "read.count")
@@ -404,65 +399,60 @@ class SequencingSummaryExtractor:
             # Add all barcode statistics to result_dict based on values of selected dataframes
             self._barcode_stats(result_dict, self.get_report_data_file_id(), barcode_selected_dataframe, barcode_selected_read_pass_dataframe, barcode_selected_read_fail_dataframe, barcode_name)
         
-        # Create a dataframe with columns 'passes_filtering', 'sequence_length_template' and 'barcode_arrangement'
-        nrows_df = self.dataframe_1d.shape[0]
-        filtered_length_df = self.dataframe_1d.filter(items=['passes_filtering', 'sequence_length_template', 'barcode_arrangement'])
+        # Add filtered dataframes (all info by barcode and by length or qscore) to dataframe_dict
+        self._get_barcode_selection_dataframe("sequence_length_template", "barcode_selection_sequence_length_dataframe", "length")
+        self._get_barcode_selection_dataframe("mean_qscore_template", "barcode_selection_sequence_phred_dataframe", "qscore")
     
-        # Reshape dataframe with new MultiIndex : numbered index of df length + passes filtering index and shape data by barcode
-        barcode_selection_sequence_length_dataframe = filtered_length_df.set_index([pd.RangeIndex(start=0, stop=nrows_df), 'passes_filtering'], drop=True).pivot(columns="barcode_arrangement")
-        
-        # Remove 'sequence_length_template' index 
-        barcode_selection_sequence_length_dataframe.columns.droplevel(level=0)
-        
-        # Trim barcode names by their number
-        col_names = [values.replace('barcode', '') for values in self.barcode_selection]
-        
-        # Change columns names
-        barcode_selection_sequence_length_dataframe.columns.set_levels(col_names,
-                                    level=1, inplace=True)
 
+    def _get_barcode_selection_dataframe (self, column: str, key: str, melted_column_name: str):
+        '''
+        Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
+        Reshape the dataframes from wide to long format to display barcode, read type and read length or phred score per read
+        These dataframes are used for sequence length and qscore boxplots
+        :param key: string name to put in dataframe_dict
+        :param column: column name from dataframe_1d used for the new barcode_selection_dataframes
+        :param melted_column_name: value (qscore or length) to use for renaming column of melted dataframe
+        '''
+        # Count total number of rows
+        nrows = self.dataframe_1d.shape[0]
+        # Create a new dataframe with 3 columns : 'passes_filtering', 'barcode_arrangement' and the column name parameter
+        filtered_df = self.dataframe_1d.filter(items=['passes_filtering', column, 'barcode_arrangement'])
+    
+        # Reshape dataframe with new MultiIndex : numbered index of df length + passes filtering index and then shape data by barcode
+        barcode_selection_dataframe = filtered_df.set_index([pd.RangeIndex(start=0, stop=nrows), 'passes_filtering'], drop=True).pivot(columns="barcode_arrangement")
+        
+        # Remove the column parameter index
+        barcode_selection_dataframe.columns.droplevel(level=0)
+        
+        # Change columns names : delete word "barcode"
+        col_names = [values.replace('barcode', '') for values in self.barcode_selection]
+        barcode_selection_dataframe.columns.set_levels(col_names,
+                                    level=1, inplace=True)
+        
         # Remove sequence_length_template Multindex to only have barcode_arrangement column labels
-        barcode_selection_sequence_length_dataframe.columns = barcode_selection_sequence_length_dataframe.columns.droplevel(0)
-
+        barcode_selection_dataframe.columns = barcode_selection_dataframe.columns.droplevel(level=0)
+        
         # Reset index to have all labels in the same level
-        barcode_selection_sequence_length_dataframe.reset_index(level='passes_filtering', inplace=True)
+        barcode_selection_dataframe.reset_index(level='passes_filtering', inplace=True)
         
-        # Add final dataframe to result_dict
-        self._set_result_value(result_dict, "barcode_selection_sequence_length_dataframe", barcode_selection_sequence_length_dataframe)
+        # Add final dataframe to dataframe_dict
+        self._set_result_value(self.dataframe_dict, key, barcode_selection_dataframe)
         
-        # Unpivot dataframe to have only one column of barcodes + passes filtering + length column
-        sequence_length_melted_dataframe = pd.melt(
-            barcode_selection_sequence_length_dataframe,
+        # Unpivot dataframe to have only one column of barcodes + passes filtering + melted column name (qscore/length)
+        melted_dataframe = pd.melt(
+            barcode_selection_dataframe,
             id_vars=['passes_filtering'],
-            var_name="barcodes", value_name="length")
-        
-        # Add melted dataframe to result_dict
-        self._set_result_value(result_dict, "barcode_selection_sequence_length_melted_dataframe", sequence_length_melted_dataframe)
+            var_name="barcodes", value_name=melted_column_name)
 
-        # Repeat same steps with qscore data instead of length
-        filtered_qscore_df = self.dataframe_1d.filter(items=['passes_filtering', 'mean_qscore_template', 'barcode_arrangement'])
-    
-        barcode_selection_sequence_phred_dataframe = filtered_qscore_df.set_index([pd.RangeIndex(start=0, stop=nrows_df), 'passes_filtering'], drop=True).pivot(columns="barcode_arrangement")
-        barcode_selection_sequence_phred_dataframe.columns.droplevel(level=0)
-        
-        col_names = [values.replace('barcode', '') for values in self.barcode_selection]
-        barcode_selection_sequence_phred_dataframe.columns.set_levels(col_names,
-                                    level=1, inplace=True)
-
-        barcode_selection_sequence_phred_dataframe.columns = barcode_selection_sequence_phred_dataframe.columns.droplevel(0)
-        barcode_selection_sequence_phred_dataframe.reset_index(level='passes_filtering', inplace=True)
-        
-        self._set_result_value(result_dict, "barcode_selection_sequence_phred_dataframe", barcode_selection_sequence_phred_dataframe)
-        
-        sequence_phred_melted_dataframe = pd.melt(
-            barcode_selection_sequence_phred_dataframe,
-            id_vars=['passes_filtering'],
-            var_name="barcodes", value_name="qscore")
-        self._set_result_value(result_dict, "barcode_selection_sequence_phred_melted_dataframe", sequence_phred_melted_dataframe)
+        # Add melted dataframe to dataframe_dict too
+        self._set_result_value(self.dataframe_dict, key.replace("_dataframe", "_melted_dataframe"), melted_dataframe)
    
 
     def _barcode_stats(self, result_dict, prefix: str, barcode_selected_dataframe, barcode_selected_read_pass_dataframe, barcode_selected_read_fail_dataframe, barcode_name):
         '''
+        :param result_dict:
+        :param prefix: report.data id of the extractor (string)
+        :param barcode_selected: barcode filtered dataframes
         Put statistics (with describe method) about barcode length and qscore in result_dict for each selected dataframe : all.read/read.pass and read.fail
         N.b. does not include count statistic for qscore
         '''
@@ -486,7 +476,7 @@ class SequencingSummaryExtractor:
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
-        images = list([graph_generator.read_count_histogram(result_dict, 'Read count histogram',
+        images = list([graph_generator.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
                                                             self.my_dpi, images_directory,
                                                             "Number of reads produced before (Fast 5 in blue) "
                                                             "and after (1D in orange) basecalling. "
@@ -530,25 +520,25 @@ class SequencingSummaryExtractor:
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict,
+            images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
                                                                             '1D pass reads percentage of different '
                                                                             'barcodes', self.barcode_selection,
                                                                             self.my_dpi, images_directory,
                                                                             "1D pass read distribution per barcode."))
 
-            images.append(graph_generator.barcode_percentage_pie_chart_fail(result_dict,
+            images.append(graph_generator.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
                                                                             '1D fail reads percentage of different '
                                                                             'barcodes', self.barcode_selection,
                                                                             self.my_dpi, images_directory,
                                                                             "1D fail read distribution per barcode."))
 
-            images.append(graph_generator.barcode_length_boxplot(result_dict,
+            images.append(graph_generator.barcode_length_boxplot(result_dict, self.dataframe_dict,
                                                                  '1D reads size distribution for each barcode',
                                                                  self.my_dpi, images_directory,
                                                                  "Read length boxplot per barcode of pass (in green) "
                                                                  "and fail (in red) 1D reads."))
 
-            images.append(graph_generator.barcoded_phred_score_frequency(result_dict,
+            images.append(graph_generator.barcoded_phred_score_frequency(result_dict, self.dataframe_dict,
                                                                          '1D reads Mean Phred score distribution '
                                                                          'for each barcode',
                                                                          self.my_dpi, images_directory,
@@ -567,21 +557,17 @@ class SequencingSummaryExtractor:
                 "start.time.sorted", "read.pass.sorted", "read.fail.sorted",
                 "mean.qscore", "read.pass.qscore", "read.fail.qscore"]
         
-        if self.is_barcode:
-            keys.extend(["barcode.arrangement",
-                         "barcode_selection_sequence_length_dataframe",
-                         "barcode_selection_sequence_length_melted_dataframe",
-                         "barcode_selection_sequence_phred_dataframe",
-                         "barcode_selection_sequence_phred_melted_dataframe",
-                         "read.pass.barcoded",
-                         "read.fail.barcoded"])
 
         key_list = []
-                 
+         
         for key in keys:
             keys_value = self._get_result_value(result_dict, key)
-            key_list.append(self._set_result_value(result_dict, key, keys_value))
+            key_list.append({self.get_report_data_file_id() + '.' + str(key) : keys_value})
+        if self.is_barcode:
+            key_list.extend([(k,v) for k,v in self.dataframe_dict.items()])
+
         result_dict['unwritten.keys'].extend(key_list)
+        self.dataframe_dict = None
 
 
     def _occupancy_channel(self):
@@ -595,8 +581,8 @@ class SequencingSummaryExtractor:
 
     def _load_sequencing_summary_data(self):
         """
-        Load sequencing summary data frame.
-        :return: a Pandas DataFrame object
+        Load sequencing summary dataframe with or without barcodes
+        :return: a Pandas Dataframe object
         """
         # Initialization
         files = self.sequencing_summary_files

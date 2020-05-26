@@ -76,7 +76,7 @@ def _safe_log(x):
 #
 
 
-def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
+def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
     """
     Plots the histogram of count of the different types of reads:
     Fast5 submitted to MinKNOW
@@ -603,7 +603,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 #
 
 
-def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -612,11 +612,11 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
+    count_sorted = dataframe_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -649,7 +649,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     return main, output_file, table_html, desc
 
 
-def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -658,11 +658,11 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded"]
+    count_sorted = dataframe_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -696,7 +696,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     return main, output_file, table_html, desc
 
 
-def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
+def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -705,7 +705,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
+    ax = sns.boxplot(data=datafame_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
                      x='barcodes', y='length', hue='passes_filtering',
                      showfliers=False, palette={True: "yellowgreen", False: "orangered"},
                      hue_order=[True, False])
@@ -715,7 +715,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
 
-    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
+    df = datafame_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -733,7 +733,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc
 
 
-def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -742,7 +742,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
+    ax = sns.boxplot(data=dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
                      palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -750,7 +750,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
 
-    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
+    df = dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
