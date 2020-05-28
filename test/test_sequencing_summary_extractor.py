@@ -12,9 +12,16 @@ from distutils import util
 #TODO: my_data_path = os.path.join(THIS_DIR, os.pardir, 'data_folder/data.csv')
 #TODO: my_data_path = os.path.join(THIS_DIR, 'testdata.csv')
 
-###########################################################################
-# Tests with whole configuration (sequencing_summary and barcoding files) # 
-###########################################################################
+####################################################################################
+# Tests of the SequencingSummaryExtractor class with several configuration cases : #
+#   - Whole standard config : sequencing summary file + barcoding files            #
+#   - Sequencing_summary file with barcode info embedded                           #
+#   - Sequencing_summary file only (no barcodes)                                   #
+#   - Barcoding files only (no sequencing_summary)                                 #
+#   - Random files                                                                 #
+#   - Directory case                                                               #
+#   - No files                                                                     # 
+####################################################################################
 
 class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
 
@@ -80,7 +87,7 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         })
 
 
-    #Tests for check_conf()
+    #Tests for check_conf method
     def test_check_conf_whole_config(self):
         """
         Test for configuration with a sequencing_summary_file and barcoding files (pass + fail)
@@ -128,18 +135,56 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         """
         Test if values of barcode_arrangement column are correct
         """
-        
         actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data()
         random_values = actual_df['barcode_arrangement'].sample(n=10)
         
         for index, value in random_values.iteritems():
+            # when barcode_arrangement values are NaN type, do nothing
+            if pd.isna(value):
+                continue
             assert re.match("(^barcode)|(^unclassified)", value)
 
         
 
-###########################################
-# Tests with only sequencing_summary_file # 
-###########################################
+    #Tests for init method
+    def test_init_whole_config(self):
+        """
+        Test if instance variables created in init method are correct
+        """
+        # Create instance of SequencingSummaryExtractor class
+        instance = sse.SequencingSummaryExtractor(self.config)
+        # Launch init method
+        instance.init()
+        # Get instances variables of the dataframe_1d
+        actual_df_channel = instance.channel.head(11)
+        actual_df_passes_filtering = instance.passes_filtering_1d.head(11)
+        actual_df_sequence_length = instance.sequence_length_template.head(11)
+        actual_null_events = instance.null_event_1d.head(11)
+        actual_df = instance.dataframe_1d.head(11)
+        
+        # Test all instances variables VS expected
+        testing.assert_series_equal(self.expected_df['channel'], actual_df_channel)
+        testing.assert_series_equal(self.expected_df['passes_filtering'], actual_df_passes_filtering)
+        testing.assert_series_equal(self.expected_df['sequence_length_template'], actual_df_sequence_length)
+        testing.assert_frame_equal(self.expected_df.loc[self.expected_df['num_events'] == 0], actual_null_events)
+        testing.assert_frame_equal(self.expected_df, actual_df)
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+
 
 class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
 
@@ -153,12 +198,6 @@ class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
         cls.config = cfg.only_seq_summary_config
     
 
-    
-
-# #TODO:
-###################################
-# Tests with only barcoding files # 
-###################################
 
 class TestSequencingSummaryExtractorBarcodingFiles (unittest.TestCase):
 
