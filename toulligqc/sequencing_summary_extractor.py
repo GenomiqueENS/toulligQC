@@ -120,7 +120,7 @@ class SequencingSummaryExtractor:
         return 'basecaller.sequencing.summary.1d.extractor'
 
 
-    def _describe_dict(self, result_dict, function):
+    def _describe_dict(self, result_dict, function, entry: str):
         """
         Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
         :param result_dict:
@@ -128,7 +128,7 @@ class SequencingSummaryExtractor:
         """
         stats = pd.Series.describe(function).drop("count")
         for key, value in stats.iteritems():
-            self._set_result_to_dict(result_dict, key, value)
+            self._set_result_to_dict(result_dict, entry + '.' + key, value)
 
 
     def _barcode_frequency(self, result_dict, entry: str, df_filtered) -> pd.Series:
@@ -355,8 +355,8 @@ class SequencingSummaryExtractor:
             self._set_result_value(result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict  
-        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.pass.length"))
-        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.fail.length"))
+        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.pass.length"), "read.pass.length")
+        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.fail.length"), "read.fail.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1d['mean_qscore_template'].describe().drop("count")
@@ -365,8 +365,8 @@ class SequencingSummaryExtractor:
             self._set_result_value(result_dict, "all.read.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict  
-        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.pass.qscore"))
-        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.fail.qscore"))
+        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.pass.qscore"), "read.pass.qscore")
+        self._describe_dict(result_dict, self._get_result_value(result_dict, "read.fail.qscore"), "read.fail.qscore")
 
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
