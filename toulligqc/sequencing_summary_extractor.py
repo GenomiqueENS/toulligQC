@@ -76,7 +76,7 @@ class SequencingSummaryExtractor:
                     if self._is_sequencing_summary_file(f) or self._is_sequencing_summary_with_barcodes(f):
                         found = True
                 except FileNotFoundError:
-                    return False, "The path leads to a directory : " + f
+                    return False, "No such file or directory " + f
         if not found:
             return False, "No sequencing summary file has been found"
         else:
@@ -378,7 +378,8 @@ class SequencingSummaryExtractor:
         Gather all barcode info for graphs : reads pass/fail and frequency per barcodes
         """
         # Add values unclassified and other to barcode list
-        self.barcode_selection.append("unclassified")
+        if "unclassified" not in self.barcode_selection:
+            self.barcode_selection.append("unclassified")
 
         # Create keys barcode_arrangement, and read.pass/fail.barcode with all values of column barcode_arrangement when reads are passed/failed
         self._set_result_value(self.dataframe_dict, "barcode.arrangement", self.dataframe_1d["barcode_arrangement"])
@@ -413,7 +414,8 @@ class SequencingSummaryExtractor:
             self.barcode_selection), 'barcode_arrangement'] = 'other'
 
         pattern = '(\d{2})'
-        self.barcode_selection.append('other')
+        if "other" not in self.barcode_selection:
+            self.barcode_selection.append('other')
 
         # Create dataframes filtered by barcodes and read quality
         for index_barcode, barcode in enumerate(self.barcode_selection):
@@ -741,7 +743,7 @@ class SequencingSummaryExtractor:
         try:
             with open(filename, 'r') as f:
                 header = f.readline()
-                return 'filename' and 'barcode_arrangement' in header
+                return header.startswith('filename') and 'barcode_arrangement' in header
         except IOError:
             raise FileNotFoundError
             
