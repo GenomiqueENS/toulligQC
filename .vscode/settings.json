@@ -12,18 +12,16 @@
             "PYTHONPATH": "${workspaceRoot}"
         },
         "window.zoomLevel": -1,
-        // all necessary/required ?
         "python.autoComplete.extraPaths": [
             "/usr/lib/python3.8",
-            "/usr/lib/python3.5/plat-x86_64-linux-gnu",
-            "/usr/lib/python3.5/lib-dynload",
             "/home/karine/.local/lib/python3.5/site-packages",
             "/usr/local/lib/python3.5/dist-packages",
-            "/usr/lib/python3/dist-packages"
-
+            "/usr/lib/python3/dist-packages",
+            // path to project to avoid unresolved imports
+            "/home/karine/src/python/toulligqc2/toulligqc/"
         ],
 
-        "python.linting.pylintEnabled": false,
+        "python.linting.pylintEnabled": true,
         "python.linting.pycodestyleArgs": ["--ignore=E303"],
         "editor.tokenColorCustomizations": {
             "comments":"#5bd75b",
@@ -66,7 +64,7 @@
         "python.testing.pytestEnabled": false,
         "python.testing.nosetestsEnabled": false,
         "python.testing.unittestEnabled": true,
-        "python.jediEnabled": false
+        "python.jediEnabled": true
 
 }
 

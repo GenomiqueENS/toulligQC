@@ -2,6 +2,7 @@
     // Configuration for debugging current file
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Current file debug",
             "type": "python",
@@ -93,6 +94,24 @@
             ],
             "console": "integratedTerminal"
         },
+        //config with barcode files only
+        {
+            "name": "debug : barcodes files",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_barcodes_files",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output/barcoding_summ_pass_small.txt"
+            ],
+            "console": "integratedTerminal"
+        },
 
         {
             "name": "debug : 1 random file",
@@ -103,11 +122,11 @@
                 "--report-name",
                 "Toulligqc-test_random-file",
                 "--telemetry-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/test.txt",
+                "/home/karine/src/python/toulligqc2/data/test.txt",
                 "--output",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+                "/home/karine/src/python/toulligqc2/data/output_debug/"
             ],
             "console": "integratedTerminal"
         },
@@ -120,17 +139,17 @@
                 "--report-name",
                 "Toulligqc-test_ceck_conf_new",
                 "--telemetry-source",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_telemetry.js",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
                 "",
-                // "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_pass_small.txt",
+                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
                 // "--sequencing-summary-source",
-                // "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/barcoding_summ_fail_small.txt",
+                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
                 // //last 4th file is the sequencing summary one
                 // "--sequencing-summary-source",
-                // "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/sequencing_summary_small.txt",
+                // "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
                 "--output",
-                "/home/karine/Bureau/ToulligQC2_B2020/data/data_small/output_debug/"
+                "/home/karine/src/python/toulligqc2/data/output_debug/"
             ],
             "console": "integratedTerminal"
         },
