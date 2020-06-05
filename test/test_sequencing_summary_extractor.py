@@ -2,15 +2,12 @@ import sys, os, re
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../toulligqc")
 from toulligqc import sequencing_summary_extractor as sse
 import unittest
+from unittest.mock import patch, Mock, MagicMock
 import config as cfg
 import pandas as pd
 import pandas.util.testing as testing
 import numpy as np
 from distutils import util
-
-#TODO: put some tests files and include them in test/ instead of using local config tests files
-#TODO: my_data_path = os.path.join(THIS_DIR, os.pardir, 'data_folder/data.csv')
-#TODO: my_data_path = os.path.join(THIS_DIR, 'testdata.csv')
 
 ####################################################################################
 # Tests of the SequencingSummaryExtractor class with several configuration cases : #
@@ -131,13 +128,14 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         actual_df_types = actual_df.drop(['passes_filtering', 'barcode_arrangement'], axis=1, inplace=False).dtypes
         testing.is_number(actual_df_types)
         
+        
     def test_load_sequencing_summary_data_barcode_data (self):
         """
         Test if values of barcode_arrangement column are correct
         """
         actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data()
         random_values = actual_df['barcode_arrangement'].sample(n=10)
-        
+
         for index, value in random_values.iteritems():
             # when barcode_arrangement values are NaN type, do nothing
             if pd.isna(value):
@@ -146,7 +144,7 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
 
         
 
-    #Tests for init method
+    #Test for init method
     def test_init_whole_config(self):
         """
         Test if instance variables created in init method are correct
@@ -156,35 +154,39 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         # Launch init method
         instance.init()
         # Get instances variables of the dataframe_1d
-        actual_df_channel = instance.channel.head(11)
-        actual_df_passes_filtering = instance.passes_filtering_1d.head(11)
+        actual_df_channel = instance.channel_df.head(11)
+        actual_df_passes_filtering = instance.passes_filtering_df.head(11)
         actual_df_sequence_length = instance.sequence_length_template.head(11)
-        actual_null_events = instance.null_event_1d.head(11)
         actual_df = instance.dataframe_1d.head(11)
         
         # Test all instances variables VS expected
         testing.assert_series_equal(self.expected_df['channel'], actual_df_channel)
         testing.assert_series_equal(self.expected_df['passes_filtering'], actual_df_passes_filtering)
         testing.assert_series_equal(self.expected_df['sequence_length_template'], actual_df_sequence_length)
-        testing.assert_frame_equal(self.expected_df.loc[self.expected_df['num_events'] == 0], actual_null_events)
         testing.assert_frame_equal(self.expected_df, actual_df)
 
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-      
+    #Test for extract method
+    def test_extract_whole_config(self):
+        """Test if correct values are put in result_dict in extract method"""
+        instance = sse.SequencingSummaryExtractor(self.config)
+        instance.init()
 
-
+        actual_dict = {}
+        expected_dict = {}
+        # create patched dict for assertions
+        with patch.dict(expected_dict, {'basecaller.sequencing.summary.1d.extractor.fastq.entries': len(instance.dataframe_1d['num_events'])}):
+            instance.extract(actual_dict)
+            # compare fastq_entries value
+            fastq_entries = 'basecaller.sequencing.summary.1d.extractor.fastq.entries'
+            assert actual_dict[fastq_entries] == expected_dict[fastq_entries]
+            
+            # compare read_pass_length_mean value
+            read_pass_length_mean = 'basecaller.sequencing.summary.1d.extractor.read.pass.length.mean'
+            expected_dict.update({read_pass_length_mean: pd.DataFrame.mean(
+                instance.dataframe_1d['sequence_length_template'].loc[instance.dataframe_1d['passes_filtering'] == True])})
+            assert actual_dict[read_pass_length_mean] == expected_dict[read_pass_length_mean]
+            
 
 class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
 
@@ -197,7 +199,80 @@ class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
 
         cls.config = cfg.only_seq_summary_config
     
+    
+    def test_load_sequencing_summary_data_only_ss(self):
+        """Test if read_id is not in the dataframe column"""
+        actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data()
+        assert 'read_id' not in actual_df.columns
 
+
+    def test_extract_only_sequencing_summary(self):
+        """
+        Test if correct values are in the result_dict
+        """
+        actual_dict = {}
+        
+        instance = sse.SequencingSummaryExtractor(self.config)
+        instance.init()
+        instance.extract(actual_dict)
+        
+        # values to compare
+        read_count = len(instance.dataframe_1d[instance.dataframe_1d['num_events'] != 0])
+        read_pass_count = len(instance.dataframe_1d.loc[instance.dataframe_1d['passes_filtering'] == True])
+        read_fail_count = len(instance.dataframe_1d.loc[instance.dataframe_1d['passes_filtering'] == False])
+        read_pass_ratio = read_pass_count/read_count
+        read_fail_ratio = read_fail_count/read_count
+        read_pass_frequency = read_pass_ratio * 100
+        yield_count = sum(instance.dataframe_1d['sequence_length_template'])
+        channel_max = pd.DataFrame.max(pd.value_counts(instance.dataframe_1d['channel']))
+        mean_length = pd.DataFrame.mean(instance.dataframe_1d['sequence_length_template'])
+        read_pass_length_min = pd.DataFrame.min(instance.dataframe_1d['sequence_length_template'].loc[instance.dataframe_1d['passes_filtering'] == True])
+        read_fail_qscore = instance.dataframe_1d['mean_qscore_template'].loc[instance.dataframe_1d['passes_filtering'] == False]
+        read_fail_qscore_50 = pd.Series.quantile(read_fail_qscore, q=0.5)
+        
+        self.assertEqual(read_count, actual_dict['basecaller.sequencing.summary.1d.extractor.read.count'])
+        self.assertEqual(read_pass_count, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.count'])
+        self.assertEqual(read_fail_count, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.count'])
+        self.assertEqual(read_pass_ratio, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.ratio'])
+        self.assertEqual(read_fail_ratio, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.ratio'])
+        self.assertEqual(read_pass_frequency, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.frequency'])
+        self.assertEqual(yield_count, actual_dict['basecaller.sequencing.summary.1d.extractor.yield'])
+        self.assertEqual(channel_max, actual_dict['basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics.max'])
+        self.assertEqual(mean_length, actual_dict['basecaller.sequencing.summary.1d.extractor.all.read.length.mean'])
+        self.assertEqual(read_pass_length_min, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length.min'])
+        testing.assert_series_equal(read_fail_qscore, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'])
+        self.assertEqual(read_fail_qscore_50, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore.50%'])
+
+       
+    def test_extract_barcode_info_not_called(self) :
+        """Test that barcode_info method is not called for this config"""
+        mock = MagicMock()
+        mock.extract()
+        mock._extract_barcode_info.assert_not_called()
+
+
+class TestSequencingSummaryExtractorSequencingSummaryBarcodes (unittest.TestCase):
+
+    """ 
+    Test SequencingSummaryExtractor class with only sequencing summary file 
+    """
+
+    @classmethod 
+    def setUpClass(cls):
+
+        cls.config = cfg.seq_summary_with_barcodes_config
+        
+
+    def test_barcoding_methods_called(self):
+        """Test that barcode methods are called"""
+
+        mock = MagicMock()
+        mock.extract()
+        mock._extract_barcode_info()
+        mock._get_barcode_selection
+        mock._extract_barcode_info.assert_called_once()
+
+            
 
 class TestSequencingSummaryExtractorBarcodingFiles (unittest.TestCase):
 
@@ -206,14 +281,15 @@ class TestSequencingSummaryExtractorBarcodingFiles (unittest.TestCase):
     @classmethod 
     def setUpClass(cls):
 
-        pass
+        cls.config = cfg.only_barcoding_config
 
 
+    def test_check_conf_only_barcodes(self):
+        """Test case of only barcoding files"""
 
+        actual = sse.SequencingSummaryExtractor(self.config).check_conf()
+        self.assertEqual((False, "No sequencing summary file has been found"), actual)
 
-#########################################
-# Tests with directory instead of files # 
-#########################################
 
 class TestSequencingSummaryExtractorDirectory (unittest.TestCase):
 
@@ -225,27 +301,17 @@ class TestSequencingSummaryExtractorDirectory (unittest.TestCase):
         cls.config = cfg.directory_config
 
         
-    def test_init_should_raise_Value_Error(self):
-        """Test if init method returns a ValueError when passing a directory"""
-
-        with self.assertRaises(IsADirectoryError) as context:
-            sse.SequencingSummaryExtractor(self.config).__init__()
-            self.assertTrue("ValueError: The sequencing summary file must be a file path not a directory path" in context.exception)
-
-    #TODO: change this method, bc it tests only __init__ which will be refactored
     def test_check_conf_with_directory(self):
-        """ Test if check_conf method returns a ValueError when passing a directory"""
+        """ Test if _is_sequencing_summary_file method returns a FileNotFoundError catched by check_conf when passing a directory"""
         
-        with self.assertRaises(IsADirectoryError) as context:
+        with self.assertRaises(FileNotFoundError) as context:
             
+            #Call check_conf which calls internally is_sequencing_summary_file method
             sse.SequencingSummaryExtractor(self.config).check_conf()
-            self.assertTrue((False, "The path is a directory : " + self.config.get('sequencing_summary_source')) in context.exception)
+            sse.SequencingSummaryExtractor(self.config)._is_sequencing_summary_file(self.config['sequencing_summary_source'])
+            self.assertTrue((False, "No such file or directory " + self.config.get('sequencing_summary_source')) in context.exception)
     
 
-
-##################################
-# Tests with no sequencing files # 
-##################################
 
 class TestSequencingSummaryExtractorNoFiles(unittest.TestCase):
 
