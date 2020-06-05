@@ -77,6 +77,8 @@ class SequencingSummaryExtractor:
                         found = True
                 except FileNotFoundError:
                     return False, "No such file or directory " + f
+            break
+
         if not found:
             return False, "No sequencing summary file has been found"
         else:
@@ -89,10 +91,9 @@ class SequencingSummaryExtractor:
         :return: Panda's Dataframe object
         """
         self.dataframe_1d = self._load_sequencing_summary_data()
-        self.channel = self.dataframe_1d['channel']
-        self.passes_filtering_1d = self.dataframe_1d['passes_filtering']
+        self.channel_df = self.dataframe_1d['channel']
+        self.passes_filtering_df = self.dataframe_1d['passes_filtering']
         self.sequence_length_template = self.dataframe_1d['sequence_length_template']
-        self.null_event_1d = self.dataframe_1d[self.dataframe_1d['num_events'] == 0]
         self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
@@ -413,7 +414,7 @@ class SequencingSummaryExtractor:
         self.dataframe_1d.loc[~self.dataframe_1d['barcode_arrangement'].isin(
             self.barcode_selection), 'barcode_arrangement'] = 'other'
 
-        pattern = '(\d{2})'
+        pattern = '(\\d{2})'
         if "other" not in self.barcode_selection:
             self.barcode_selection.append('other')
 
@@ -546,7 +547,7 @@ class SequencingSummaryExtractor:
                                                                "The basecalled reads are filtered with a 7.5 quality "
                                                                "score threshold in pass (1D pass in green) "
                                                                "or fail (1D fail in red) categories."))
-        channel_count = self.channel
+        channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
                                                        self.my_dpi, images_directory,
@@ -613,7 +614,7 @@ class SequencingSummaryExtractor:
         Statistics about the channels of the flowcell
         :return: pd.Series object containing statistics about the channel occupancy without count value
         """
-        total_reads_per_channel = pd.value_counts(self.channel)
+        total_reads_per_channel = pd.value_counts(self.channel_df)
         return pd.DataFrame.describe(total_reads_per_channel)
 
 
