@@ -184,7 +184,7 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
             # compare read_pass_length_mean value
             read_pass_length_mean = 'basecaller.sequencing.summary.1d.extractor.read.pass.length.mean'
             expected_dict.update({read_pass_length_mean: pd.DataFrame.mean(
-                instance.dataframe_1d['sequence_length_template'].loc[instance.dataframe_1d['passes_filtering'] == True])})
+                instance.sequence_length_template[instance.dataframe_1d['passes_filtering'] == True])})
             assert actual_dict[read_pass_length_mean] == expected_dict[read_pass_length_mean]
             
 
@@ -223,10 +223,10 @@ class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
         read_pass_ratio = read_pass_count/read_count
         read_fail_ratio = read_fail_count/read_count
         read_pass_frequency = read_pass_ratio * 100
-        yield_count = sum(instance.dataframe_1d['sequence_length_template'])
+        yield_count = sum(instance.sequence_length_template)
         channel_max = pd.DataFrame.max(pd.value_counts(instance.dataframe_1d['channel']))
-        mean_length = pd.DataFrame.mean(instance.dataframe_1d['sequence_length_template'])
-        read_pass_length_min = pd.DataFrame.min(instance.dataframe_1d['sequence_length_template'].loc[instance.dataframe_1d['passes_filtering'] == True])
+        mean_length = pd.DataFrame.mean(instance.sequence_length_template)
+        read_pass_length_min = pd.DataFrame.min(instance.sequence_length_template[instance.dataframe_1d['passes_filtering'] == True])
         read_fail_qscore = instance.dataframe_1d['mean_qscore_template'].loc[instance.dataframe_1d['passes_filtering'] == False]
         read_fail_qscore_50 = pd.Series.quantile(read_fail_qscore, q=0.5)
         
