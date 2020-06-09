@@ -104,6 +104,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                          #TODO: delete first read.count --> as fastq.entries
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                         #TODO: delete read.with.length.equal.zero.count
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
@@ -122,6 +123,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                                #TODO: delete first read.count --> old fastq.entries
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
@@ -151,6 +153,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                              result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
                              result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                              result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                              #TODO: delete read.with.length.equal.zero.count
                              result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                              result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
@@ -167,6 +170,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                                #TODO: delete first read.count --> old fastq.entries
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
@@ -192,6 +196,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                         #TODO: delete first read.count --> old fastq.entries
             read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                          #TODO: delete read.with.length.equal.zero.count
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
@@ -206,6 +211,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
             #TODO: delete first read.count --> old fastq.entries
             array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
@@ -225,6 +231,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
             #TODO: delete first read.count --> old fastq.entries
             read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                          #TODO: delete read.with.length.equal.zero.count
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
@@ -237,6 +244,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
             #TODO: delete first read.count --> old fastq.entries
             array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
