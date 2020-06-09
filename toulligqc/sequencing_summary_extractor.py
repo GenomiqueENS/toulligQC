@@ -267,12 +267,6 @@ class SequencingSummaryExtractor:
         if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
             result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
 
-        # Fastq entries
-        #TODO: delete fastq.entries after changing "Read count histogram"
-        self._set_result_to_dict(result_dict, "fastq.entries", self._count_elements(
-            self.dataframe_1d, 'num_events'))
-        #refactor --> supprimer à terme
-        self._set_result_to_dict(result_dict, "fastq.entries", len(self.dataframe_1d))
         # Read count
         #TODO: modifier read.count en comptant le nombre de lignes du fichier sequencing_summary (donc le dataframe)
         self._set_result_to_dict(result_dict, "read.count",
@@ -344,9 +338,9 @@ class SequencingSummaryExtractor:
         sequence_length_df_old = self.dataframe_1d.sequence_length[
             self.dataframe_1d["num_events_template"] != 0]
         self._set_result_to_dict(
-            result_dict, "sequence.length", sequence_length_df_old)
+            result_dict, "sequence.length.old", sequence_length_df_old)
         #refactor
-        self._set_result_to_dict(self.dataframe_dict, "sequence.length2", self.sequence_length_df)
+        self._set_result_to_dict(self.dataframe_dict, "sequence.length", self.sequence_length_df)
 
         # Yield
         self._set_result_value(result_dict, "yield",
@@ -360,10 +354,10 @@ class SequencingSummaryExtractor:
             self._get_result_value(result_dict, "start.time.sorted")))
 
         # Retrieve Qscore column information and save it in mean.qscore entry
-        self._set_result_value(result_dict, "mean.qscore",
+        self._set_result_value(result_dict, "mean.qscore.old",
                                self.dataframe_1d['mean_qscore'])
         #refactor
-        self._set_result_value(result_dict, "mean.qscore2",
+        self._set_result_value(result_dict, "mean.qscore",
                                self.qscore_df)
 
         # Get channel occupancy statistics and store each value into result_dict
