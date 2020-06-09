@@ -90,6 +90,9 @@ class SequencingSummaryExtractor:
         :return: Panda's Dataframe object
         """
         self.dataframe_1d = self._load_sequencing_summary_data()
+        if self.dataframe_1d.empty:
+            raise pd.errors.EmptyDataError("Dataframe is empty")
+        
         # rename 'sequence_length_template' and 'mean_qscore_template'
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                            'mean_qscore_template': 'mean_qscore'}, inplace=True)
@@ -626,14 +629,13 @@ class SequencingSummaryExtractor:
         summary_dataframe = None
         barcode_dataframe = None
 
-        sequencing_summary_columns = ['channel', 'start_time', 'duration',
+        sequencing_summary_columns = ['channel', 'start_time',
                                       'passes_filtering',
                                       'sequence_length_template', 'mean_qscore_template']
 
         sequencing_summary_datatypes = {
             'channel': np.int16,
             'start_time': np.float,
-            'duration': np.float,
             'passes_filtering': np.bool,
             'sequence_length_template': np.int16,
             'mean_qscore_template': np.float}
@@ -702,8 +704,7 @@ class SequencingSummaryExtractor:
 
         except IOError:
             raise FileNotFoundError("Sequencing summary file not found")
-        except Exception:
-            raise pandas.errors.EmptyDataError("Dataframe is empty")
+
 
     @staticmethod
     def _is_barcode_file(filename):
