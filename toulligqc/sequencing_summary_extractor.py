@@ -97,8 +97,7 @@ class SequencingSummaryExtractor:
         self.passes_filtering_df = self.dataframe_1d['passes_filtering']
         self.sequence_length_df = self.dataframe_1d['sequence_length']
         self.qscore_df = self.dataframe_1d['mean_qscore']
-        # TODO: supprimer cette ligne
-        self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
+
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
 
@@ -269,9 +268,9 @@ class SequencingSummaryExtractor:
 
         # Read count
         #TODO: modifier read.count en comptant le nombre de lignes du fichier sequencing_summary (donc le dataframe)
-        self._set_result_to_dict(result_dict, "read.count",
-                                 self._count_not_zero_elements(self.dataframe_1d, "num_events_template"))
-        self._set_result_to_dict(result_dict, "read.count.new", len(self.dataframe_1d))
+        # self._set_result_to_dict(result_dict, "read.count",
+        #                          self._count_not_zero_elements(self.dataframe_1d, "num_events_template"))
+        self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1d))
         # Read count with length equals zero
         #TODO:delete
         self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count",
@@ -306,6 +305,7 @@ class SequencingSummaryExtractor:
         total_reads = self._get_result_value(result_dict, "read.count")
 
         # Ratios
+        #TODO: delete read.with.length.equal.zero.ratio
         self._set_result_value(result_dict, "read.with.length.equal.zero.ratio",
                                (self._get_result_value(result_dict, "read.with.length.equal.zero.count") / total_reads))
         self._set_result_value(result_dict, "read.pass.ratio",
@@ -317,7 +317,8 @@ class SequencingSummaryExtractor:
         # delete those 2 lines after redoing read count histogram (values always equal to 100)
         self._set_result_value(result_dict, "fastq.entries.frequency", 100)
         self._set_result_value(result_dict, "read.count.frequency", 100)
-
+        
+        #TODO: read.with.length.equal.zero.frequency
         read_frequency_zero_length = (self._get_result_value(result_dict,
                                                              "read.with.length.equal.zero.count") / total_reads) * 100
         self._set_result_value(
@@ -334,12 +335,6 @@ class SequencingSummaryExtractor:
             result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Read length information
-        #TODO: modifier sequence_length_df avec juste self.dataframe_1d[sequence_length_template]
-        sequence_length_df_old = self.dataframe_1d.sequence_length[
-            self.dataframe_1d["num_events_template"] != 0]
-        self._set_result_to_dict(
-            result_dict, "sequence.length.old", sequence_length_df_old)
-        #refactor
         self._set_result_to_dict(self.dataframe_dict, "sequence.length", self.sequence_length_df)
 
         # Yield
@@ -354,9 +349,6 @@ class SequencingSummaryExtractor:
             self._get_result_value(result_dict, "start.time.sorted")))
 
         # Retrieve Qscore column information and save it in mean.qscore entry
-        self._set_result_value(result_dict, "mean.qscore.old",
-                               self.dataframe_1d['mean_qscore'])
-        #refactor
         self._set_result_value(result_dict, "mean.qscore",
                                self.qscore_df)
 
