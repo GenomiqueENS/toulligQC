@@ -90,9 +90,14 @@ class SequencingSummaryExtractor:
         :return: Panda's Dataframe object
         """
         self.dataframe_1d = self._load_sequencing_summary_data()
+        # rename 'sequence_length_template' and 'mean_qscore_template'
+        self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
+                                           'mean_qscore_template': 'mean_qscore'}, inplace=True)
         self.channel_df = self.dataframe_1d['channel']
         self.passes_filtering_df = self.dataframe_1d['passes_filtering']
-        self.sequence_length_template = self.dataframe_1d['sequence_length_template']
+        self.sequence_length_df = self.dataframe_1d['sequence_length']
+        self.qscore_df = self.dataframe_1d['mean_qscore']
+        # TODO: supprimer cette ligne
         self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
@@ -172,20 +177,22 @@ class SequencingSummaryExtractor:
 
         return count_sorted
 
+    #TODO: delete
     @staticmethod
     def _count_elements(dataframe, column: str) -> int:
         """
         Returns the number of values in the dataframe's column
         """
         return len(dataframe[column])
-
+    #TODO: delete
     @staticmethod
     def _count_not_zero_elements(dataframe, column: str) -> int:
         """
         Returns the number of values different than zero in the dataframe's column
         """
         return len(dataframe[dataframe[column] != 0])
-
+    
+    #TODO: delete
     @staticmethod
     def _count_zero_elements(dataframe, column: str) -> int:
         """
@@ -261,24 +268,29 @@ class SequencingSummaryExtractor:
             result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
 
         # Fastq entries
+        #TODO: delete fastq.entries after changing "Read count histogram"
         self._set_result_to_dict(result_dict, "fastq.entries", self._count_elements(
             self.dataframe_1d, 'num_events'))
+        #refactor --> supprimer à terme
+        self._set_result_to_dict(result_dict, "fastq.entries", len(self.dataframe_1d))
         # Read count
         #TODO: modifier read.count en comptant le nombre de lignes du fichier sequencing_summary (donc le dataframe)
         self._set_result_to_dict(result_dict, "read.count",
                                  self._count_not_zero_elements(self.dataframe_1d, "num_events_template"))
+        self._set_result_to_dict(result_dict, "read.count.new", len(self.dataframe_1d))
         # Read count with length equals zero
+        #TODO:delete
         self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count",
-                                 self._count_zero_elements(self.dataframe_1d, 'sequence_length_template'))
+                                 self._count_zero_elements(self.dataframe_1d, 'sequence_length'))
 
         # 1D pass information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
         self._set_result_to_dict(result_dict, "read.pass.length",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length_template',
+                                 self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
                                                                     'passes_filtering', True))
         self._set_result_to_dict(result_dict, "read.pass.qscore",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore_template',
+                                 self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
                                                                     'passes_filtering', True))
         self._set_result_to_dict(result_dict, "read.pass.sorted",
                                  self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
@@ -288,10 +300,10 @@ class SequencingSummaryExtractor:
         self._set_result_to_dict(result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
         self._set_result_to_dict(result_dict, "read.fail.length",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length_template',
+                                 self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
                                                                     'passes_filtering', False))
         self._set_result_to_dict(result_dict, "read.fail.qscore",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore_template',
+                                 self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
                                                                     'passes_filtering', False))
         self._set_result_to_dict(result_dict, "read.fail.sorted",
                                  self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
@@ -328,14 +340,17 @@ class SequencingSummaryExtractor:
             result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Read length information
-        sequence_length_df = self.dataframe_1d.sequence_length_template[
+        #TODO: modifier sequence_length_df avec juste self.dataframe_1d[sequence_length_template]
+        sequence_length_df_old = self.dataframe_1d.sequence_length[
             self.dataframe_1d["num_events_template"] != 0]
         self._set_result_to_dict(
-            result_dict, "sequence.length", sequence_length_df)
+            result_dict, "sequence.length", sequence_length_df_old)
+        #refactor
+        self._set_result_to_dict(self.dataframe_dict, "sequence.length2", self.sequence_length_df)
 
         # Yield
         self._set_result_value(result_dict, "yield",
-                               sum(self.sequence_length_template))
+                               sum(self.sequence_length_df))
 
         start_time_sorted = sorted(self.dataframe_1d['start_time'] / 3600)
         self._set_result_to_dict(
@@ -346,7 +361,10 @@ class SequencingSummaryExtractor:
 
         # Retrieve Qscore column information and save it in mean.qscore entry
         self._set_result_value(result_dict, "mean.qscore",
-                               self.dataframe_1d['mean_qscore_template'])
+                               self.dataframe_1d['mean_qscore'])
+        #refactor
+        self._set_result_value(result_dict, "mean.qscore2",
+                               self.qscore_df)
 
         # Get channel occupancy statistics and store each value into result_dict
         for index, value in self._occupancy_channel().items():
@@ -354,7 +372,7 @@ class SequencingSummaryExtractor:
                 result_dict, "channel.occupancy.statistics." + index, value)
 
         # Get statistics about all reads length and store each value into result_dict
-        sequence_length_statistics = self.sequence_length_template.describe()
+        sequence_length_statistics = self.sequence_length_df.describe()
 
         for index, value in sequence_length_statistics.items():
             self._set_result_value(
@@ -367,7 +385,7 @@ class SequencingSummaryExtractor:
             result_dict, "read.fail.length"), "read.fail.length")
 
         # Get Qscore statistics without count value and store them into result_dict
-        qscore_statistics = self.dataframe_1d['mean_qscore_template'].describe().drop(
+        qscore_statistics = self.dataframe_1d['mean_qscore'].describe().drop(
             "count")
 
         for index, value in qscore_statistics.items():
@@ -451,9 +469,9 @@ class SequencingSummaryExtractor:
                                 barcode_name)
 
         # Add filtered dataframes (all info by barcode and by length or qscore) to dataframe_dict
-        self._get_barcode_selection_dataframe("sequence_length_template", "barcode_selection_sequence_length_dataframe",
+        self._get_barcode_selection_dataframe("sequence_length", "barcode_selection_sequence_length_dataframe",
                                               "length")
-        self._get_barcode_selection_dataframe("mean_qscore_template", "barcode_selection_sequence_phred_dataframe",
+        self._get_barcode_selection_dataframe("mean_qscore", "barcode_selection_sequence_phred_dataframe",
                                               "qscore")
 
     def _get_barcode_selection_dataframe(self, column: str, key: str, melted_column_name: str):
@@ -484,7 +502,7 @@ class SequencingSummaryExtractor:
         barcode_selection_dataframe.columns.set_levels(col_names,
                                                        level=1, inplace=True)
 
-        # Remove sequence_length_template Multindex to only have barcode_arrangement column labels
+        # Remove sequence_length Multindex to only have barcode_arrangement column labels
         barcode_selection_dataframe.columns = barcode_selection_dataframe.columns.droplevel(
             level=0)
 
@@ -520,12 +538,12 @@ class SequencingSummaryExtractor:
                    'read.fail.': barcode_selected_read_fail_dataframe}
 
         for df_name, df in df_dict.items():  # df_dict.items = all.read/read.pass/read.fail
-            for stats_index, stats_value in df['sequence_length_template'].describe().items():
+            for stats_index, stats_value in df['sequence_length'].describe().items():
                 key_to_result_dict = df_name + barcode_name + '.length.' + stats_index
                 self._set_result_value(
                     result_dict, key_to_result_dict, stats_value)
 
-            for stats_index, stats_value in df['mean_qscore_template'].describe().drop('count').items():
+            for stats_index, stats_value in df['mean_qscore'].describe().drop('count').items():
                 key_to_result_dict = df_name + barcode_name + '.qscore.' + stats_index
                 self._set_result_value(
                     result_dict, key_to_result_dict, stats_value)
@@ -543,7 +561,7 @@ class SequencingSummaryExtractor:
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-        images.append(graph_generator.read_length_multihistogram(result_dict, 'Read length histogram',
+        images.append(graph_generator.read_length_multihistogram(result_dict, self.dataframe_dict, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
@@ -573,7 +591,7 @@ class SequencingSummaryExtractor:
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
 
-        images.append(graph_generator.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',
+        images.append(graph_generator.all_scatterplot(result_dict, self.dataframe_dict, 'Mean Phred score function of 1D read length',
                                                       self.my_dpi, images_directory,
                                                       "The Mean Phred score varies according to the read length."
                                                       "The basecalled reads are filtered with a 7.5 quality "
@@ -611,7 +629,7 @@ class SequencingSummaryExtractor:
         Removing dictionary entries that will not be kept in the report.data file
         :return:
         """
-        keys = ["sequence.length",
+        keys = [#"sequence.length", #TODO: modifier cette clef, car elle n'est plus dans result_dict, mais dans dataframe_dict
                 "read.pass.length", "read.fail.length",
                 "start.time.sorted", "read.pass.sorted", "read.fail.sorted",
                 "mean.qscore", "read.pass.qscore", "read.fail.qscore"]
@@ -725,6 +743,8 @@ class SequencingSummaryExtractor:
 
         except IOError:
             raise FileNotFoundError("Sequencing summary file not found")
+        except Exception:
+            raise pandas.errors.EmptyDataError("Dataframe is empty")
 
     @staticmethod
     def _is_barcode_file(filename):
