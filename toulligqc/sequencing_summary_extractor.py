@@ -176,28 +176,6 @@ class SequencingSummaryExtractor:
 
         return count_sorted
 
-    #TODO: delete
-    @staticmethod
-    def _count_elements(dataframe, column: str) -> int:
-        """
-        Returns the number of values in the dataframe's column
-        """
-        return len(dataframe[column])
-    #TODO: delete
-    @staticmethod
-    def _count_not_zero_elements(dataframe, column: str) -> int:
-        """
-        Returns the number of values different than zero in the dataframe's column
-        """
-        return len(dataframe[dataframe[column] != 0])
-    
-    #TODO: delete
-    @staticmethod
-    def _count_zero_elements(dataframe, column: str) -> int:
-        """
-        Returns the number of values equals to zero in the dataframe's column
-        """
-        return len(dataframe[dataframe[column] == 0])
 
     @staticmethod
     def _count_boolean_elements(dataframe, column: str, boolean_value: bool) -> int:
@@ -267,14 +245,11 @@ class SequencingSummaryExtractor:
             result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
 
         # Read count
-        #TODO: modifier read.count en comptant le nombre de lignes du fichier sequencing_summary (donc le dataframe)
-        # self._set_result_to_dict(result_dict, "read.count",
-        #                          self._count_not_zero_elements(self.dataframe_1d, "num_events_template"))
         self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1d))
+        
         # Read count with length equals zero
-        #TODO:delete
-        self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count",
-                                 self._count_zero_elements(self.dataframe_1d, 'sequence_length'))
+        #TODO: delete this key after redoing graphs
+        self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count", 0)
 
         # 1D pass information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.pass.count",
@@ -305,7 +280,7 @@ class SequencingSummaryExtractor:
         total_reads = self._get_result_value(result_dict, "read.count")
 
         # Ratios
-        #TODO: delete read.with.length.equal.zero.ratio
+        #TODO: delete read.with.length.equal.zero.ratio after redoing graphs
         self._set_result_value(result_dict, "read.with.length.equal.zero.ratio",
                                (self._get_result_value(result_dict, "read.with.length.equal.zero.count") / total_reads))
         self._set_result_value(result_dict, "read.pass.ratio",
@@ -318,7 +293,7 @@ class SequencingSummaryExtractor:
         self._set_result_value(result_dict, "fastq.entries.frequency", 100)
         self._set_result_value(result_dict, "read.count.frequency", 100)
         
-        #TODO: read.with.length.equal.zero.frequency
+        #TODO: delete read.with.length.equal.zero.frequency after redoing graphs
         read_frequency_zero_length = (self._get_result_value(result_dict,
                                                              "read.with.length.equal.zero.count") / total_reads) * 100
         self._set_result_value(
@@ -652,15 +627,13 @@ class SequencingSummaryExtractor:
         barcode_dataframe = None
 
         sequencing_summary_columns = ['channel', 'start_time', 'duration',
-                                      'num_events', 'num_events_template', 'passes_filtering',
+                                      'passes_filtering',
                                       'sequence_length_template', 'mean_qscore_template']
 
         sequencing_summary_datatypes = {
             'channel': np.int16,
             'start_time': np.float,
             'duration': np.float,
-            'num_events': np.int16,
-            'num_events_template': np.int16,
             'passes_filtering': np.bool,
             'sequence_length_template': np.int16,
             'mean_qscore_template': np.float}
