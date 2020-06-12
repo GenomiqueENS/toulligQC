@@ -309,11 +309,10 @@ class SequencingSummaryExtractor:
             result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Read length information
-        self._set_result_to_dict(self.dataframe_dict, "sequence.length", self.sequence_length_df)
-
+        self.dataframe_dict["sequence.length"] = self.sequence_length_df
+        
         # Yield
-        self._set_result_value(result_dict, "yield",
-                               sum(self.sequence_length_df))
+        self._set_result_value(result_dict, "yield", sum(self.sequence_length_df))
 
         self._set_result_to_dict(
             result_dict, "start.time.sorted", sorted(self.dataframe_1d['start_time'] / 3600))
@@ -588,8 +587,7 @@ class SequencingSummaryExtractor:
         Removing dictionary entries that will not be kept in the report.data file
         :return:
         """
-        keys = [#"sequence.length", #TODO: delete this key after redoing graphs not in result_dict but in dataframe_dict
-                "read.pass.length", "read.fail.length",
+        keys = ["read.pass.length", "read.fail.length",
                 "start.time.sorted", "read.pass.sorted", "read.fail.sorted",
                 "mean.qscore", "read.pass.qscore", "read.fail.qscore"]
 

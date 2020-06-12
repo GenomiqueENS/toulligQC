@@ -283,14 +283,14 @@ def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     minimum, maximum = \
-        min(dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
-        max(dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
+        min(dataframe_dict["sequence.length"]), \
+        max(dataframe_dict["sequence.length"])
     read_type = ['1D', '1D pass', '1D fail']
 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     ax = plt.subplot()
 
-    data = [dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
+    data = [dataframe_dict["sequence.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]]
     ls = 2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30)
@@ -310,7 +310,7 @@ def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result
     ax.set_ylabel('Read number')
 
     dataframe = \
-        pd.DataFrame({"1D": dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
+        pd.DataFrame({"1D": dataframe_dict["sequence.length"],
                       "1D pass": result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
                       "1D fail": result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]})
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
@@ -506,9 +506,9 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
                             color="orangered")
 
     plt.legend((read_pass, read_fail), ("1D pass", "1D fail"))
-    plt.xlim(np.min(dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
-                    .loc[dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] > 0]),
-             np.max(dataframe_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]))
+    plt.xlim(np.min(dataframe_dict["sequence.length"]
+                    .loc[dataframe_dict["sequence.length"] > 0]),
+             np.max(dataframe_dict["sequence.length"]))
 
     plt.yticks()
     plt.xscale('log')
@@ -886,14 +886,14 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    read_1d = result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
+    read_1d = result_dict["sequence.length"]
     read_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
     read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length']
     read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length']
 
     minimum, maximum = \
-        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
-        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
+        min(result_dict["sequence.length"]), \
+        max(result_dict["sequence.length"])
     read_type = ['1D', '1Dsquare', '1Dsquare pass', '1Dsquare fail']
 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
