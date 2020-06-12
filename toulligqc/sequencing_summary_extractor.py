@@ -143,6 +143,7 @@ class SequencingSummaryExtractor:
         Count reads by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
         Regroup all non used barcodes in index "other"
         Compute all frequency values for each number of barcoded reads
+        :param dataframe_dict: dictionary filled with Pandas type values
         :param entry: entry about barcoded counts
         :param prefix: key prefix
         :return: Series with all barcodes (used, non used, and unclassified) frequencies
@@ -156,28 +157,24 @@ class SequencingSummaryExtractor:
         count_sorted.fillna(0, downcast='int16', inplace=True)
 
         # Compute sum of all used barcodes without barcode 'unclassified'
-        self._set_result_value(self.dataframe_dict, entry + '.count',
-                               sum(count_sorted.drop("unclassified")))
-
+        self.dataframe_dict[entry + '.count'] = sum(count_sorted.drop("unclassified"))
+        
         # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
-        non_used_barcodes_count = entry.replace(".barcode", ".non.used.barcodes.count")
+        non_used_barcodes_count = entry.replace(".barcoded", ".non.used.barcodes.count")
 
         # Compute all reads of barcodes that are not in the barcode_selection list
-        self._set_result_value(self.dataframe_dict, non_used_barcodes_count, 
-                               (sum(all_barcode_count) - sum(count_sorted)))
-
+        self.dataframe_dict[non_used_barcodes_count] = sum(all_barcode_count) - sum(count_sorted)
+        
         # Create Series for all non-used barcode counts and rename index array with "other"
-        other_all_barcode_count = pd.Series(self._get_result_value(self.dataframe_dict, non_used_barcodes_count),
-                                            index=['other'])
-
+        other_all_barcode_count = pd.Series(self.dataframe_dict[non_used_barcodes_count], index=['other'])
+        
         # Append Series of non-used barcode counts to the Series of barcode_selection counts
         count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
 
         # Compute frequency for all barcode counts and save into dataframe_dict
         for barcode in count_sorted.to_dict():
             frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
-            self._set_result_value(self.dataframe_dict, entry.replace(".barcode", ".") + barcode + ".frequency",
-                                   frequency_value)
+            self.dataframe_dict[entry.replace(".barcoded", ".") + barcode + ".frequency"] =  frequency_value
 
         return count_sorted
 
@@ -404,8 +401,11 @@ class SequencingSummaryExtractor:
         self.dataframe_dict["read.fail.barcoded"] = self._barcode_frequency(self.dataframe_dict, "read.fail.barcoded",
                                                          series_read_fail_barcode)
 
-        read_pass_barcoded_count = self._get_result_value(
-            result_dict, "read.pass.barcoded.count")
+        # read_pass_barcoded_count = self._get_result_value(
+        #     result_dict, "read.pass.barcoded.count")
+        #refactor
+        read_pass_barcoded_count = self.dataframe_dict["read.pass.barcoded.count"]
+        
         read_fail_barcoded_count = self._get_result_value(
             result_dict, "read.fail.barcoded.count")
 
