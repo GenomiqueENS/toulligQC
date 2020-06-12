@@ -215,15 +215,15 @@ class SequencingSummaryExtractor:
             ("Invalid type for key {0} or value {1} ".format(
                 type(key), type(value)))
 
-    def _get_result_value(self, dict, key: str):
+    def _get_result_value(self, result_dict, key: str):
         """
         :param result_dict:
         :param key: string entry to add to result_dict
         Returns the value associated with the result_dict key
         """
-        if not (self.get_report_data_file_id() + '.' + key) in dict.keys():
+        if not (self.get_report_data_file_id() + '.' + key) in result_dict.keys():
             raise KeyError(f"Key {key} not found")
-        return dict.get(self.get_report_data_file_id() + '.' + key)
+        return result_dict.get(self.get_report_data_file_id() + '.' + key)
 
     def _set_result_to_dict(self, result_dict, key: str, function):
         """
@@ -386,9 +386,9 @@ class SequencingSummaryExtractor:
                                                          series_read_fail_barcode)
 
         read_pass_barcoded_count = self._get_result_value(
-            self.dataframe_dict, "read.pass.barcoded.count")
+            result_dict, "read.pass.barcoded.count")
         read_fail_barcoded_count = self._get_result_value(
-            self.dataframe_dict, "read.fail.barcoded.count")
+            result_dict, "read.fail.barcoded.count")
 
         # Add key "read.pass.barcoded.frequency"
         total_reads = self._get_result_value(result_dict, "read.count")
