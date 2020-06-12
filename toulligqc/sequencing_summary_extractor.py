@@ -59,6 +59,7 @@ class SequencingSummaryExtractor:
 
         self.my_dpi = int(self.config_dictionary['dpi'])
 
+
     def check_conf(self):
         """
         Check if the sequencing summary source contains a sequencing summary file
@@ -82,6 +83,7 @@ class SequencingSummaryExtractor:
             return False, "No sequencing summary file has been found"
         return True, ""
 
+
     def init(self):
         """
         Creation of the dataframe containing all info from sequencing_summary.txt
@@ -91,7 +93,7 @@ class SequencingSummaryExtractor:
         if self.dataframe_1d.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
         
-        # rename 'sequence_length_template' and 'mean_qscore_template'
+        # Rename 'sequence_length_template' and 'mean_qscore_template'
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                            'mean_qscore_template': 'mean_qscore'}, inplace=True)
         self.channel_df = self.dataframe_1d['channel']
@@ -105,6 +107,7 @@ class SequencingSummaryExtractor:
         if self.is_barcode:
             self.barcode_selection = self.config_dictionary['barcode_selection']
 
+
     @staticmethod
     def get_name() -> str:
         """
@@ -112,6 +115,7 @@ class SequencingSummaryExtractor:
         :return: the name of the extractor
         """
         return 'Basecaller sequencing summary'
+
 
     @staticmethod
     def get_report_data_file_id() -> str:
@@ -121,15 +125,18 @@ class SequencingSummaryExtractor:
         """
         return 'basecaller.sequencing.summary.1d.extractor'
 
+
     def _describe_dict(self, result_dict: dict, function, entry: str):
         """
         Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
         :param result_dict:
         :param function: function returning the values to describe
+        :param entry: entry to put in result_dict completed with the statistics
         """
         stats = pd.Series.describe(function).drop("count")
         for key, value in stats.iteritems():
             self._set_result_to_dict(result_dict, entry + '.' + key, value)
+
 
     def _barcode_frequency(self, dataframe_dict: dict, entry: str, df_filtered) -> pd.Series:
         """
@@ -153,20 +160,18 @@ class SequencingSummaryExtractor:
                                sum(count_sorted.drop("unclassified")))
 
         # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
-        non_used_barcodes_count = entry.replace(
-            ".barcode", ".non.used.barcodes.count")
+        non_used_barcodes_count = entry.replace(".barcode", ".non.used.barcodes.count")
 
         # Compute all reads of barcodes that are not in the barcode_selection list
-        self._set_result_value(self.dataframe_dict, non_used_barcodes_count, (sum(
-            all_barcode_count) - sum(count_sorted)))
+        self._set_result_value(self.dataframe_dict, non_used_barcodes_count, 
+                               (sum(all_barcode_count) - sum(count_sorted)))
 
         # Create Series for all non-used barcode counts and rename index array with "other"
         other_all_barcode_count = pd.Series(self._get_result_value(self.dataframe_dict, non_used_barcodes_count),
                                             index=['other'])
 
         # Append Series of non-used barcode counts to the Series of barcode_selection counts
-        count_sorted = count_sorted.append(
-            other_all_barcode_count).sort_index()
+        count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
 
         # Compute frequency for all barcode counts and save into dataframe_dict
         for barcode in count_sorted.to_dict():
@@ -181,26 +186,36 @@ class SequencingSummaryExtractor:
     def _count_boolean_elements(dataframe, column_name, boolean: bool) -> int:
         """
         Returns the number of values of a column filtered by a boolean
+        :param colum_name: name of the dafatrame column
+        :boolean: bool to filter
         """
         return len(dataframe.loc[dataframe[column_name] == bool(boolean)])
+
 
     @staticmethod
     def _series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str, boolean: bool) -> pd.Series:
         """
         Returns a Panda's Series object with the number of values of different columns filtered by a boolean
+        :param dataframe: dataframe_1d
+        :param column_name1: 1st column to filter
+        :param column_name2: 2nd column to filter
+        :param boolean: access columns of dataframe by boolean array
         """
         return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
+
 
     @staticmethod
     def _sorted_list_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool, denominator: int):
         """
         Returns a sorted list of values of different columns filtered by a boolean and divided by the denominator
         :param dataframe: dataframe_1d
-        :param column1: 1st column to filter
-        :param column2: 2nd column to filter
-        :param boolean_value: access columns of dataframe by boolean array
+        :param column_name1: 1st column to filter
+        :param column_name2: 2nd column to filter
+        :param boolean: access columns of dataframe by boolean array
+        :param denominator: number to divide by
         """
         return sorted(dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator)
+
 
     def _set_result_value(self, dict, key: str, value):
         """
@@ -215,6 +230,7 @@ class SequencingSummaryExtractor:
             ("Invalid type for key {0} or value {1} ".format(
                 type(key), type(value)))
 
+
     def _get_result_value(self, result_dict, key: str):
         """
         :param result_dict:
@@ -225,6 +241,7 @@ class SequencingSummaryExtractor:
             raise KeyError(f"Key {key} not found")
         return result_dict.get(self.get_report_data_file_id() + '.' + key)
 
+
     def _set_result_to_dict(self, result_dict, key: str, function):
         """
         Add a new item in result_dict with _set_result_value method
@@ -233,6 +250,7 @@ class SequencingSummaryExtractor:
         :param function: function returning key's value
         """
         self._set_result_value(result_dict, key, function)
+
 
     def extract(self, result_dict):
         """
@@ -359,6 +377,7 @@ class SequencingSummaryExtractor:
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
 
+
     def _extract_barcode_info(self, result_dict):
         """
         :param result_dict:
@@ -432,6 +451,7 @@ class SequencingSummaryExtractor:
         self._barcode_selection_dataframe("mean_qscore", "barcode_selection_sequence_phred_dataframe",
                                               "qscore")
 
+
     def _barcode_selection_dataframe(self, df_column_name: str, df_key_name: str, melted_column_name: str):
         """
         Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
@@ -482,6 +502,7 @@ class SequencingSummaryExtractor:
         self._set_result_value(self.dataframe_dict, df_key_name.replace(
             "_dataframe", "_melted_dataframe"), melted_dataframe)
 
+
     def _barcode_stats(self, result_dict, barcode_selected_dataframe, barcode_selected_read_pass_dataframe,
                        barcode_selected_read_fail_dataframe, barcode_name):
         """
@@ -505,6 +526,7 @@ class SequencingSummaryExtractor:
                 key_to_result_dict = df_name + barcode_name + '.qscore.' + stats_index
                 self._set_result_value(
                     result_dict, key_to_result_dict, stats_value)
+
 
     def graph_generation(self, result_dict):
         """
@@ -582,6 +604,7 @@ class SequencingSummaryExtractor:
                                                                          "pass (in green) and fail (in red) 1D reads."))
         return images
 
+
     def clean(self, result_dict):
         """
         Removing dictionary entries that will not be kept in the report.data file
@@ -603,6 +626,7 @@ class SequencingSummaryExtractor:
         result_dict['unwritten.keys'].extend(key_list)
         self.dataframe_dict = None
 
+
     def _occupancy_channel(self):
         """
         Statistics about the channels of the flowcell
@@ -610,6 +634,7 @@ class SequencingSummaryExtractor:
         """
         total_reads_per_channel = pd.value_counts(self.channel_df)
         return pd.DataFrame.describe(total_reads_per_channel)
+
 
     def _load_sequencing_summary_data(self):
         """
@@ -713,6 +738,7 @@ class SequencingSummaryExtractor:
         except FileNotFoundError:
             "No barcoding file was found"
 
+
     @staticmethod
     def _is_sequencing_summary_file(filename):
         """
@@ -726,6 +752,7 @@ class SequencingSummaryExtractor:
             return header.startswith('filename') and not 'barcode_arrangement' in header
         except IOError:
             raise FileNotFoundError
+
 
     @staticmethod
     def _is_sequencing_summary_with_barcodes(filename):
