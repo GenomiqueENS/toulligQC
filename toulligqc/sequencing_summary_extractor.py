@@ -49,8 +49,7 @@ class SequencingSummaryExtractor:
         self.config_dictionary = config_dictionary
         self.sequencing_summary_source = self.config_dictionary['sequencing_summary_source']
         self.result_directory = config_dictionary['result_directory']
-        self.sequencing_summary_files = self.sequencing_summary_source.split(
-            '\t')
+        self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
 
         self.is_barcode = False
         if config_dictionary['barcoding'] == 'True':
@@ -179,22 +178,21 @@ class SequencingSummaryExtractor:
 
 
     @staticmethod
-    def _count_boolean_elements(dataframe, column: str, boolean_value: bool) -> int:
+    def _count_boolean_elements(dataframe, column_name, boolean: bool) -> int:
         """
         Returns the number of values of a column filtered by a boolean
         """
-        return len(dataframe.loc[dataframe[column] == bool(boolean_value)])
+        return len(dataframe.loc[dataframe[column_name] == bool(boolean)])
 
     @staticmethod
-    def _series_cols_boolean_elements(dataframe, column1: str, column2: str, boolean_value: bool) -> pd.Series:
+    def _series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str, boolean: bool) -> pd.Series:
         """
         Returns a Panda's Series object with the number of values of different columns filtered by a boolean
         """
-        return dataframe[column1].loc[dataframe[column2] == bool(boolean_value)]
+        return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
 
     @staticmethod
-    def _sorted_list_boolean_elements_divided(dataframe, column1: str, column2: str, boolean_value: bool,
-                                              denominator: int):
+    def _sorted_list_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool, denominator: int):
         """
         Returns a sorted list of values of different columns filtered by a boolean and divided by the denominator
         :param dataframe: dataframe_1d
@@ -202,7 +200,7 @@ class SequencingSummaryExtractor:
         :param column2: 2nd column to filter
         :param boolean_value: access columns of dataframe by boolean array
         """
-        return sorted(dataframe[column1].loc[dataframe[column2] == bool(boolean_value)] / denominator)
+        return sorted(dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator)
 
     def _set_result_value(self, dict, key: str, value):
         """
