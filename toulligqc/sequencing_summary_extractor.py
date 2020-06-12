@@ -430,25 +430,25 @@ class SequencingSummaryExtractor:
                                 barcode_name)
 
         # Add filtered dataframes (all info by barcode and by length or qscore) to dataframe_dict
-        self._get_barcode_selection_dataframe("sequence_length", "barcode_selection_sequence_length_dataframe",
+        self._barcode_selection_dataframe("sequence_length", "barcode_selection_sequence_length_dataframe",
                                               "length")
-        self._get_barcode_selection_dataframe("mean_qscore", "barcode_selection_sequence_phred_dataframe",
+        self._barcode_selection_dataframe("mean_qscore", "barcode_selection_sequence_phred_dataframe",
                                               "qscore")
 
-    def _get_barcode_selection_dataframe(self, column: str, key: str, melted_column_name: str):
+    def _barcode_selection_dataframe(self, df_column_name: str, df_key_name: str, melted_column_name: str):
         """
         Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
         Reshape the dataframes from wide to long format to display barcode, read type and read length or phred score per read
         These dataframes are used for sequence length and qscore boxplots
         :param key: string name to put in dataframe_dict
-        :param column: column name from dataframe_1d used for the new barcode_selection_dataframes
+        :param df_column_name: name of the dataframe_1d column used for the new barcode_selection_dataframes
         :param melted_column_name: value (qscore or length) to use for renaming column of melted dataframe
         """
         # Count total number of rows
         nrows = self.dataframe_1d.shape[0]
         # Create a new dataframe with 3 columns : 'passes_filtering', 'barcode_arrangement' and the column name parameter
         filtered_df = self.dataframe_1d.filter(
-            items=['passes_filtering', column, 'barcode_arrangement'])
+            items=['passes_filtering', df_column_name, 'barcode_arrangement'])
 
         # Reshape dataframe with new MultiIndex : numbered index of df length + passes filtering index and then shape data by barcode
         barcode_selection_dataframe = filtered_df.set_index([pd.RangeIndex(start=0, stop=nrows), 'passes_filtering'],
@@ -472,7 +472,7 @@ class SequencingSummaryExtractor:
             level='passes_filtering', inplace=True)
 
         # Add final dataframe to dataframe_dict
-        self._set_result_value(self.dataframe_dict, key,
+        self._set_result_value(self.dataframe_dict, df_key_name,
                                barcode_selection_dataframe)
 
         # Unpivot dataframe to have only one column of barcodes + passes filtering + melted column name (qscore/length)
@@ -482,7 +482,7 @@ class SequencingSummaryExtractor:
             var_name="barcodes", value_name=melted_column_name)
 
         # Add melted dataframe to dataframe_dict too
-        self._set_result_value(self.dataframe_dict, key.replace(
+        self._set_result_value(self.dataframe_dict, df_key_name.replace(
             "_dataframe", "_melted_dataframe"), melted_dataframe)
 
     def _barcode_stats(self, result_dict, barcode_selected_dataframe, barcode_selected_read_pass_dataframe,
@@ -590,7 +590,7 @@ class SequencingSummaryExtractor:
         Removing dictionary entries that will not be kept in the report.data file
         :return:
         """
-        keys = [#"sequence.length", #TODO: modifier cette clef, car elle n'est plus dans result_dict, mais dans dataframe_dict
+        keys = [#"sequence.length", #TODO: delete this key after redoing graphs not in result_dict but in dataframe_dict
                 "read.pass.length", "read.fail.length",
                 "start.time.sorted", "read.pass.sorted", "read.fail.sorted",
                 "mean.qscore", "read.pass.qscore", "read.fail.qscore"]
