@@ -626,11 +626,11 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict['barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = dataframe_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
+    count_sorted = dataframe_dict["read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -672,11 +672,11 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict['barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = dataframe_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded"]
+    count_sorted = dataframe_dict["read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -801,6 +801,7 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
         plt.mec = 'black'
         plt.mfc = 'white'
 
+        #TODO: change all keys
         read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                      result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
                      result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
