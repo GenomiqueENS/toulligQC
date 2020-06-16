@@ -64,3 +64,10 @@ random_file_config= {
 "dpi": "100",
 "sequencing_summary_source": path + "/random_file.txt"
 }
+
+missing_data_config = {
+"barcoding": "False",
+"result_directory": path,
+"dpi": "100",
+"sequencing_summary_source": path + "/sequencing_summary_with_missing_data.txt"
+}
