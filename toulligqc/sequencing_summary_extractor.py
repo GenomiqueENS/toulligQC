@@ -401,13 +401,8 @@ class SequencingSummaryExtractor:
         self.dataframe_dict["read.fail.barcoded"] = self._barcode_frequency(self.dataframe_dict, "read.fail.barcoded",
                                                          series_read_fail_barcode)
 
-        # read_pass_barcoded_count = self._get_result_value(
-        #     result_dict, "read.pass.barcoded.count")
-        #refactor
         read_pass_barcoded_count = self.dataframe_dict["read.pass.barcoded.count"]
-        
-        read_fail_barcoded_count = self._get_result_value(
-            result_dict, "read.fail.barcoded.count")
+        read_fail_barcoded_count = self.dataframe_dict["read.fail.barcoded.count"]
 
         # Add key "read.pass.barcoded.frequency"
         total_reads = self._get_result_value(result_dict, "read.count")
@@ -489,8 +484,7 @@ class SequencingSummaryExtractor:
             level='passes_filtering', inplace=True)
 
         # Add final dataframe to dataframe_dict
-        self._set_result_value(self.dataframe_dict, df_key_name,
-                               barcode_selection_dataframe)
+        self.dataframe_dict[df_key_name] = barcode_selection_dataframe
 
         # Unpivot dataframe to have only one column of barcodes + passes filtering + melted column name (qscore/length)
         melted_dataframe = pd.melt(
@@ -499,8 +493,7 @@ class SequencingSummaryExtractor:
             var_name="barcodes", value_name=melted_column_name)
 
         # Add melted dataframe to dataframe_dict too
-        self._set_result_value(self.dataframe_dict, df_key_name.replace(
-            "_dataframe", "_melted_dataframe"), melted_dataframe)
+        self.dataframe_dict[df_key_name.replace("_dataframe", "_melted_dataframe")] = melted_dataframe
 
 
     def _barcode_stats(self, result_dict, barcode_selected_dataframe, barcode_selected_read_pass_dataframe,
@@ -618,8 +611,8 @@ class SequencingSummaryExtractor:
 
         for key in keys:
             keys_value = self._get_result_value(result_dict, key)
-            key_list.append(
-                {self.get_report_data_file_id() + '.' + str(key): keys_value})
+            key_list.append(self.get_report_data_file_id() + '.' + str(key))
+
         if self.is_barcode:
             key_list.extend([(k, v) for k, v in self.dataframe_dict.items()])
 
