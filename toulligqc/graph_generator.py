@@ -719,7 +719,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=datafame_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
+    ax = sns.boxplot(data=datafame_dict['barcode_selection_sequence_length_melted_dataframe'],
                      x='barcodes', y='length', hue='passes_filtering',
                      showfliers=False, palette={True: "yellowgreen", False: "orangered"},
                      hue_order=[True, False])
@@ -729,7 +729,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
 
-    df = datafame_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
+    df = datafame_dict['barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -756,7 +756,7 @@ def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, re
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
+    ax = sns.boxplot(data=dataframe_dict['barcode_selection_sequence_phred_melted_dataframe'],
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
                      palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -764,7 +764,7 @@ def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, re
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
 
-    df = dataframe_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
+    df = dataframe_dict['barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
