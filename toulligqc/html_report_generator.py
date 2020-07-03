@@ -53,7 +53,7 @@ def html_report(config_dictionary, result_dict, graphs):
     run_id = result_dict['sequencing.telemetry.extractor.sample.id']
     minknow_version = result_dict['sequencing.telemetry.extractor.minknow.version']
 
-    read_count = result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"]
+    read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
 
     # from telemetry file

@@ -1,0 +1,170 @@
+{
+    // Configuration for debugging current file
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Current file debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        // Basic configuration for debugging ToulligQC
+        {
+            "name": "debug : multiple files",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test-multiple-files",
+                "--barcoding",
+                "--barcodes",
+                "BC07, BC08, BC09, BC10, BC11, BC12",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Config sequencing_summary with barcode info
+        {
+            "name": "debug : 1 seq summary file with barcodes",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-seq_summary_barcode",
+                "--barcoding",
+                "--barcodes",
+                "BC01, BC02, BC03, BC04, BC05, BC06, BC07",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_barcode_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Debugging ToulligQC with multiple sequencing summary but no barcodes
+        {
+            "name": "debug : multiple sequencing summaries",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_mulitple-seq_summary",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/20181005_GVUMLC1_A2018-guppy-3.4.4/sequencing_summary_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output/"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Debugging ToulligQC with only one sequencing summary file
+        {
+            "name": "debug : 1 seq summary file",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_seq_summary_only",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output/"
+            ],
+            "console": "integratedTerminal"
+        },
+        //config with barcode files only
+        {
+            "name": "debug : barcodes files",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_barcodes_files",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output/barcoding_summ_pass_small.txt"
+            ],
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "debug : 1 random file",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_random-file",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "/home/karine/src/python/toulligqc2/data/test.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debug no file",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+            "args": [
+                "--report-name",
+                "Toulligqc-test_ceck_conf_new",
+                "--telemetry-source",
+                "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+                "--sequencing-summary-source",
+                "",
+                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
+                // "--sequencing-summary-source",
+                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
+                // //last 4th file is the sequencing summary one
+                // "--sequencing-summary-source",
+                // "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
+                "--output",
+                "/home/karine/src/python/toulligqc2/data/output_debug/"
+            ],
+            "console": "integratedTerminal"
+        },
+        // Configuration for Unit tests
+        {
+            "name": "Debug Tests",
+            "type": "python",
+            "request": "test",
+            "console": "integratedTerminal",
+            //"envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true
+        }
+    ]
+}

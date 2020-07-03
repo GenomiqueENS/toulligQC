@@ -76,7 +76,7 @@ def _safe_log(x):
 #
 
 
-def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
+def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
     """
     Plots the histogram of count of the different types of reads:
     Fast5 submitted to MinKNOW
@@ -101,15 +101,17 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
             read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                          result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                         result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                         #TODO: delete first read.count --> as fastq.entries
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                         result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                         #TODO: delete read.with.length.equal.zero.count
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]
                          ]
-            label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",
+            label = ("Raw Fast5", "Raw Fast5 with error", "Read count (old fastq entries", "1D",
                      'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
             nd = np.arange(len(read_type))
             bars = ax.bar(nd, read_type, align='center', color=["Green", "yellow", "lightblue", "salmon",
@@ -118,8 +120,10 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
             array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'],
                                result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                               result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                               #TODO: delete first read.count --> old fastq.entries
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
@@ -147,13 +151,14 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
             read_type = [result_dict['albacore.log.extractor.fast5.files.submitted'],
                              result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                             result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
                              result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                             result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                              #TODO: delete read.with.length.equal.zero.count
                              result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                              result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
                              ]
-            label = ("Raw Fast5", "Raw Fast5 with error", "FastQ entries", "1D",
+            label = ("Raw Fast5", "Raw Fast5 with error", "Read count (old fastq entries", "1D",
                      'Null sequence length', "1D pass","1D fail")
             nd = np.arange(len(read_type))
             bars = ax.bar(nd, read_type, align='center', color=["Green", "yellow", "lightblue", "salmon",
@@ -162,8 +167,10 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
             array = np.array([[result_dict['albacore.log.extractor.fast5.files.submitted'],
                                result_dict['albacore.log.extractor.fast5.files.basecalled.error.count'],
-                               result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+                               #TODO: delete first read.count --> old fastq.entries
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                               result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
@@ -186,22 +193,25 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
 
         # Histogram completed with the number of basecalling reads (is.barcode == True)
         if 'basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count' in result_dict or result_dict.keys().__contains__('basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count'):
-
-            read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+                        #TODO: delete first read.count --> old fastq.entries
+            read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                          #TODO: delete read.with.length.equal.zero.count
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]
                          ]
-            label = ("FastQ entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
+            label = ("Read count (old fastq entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
             nd = np.arange(len(read_type))
             bars = ax.bar(nd, read_type, align='center', color=["lightblue", "salmon",'purple', "yellowgreen", "lightgoldenrodyellow", "orangered","darksalmon"],
                           edgecolor="black", linewidth=1)
 
-            array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+            #TODO: delete first read.count --> old fastq.entries
+            array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
@@ -218,19 +228,23 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
                                      columns=["FastQ_entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded"])
         else:
 
-            read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'],
+            #TODO: delete first read.count --> old fastq.entries
+            read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+                          #TODO: delete read.with.length.equal.zero.count
                          result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
                          ]
-            label = ("FastQ entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
+            label = ("Read count (old fastq entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
             nd = np.arange(len(read_type))
             bars = ax.bar(nd, read_type, align='center', color=["lightblue", "salmon",'purple', "yellowgreen","orangered"],
                           edgecolor="black", linewidth=1)
 
-            array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries"],
+            #TODO: delete first read.count --> old fastq.entries
+            array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+                                #TODO: delete read.with.length.equal.zero.count
                                result_dict['basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count'],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                                result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
@@ -261,7 +275,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc
 
 
-def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
+def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
     """
     Plots an histogram of the read length for the different types of read:
     1D, 1Dpass, 1D fail
@@ -269,14 +283,14 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     minimum, maximum = \
-        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
-        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
+        min(dataframe_dict["sequence.length"]), \
+        max(dataframe_dict["sequence.length"])
     read_type = ['1D', '1D pass', '1D fail']
 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     ax = plt.subplot()
 
-    data = [result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
+    data = [dataframe_dict["sequence.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]]
     ls = 2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30)
@@ -296,7 +310,7 @@ def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc
     ax.set_ylabel('Read number')
 
     dataframe = \
-        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
+        pd.DataFrame({"1D": dataframe_dict["sequence.length"],
                       "1D pass": result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
                       "1D fail": result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]})
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
@@ -475,7 +489,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc
 
 
-def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
+def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
@@ -492,9 +506,9 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
                             color="orangered")
 
     plt.legend((read_pass, read_fail), ("1D pass", "1D fail"))
-    plt.xlim(np.min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
-                    .loc[result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] > 0]),
-             np.max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]))
+    plt.xlim(np.min(dataframe_dict["sequence.length"]
+                    .loc[dataframe_dict["sequence.length"] > 0]),
+             np.max(dataframe_dict["sequence.length"]))
 
     plt.yticks()
     plt.xscale('log')
@@ -603,7 +617,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 #
 
 
-def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -612,11 +626,11 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict['barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
+    count_sorted = dataframe_dict["read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -649,7 +663,7 @@ def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_d
     return main, output_file, table_html, desc
 
 
-def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -658,11 +672,11 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict['barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded"]
+    count_sorted = dataframe_dict["read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -696,7 +710,7 @@ def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_d
     return main, output_file, table_html, desc
 
 
-def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
+def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -705,7 +719,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
+    ax = sns.boxplot(data=datafame_dict['barcode_selection_sequence_length_melted_dataframe'],
                      x='barcodes', y='length', hue='passes_filtering',
                      showfliers=False, palette={True: "yellowgreen", False: "orangered"},
                      hue_order=[True, False])
@@ -715,7 +729,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
 
-    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
+    df = datafame_dict['barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -733,7 +747,7 @@ def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc
 
 
-def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -742,7 +756,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
+    ax = sns.boxplot(data=dataframe_dict['barcode_selection_sequence_phred_melted_dataframe'],
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
                      palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -750,7 +764,7 @@ def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, 
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
 
-    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
+    df = dataframe_dict['barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -787,6 +801,7 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
         plt.mec = 'black'
         plt.mfc = 'white'
 
+        #TODO: change all keys
         read_type = [result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
                      result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.count'],
                      result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.count'],
@@ -863,7 +878,7 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
 
     return main, output_file, table_html, desc
 
-
+#TODO: change read_id entry to dataframe_dict
 def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots an histogram of the read length for the different types of read:
@@ -871,14 +886,14 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    read_1d = result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
+    read_1d = result_dict["sequence.length"]
     read_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
     read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length']
     read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length']
 
     minimum, maximum = \
-        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
-        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
+        min(result_dict["sequence.length"]), \
+        max(result_dict["sequence.length"])
     read_type = ['1D', '1Dsquare', '1Dsquare pass', '1Dsquare fail']
 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
@@ -1061,6 +1076,7 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     read_pass = plt.scatter(x=length_1dsqr_read_pass, y=qscore_1dsqr_read_pass, color="yellowgreen")
     read_fail = plt.scatter(x=length_1dsqr_read_fail, y=qscore_1dsqr_read_fail, color="orangered")
     plt.legend((read_pass, read_fail), ("1Dsquare pass", "1Dsquare fail"))
+    #TODO: change to dataframe_dict, when refactor of 1dsqr will be done 
     plt.xlim(np.min(result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
                     .loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length'] > 0]),
              np.max(result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']))

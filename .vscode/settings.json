@@ -1,0 +1,70 @@
+{
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "editor.detectIndentation": true,
+    "editor.autoIndent": "full",
+    "editor.colorDecorators": true,
+
+    "python.pythonPath": "/usr/bin/python3.8",
+    "python.venvFolders": [
+        "/home/karine/src/python/toulligqc2/"
+    ],
+        "env": {
+            "PYTHONPATH": "${workspaceRoot}"
+        },
+        "window.zoomLevel": -1,
+        "python.autoComplete.extraPaths": [
+            "/usr/lib/python3.8",
+            "/home/karine/.local/lib/python3.5/site-packages",
+            "/usr/local/lib/python3.5/dist-packages",
+            "/usr/lib/python3/dist-packages",
+            // path to project to avoid unresolved imports
+            "/home/karine/src/python/toulligqc2/toulligqc/"
+        ],
+
+        "python.linting.pylintEnabled": true,
+        "python.linting.pycodestyleArgs": ["--ignore=E303"],
+        "editor.tokenColorCustomizations": {
+            "comments":"#5bd75b",
+        },
+        "better-comments.multilineComments": true,
+        "better-comments.highlightPlainText": false,
+        "better-comments.tags": [
+            {
+              "tag": "TODO:",
+              "color": "#ffff66",
+              "strikethrough": false,
+              "backgroundColor": "transparent"
+            },
+            {
+            "tag": "Karine",
+              "color": "#c6538c",
+              "strikethrough": false,
+              "backgroundColor": "transparent"
+            },
+            {
+                "tag": "Refactor",
+                  "color": "#ff1a1a",
+                  "strikethrough": false,
+                  "backgroundColor": "transparent"
+                }
+        ],
+        "window.menuBarVisibility": "toggle",
+        "todo-tree.tree.showScanModeButton": false,
+        "todo-tree.highlights.enabled": false,
+        "launch": {
+            "debug": "${workspaceRoot}/test/"
+        },
+        "python.testing.unittestArgs": [
+            "-v",
+            "-s",
+            "./test",
+            "-p",
+            "test_*.py"
+        ],
+        "python.testing.pytestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.unittestEnabled": true,
+        "python.jediEnabled": true
+
+}
+
