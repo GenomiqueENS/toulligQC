@@ -28,6 +28,7 @@
 import pandas as pd
 import sys
 import graph_generator
+import plotly_graph_generator as pgg
 import numpy as np
 import re
 import os.path
@@ -100,6 +101,7 @@ class SequencingSummaryExtractor:
         self.passes_filtering_df = self.dataframe_1d['passes_filtering']
         self.sequence_length_df = self.dataframe_1d['sequence_length']
         self.qscore_df = self.dataframe_1d['mean_qscore']
+        self.time_df = self.dataframe_1d['start_time']
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
@@ -527,7 +529,7 @@ class SequencingSummaryExtractor:
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
-        images = list([graph_generator.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
+        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
                                                             self.my_dpi, images_directory,
                                                             "Number of reads produced before (Fast 5 in blue) "
                                                             "and after (1D in orange) basecalling. "
@@ -570,6 +572,11 @@ class SequencingSummaryExtractor:
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
+        #TODO: test incorporation with Plotly graph
+        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over experiment time', self.my_dpi, images_directory,
+                                                "Length of reads through run time in hours"))
+
+        
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
                                                                             '1D pass reads percentage of different '

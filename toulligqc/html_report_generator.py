@@ -76,6 +76,7 @@ def html_report(config_dictionary, result_dict, graphs):
   <head>
     <title>Report run MinION : {0} </title>
     <meta charset='UTF-8'>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style type="text/css">
     """.format(report_name)
 
@@ -259,6 +260,7 @@ def html_report(config_dictionary, result_dict, graphs):
   
   .after-box {
     clear: left;
+    padding-bottom: 90px;
   }
 
   div.footer {
@@ -281,7 +283,7 @@ def html_report(config_dictionary, result_dict, graphs):
   }
 
   h2 {
-    color: #244C89;
+    color: #000000;
     padding-bottom: 0;
     margin-bottom: 0;
     clear:left;
@@ -364,7 +366,7 @@ def html_report(config_dictionary, result_dict, graphs):
         <div class = "info-box"> 
             <h2 id=M{0}>Basic Statistics</h2>
             <h2 id=M{0}></h2>
-            <h3>Run info</h3>
+            <h3 style="text-align:center">Run info</h3>
             <table class=\" dataframe \" border="1">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
               <tbody>
@@ -389,7 +391,7 @@ def html_report(config_dictionary, result_dict, graphs):
         <div class = "info-box-left">
             <h2 id=M{0}></h2>
             <h2 id=M{0}></h2>
-            <h3>Software info</h3>
+            <h3 style="text-align:center">Software info</h3>
             <table class=\" dataframe \" border="1">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
@@ -410,7 +412,18 @@ def html_report(config_dictionary, result_dict, graphs):
     """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,model_file)
 
     for i, t in enumerate(graphs):
-        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"{4}\">&#x1F263;</a></h2></div>" \
+      #TODO: remplacer len(t)==5 par t[4].equals("div") ou un truc du genre
+      if len(t)==5:
+        main_report += t[4]
+        if t[2] is None:
+          main_report += "      <div class=\"after-box\"></div>\n"
+        else:
+          main_report += "      <div class=\"box-left\">\n {} </div>\n".format(t[2])
+          main_report += "      <div class=\"after-box\"><p></p></div>\n"
+
+        
+      else:
+        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"<b>{4}</b>\">&#x1F263;</a></h2></div>" \
             .format(i, t[0], _embedded_image(t[1]), t[2], t[3])
 
         if t[2] is None:

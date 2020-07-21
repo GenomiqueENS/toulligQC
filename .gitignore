@@ -226,4 +226,9 @@ dmypy.json
  ### Ignore test directory
  test/
 
+ ### Ignore other files put to test_data/
+
+/test_data
+
+
 # End of https://www.gitignore.io/api/git,python,pycharm,visualstudiocode

@@ -21,15 +21,15 @@
                 "Toulligqc-test-multiple-files",
                 "--barcoding",
                 "--barcodes",
-                "BC07, BC08, BC09, BC10, BC11, BC12",
+                "BC02, BC03",
                 "--telemetry-source",
                 "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
-                "--sequencing-summary-source",
-                "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
-                "--sequencing-summary-source",
-                "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
+                "/home/karine/src/python/toulligqc2/data/gridion_sequencing_summary.txt",
+                // "--sequencing-summary-source",
+                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
+                // "--sequencing-summary-source",
+                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
                 "--output",
                 "/home/karine/src/python/toulligqc2/data/output_debug/"
             ],
@@ -46,13 +46,14 @@
                 "Toulligqc-seq_summary_barcode",
                 "--barcoding",
                 "--barcodes",
-                "BC01, BC02, BC03, BC04, BC05, BC06, BC07",
+                "BC09, BC10, BC11, BC12",
                 "--telemetry-source",
                 "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/src/python/toulligqc2/data/sequencing_summary_barcode_small.txt",
+                //"/home/karine/src/python/toulligqc2/data/sequencing_summary_barcode_small.txt",
+                "/home/karine/src/python/toulligqc2/data/Guppy-2.2.4-basecall-1D-DNA_sequencing_summary+barcode.txt",
                 "--output",
-                "/home/karine/src/python/toulligqc2/data/output"
+                "/home/karine/src/python/toulligqc2/data/output/"
             ],
             "console": "integratedTerminal"
         },
@@ -88,7 +89,8 @@
                 "--telemetry-source",
                 "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
-                "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
+                "/home/karine/src/python/toulligqc2/data/Guppy-basecall-1D-DNA_sequencing_summary.txt",
+                //"/home/karine/src/python/toulligqc2/toulligQC/test_data/sequencing_summary/20180927_GVUMLC1_A2018-guppy-3.4.1/sequencing_summary_small.txt",
                 "--output",
                 "/home/karine/src/python/toulligqc2/data/output/"
             ],
@@ -130,6 +132,7 @@
             ],
             "console": "integratedTerminal"
         },
+        // no file config
         {
             "name": "debug no file",
             "type": "python",
@@ -142,29 +145,42 @@
                 "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
                 "--sequencing-summary-source",
                 "",
-                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_pass_small.txt",
-                // "--sequencing-summary-source",
-                // "/home/karine/src/python/toulligqc2/data/barcoding_summ_fail_small.txt",
-                // //last 4th file is the sequencing summary one
-                // "--sequencing-summary-source",
-                // "/home/karine/src/python/toulligqc2/data/sequencing_summary_small.txt",
                 "--output",
                 "/home/karine/src/python/toulligqc2/data/output_debug/"
             ],
             "console": "integratedTerminal"
         },
+        // sequencing_summary with missing data (columns here but no rows)
+        // {
+        //     "name": "debug missing data",
+        //     "type": "python",
+        //     "request": "launch",
+        //     "program": "/home/karine/src/python/toulligqc2/toulligQC/toulligqc/toulligqc.py",
+        //     "args": [
+        //         "--report-name",
+        //         "Toulligqc-test_missing_data",
+        //         "--telemetry-source",
+        //         "/home/karine/src/python/toulligqc2/data/sequencing_telemetry.js",
+        //         "--sequencing-summary-source",
+        //         "/home/karine/src/python/toulligqc2/data/sequencing_summary_with_missing_data.txt",
+        //         "--output",
+        //         "/home/karine/src/python/toulligqc2/data/output_debug/"
+        //     ],
+        //     "console": "integratedTerminal"
+        // },
         // Configuration for Unit tests
         {
             "name": "Debug Tests",
             "type": "python",
             "request": "test",
             "console": "integratedTerminal",
-            //"envFile": "${workspaceFolder}/.env",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
-            "justMyCode": true
+            "justMyCode": false //when debugging graphs, causes Could not load source '<__array_function__ internals>': Source unavailable.
         }
-    ]
+    ],
+    "showLog": true,
+    "trace": "verbose"
 }
