@@ -36,6 +36,7 @@ import plotly.graph_objs as go
 import plotly.offline as py 
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
+import plotly.express.colors as pxc
 
 figure_image_width = 1000
 figure_image_height = 600
@@ -758,28 +759,17 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         f = interp1d(time, length, kind="linear")
         x_int = np.linspace(time[0],time[-1], 150)
         y_int = f(x_int)
-    
         
-        # bins2 = np.linspace(time.min(), time.max(), int(interval))
-        # digitized2 = np.digitize(time, bins2, right=True) 
-        # bin_means2 = [time[digitized2 == i].mean() for i in range(1, len(bins2))] 
-        
-        # # for i in range (1, len(bins2)):
-        # #     if pd.isna(time[digitized == i].mean()):
-        # #         bin_means2 = pd.cut(x=time, bins=int(bins2[i]))
-        # #     else:
-        # #         bin_means2 = [time[digitized == i].mean() for i in range(1, len(bins2))] 
-            
-        
-        # Y axis : length
+        # Plot of mean values Y axis
         length_filt = length.loc[length >= 0].dropna()
-        
-        #fig = go.Figure()
-        fig = make_subplots(rows=2, cols=1)
+    
+        fig = make_subplots(rows=2, cols=1,
+                            subplot_titles=("<b>Interpolation plot</b>", "<b>10 minutes interval plot</b>"),
+                            vertical_spacing=0.15)
         
         fig.append_trace(go.Scatter(
-        x=x_int, #old bin_means
-        y=y_int, #old length_filt
+        x=x_int,
+        y=y_int,
         mode='lines',
         name='interpolation curve',
         line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5)),
@@ -798,8 +788,8 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         fig.update_layout(    
                 title={
                 'text': "<b>Read length over experiment time</b>",
-                'y':0.95,
-                'x':0.5,
+                'y':1.0,
+                'x':0.45,
                 'xanchor': 'center',
                 'yanchor': 'top',
                 'font' : dict(
@@ -807,22 +797,25 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
                 size=26,
                 color="black")},
             xaxis=dict(
-                title="<b>Experiment time</b>",
+                title="<b>Experiment time (hours)</b>",
                 titlefont_size=16
                 ),
             yaxis=dict(
-                title='<b>Read length</b>',
+                title='<b>Read length (bp)</b>',
                 titlefont_size=16,
                 tickfont_size=14,
             ),
             legend=dict(
-                x=1.0,
+                x=1.02,
                 y=1.0,
                 title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
                 bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)'
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
             ),
-            height=800, width=1700
+            hovermode=False,
+            height=850, width=1500
         )
         
         div = py.plot(fig,
@@ -879,62 +872,94 @@ def _binned_data_pycoqc(data, bins, smooth_sigma=1.5):
 
 
    
-def sequence_length_over_time_mpl(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, desc):
         
-        # x axis : time of the run
-        x_data = result_dict.get("basecaller.sequencing.summary.1d.extractor.start.time.sorted")
-        arr = np.array(x_data)
-        
-        interval_values = np.linspace (arr.min(), arr.max(), num=800) #array of intervals of time values
-        #arr = np.digitize (arr, bins=interval_values, right=True)
+        output_file = result_directory + '/' + '_'.join(main.split())
 
-        #arr = ndimage.gaussian_filter1d(arr, sigma=5)
-        
-        # y axis : read length
-        y_data = dataframe_dict.get('sequence.length')
-        arr_y = np.array(y_data.dropna().values)
-        # # tweek data
-        # interval_y = np.linspace (arr_y.min(), arr_y.max(), num=20) #array of intervals of time values
-        # arr_y = np.digitize (arr_y, bins=interval_y, right=True)
+        # Time data
+        time = [t/3600 for t in time_df.dropna()]
+        time = np.array(sorted(time))
 
-        # arr_y = ndimage.gaussian_filter1d(arr_y, sigma=2)
+        # 10 minutes interval
+        interval = int(max(time) / 0.6)
         
-        #df.loc[(df['sequence_length_template'] >= 0)] 
-        #test[test['barcode_arrangement'].index > 10 ]
+        low_bin = np.min(time) - np.fmod(np.min(time)- np.floor(np.min(time)), interval/3600)
+        high_bin = np.max(time)  - np.fmod(np.max(time)- np.ceil(np.max(time)), interval/3600)
+        bins = np.arange(low_bin, high_bin, interval/3600)
         
-        output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-        plt.figure(figsize=(20, 6), dpi=100)
-        plt.subplot()
+        digitized = np.digitize(time, bins, right=True) 
         
-        # fig = plt.scatter(x=arr, y=y_data,
-        #                           linewidths=1)
-        plt.plot(arr, arr_y, linestyle='-', color='#205b47')
+        bin_means = [time[digitized == i].mean() for i in range(1, len(bins))]
         
-        # title_font = {'fontname':'cursive'}
-        #plt.plot(x=arr, y=y_data)
-        plt.xlabel('Run time (in hours)',
-                   fontdict={'fontsize': 10,
-                                        'fontweight': 'semibold',
-                                        'fontfamily' : 'sans-serif',
-                                        'color': 'black'}
-                    )
-        plt.ylabel('Sequence length (in bp)',
-                   fontdict={'fontsize': 10,
-                                        'fontweight': 'semibold',
-                                        'fontfamily' : 'sans-serif',
-                                        'color': 'black'})
-        
-        plt.title(label=main, fontdict={'fontsize': 20,
-                                        'fontweight': 'bold',
-                                        'fontfamily' : 'sans-serif',
-                                        'fontname' : 'DejaVu Sans',
-                                        'color': 'black',
-                                        'verticalalignment': 'center'},
-                  loc='center')
-        
-        plt.savefig(output_file)
-        plt.close()
+        # Qscore data
+        qscore = qscore_df.dropna()
 
+        # Interpolation
+        f = interp1d(time, qscore, kind="linear")
+        x_int = np.linspace(time[0],time[-1], 100)
+        y_int = f(x_int)
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=bin_means,
+            y=qscore,
+            mode='markers',
+            marker=dict(
+        size=10,
+        color=qscore,
+        colorbar=dict(
+            title="PHRED score"
+        ),
+        colorscale="Temps")))
+            # marker_color=qscore,
+            # marker_size=20,
+            # colorscale="BuPu"))
+            # name='mean values',
+            # line=dict(color="#a11d33", width=5)))
+        
+        fig.update_layout(    
+                title={
+                'text': "<b>PHRED score over experiment time</b>",
+                'y':1.0,
+                'x':0.45,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>PHRED quality score</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.02,
+                y=1.0,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='white',
+                bordercolor="white",
+                font=dict(size=15)
+            ),
+            height=850, width=1500,
+            paper_bgcolor="#F8F8FF",
+            plot_bgcolor="#F8F8FF",
+            # autocolorscale=False, # must be False no enable custom color palette
+            # colorscale=dict(sequential=[[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']])
+  
+        )
+
+        div = py.plot(fig,
+                            filename=output_file,
+                            include_plotlyjs=True,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
         table_html = None
 
-        return main, output_file, table_html, desc
+        return main, output_file, table_html, desc, div 

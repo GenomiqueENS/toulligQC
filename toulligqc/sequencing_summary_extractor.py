@@ -577,6 +577,8 @@ class SequencingSummaryExtractor:
         #TODO: test incorporation with Plotly graph
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over experiment time', self.my_dpi, images_directory,
                                                 "Length of reads through run time in hours"))
+        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over experiment time', self.my_dpi, images_directory,
+                                                "Reads PHRED score through run time in hours"))
 
         
         if self.is_barcode:
