@@ -55,6 +55,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
+    n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
 
     # from telemetry file
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
@@ -380,11 +381,12 @@ def html_report(config_dictionary, result_dict, graphs):
               <tr><th>Kit</th><td> {7} </td></tr>
               <tr><th>Yield (Gbp)</th><td> {8} </td></tr>
               <tr><th>Read count</th><td> {9} </td></tr>
+              <tr><th>N50</th><td> {10} </td></tr>
               </tbody>
             </table> 
         </div> <!-- end .info-box -->
       </div>
-    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count)
+    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count, n50)
 
     main_report += """
       <div class=\"module\">
