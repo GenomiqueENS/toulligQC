@@ -29,7 +29,6 @@ from matplotlib import gridspec
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.pyplot import table
 
-#Karine ajouts d'imports
 from plotly.subplots import make_subplots
 from scipy.interpolate import interp1d
 import plotly.graph_objs as go
@@ -832,7 +831,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
 
         return main, output_file, table_html, desc, div
     
-
+#TODO: delete method
 def _binned_data_pycoqc(data, bins, smooth_sigma=1.5):
 
     # Bin data in categories
@@ -911,11 +910,6 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
             title="PHRED score"
         ),
         colorscale="Temps")))
-            # marker_color=qscore,
-            # marker_size=20,
-            # colorscale="BuPu"))
-            # name='mean values',
-            # line=dict(color="#a11d33", width=5)))
         
         fig.update_layout(    
                 title={
@@ -948,10 +942,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
             ),
             height=850, width=1500,
             paper_bgcolor="#F8F8FF",
-            plot_bgcolor="#F8F8FF",
-            # autocolorscale=False, # must be False no enable custom color palette
-            # colorscale=dict(sequential=[[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']])
-  
+            plot_bgcolor="#F8F8FF"
         )
 
         div = py.plot(fig,
@@ -962,4 +953,262 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
                             show_link=False)
         table_html = None
 
-        return main, output_file, table_html, desc, div 
+        return main, output_file, table_html, desc, div
+
+
+def plot_test(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
+        
+        output_file = result_directory + '/' + '_'.join(main.split())
+
+        time = [t/3600 for t in time_df.dropna()]
+        time = np.array(sorted(time))
+        
+        fig = go.Figure()
+        
+        # Interpolation
+        length = dataframe_dict.get('sequence.length')
+        f = interp1d(time, length, kind="nearest")
+        # Add traces, one for each slider step
+        for step in range(5, 505, 5):
+            x_int = np.linspace(time[0],time[-1], step)
+            y_int = f(x_int)
+        
+            fig.add_trace(go.Scatter(
+                visible=False,
+                x=x_int,
+                y=y_int,
+                mode='lines',
+                line=dict(color='#2D85E2', width=2.5, shape="spline", smoothing=0.5))
+            )
+        
+        # Make 60th trace visible
+        fig.data[60].visible = True
+        
+        fig.update_layout(    
+                title={
+                'text': "<b>Interpolated read length over experiment time</b>",
+                'y':1.0,
+                'x':0.45,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Read length (bp)</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.02,
+                y=1.0,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            height=850, width=1500
+        )
+        
+        # Create and add slider
+        npoints = []
+        for i in range(len(fig.data)):
+            step = dict(
+                method="update",
+                args=[{"visible": [False] * len(fig.data)}],  # layout attribute
+            )
+            step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
+            npoints.append(step)
+
+        sliders = [dict(
+            active=50,
+            currentvalue={"prefix": "Number of points: "},
+            pad={"t": 100},
+            steps=npoints
+        )]
+
+        fig.update_layout(
+            sliders=sliders
+        )
+        
+        # Edit slider labels
+        fig['layout']['sliders'][0]['currentvalue']['prefix']='Number of values : '
+        for i, points in enumerate(range(5, 505, 5), start = 0):
+            fig['layout']['sliders'][0]['steps'][i]['label']=points
+        
+        div = py.plot(fig,
+                            filename=output_file,
+                            include_plotlyjs=True,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+
+
+def yield_over_time(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
+        
+        output_file = result_directory + '/' + '_'.join(main.split())
+        
+        # x_data = result_dict.get("basecaller.sequencing.summary.1d.extractor.start.time.sorted")
+        # arr = np.array(x_data)
+        
+        time = [t/3600 for t in time_df.dropna()]
+        time = np.array(sorted(time))
+
+        # 10 minutes interval
+        interval = int(max(time) / 0.6)
+        
+        low_bin = np.min(time) - np.fmod(np.min(time)- np.floor(np.min(time)), interval/3600)
+        high_bin = np.max(time)  - np.fmod(np.max(time)- np.ceil(np.max(time)), interval/3600)
+        bins = np.arange(low_bin, high_bin, interval/3600)
+        
+        digitized = np.digitize(time, bins, right=True) 
+        
+        bin_means = [time[digitized == i].mean() for i in range(1, len(bins))]
+        
+        # Interpolation
+        length = dataframe_dict.get('sequence.length')
+        f = interp1d(time, length, kind="linear")
+        x_int = np.linspace(time[0],time[-1], 150)
+        y_int = f(x_int)
+        
+        # Plot of mean values Y axis
+        length_filt = length.loc[length >= 0].dropna()
+    
+        fig = go.Figure()
+        
+        fig.append_trace(go.Scatter(
+        x=x_int,
+        y=y_int,
+        mode='lines',
+        name='interpolation curve',
+        line=dict(color='#205b47', width=3, shape="linear"))
+        )
+
+        
+        fig.update_layout(    
+                title={
+                'text': "<b>Read length over experiment time</b>",
+                'y':1.0,
+                'x':0.45,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Yield cum sum</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.02,
+                y=1.0,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            hovermode=False,
+            height=850, width=1500
+        )
+
+        div = py.plot(fig,
+                            filename=output_file,
+                            include_plotlyjs=True,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+    
+    
+def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
+        
+        output_file = result_directory + '/' + '_'.join(main.split())
+    
+        speed = pd.Series(sequence_length_df / duration_df)
+        
+        time = [t/3600 for t in time_df]
+        time = np.array(sorted(time))
+
+        f = interp1d(time, speed, kind="linear")
+        x_int = np.linspace(time[0],time[-1], 100)
+        y_int = f(x_int)
+    
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(
+        x=x_int,
+        y=y_int,
+        fill='tozeroy',
+        mode='lines',
+        line=dict(color='#AE3F7B', width=3, shape="linear"))
+        )
+
+        fig.update_layout(    
+                title={
+                'text': "<b>Speed over experiment time</b>",
+                'y':1.0,
+                'x':0.45,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Speed (bases per second)</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.02,
+                y=1.0,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            hovermode='x',
+            height=850, width=1500
+        )
+        fig.update_yaxes(type="log")
+        
+        div = py.plot(fig,
+                            filename=output_file,
+                            include_plotlyjs=True,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+
+        div = py.plot(fig,
+                            filename=output_file,
+                            include_plotlyjs=True,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+        table_html = None
+
+        return main, output_file, table_html, desc, div
