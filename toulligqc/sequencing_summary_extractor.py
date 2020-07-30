@@ -27,8 +27,8 @@
 
 import pandas as pd
 import sys
-import graph_generator
-import plotly_graph_generator as pgg
+from toulligqc import graph_generator
+from toulligqc import plotly_graph_generator as pgg
 import numpy as np
 import re
 import os.path
@@ -102,6 +102,7 @@ class SequencingSummaryExtractor:
         self.sequence_length_df = self.dataframe_1d['sequence_length']
         self.qscore_df = self.dataframe_1d['mean_qscore']
         self.time_df = self.dataframe_1d['start_time']
+        self.duration_df = self.dataframe_1d['duration']
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
@@ -574,11 +575,12 @@ class SequencingSummaryExtractor:
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
-        #TODO: test incorporation with Plotly graph
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over experiment time', self.my_dpi, images_directory,
                                                 "Length of reads through run time in hours"))
         images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over experiment time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
+        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over experiment time', self.my_dpi, images_directory,
+                                          "Speed of reads in base per second through run time in hours")
 
         
         if self.is_barcode:
@@ -653,14 +655,17 @@ class SequencingSummaryExtractor:
 
         sequencing_summary_columns = ['channel', 'start_time',
                                       'passes_filtering',
-                                      'sequence_length_template', 'mean_qscore_template']
+                                      'sequence_length_template',
+                                      'mean_qscore_template',
+                                      'duration']
 
         sequencing_summary_datatypes = {
             'channel': np.int16,
             'start_time': np.float,
             'passes_filtering': np.bool,
             'sequence_length_template': np.int16,
-            'mean_qscore_template': np.float}
+            'mean_qscore_template': np.float,
+            'duration' : np.float}
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
         barcoding_summary_columns = ['read_id', 'barcode_arrangement']
