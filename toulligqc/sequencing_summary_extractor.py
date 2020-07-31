@@ -580,7 +580,7 @@ class SequencingSummaryExtractor:
         images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over experiment time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
         images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over experiment time', self.my_dpi, images_directory,
-                                          "Speed of reads in base per second through run time in hours")
+                                          "Speed of reads in base per second through run time in hours"))
 
         
         if self.is_barcode:
