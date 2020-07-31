@@ -27,7 +27,7 @@
 
 import pandas as pd
 import sys
-import graph_generator
+from toulligqc import graph_generator
 import numpy as np
 import re
 import os.path
