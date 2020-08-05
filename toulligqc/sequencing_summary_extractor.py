@@ -27,8 +27,8 @@
 
 import pandas as pd
 import sys
-from toulligqc import graph_generator
-from toulligqc import plotly_graph_generator as pgg
+import graph_generator
+import plotly_graph_generator as pgg
 import numpy as np
 import re
 import os.path
@@ -577,11 +577,14 @@ class SequencingSummaryExtractor:
                                                       "or fail (1D fail in red) categories."))
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over experiment time', self.my_dpi, images_directory,
                                                 "Length of reads through run time in hours"))
+        images.append(pgg.length_over_time_slider(self.time_df, self.dataframe_dict, 'Sequence length over experiment time with custom number of points', self.my_dpi,
+                                                  images_directory, "Custom interpolated scatter plot with sequence length over time"
+                                                  ))
         images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over experiment time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
         images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over experiment time', self.my_dpi, images_directory,
                                           "Speed of reads in base per second through run time in hours"))
-
+        images.append(pgg.nseq_over_time(self.time_df, 'Test for nseq over time', self.my_dpi, images_directory, "TODO"))
         
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
