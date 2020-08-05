@@ -95,8 +95,6 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
 
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    size = (figure_image_width / my_dpi, figure_image_height / my_dpi)
-
     # Histogram with barcoded read counts
     if 'read.pass.barcoded.count' in dataframe_dict:
 
@@ -761,7 +759,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         
         # Plot of mean values Y axis
         length_filt = length.loc[length >= 0].dropna()
-    
+        
         fig = make_subplots(rows=2, cols=1,
                             subplot_titles=("<b>Interpolation plot</b>", "<b>10 minutes interval plot</b>"),
                             vertical_spacing=0.15)
@@ -775,14 +773,25 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         row=1, col=1
         )
         
-        fig.append_trace(go.Scatter(
-            x=bin_means,
-            y=length_filt,
-            mode='lines',
-            name='mean values',
-            line=dict(color="#e76f51", width=3, shape="linear")),
-            row=2, col=1
-        )
+        #TODO: test pycoqc func
+        x_pyc = _binned_data_pycoqc(length, 100)
+        
+        #items = 2
+        #value = 5
+        #         print(items[0]) #x
+        # print(items[1][0]) #1st array de x
+        
+        # for key, value in x_pyc.items():
+        #     print(value[0]) #array
+        #     print(key[0]) #x
+        #     fig.append_trace(go.Scatter(
+        #         x=value[0],
+        #         y=time,
+        #         mode='lines',
+        #         name=key[0],
+        #         line=dict(color="#e76f51", width=3, shape="linear")),
+        #         row=2, col=1
+        #     )
         
         fig.update_layout(    
                 title={
@@ -814,7 +823,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
                 font=dict(size=15)
             ),
             hovermode=False,
-            height=850, width=1500
+            height=800, width=1400
         )
         
         div = py.plot(fig,
@@ -900,8 +909,8 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=bin_means,
-            y=qscore,
+            x=x_int,
+            y=y_int,
             mode='markers',
             marker=dict(
         size=10,
@@ -956,7 +965,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         return main, output_file, table_html, desc, div
 
 
-def plot_test(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
+def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
         
         output_file = result_directory + '/' + '_'.join(main.split())
 
@@ -1013,7 +1022,7 @@ def plot_test(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
                 bordercolor='rgba(255, 255, 255, 0)',
                 font=dict(size=15)
             ),
-            height=850, width=1500
+            height=800, width=1400
         )
         
         # Create and add slider
@@ -1053,91 +1062,6 @@ def plot_test(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
 
         return main, output_file, table_html, desc, div
 
-
-def yield_over_time(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
-        
-        output_file = result_directory + '/' + '_'.join(main.split())
-        
-        # x_data = result_dict.get("basecaller.sequencing.summary.1d.extractor.start.time.sorted")
-        # arr = np.array(x_data)
-        
-        time = [t/3600 for t in time_df.dropna()]
-        time = np.array(sorted(time))
-
-        # 10 minutes interval
-        interval = int(max(time) / 0.6)
-        
-        low_bin = np.min(time) - np.fmod(np.min(time)- np.floor(np.min(time)), interval/3600)
-        high_bin = np.max(time)  - np.fmod(np.max(time)- np.ceil(np.max(time)), interval/3600)
-        bins = np.arange(low_bin, high_bin, interval/3600)
-        
-        digitized = np.digitize(time, bins, right=True) 
-        
-        bin_means = [time[digitized == i].mean() for i in range(1, len(bins))]
-        
-        # Interpolation
-        length = dataframe_dict.get('sequence.length')
-        f = interp1d(time, length, kind="linear")
-        x_int = np.linspace(time[0],time[-1], 150)
-        y_int = f(x_int)
-        
-        # Plot of mean values Y axis
-        length_filt = length.loc[length >= 0].dropna()
-    
-        fig = go.Figure()
-        
-        fig.append_trace(go.Scatter(
-        x=x_int,
-        y=y_int,
-        mode='lines',
-        name='interpolation curve',
-        line=dict(color='#205b47', width=3, shape="linear"))
-        )
-
-        
-        fig.update_layout(    
-                title={
-                'text': "<b>Read length over experiment time</b>",
-                'y':1.0,
-                'x':0.45,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font' : dict(
-                family="Calibri, sans",
-                size=26,
-                color="black")},
-            xaxis=dict(
-                title="<b>Experiment time (hours)</b>",
-                titlefont_size=16
-                ),
-            yaxis=dict(
-                title='<b>Yield cum sum</b>',
-                titlefont_size=16,
-                tickfont_size=14,
-            ),
-            legend=dict(
-                x=1.02,
-                y=1.0,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
-            hovermode=False,
-            height=850, width=1500
-        )
-
-        div = py.plot(fig,
-                            filename=output_file,
-                            include_plotlyjs=True,
-                            output_type='div',
-                            auto_open=False,
-                            show_link=False)
-        table_html = None
-
-        return main, output_file, table_html, desc, div
-    
     
 def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
         
@@ -1192,7 +1116,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
                 font=dict(size=15)
             ),
             hovermode='x',
-            height=850, width=1500
+            height=800, width=1400
         )
         fig.update_yaxes(type="log")
         
@@ -1203,12 +1127,73 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
                             auto_open=False,
                             show_link=False)
 
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+    
+    
+def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
+        
+        output_file = result_directory + '/' + '_'.join(main.split())
+
+        time = [t/3600 for t in time_df]
+        time = pd.Series(time)
+        # create custom xaxis points to reduce graph size
+        time_points = np.linspace(min(time), max(time), 20)
+        n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
+
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(
+            x=time_points,
+            y=list(n_seq.values), mode='lines',
+            
+            line=dict(color='#5199FF', width=3, shape="spline", smoothing=0.5)
+        ))
+
+        fig.update_layout(    
+                title={
+                'text': "<b>Number of sequences through experiment time</b>",
+                'y':1.0,
+                'x':0.45,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Number of sequences</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.02,
+                y=1.0,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            hovermode='x',
+            height=800, width=1400
+        )
+        fig.update_yaxes(type="log")
+        
         div = py.plot(fig,
                             filename=output_file,
                             include_plotlyjs=True,
                             output_type='div',
                             auto_open=False,
                             show_link=False)
+        
         table_html = None
 
         return main, output_file, table_html, desc, div
+    
+
