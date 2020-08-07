@@ -224,53 +224,77 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
     return main, output_file, table_html, desc, div
 
 
-def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
-    """
-    Plots an histogram of the read length for the different types of read:
-    1D, 1Dpass, 1D fail
-    """
+def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, result_directory, desc):
+
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
+    
+    read_pass_length = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[
+        result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] > 0]
+    read_fail_length = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[
+        result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] > 0]
+    all_read_length = sequence_length_df.loc[sequence_length_df > 0]
+    fig = go.Figure()
+    
+    fig.add_trace(go.Histogram(x=all_read_length,
+                               name='All reads',
+                               marker_color='#F38D35'
+                               ))
 
-    minimum, maximum = \
-        min(dataframe_dict["sequence.length"]), \
-        max(dataframe_dict["sequence.length"])
-    read_type = ['1D', '1D pass', '1D fail']
+    fig.add_trace(go.Histogram(x=read_pass_length,
+                               nbinsx=200,
+                               name='Pass reads',
+                               marker_color='#BB44A8' #330C73 purple
+                               ))
 
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    ax = plt.subplot()
+    fig.add_trace(go.Histogram(x=read_fail_length,
+                               name='Fail reads',
+                               marker_color='#44AA89'
+                               ))
+    
 
-    data = [dataframe_dict["sequence.length"],
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]]
-    ls = 2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30)
-    n, bins, patches = ax.hist(data, color=["salmon", "yellowgreen", "orangered"],
-                               edgecolor='black', label=read_type,
-                               bins=ls)
-    plt.legend()
+    fig.update_layout(
+        title={
+            'text': "<b>Distribution of read length</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Read length (bp)</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Number of sequences</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=1.0,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        hovermode='x',
+        height=800, width=1400
+    )
 
-    ax.set_xscale('log', basex=2)
-    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    ax.set_xticks(bins)
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=True,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
 
-    for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_rotation('vertical')
-    ax.set_xlabel('Read length(bp)')
-    ax.set_ylabel('Read number')
+    table_html = None
 
-    dataframe = \
-        pd.DataFrame({"1D": dataframe_dict["sequence.length"],
-                      "1D pass": result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
-                      "1D fail": result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]})
-    dataframe = dataframe[["1D", "1D pass", "1D fail"]]
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-
-    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
-
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
@@ -292,7 +316,6 @@ def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
              np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"])),
              color='orangered', linewidth=1, label="1D fail")
 
-    plt.xticks(np.arange(0, max(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"]), 8))
 
     plt.ylabel("Read number")
     plt.xlabel("Time (Hour)")
@@ -734,64 +757,24 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         
         output_file = result_directory + '/' + '_'.join(main.split())
         
-        # x_data = result_dict.get("basecaller.sequencing.summary.1d.extractor.start.time.sorted")
-        # arr = np.array(x_data)
-        
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
 
-        # 10 minutes interval
-        interval = int(max(time) / 0.6)
-        
-        low_bin = np.min(time) - np.fmod(np.min(time)- np.floor(np.min(time)), interval/3600)
-        high_bin = np.max(time)  - np.fmod(np.max(time)- np.ceil(np.max(time)), interval/3600)
-        bins = np.arange(low_bin, high_bin, interval/3600)
-        
-        digitized = np.digitize(time, bins, right=True) 
-        
-        bin_means = [time[digitized == i].mean() for i in range(1, len(bins))]
-        
         # Interpolation
         length = dataframe_dict.get('sequence.length')
         f = interp1d(time, length, kind="linear")
         x_int = np.linspace(time[0],time[-1], 150)
         y_int = f(x_int)
         
-        # Plot of mean values Y axis
-        length_filt = length.loc[length >= 0].dropna()
+        fig = go.Figure()
         
-        fig = make_subplots(rows=2, cols=1,
-                            subplot_titles=("<b>Interpolation plot</b>", "<b>10 minutes interval plot</b>"),
-                            vertical_spacing=0.15)
-        
-        fig.append_trace(go.Scatter(
+        fig.add_trace(go.Scatter(
         x=x_int,
         y=y_int,
         mode='lines',
         name='interpolation curve',
-        line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5)),
-        row=1, col=1
+        line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
         )
-        
-        #TODO: test pycoqc func
-        x_pyc = _binned_data_pycoqc(length, 100)
-        
-        #items = 2
-        #value = 5
-        #         print(items[0]) #x
-        # print(items[1][0]) #1st array de x
-        
-        # for key, value in x_pyc.items():
-        #     print(value[0]) #array
-        #     print(key[0]) #x
-        #     fig.append_trace(go.Scatter(
-        #         x=value[0],
-        #         y=time,
-        #         mode='lines',
-        #         name=key[0],
-        #         line=dict(color="#e76f51", width=3, shape="linear")),
-        #         row=2, col=1
-        #     )
         
         fig.update_layout(    
                 title={
@@ -832,9 +815,6 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
                             output_type='div',
                             auto_open=False,
                             show_link=False)
-            
-        # py.plot(fig, filename=output_file, include_plotlyjs=True, output_type='file',
-        #          auto_open=False, image_height=1000, image_width=800)
 
         table_html = None
 
@@ -851,7 +831,7 @@ def _binned_data_pycoqc(data, bins, smooth_sigma=1.5):
     # List quality value per categories
     bin_dict = defaultdict (list)
     for bin_idx, val in zip (t, data) :
-        bin = x[bin_idx]
+        bin = x[bin_idx] #valeur linspace correspondant à la valeur N de 
         bin_dict[bin].append(val)
 
     # Aggregate values per category
@@ -879,7 +859,6 @@ def _binned_data_pycoqc(data, bins, smooth_sigma=1.5):
     return data_dict
 
 
-   
 def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, desc):
         
         output_file = result_directory + '/' + '_'.join(main.split())
@@ -1138,6 +1117,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
 
         time = [t/3600 for t in time_df]
         time = pd.Series(time)
+        
         # create custom xaxis points to reduce graph size
         time_points = np.linspace(min(time), max(time), 20)
         n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
