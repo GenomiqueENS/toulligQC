@@ -866,17 +866,6 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         # Time data
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
-
-        # 10 minutes interval
-        interval = int(max(time) / 0.6)
-        
-        low_bin = np.min(time) - np.fmod(np.min(time)- np.floor(np.min(time)), interval/3600)
-        high_bin = np.max(time)  - np.fmod(np.max(time)- np.ceil(np.max(time)), interval/3600)
-        bins = np.arange(low_bin, high_bin, interval/3600)
-        
-        digitized = np.digitize(time, bins, right=True) 
-        
-        bin_means = [time[digitized == i].mean() for i in range(1, len(bins))]
         
         # Qscore data
         qscore = qscore_df.dropna()
