@@ -819,44 +819,6 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         table_html = None
 
         return main, output_file, table_html, desc, div
-    
-#TODO: delete method
-def _binned_data_pycoqc(data, bins, smooth_sigma=1.5):
-
-    # Bin data in categories
-    t = data.dropna().values
-    x = np.linspace (t.min(), t.max(), num=bins)
-    t = np.digitize (t, bins=x, right=True)
-
-    # List quality value per categories
-    bin_dict = defaultdict (list)
-    for bin_idx, val in zip (t, data) :
-        bin = x[bin_idx] #valeur linspace correspondant à la valeur N de 
-        bin_dict[bin].append(val)
-
-    # Aggregate values per category
-    val_name = ["Min", "Max", "25%", "75%", "Median"]
-    stat_dict = defaultdict(list)
-    for bin in x:
-        if bin in bin_dict:
-            p = np.percentile (bin_dict[bin], [0, 100, 25, 75, 50])
-        else:
-            p = [np.nan,np.nan,np.nan,np.nan,np.nan]
-        for val, stat in zip (val_name, p):
-            stat_dict[val].append(stat)
-
-    # Values smoothing
-    if smooth_sigma:
-        for val in val_name:
-            stat_dict [val] = gaussian_filter1d (stat_dict [val], sigma=smooth_sigma)
-
-    # make data dict
-    data_dict = dict(
-        x = [x,x,x,x,x],
-        y = [stat_dict["Min"], stat_dict["Max"], stat_dict["25%"], stat_dict["75%"], stat_dict["Median"]],
-        name = val_name)
-
-    return data_dict
 
 
 def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, desc):
