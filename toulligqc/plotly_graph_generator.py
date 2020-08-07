@@ -297,37 +297,78 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
     return main, output_file, table_html, desc, div
 
 
-def allread_number_run(result_dict, main, my_dpi, result_directory, desc):
+def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
+    
+    all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
+    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.start.pass.sorted']
+    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.start.fail.sorted']
 
-    plt.plot(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"],
-             np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"])),
-             color='salmon', linewidth=1, label="1D")
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatter(x=all_read,
+                               name='All reads',
+                               marker_color='#F38D35',
+                               mode="lines"
+                               ))
 
-    plt.plot(result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.sorted"],
-             np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.sorted"])),
-             color='yellowgreen', linewidth=1, label="1D pass")
-
-    plt.plot(result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"],
-             np.arange(len(result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"])),
-             color='orangered', linewidth=1, label="1D fail")
+    fig.add_trace(go.Histogram(x=read_pass_length,
+                               nbinsx=200,
+                               name='Pass reads',
+                               marker_color='#BB44A8' #330C73 purple
+                               ))
 
 
-    plt.ylabel("Read number")
-    plt.xlabel("Time (Hour)")
-    plt.legend()
+    fig.add_trace(go.Histogram(x=read_fail_length,
+                               name='Fail reads',
+                               marker_color='#44AA89'
+                               ))
+    fig.update_layout(
+        title={
+            'text': "<b>Yield plot through experiment time</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Time (hours)</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Number of sequences</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=1.0,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        hovermode='x',
+        height=800, width=1400
+    )
 
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=True,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
 
     table_html = None
 
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc):
