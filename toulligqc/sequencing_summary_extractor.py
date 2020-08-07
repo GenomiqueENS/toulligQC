@@ -238,7 +238,7 @@ class SequencingSummaryExtractor:
         Returns the value associated with the result_dict key
         """
         if not (self.get_report_data_file_id() + '.' + key) in result_dict.keys():
-            raise KeyError(f"Key {key} not found")
+            raise KeyError("Key {key} not found").__format__(key)
         return result_dict.get(self.get_report_data_file_id() + '.' + key)
 
 
@@ -539,13 +539,13 @@ class SequencingSummaryExtractor:
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-        images.append(graph_generator.read_length_multihistogram(result_dict, self.dataframe_dict, 'Read length histogram',
+        images.append(pgg.read_length_multihistogram(result_dict, self.sequence_length_df, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-        images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type',
+        images.append(pgg.yield_plot(result_dict, 'Yield plot of 1D read type',
                                                          self.my_dpi, images_directory,
                                                          "Yield plot of basecalled reads (1D in orange)."
                                                          " The basecalled reads are filtered with a 7.5 quality "
