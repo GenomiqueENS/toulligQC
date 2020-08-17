@@ -551,7 +551,7 @@ class SequencingSummaryExtractor:
                                                          " The basecalled reads are filtered with a 7.5 quality "
                                                          "score threshold in pass (1D pass in green) "
                                                          "or fail (1D fail in red) categories."))
-        images.append(graph_generator.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
+        images.append(pgg.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
                                                                 self.my_dpi, images_directory,
                                                                 "Boxplot of 1D reads (in orange) quality."
                                                                 "The basecalled reads are filtered with a 7.5 quality "

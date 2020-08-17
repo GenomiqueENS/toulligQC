@@ -192,7 +192,8 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                        family="Calibri",
                        size=18,
                        color="black"
-                   )
+                   ),
+                   categoryorder="total descending"
                    ),
         yaxis=dict(title="<b>Counts</b>",
                    linecolor="black",
@@ -229,10 +230,10 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     
     read_pass_length = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] > 0]
+        result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] > 10]
     read_fail_length = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] > 0]
-    all_read_length = sequence_length_df.loc[sequence_length_df > 0]
+        result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] > 10]
+    all_read_length = sequence_length_df.loc[sequence_length_df > 10]
     fig = go.Figure()
     
     fig.add_trace(go.Histogram(x=all_read_length,
@@ -243,7 +244,7 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
     fig.add_trace(go.Histogram(x=read_pass_length,
                                nbinsx=200,
                                name='Pass reads',
-                               marker_color='#BB44A8' #330C73 purple
+                               marker_color='#BB44A8'
                                ))
 
     fig.add_trace(go.Histogram(x=read_fail_length,
@@ -284,6 +285,8 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
         hovermode='x',
         height=800, width=1400
     )
+    # Adjust trace to hide n reads < 10
+    fig.update_xaxes(range=[0, 5000])
 
     div = py.plot(fig,
                   filename=output_file,
@@ -304,28 +307,36 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     
     all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
-    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.start.pass.sorted']
-    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.start.fail.sorted']
+    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
+    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
+
+    all_read_interpolated = interp1d(x=np.arange(len(all_read)), y=all_read, axis=0, kind="cubic", fill_value = 'extrapolate')
+    all_read_downsampled = all_read_interpolated(np.linspace(0, len(all_read), 200))
+
+    read_pass_interpolated = interp1d(x=np.arange(len(read_pass)), y=read_pass, axis=0, kind="cubic", fill_value = 'extrapolate')
+    read_pass_downsampled = read_pass_interpolated(np.linspace(0, len(read_pass), 200))
+    
+    read_fail_interpolated = interp1d(x=np.arange(len(read_fail)), y=read_fail, axis=0, kind="quadratic", fill_value = 'extrapolate')
+    read_fail_downsampled = read_fail_interpolated(np.linspace(0, len(read_fail), 200))
 
     fig = go.Figure()
     
-    fig.add_trace(go.Scatter(x=all_read,
+    fig.add_trace(go.Scatter(x=all_read_downsampled,
                                name='All reads',
                                marker_color='#F38D35',
                                mode="lines"
                                ))
 
-    fig.add_trace(go.Histogram(x=read_pass_length,
-                               nbinsx=200,
+    fig.add_trace(go.Scatter(x=read_pass_downsampled,
                                name='Pass reads',
-                               marker_color='#BB44A8' #330C73 purple
+                               marker_color='#BB44A8'
                                ))
 
-
-    fig.add_trace(go.Histogram(x=read_fail_length,
+    fig.add_trace(go.Scatter(x=read_fail_downsampled,
                                name='Fail reads',
                                marker_color='#44AA89'
                                ))
+    
     fig.update_layout(
         title={
             'text': "<b>Yield plot through experiment time</b>",
@@ -373,35 +384,92 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
 
 def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc):
     """
-    Plots a boxplot of reads quality per read type (1D, 1D pass, 1D fail)
+    Boxplot of PHRED score between read pass and read fail
+    Violin plot of PHRED score between read pass and read fail
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi, facecolor='white', edgecolor='black')
-    gs = gridspec.GridSpec(nrows=1, ncols=2)
 
-    my_pal = {"1D": "salmon", "1D pass": "yellowgreen", "1D fail": "orangered"}
-    order = ["1D", "1D pass", "1D fail"]
-    dataframe = \
-        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
-                      "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-                      "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
-    ax = plt.subplot(gs[0])
-    sns.boxplot(data=dataframe, ax=ax, palette=my_pal, order=order, linewidth=1)
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    plt.ylabel('Mean Phred score')
+    dataframe = pd.DataFrame(
+        {"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
+         "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
+         "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']
+         })
+    names = {"1D": "All reads",
+             "1D pass": "Read pass",
+             "1D fail": "Read fail"}
+    
+    colors = {"1D": 'Blue',
+              "1D pass": '#FFC11E',
+              "1D fail": '#ff849a'}
 
-    ax2 = plt.subplot(gs[1])
-    sns.violinplot(data=dataframe, ax=ax2, palette=my_pal, inner=None, cut=0, order=order, linewidth=1)
-    ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    plt.ylabel('Mean Phred score')
+    fig = make_subplots(rows=1, cols=2,
+                        subplot_titles=("<b>PHRED score boxplot</b>",
+                                        "<b>PHRED score violin plot</b>"),
+                        horizontal_spacing=0.15)
+
+    for column in dataframe.columns:
+        fig.append_trace(go.Box(
+            y=dataframe[column],
+            name=names[column],
+            marker=dict(
+                opacity=0.3,
+                color=colors[column]
+
+            ),
+            boxmean=True,  # True/sd/False
+            #boxpoints="outliers"
+        ), row=1, col=1)
+
+        fig.add_trace(go.Violin(y=dataframe[column],
+                            name=names[column],
+                            meanline_visible=True),
+                      row=1, col=2) 
+
+
+    fig.update_layout(
+        title={
+            'text': "<b>Yield plot through experiment time</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Time (hours)</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Number of sequences</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=1.0,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        hovermode='x',
+        height=800, width=1400
+    )
+
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=True,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
 
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
 
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
