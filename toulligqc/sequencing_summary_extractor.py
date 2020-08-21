@@ -27,8 +27,8 @@
 
 import pandas as pd
 import sys
-from toulligqc import graph_generator
-from toulligqc import plotly_graph_generator as pgg
+import graph_generator
+import plotly_graph_generator as pgg
 import numpy as np
 import re
 import os.path
@@ -557,7 +557,7 @@ class SequencingSummaryExtractor:
                                                                 "The basecalled reads are filtered with a 7.5 quality "
                                                                 "score threshold in pass (1D pass in green) "
                                                                 "or fail (1D fail in red) categories."))
-        images.append(graph_generator.allphred_score_frequency(result_dict,
+        images.append(pgg.allphred_score_frequency(result_dict,
                                                                'Mean Phred score frequency of all 1D read type',
                                                                self.my_dpi, images_directory,
                                                                "The basecalled reads are filtered with a 7.5 quality "

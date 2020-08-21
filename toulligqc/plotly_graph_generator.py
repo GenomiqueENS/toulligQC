@@ -31,6 +31,8 @@ from matplotlib.pyplot import table
 
 from plotly.subplots import make_subplots
 from scipy.interpolate import interp1d
+from scipy.stats import norm
+from sklearn.utils import resample
 import plotly.graph_objs as go
 import plotly.offline as py 
 from collections import defaultdict
@@ -238,18 +240,17 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
     
     fig.add_trace(go.Histogram(x=all_read_length,
                                name='All reads',
-                               marker_color='#F38D35'
+                               marker_color='#7AB1FF' #blue
                                ))
 
     fig.add_trace(go.Histogram(x=read_pass_length,
-                               nbinsx=200,
                                name='Pass reads',
-                               marker_color='#BB44A8'
+                               marker_color='#66d489' #green
                                ))
 
     fig.add_trace(go.Histogram(x=read_fail_length,
-                               name='Fail reads',
-                               marker_color='#44AA89'
+                            name='Fail reads',
+                               marker_color='#f48247' #orange
                                ))
     
 
@@ -286,7 +287,7 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
         height=800, width=1400
     )
     # Adjust trace to hide n reads < 10
-    fig.update_xaxes(range=[0, 5000])
+    #fig.update_xaxes(range=[0, 5000])
 
     div = py.plot(fig,
                   filename=output_file,
@@ -310,26 +311,21 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
 
-    all_read_interpolated = interp1d(x=np.arange(len(all_read)), y=all_read, axis=0, kind="cubic", fill_value = 'extrapolate')
-    all_read_downsampled = all_read_interpolated(np.linspace(0, len(all_read), 200))
-
-    read_pass_interpolated = interp1d(x=np.arange(len(read_pass)), y=read_pass, axis=0, kind="cubic", fill_value = 'extrapolate')
-    read_pass_downsampled = read_pass_interpolated(np.linspace(0, len(read_pass), 200))
+    all_read_downsampled = _interpolate(x=all_read, npoints=2000)
+    read_pass_downsampled = _interpolate(x=read_pass, npoints=2000)
+    read_fail_downsampled = _interpolate(x=read_fail, npoints=2000)
     
-    read_fail_interpolated = interp1d(x=np.arange(len(read_fail)), y=read_fail, axis=0, kind="quadratic", fill_value = 'extrapolate')
-    read_fail_downsampled = read_fail_interpolated(np.linspace(0, len(read_fail), 200))
-
     fig = go.Figure()
     
     fig.add_trace(go.Scatter(x=all_read_downsampled,
                                name='All reads',
-                               marker_color='#F38D35',
+                               marker_color='#f48247',
                                mode="lines"
                                ))
 
     fig.add_trace(go.Scatter(x=read_pass_downsampled,
                                name='Pass reads',
-                               marker_color='#BB44A8'
+                               marker_color='#9ad25b'
                                ))
 
     fig.add_trace(go.Scatter(x=read_fail_downsampled,
@@ -394,6 +390,13 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
          "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
          "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']
          })
+    
+    # downsampling of data
+    dataframe_downsampled = pd.DataFrame({
+        "1D" : _interpolate(dataframe["1D"], 100),
+        "1D pass" : _interpolate(dataframe["1D pass"], 100),
+        "1D fail" : _interpolate(dataframe["1D fail"], 100)
+    })
     names = {"1D": "All reads",
              "1D pass": "Read pass",
              "1D fail": "Read fail"}
@@ -407,9 +410,9 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                                         "<b>PHRED score violin plot</b>"),
                         horizontal_spacing=0.15)
 
-    for column in dataframe.columns:
+    for column in dataframe_downsampled.columns:
         fig.append_trace(go.Box(
-            y=dataframe[column],
+            y=dataframe_downsampled[column],
             name=names[column],
             marker=dict(
                 opacity=0.3,
@@ -417,12 +420,16 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
 
             ),
             boxmean=True,  # True/sd/False
+            #legendgroup="legend",
+            showlegend=False
             #boxpoints="outliers"
         ), row=1, col=1)
 
-        fig.add_trace(go.Violin(y=dataframe[column],
+        fig.add_trace(go.Violin(y=dataframe_downsampled[column],
                             name=names[column],
-                            meanline_visible=True),
+                            meanline_visible=True,
+                      #legendgroup="violin",
+                      marker=dict(color=colors[column])),
                       row=1, col=2) 
 
 
@@ -472,93 +479,30 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     return main, output_file, table_html, desc, div
 
 
-def phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
-    """
-    Plot the distribution of the phred score (not use anymore)
-    """
-    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    plt.subplot()
-
-    sns.distplot(result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"], bins=15, color='salmon',
-                 hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1D")
-
-    plt.legend()
-    plt.xlabel("Mean Phred score")
-    plt.ylabel("Frequency")
-
-    dataframe = pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]})
-    rd = dataframe.describe().drop('count').round(2).reset_index()
-
-    plt.axvline(x=result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-
-    table_html = pd.DataFrame.to_html(rd)
-
-    return main, output_file, table_html, desc
-
-
 def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
     Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=1, ncols=2)
-    ax = plt.subplot(gs[0])
-
-    sns.distplot(result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"], bins=15, ax=ax, color='salmon',
-                 hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1D")
-    plt.axvline(x=result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"].describe()['50%'], color='salmon')
-
-    ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
-
-    plt.legend()
-    plt.xlabel("Mean Phred score")
-    plt.ylabel("Frequency")
-
-    ax2 = plt.subplot(gs[1])
-
-    max_frequency_pass = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].value_counts(normalize=True))
-
-    max_frequency_fail = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].value_counts(normalize=True))
-
-    if max_frequency_pass > max_frequency_fail:
-        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
-                     color='yellowgreen', hist=True, label='1D pass')
-
-        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'],
-                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
-                     color='orangered', label='1D fail', hist=True)
-
-    else:
-        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'],
-                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
-                     color='orangered', label='1D fail', hist=True)
-
-        sns.distplot(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-                     ax=ax2, bins=15, hist_kws=dict(edgecolor="k", linewidth=1),
-                     color='yellowgreen', hist=True, label='1D pass')
-
-    ax2.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
-    ax2.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
-
-    plt.legend()
-    plt.xlabel("Mean Phred score")
-    plt.ylabel("Frequency")
-    plt.axvline(x=result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].describe()['50%'], color='yellowgreen')
-    plt.axvline(x=result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].describe()['50%'], color='orangered')
 
     dataframe = \
         pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
                       "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
 
+    max_frequency_pass = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].value_counts(normalize=True))
+
+    max_frequency_fail = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].value_counts(normalize=True))
+
+    mu, std = norm.fit(dataframe["1D"])
+    pdf = norm.pdf(dataframe["1D"])
+    
+    sns_plot = sns.distplot(a=dataframe["1D"], hist=True, bins=15, kde=True, axlabel="PHRED score", label="1D")
+
+    plt.legend()
+    #sns_plot.set_xlabel('Mean Phred score', fontsize=14, fontweight='bold')
+    plt.xlabel("Mean Phred score", fontsize=10, fontweight='bold', fontfamily='sans-serif')
+    plt.ylabel("Frequency",  fontsize=10, fontweight='bold', fontfamily='sans-serif')
     plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
@@ -869,11 +813,9 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
 
-        # Interpolation
         length = dataframe_dict.get('sequence.length')
-        f = interp1d(time, length, kind="linear")
-        x_int = np.linspace(time[0],time[-1], 150)
-        y_int = f(x_int)
+        # Interpolation
+        x_int, y_int = _interpolate(time, 150, length, "linear")
         
         fig = go.Figure()
         
@@ -942,15 +884,13 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         qscore = qscore_df.dropna()
 
         # Interpolation
-        f = interp1d(time, qscore, kind="linear")
-        x_int = np.linspace(time[0],time[-1], 100)
-        y_int = f(x_int)
+        x_int, y_int = _interpolate(time, 100, qscore, "linear")
         
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=x_int,
             y=y_int,
-            mode='markers',
+            mode='lines',  #TODO: tests
             marker=dict(
         size=10,
         color=qscore,
@@ -1111,9 +1051,8 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         time = [t/3600 for t in time_df]
         time = np.array(sorted(time))
 
-        f = interp1d(time, speed, kind="linear")
-        x_int = np.linspace(time[0],time[-1], 100)
-        y_int = f(x_int)
+        # Interpolation
+        x_int, y_int = _interpolate(time, 100, speed, "linear")
     
         fig = go.Figure()
         
@@ -1237,3 +1176,21 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
         return main, output_file, table_html, desc, div
     
 
+def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
+    """
+    Function returning an interpolated version of data passed as input
+    :param x: array of data
+    :param npoints: number of desired points after interpolation (int)
+    :param y: second array in case of 2D data
+    :param interp_type: string specifying the type of interpolation (i.e. linear, nearest, cubic, quadratic etc.)
+    :param axis: number specifying the axis of y along which to interpolate. Default = -1
+    """
+    # In case of single array of data, use 
+    if y is None:
+        return np.sort(resample(x, n_samples=npoints, random_state=1))
+        
+    else:
+        f = interp1d(x, y, kind=interp_type, axis=axis)
+        x_int = np.linspace(x[0], x[-1], npoints)
+        y_int = f(x_int)
+        return x_int, y_int
