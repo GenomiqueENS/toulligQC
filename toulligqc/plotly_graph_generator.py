@@ -32,12 +32,13 @@ from matplotlib.pyplot import table
 from plotly.subplots import make_subplots
 from scipy.interpolate import interp1d
 from scipy.stats import norm
+from scipy.stats import gaussian_kde
 from sklearn.utils import resample
+from sklearn.preprocessing import normalize
 import plotly.graph_objs as go
 import plotly.offline as py 
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
-import plotly.express.colors as pxc
 
 figure_image_width = 1000
 figure_image_height = 600
@@ -230,27 +231,38 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
 def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, result_directory, desc):
 
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
+
+    dict_entries = {
+                    'read_pass_length' : result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'],
+                    'read_fail_length' : result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length']}
     
-    read_pass_length = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] > 10]
-    read_fail_length = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] > 10]
-    all_read_length = sequence_length_df.loc[sequence_length_df > 10]
+    all_read = sequence_length_df.copy()
+    all_read.drop(sequence_length_df.loc[sequence_length_df <= 10].index, inplace=True)
+    
+    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].copy()
+    read_pass.drop(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] <= 10].index, inplace=True)
+    
+    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].copy()
+    read_fail.drop(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] <= 10].index, inplace=True)
+  
     fig = go.Figure()
     
-    fig.add_trace(go.Histogram(x=all_read_length,
+    fig.add_trace(go.Histogram(x=all_read,
                                name='All reads',
-                               marker_color='#7AB1FF' #blue
+                               nbinsx=500,
+                               marker_color='#fca311'  # yellow
                                ))
 
-    fig.add_trace(go.Histogram(x=read_pass_length,
+    fig.add_trace(go.Histogram(x=read_pass,
                                name='Pass reads',
-                               marker_color='#66d489' #green
+                            nbinsx=500,
+                               marker_color='#51a96d'  # green
                                ))
 
-    fig.add_trace(go.Histogram(x=read_fail_length,
-                            name='Fail reads',
-                               marker_color='#f48247' #orange
+    fig.add_trace(go.Histogram(x=read_fail,
+                            nbinsx=500,
+                               name='Fail reads',
+                               marker_color='#d90429'  # orange
                                ))
     
 
@@ -286,8 +298,8 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
         hovermode='x',
         height=800, width=1400
     )
-    # Adjust trace to hide n reads < 10
-    #fig.update_xaxes(range=[0, 5000])
+    # Adjust trace
+    #fig.update_xaxes(range=[0, max(read_pass)])
 
     div = py.plot(fig,
                   filename=output_file,
@@ -383,7 +395,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
     """
-    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
+    output_file = result_directory + '/' + '_'.join(main.split())
 
     dataframe = pd.DataFrame(
         {"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
@@ -490,28 +502,72 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
                       "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
 
-    max_frequency_pass = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'].value_counts(normalize=True))
+    interp_1D_pass = _interpolate(dataframe["1D pass"], npoints=5000)
+    interp_1D_fail = _interpolate(dataframe["1D fail"], npoints=5000)
 
-    max_frequency_fail = max(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'].value_counts(normalize=True))
-
-    mu, std = norm.fit(dataframe["1D"])
-    pdf = norm.pdf(dataframe["1D"])
+    arr_1D_pass = np.array(pd.Series(interp_1D_pass).dropna())
+    x = np.linspace(0, max(arr_1D_pass), 200)
+    mu, std = norm.fit(arr_1D_pass)
+    pdf_1D_pass = norm.pdf(x, mu, std)
     
-    sns_plot = sns.distplot(a=dataframe["1D"], hist=True, bins=15, kde=True, axlabel="PHRED score", label="1D")
+    arr_1D_fail = np.array(pd.Series(interp_1D_fail).dropna())
+    x2 = np.linspace(0, max(arr_1D_fail), 200)
+    mu2, std2 = norm.fit(arr_1D_fail)
+    pdf_1D_fail = norm.pdf(x2, mu2, std2)
+   
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(x=interp_1D_pass, name="Read pass", marker_color="#4A69FF", histnorm='probability density'))
+    fig.add_trace(go.Histogram(x=interp_1D_fail, name="Read fail", marker_color="#CE3D1D", histnorm='probability density'))
+    fig.add_trace(go.Scatter(x=x, y=pdf_1D_pass, mode="lines", name='Density curve of read pass', line=dict(color='#4A69FF', width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x2, y=pdf_1D_fail, mode="lines", name='Density curve of read fail', line=dict(color='#CE3D1D', width=3, shape="spline", smoothing=0.5)))
 
-    plt.legend()
-    #sns_plot.set_xlabel('Mean Phred score', fontsize=14, fontweight='bold')
-    plt.xlabel("Mean Phred score", fontsize=10, fontweight='bold', fontfamily='sans-serif')
-    plt.ylabel("Frequency",  fontsize=10, fontweight='bold', fontfamily='sans-serif')
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
+    fig.update_layout(
+        title={
+            'text': "<b>PHRED Score Density Distribution</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>PHRED score</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Density probability</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=1.0,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        barmode='group',
+        hovermode='x',
+        height=800, width=1400
+    )
+
+
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=True,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
 
     dataframe = _make_desribe_dataframe(dataframe).drop('count')
 
     table_html = pd.DataFrame.to_html(dataframe)
 
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
@@ -519,35 +575,78 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    ax = plt.gca()
 
-    read_pass = plt.scatter(x=result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
-                            y=result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"],
-                            color="yellowgreen")
+    read_pass_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"]
+    read_pass_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"]
+    read_fail_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]
+    read_fail_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"]
+        
+    pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
+    fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
+    fig = go.Figure()
 
-    read_fail = plt.scatter(x=result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"],
-                            y=result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"],
-                            color="orangered")
+    fig.add_trace(go.Scatter(x=pass_data[0],
+                             y=pass_data[1],
+                             name="Pass reads",
+                             marker_color="#f48247",
+                             mode="markers"
+                             ))
 
-    plt.legend((read_pass, read_fail), ("1D pass", "1D fail"))
-    plt.xlim(np.min(dataframe_dict["sequence.length"]
-                    .loc[dataframe_dict["sequence.length"] > 0]),
-             np.max(dataframe_dict["sequence.length"]))
+    fig.add_trace(go.Scatter(x=fail_data[0],
+                             y=fail_data[1],
+                             name='Fail reads',
+                             marker_color='#9ad25b',
+                             mode="markers"
+                             ))
 
-    plt.yticks()
-    plt.xscale('log')
-    plt.xlabel("Sequence length")
-    plt.ylabel("Mean Phred score")
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
+    fig.update_layout(
+        title={
+            'text': "<b>Correlation between read length and PHRED score</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>SEquence length (bp)</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>PHRED score</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Read Type</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=800, width=1400
+    )
+    # Trim x axis to avoid negative values
+    if max(read_pass_length) >= max(read_fail_length):
+        max_val = max(read_pass_length)
+    max_val = max(read_fail_length)
+    
+    fig.update_xaxes(range=[0, max_val])
 
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=True,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    
     table_html = None
 
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def channel_count_histogram(Guppy_log, main, my_dpi, result_directory, desc):
@@ -1191,6 +1290,14 @@ def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
         
     else:
         f = interp1d(x, y, kind=interp_type, axis=axis)
-        x_int = np.linspace(x[0], x[-1], npoints)
+        x_int = np.linspace(min(x), max(x), npoints)
         y_int = f(x_int)
-        return x_int, y_int
+        #return dict(zip(x_int, y_int))
+        return pd.Series(x_int), pd.Series(y_int)
+
+
+def _discretize(data):
+    """
+    """
+    cats, bins = pd.qcut(x=data, q=[0, .25, .5, .75, 1.], retbins=True)
+    return cats, bins

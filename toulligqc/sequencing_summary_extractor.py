@@ -569,7 +569,7 @@ class SequencingSummaryExtractor:
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
 
-        images.append(graph_generator.all_scatterplot(result_dict, self.dataframe_dict, 'Mean Phred score function of 1D read length',
+        images.append(pgg.all_scatterplot(result_dict, self.dataframe_dict, 'Mean Phred score function of 1D read length',
                                                       self.my_dpi, images_directory,
                                                       "The Mean Phred score varies according to the read length."
                                                       "The basecalled reads are filtered with a 7.5 quality "
