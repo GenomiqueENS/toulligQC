@@ -789,7 +789,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=800, width=1400
+        height=500, width=875
     )
     
     div = py.plot(fig,
@@ -855,7 +855,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=800, width=1400
+        height=500, width=875
     )
     
     div = py.plot(fig,
@@ -877,24 +877,82 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
 
 def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_directory, desc):
     """
-    Plot boxplot of the 1D pass and fail read length for each barcode indicated in the sample sheet
+    Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    plt.subplot()
-
-    ax = sns.boxplot(data=datafame_dict['barcode_selection_sequence_length_melted_dataframe'],
-                     x='barcodes', y='length', hue='passes_filtering',
-                     showfliers=False, palette={True: "yellowgreen", False: "orangered"},
-                     hue_order=[True, False])
-
-    handles, _ = ax.get_legend_handles_labels()
-    plt.legend(bbox_to_anchor=(0.905, 0.98), loc=2, borderaxespad=0., labels=["Pass", "Fail"], handles=handles)
-    plt.xlabel('Barcodes')
-    plt.ylabel('Read length(bp)')
-
+    
+    # melted_df = datafame_dict['barcode_selection_sequence_length_melted_dataframe']
+    
+    # test = melted_df['length'].loc[melted_df['length'] > 0]
     df = datafame_dict['barcode_selection_sequence_length_dataframe']
+    
+    # Sort reads by read type and drop read type column 
+    read_pass_length = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
+    read_fail_length = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
+    
+    # Remove negative values from all columns of the dataframes
+    for col in read_pass_length.columns:
+        read_pass_length[col] = read_pass_length[col].loc[read_pass_length[col] > 0]
+    for col in read_fail_length.columns:
+        read_fail_length[col] = read_fail_length[col].loc[read_fail_length[col] > 0]
+
+    fig = go.Figure()
+    
+    for col in read_pass_length.columns:
+        fig.add_trace(go.Box(
+                             y=read_pass_length[col],
+                             name='Barcode ' + col,
+                             marker_color='#457b9d',
+                             legendgroup="pass"
+                             ))
+
+    for col in read_fail_length.columns:
+        fig.add_trace(go.Box(
+            y=read_fail_length[col],
+            name='Barcode ' + col,
+            marker_color='#e63946',
+            legendgroup="fail"
+        ))
+    
+    fig.update_layout(
+        title={
+            'text': "<b>Read size distribution for each barcode</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Barcodes</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Sequence length (bp)</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Read Type</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=500, width=875
+    )
+
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -904,12 +962,13 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
+    
+    # Save plot into HTML file
+    #py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory")
+    
+    table_html = None
 
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):

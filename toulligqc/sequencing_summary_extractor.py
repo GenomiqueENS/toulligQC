@@ -599,7 +599,7 @@ class SequencingSummaryExtractor:
                                                                             self.my_dpi, images_directory,
                                                                             "1D fail read distribution per barcode."))
 
-            images.append(graph_generator.barcode_length_boxplot(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_length_boxplot(result_dict, self.dataframe_dict,
                                                                  '1D reads size distribution for each barcode',
                                                                  self.my_dpi, images_directory,
                                                                  "Read length boxplot per barcode of pass (in green) "
