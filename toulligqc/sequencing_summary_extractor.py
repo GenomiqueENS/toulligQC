@@ -587,13 +587,13 @@ class SequencingSummaryExtractor:
         images.append(pgg.nseq_over_time(self.time_df, 'Test for nseq over time', self.my_dpi, images_directory, "TODO"))
         
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
                                                                             '1D pass reads percentage of different '
                                                                             'barcodes', self.barcode_selection,
                                                                             self.my_dpi, images_directory,
                                                                             "1D pass read distribution per barcode."))
 
-            images.append(graph_generator.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
                                                                             '1D fail reads percentage of different '
                                                                             'barcodes', self.barcode_selection,
                                                                             self.my_dpi, images_directory,

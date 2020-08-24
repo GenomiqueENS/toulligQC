@@ -36,7 +36,8 @@ from scipy.stats import gaussian_kde
 from sklearn.utils import resample
 from sklearn.preprocessing import normalize
 import plotly.graph_objs as go
-import plotly.offline as py 
+import plotly.offline as py
+import plotly.colors as colors
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
 
@@ -747,7 +748,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
     Needs the samplesheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
+
     for element in barcode_selection:
 
         if all(dataframe_dict['barcode.arrangement'] != element):
@@ -755,28 +756,48 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
             return False
 
     count_sorted = dataframe_dict["read.pass.barcoded"]
-    barcodes = count_sorted.index.values.tolist()
-
-    cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
-
-    sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
-    if len(barcode_selection) <= 10:
-        ax1 = plt.subplot()
-        ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
-        ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", edgecolor="black")
-
+    labels = count_sorted.index.values.tolist()
+    
+    fig = go.Figure(data=[go.Pie(labels=labels,
+                                 values=count_sorted)])
+    if len(labels) <= 12:
+        palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275", "#b8e994", "#78e08f"]
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
     else:
-        ax1 = plt.subplot()
-        length = np.arange(0, len(count_sorted))
-        ax1.bar(length, count_sorted, color=cs)
-        ax1.set_xticks(length)
-        ax1.set_xticklabels(barcodes)
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(line=dict(color='#2a2a2a', width=.5)))
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_layout(
+        title={
+            'text': "<b>Read Pass Barcode Distribution</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Barcodes</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=800, width=1400
+    )
+    
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
 
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
                                  "read count": count_sorted})
@@ -784,7 +805,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
     pd.options.display.float_format = '{:.2f}%'.format
     table_html = pd.DataFrame.to_html(barcode_table)
 
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
@@ -793,7 +814,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
     Needs the samplesheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
+
     for element in barcode_selection:
 
         if all(dataframe_dict['barcode.arrangement'] != element):
@@ -801,28 +822,48 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
             return False
 
     count_sorted = dataframe_dict["read.fail.barcoded"]
-    barcodes = count_sorted.index.values.tolist()
+    labels = count_sorted.index.values.tolist()
 
-    cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
-
-    sizes = [(100 * chiffre) / sum(count_sorted) for chiffre in count_sorted.values]
-    if len(barcode_selection) <= 10:
-        ax1 = plt.subplot()
-        ax1.pie(sizes, labels=None, startangle=90, colors=cs, wedgeprops={'linewidth': 1, 'edgecolor': 'k'})
-        ax1.axis('equal')
-        ax1.legend(labels=['%s, %1.1f %%' % (l, s) for l, s in zip(barcodes, sizes)],
-                   loc="upper right", edgecolor='black')
-
+    fig = go.Figure(data=[go.Pie(labels=labels,
+                                 values=count_sorted)])
+    if len(labels) <= 12:
+        palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275"]
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
     else:
-        ax1 = plt.subplot()
-        length = np.arange(0, len(count_sorted))
-        ax1.bar(length, count_sorted, color=cs)
-        ax1.set_xticks(length)
-        ax1.set_xticklabels(barcodes)
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(line=dict(color='#2a2a2a', width=.5)))
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_layout(
+        title={
+            'text': "<b>Read Pass Barcode Distribution</b>",
+            'y': 1.0,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Barcodes</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=800, width=1400
+    )
+    
+    div = py.plot(fig,
+                  filename=output_file,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
 
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
                                   "read count": count_sorted})
@@ -831,7 +872,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
 
     table_html = pd.DataFrame.to_html(barcode_table)
 
-    return main, output_file, table_html, desc
+    return main, output_file, table_html, desc, div
 
 
 def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_directory, desc):
