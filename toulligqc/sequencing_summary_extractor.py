@@ -474,12 +474,6 @@ class SequencingSummaryExtractor:
         # Remove the column parameter index
         barcode_selection_dataframe.columns.droplevel(level=0)
 
-        # Change columns names : delete word "barcode"
-        col_names = [values.replace('barcode', '')
-                     for values in self.barcode_selection]
-        barcode_selection_dataframe.columns.set_levels(col_names,
-                                                       level=1, inplace=True)
-
         # Remove sequence_length Multindex to only have barcode_arrangement column labels
         barcode_selection_dataframe.columns = barcode_selection_dataframe.columns.droplevel(
             level=0)
@@ -605,7 +599,7 @@ class SequencingSummaryExtractor:
                                                                  "Read length boxplot per barcode of pass (in green) "
                                                                  "and fail (in red) 1D reads."))
 
-            images.append(graph_generator.barcoded_phred_score_frequency(result_dict, self.dataframe_dict,
+            images.append(pgg.barcoded_phred_score_frequency(self.barcode_selection, self.dataframe_dict,
                                                                          '1D reads Mean Phred score distribution '
                                                                          'for each barcode',
                                                                          self.my_dpi, images_directory,
