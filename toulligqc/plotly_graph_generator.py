@@ -32,9 +32,7 @@ from matplotlib.pyplot import table
 from plotly.subplots import make_subplots
 from scipy.interpolate import interp1d
 from scipy.stats import norm
-from scipy.stats import gaussian_kde
 from sklearn.utils import resample
-from sklearn.preprocessing import normalize
 import plotly.graph_objs as go
 import plotly.offline as py
 import plotly.colors as colors
@@ -324,24 +322,26 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
 
-    all_read_downsampled = _interpolate(x=all_read, npoints=2000)
-    read_pass_downsampled = _interpolate(x=read_pass, npoints=2000)
-    read_fail_downsampled = _interpolate(x=read_fail, npoints=2000)
-    
+    # If more than 10.000 reads, interpolate data
+    if len(all_read) > 10000:
+        all_read = _interpolate(x=all_read, npoints=200)
+        read_pass = _interpolate(x=read_pass, npoints=200)
+        read_fail = _interpolate(x=read_fail, npoints=200)
+        
     fig = go.Figure()
     
-    fig.add_trace(go.Scatter(x=all_read_downsampled,
+    fig.add_trace(go.Scatter(x=all_read,
                                name='All reads',
                                marker_color='#f48247',
                                mode="lines"
                                ))
 
-    fig.add_trace(go.Scatter(x=read_pass_downsampled,
+    fig.add_trace(go.Scatter(x=read_pass,
                                name='Pass reads',
                                marker_color='#9ad25b'
                                ))
 
-    fig.add_trace(go.Scatter(x=read_fail_downsampled,
+    fig.add_trace(go.Scatter(x=read_fail,
                                name='Fail reads',
                                marker_color='#44AA89'
                                ))
@@ -396,20 +396,23 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
+    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    dataframe = pd.DataFrame(
+    df = pd.DataFrame(
         {"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
          "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
          "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']
          })
     
-    # downsampling of data
-    dataframe_downsampled = pd.DataFrame({
-        "1D" : _interpolate(dataframe["1D"], 100),
-        "1D pass" : _interpolate(dataframe["1D pass"], 100),
-        "1D fail" : _interpolate(dataframe["1D fail"], 100)
+    # If more than 10.000 reads, interpolate data
+    if len(df["1D"]) > 10000:
+        dataframe = pd.DataFrame({
+        "1D" : _interpolate(df["1D"], 1000),
+        "1D pass" : _interpolate(df["1D pass"], 1000),
+        "1D fail" : _interpolate(df["1D fail"], 1000)
     })
+    else:
+        dataframe = df
     names = {"1D": "All reads",
              "1D pass": "Read pass",
              "1D fail": "Read fail"}
@@ -423,9 +426,9 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                                         "<b>PHRED score violin plot</b>"),
                         horizontal_spacing=0.15)
 
-    for column in dataframe_downsampled.columns:
+    for column in dataframe.columns:
         fig.append_trace(go.Box(
-            y=dataframe_downsampled[column],
+            y=dataframe[column],
             name=names[column],
             marker=dict(
                 opacity=0.3,
@@ -438,7 +441,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
             #boxpoints="outliers"
         ), row=1, col=1)
 
-        fig.add_trace(go.Violin(y=dataframe_downsampled[column],
+        fig.add_trace(go.Violin(y=dataframe[column],
                             name=names[column],
                             meanline_visible=True,
                       #legendgroup="violin",
@@ -448,7 +451,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
 
     fig.update_layout(
         title={
-            'text': "<b>Yield plot through experiment time</b>",
+            'text': "<b>PHRED score distribution of all read types</b>",
             'y': 1.0,
             'x': 0.45,
                     'xanchor': 'center',
@@ -458,11 +461,11 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                         size=26,
                         color="black")},
         xaxis=dict(
-            title="<b>Time (hours)</b>",
+            title="<b>Read type</b>",
             titlefont_size=16
         ),
         yaxis=dict(
-            title='<b>Number of sequences</b>',
+            title='<b>PHRED score</b>',
             titlefont_size=16,
             tickfont_size=14,
         ),
@@ -486,8 +489,9 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                   auto_open=False,
                   show_link=False)
 
-    dataframe = dataframe[["1D", "1D pass", "1D fail"]]
-    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(dataframe))
+
+    df = df[["1D", "1D pass", "1D fail"]]
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(df))
 
     return main, output_file, table_html, desc, div
 
@@ -502,23 +506,28 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
         pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
                       "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
-
-    interp_1D_pass = _interpolate(dataframe["1D pass"], npoints=5000)
-    interp_1D_fail = _interpolate(dataframe["1D fail"], npoints=5000)
-
-    arr_1D_pass = np.array(pd.Series(interp_1D_pass).dropna())
+        
+    # If more than 10.000 reads, interpolate data
+    if len(dataframe["1D"]) > 10000:
+        phred_score_pass = _interpolate(dataframe["1D pass"], npoints=5000)
+        phred_score_fail = _interpolate(dataframe["1D fail"], npoints=5000)
+    else:
+        phred_score_pass = dataframe["1D pass"]
+        phred_score_fail = dataframe["1D fail"]
+    
+    arr_1D_pass = np.array(pd.Series(phred_score_pass).dropna())
     x = np.linspace(0, max(arr_1D_pass), 200)
     mu, std = norm.fit(arr_1D_pass)
     pdf_1D_pass = norm.pdf(x, mu, std)
     
-    arr_1D_fail = np.array(pd.Series(interp_1D_fail).dropna())
+    arr_1D_fail = np.array(pd.Series(phred_score_fail).dropna())
     x2 = np.linspace(0, max(arr_1D_fail), 200)
     mu2, std2 = norm.fit(arr_1D_fail)
     pdf_1D_fail = norm.pdf(x2, mu2, std2)
    
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=interp_1D_pass, name="Read pass", marker_color="#4A69FF", histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=interp_1D_fail, name="Read fail", marker_color="#CE3D1D", histnorm='probability density'))
+    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#4A69FF", histnorm='probability density'))
+    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#CE3D1D", histnorm='probability density'))
     fig.add_trace(go.Scatter(x=x, y=pdf_1D_pass, mode="lines", name='Density curve of read pass', line=dict(color='#4A69FF', width=3, shape="spline", smoothing=0.5)))
     fig.add_trace(go.Scatter(x=x2, y=pdf_1D_fail, mode="lines", name='Density curve of read fail', line=dict(color='#CE3D1D', width=3, shape="spline", smoothing=0.5)))
 
@@ -556,7 +565,6 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
         height=800, width=1400
     )
 
-
     div = py.plot(fig,
                   filename=output_file,
                   include_plotlyjs=True,
@@ -581,9 +589,14 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
     read_pass_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"]
     read_fail_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]
     read_fail_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"]
-        
-    pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
-    fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
+    
+    # If more than 10.000 reads, interpolate data
+    if len(read_pass_length) > 10000:
+        pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
+        fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
+    else:
+        pass_data = [read_pass_length, read_pass_qscore]
+        fail_data = [read_fail_length, read_fail_qscore]
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(x=pass_data[0],
@@ -1068,20 +1081,25 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
 
 def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
         
-        output_file = result_directory + '/' + '_'.join(main.split())
+        output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
         
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
 
         length = dataframe_dict.get('sequence.length')
-        # Interpolation
-        x_int, y_int = _interpolate(time, 150, length, "linear")
+
+         # If more than 10.000 reads, interpolate data
+        if len(length) > 10000:
+            df_time, df_length = _interpolate(time, 200, length, "linear")
+        else:
+            df_time = time
+            df_length = length
         
         fig = go.Figure()
         
         fig.add_trace(go.Scatter(
-        x=x_int,
-        y=y_int,
+        x=df_time,
+        y=df_length,
         mode='lines',
         name='interpolation curve',
         line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
@@ -1134,7 +1152,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
 
 def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, desc):
         
-        output_file = result_directory + '/' + '_'.join(main.split())
+        output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
         # Time data
         time = [t/3600 for t in time_df.dropna()]
@@ -1143,14 +1161,18 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         # Qscore data
         qscore = qscore_df.dropna()
 
-        # Interpolation
-        x_int, y_int = _interpolate(time, 100, qscore, "linear")
+        # If more than 10.000 reads, interpolate data
+        if len(qscore) > 10000:
+            df_time, df_qscore = _interpolate(time, 100, qscore, "linear")
+        else:
+            df_time = time
+            df_score = qscore
         
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=x_int,
-            y=y_int,
-            mode='lines',  #TODO: tests
+            x=df_time,
+            y=df_qscore,
+            mode='lines',
             marker=dict(
         size=10,
         color=qscore,
@@ -1206,14 +1228,13 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
 
 def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
         
-        output_file = result_directory + '/' + '_'.join(main.split())
+        output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
         
         fig = go.Figure()
         
-        # Interpolation
         length = dataframe_dict.get('sequence.length')
         f = interp1d(time, length, kind="nearest")
         # Add traces, one for each slider step
@@ -1304,21 +1325,25 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
     
 def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
         
-        output_file = result_directory + '/' + '_'.join(main.split())
+        output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
     
         speed = pd.Series(sequence_length_df / duration_df)
         
         time = [t/3600 for t in time_df]
         time = np.array(sorted(time))
 
-        # Interpolation
-        x_int, y_int = _interpolate(time, 100, speed, "linear")
+        # If more than 10.000 reads, interpolate data
+        if len(time) > 10000:
+            time_df, speed_df = _interpolate(time, 100, speed, "linear")
+        else:
+            time_df = time
+            speed_df = speed
     
         fig = go.Figure()
         
         fig.add_trace(go.Scatter(
-        x=x_int,
-        y=y_int,
+        x=time_df,
+        y=speed_df,
         fill='tozeroy',
         mode='lines',
         line=dict(color='#AE3F7B', width=3, shape="linear"))
@@ -1372,13 +1397,13 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
     
 def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
         
-        output_file = result_directory + '/' + '_'.join(main.split())
+        output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
         time = [t/3600 for t in time_df]
         time = pd.Series(time)
         
         # create custom xaxis points to reduce graph size
-        time_points = np.linspace(min(time), max(time), 20)
+        time_points = np.linspace(min(time), max(time), 50)
         n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
 
         fig = go.Figure()
@@ -1430,7 +1455,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
                             output_type='div',
                             auto_open=False,
                             show_link=False)
-        
+
         table_html = None
 
         return main, output_file, table_html, desc, div
@@ -1456,9 +1481,3 @@ def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
         #return dict(zip(x_int, y_int))
         return pd.Series(x_int), pd.Series(y_int)
 
-
-def _discretize(data):
-    """
-    """
-    cats, bins = pd.qcut(x=data, q=[0, .25, .5, .75, 1.], retbins=True)
-    return cats, bins
