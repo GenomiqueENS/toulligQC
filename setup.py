@@ -49,7 +49,7 @@ setup(
 
     python_requires='>=3.5.3',
     install_requires=['matplotlib>=3.0.1', 'plotly>=4.5.0', 'seaborn>=0.10', 'h5py>=2.9',
-                      'pandas>=0.9', 'numpy>=1.17', 'scipy>=1.4.0', 'sklearn>=0.22'],
+                      'pandas>=0.9', 'numpy>=1.17', 'scipy>=1.4.0', 'scikit-learn>=0.22'],
 
     entry_points={
         'console_scripts': [
