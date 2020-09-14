@@ -204,7 +204,6 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                        size=18,
                        color="black"
                    )),
-        autosize=True,  # à voir
         width=800,
         height=600,
         plot_bgcolor="white",
@@ -214,7 +213,7 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
     fig = go.Figure(data=trace, layout=layout)
     div = py.plot(fig,
                   filename=output_file,
-                  include_plotlyjs=True,
+                  include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
@@ -230,19 +229,10 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
 def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, result_directory, desc):
 
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-
-    dict_entries = {
-                    'read_pass_length' : result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'],
-                    'read_fail_length' : result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length']}
     
-    all_read = sequence_length_df.copy()
-    all_read.drop(sequence_length_df.loc[sequence_length_df <= 10].index, inplace=True)
-    
-    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].copy()
-    read_pass.drop(result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] <= 10].index, inplace=True)
-    
-    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].copy()
-    read_fail.drop(result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] <= 10].index, inplace=True)
+    all_read = sequence_length_df.loc[sequence_length_df >= 10].values
+    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] >= 10]
+    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] >= 10]
   
     fig = go.Figure()
     
@@ -261,24 +251,24 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
     fig.add_trace(go.Histogram(x=read_fail,
                             nbinsx=500,
                                name='Fail reads',
-                               marker_color='#d90429'  # orange
+                               marker_color='#d90429'  # red
                                ))
     
-
     fig.update_layout(
         title={
             'text': "<b>Distribution of read length</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
+                        family="Open Sans",
                         size=26,
                         color="black")},
         xaxis=dict(
             title="<b>Read length (bp)</b>",
-            titlefont_size=16
+            titlefont_size=16,
+            range=[0, 5000]
         ),
         yaxis=dict(
             title='<b>Number of sequences</b>',
@@ -287,7 +277,7 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
         ),
         legend=dict(
             x=1.02,
-            y=1.0,
+            y=0.95,
             title_text="<b>Legend</b>",
             title=dict(font=dict(size=16)),
             bgcolor='white',
@@ -297,12 +287,10 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
         hovermode='x',
         height=800, width=1400
     )
-    # Adjust trace
-    #fig.update_xaxes(range=[0, max(read_pass)])
 
     div = py.plot(fig,
                   filename=output_file,
-                  include_plotlyjs=True,
+                  include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
@@ -321,7 +309,19 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
+    #TODO: tester à la main ?
+    # r = range(int(min(read_fail)), int(max(read_fail)), 1)
+    # read_fail_array = np.array(read_fail)[indices.astype(int)]
+    # bins = np.linspace(int(min(read_fail)), int(max(read_fail)), 200)
+    # digitized = np.digitize(read_fail, bins)
+    # bin_means = [read_fail[digitized == i].mean() for i in range(1, len(bins))]
+    # bins = np.linspace(int(min(read_fail)), int(max(read_fail)), 20)
 
+    # cut = pd.qcut(pd.Series(read_fail) , q=20)
+    # print(cut.value_counts())
+    
+    # s = pd.Series(read_fail).groupby(cut)
+    
     # If more than 10.000 reads, interpolate data
     if len(all_read) > 10000:
         all_read = _interpolate(x=all_read, npoints=200)
@@ -332,24 +332,24 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     
     fig.add_trace(go.Scatter(x=all_read,
                                name='All reads',
-                               marker_color='#f48247',
+                               marker_color='#fca311',
                                mode="lines"
                                ))
 
     fig.add_trace(go.Scatter(x=read_pass,
                                name='Pass reads',
-                               marker_color='#9ad25b'
+                               marker_color='#51a96d'
                                ))
 
     fig.add_trace(go.Scatter(x=read_fail,
                                name='Fail reads',
-                               marker_color='#44AA89'
+                               marker_color='#d90429'
                                ))
     
     fig.update_layout(
         title={
             'text': "<b>Yield plot through experiment time</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -368,7 +368,7 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
         ),
         legend=dict(
             x=1.02,
-            y=1.0,
+            y=0.95,
             title_text="<b>Legend</b>",
             title=dict(font=dict(size=16)),
             bgcolor='white',
@@ -381,7 +381,7 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
 
     div = py.plot(fig,
                   filename=output_file,
-                  include_plotlyjs=True,
+                  include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
@@ -417,9 +417,12 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
              "1D pass": "Read pass",
              "1D fail": "Read fail"}
     
-    colors = {"1D": 'Blue',
-              "1D pass": '#FFC11E',
-              "1D fail": '#ff849a'}
+    # colors = {"1D": 'Blue',
+    #           "1D pass": '#FFC11E',
+    #           "1D fail": '#ff849a'}
+    colors = {"1D": '#fca311',
+              "1D pass": '#51a96d',
+              "1D fail": '#d90429'}
 
     fig = make_subplots(rows=1, cols=2,
                         subplot_titles=("<b>PHRED score boxplot</b>",
@@ -452,7 +455,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     fig.update_layout(
         title={
             'text': "<b>PHRED score distribution of all read types</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -471,7 +474,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
         ),
         legend=dict(
             x=1.02,
-            y=1.0,
+            y=0.95,
             title_text="<b>Legend</b>",
             title=dict(font=dict(size=16)),
             bgcolor='white',
@@ -484,7 +487,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
 
     div = py.plot(fig,
                   filename=output_file,
-                  include_plotlyjs=True,
+                  include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
@@ -534,7 +537,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     fig.update_layout(
         title={
             'text': "<b>PHRED Score Density Distribution</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -553,7 +556,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
         ),
         legend=dict(
             x=1.02,
-            y=1.0,
+            y=0.95,
             title_text="<b>Legend</b>",
             title=dict(font=dict(size=16)),
             bgcolor='white',
@@ -567,7 +570,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
 
     div = py.plot(fig,
                   filename=output_file,
-                  include_plotlyjs=True,
+                  include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
@@ -602,21 +605,21 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
     fig.add_trace(go.Scatter(x=pass_data[0],
                              y=pass_data[1],
                              name="Pass reads",
-                             marker_color="#f48247",
+                             marker_color="#9ad25b",
                              mode="markers"
                              ))
 
     fig.add_trace(go.Scatter(x=fail_data[0],
                              y=fail_data[1],
                              name='Fail reads',
-                             marker_color='#9ad25b',
+                             marker_color='#f48247',
                              mode="markers"
                              ))
 
     fig.update_layout(
         title={
             'text': "<b>Correlation between read length and PHRED score</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -625,7 +628,7 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
                         size=26,
                         color="black")},
         xaxis=dict(
-            title="<b>SEquence length (bp)</b>",
+            title="<b>Sequence length (bp)</b>",
             titlefont_size=16
         ),
         yaxis=dict(
@@ -653,7 +656,7 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
 
     div = py.plot(fig,
                   filename=output_file,
-                  include_plotlyjs=True,
+                  include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
@@ -785,7 +788,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
     fig.update_layout(
         title={
             'text': "<b>Read Pass Barcode Distribution</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -851,7 +854,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
     fig.update_layout(
         title={
             'text': "<b>Read Pass Barcode Distribution</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -931,7 +934,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     fig.update_layout(
         title={
             'text': "<b>Read size distribution for each barcode</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -1026,7 +1029,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
     fig.update_layout(
         title={
             'text': "<b>PHRED score distribution for each barcode</b>",
-            'y': 1.0,
+            'y': 0.95,
             'x': 0.45,
                     'xanchor': 'center',
                     'yanchor': 'top',
@@ -1126,8 +1129,8 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
                 tickfont_size=14,
             ),
             legend=dict(
-                x=1.02,
-                y=1.0,
+                x=1.0,
+                y=0.95,
                 title_text="<b>Legend</b>",
                 title=dict(font=dict(size=16)),
                 bgcolor='rgba(255, 255, 255, 0)',
@@ -1140,7 +1143,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         
         div = py.plot(fig,
                             filename=output_file,
-                            include_plotlyjs=True,
+                            include_plotlyjs=False,
                             output_type='div',
                             auto_open=False,
                             show_link=False)
@@ -1184,7 +1187,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         fig.update_layout(    
                 title={
                 'text': "<b>PHRED score over experiment time</b>",
-                'y':1.0,
+                'y':0.95,
                 'x':0.45,
                 'xanchor': 'center',
                 'yanchor': 'top',
@@ -1201,15 +1204,6 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
                 titlefont_size=16,
                 tickfont_size=14,
             ),
-            legend=dict(
-                x=1.02,
-                y=1.0,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='white',
-                bordercolor="white",
-                font=dict(size=15)
-            ),
             height=850, width=1500,
             paper_bgcolor="#F8F8FF",
             plot_bgcolor="#F8F8FF"
@@ -1217,7 +1211,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
 
         div = py.plot(fig,
                             filename=output_file,
-                            include_plotlyjs=True,
+                            include_plotlyjs=False,
                             output_type='div',
                             auto_open=False,
                             show_link=False)
@@ -1274,8 +1268,8 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
                 tickfont_size=14,
             ),
             legend=dict(
-                x=1.02,
-                y=1.0,
+                x=1.0,
+                y=0.95,
                 title_text="<b>Legend</b>",
                 title=dict(font=dict(size=16)),
                 bgcolor='rgba(255, 255, 255, 0)',
@@ -1313,7 +1307,7 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
         
         div = py.plot(fig,
                             filename=output_file,
-                            include_plotlyjs=True,
+                            include_plotlyjs=False,
                             output_type='div',
                             auto_open=False,
                             show_link=False)
@@ -1370,8 +1364,8 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
                 tickfont_size=14,
             ),
             legend=dict(
-                x=1.02,
-                y=1.0,
+                x=1.0,
+                y=0.95,
                 title_text="<b>Legend</b>",
                 title=dict(font=dict(size=16)),
                 bgcolor='rgba(255, 255, 255, 0)',
@@ -1385,7 +1379,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         
         div = py.plot(fig,
                             filename=output_file,
-                            include_plotlyjs=True,
+                            include_plotlyjs=False,
                             output_type='div',
                             auto_open=False,
                             show_link=False)
@@ -1394,7 +1388,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
 
         return main, output_file, table_html, desc, div
     
-    
+
 def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
         
         output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
@@ -1436,8 +1430,8 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
                 tickfont_size=14,
             ),
             legend=dict(
-                x=1.02,
-                y=1.0,
+                x=1.0,
+                y=0.95,
                 title_text="<b>Legend</b>",
                 title=dict(font=dict(size=16)),
                 bgcolor='rgba(255, 255, 255, 0)',
@@ -1451,7 +1445,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
         
         div = py.plot(fig,
                             filename=output_file,
-                            include_plotlyjs=True,
+                            include_plotlyjs=False,
                             output_type='div',
                             auto_open=False,
                             show_link=False)

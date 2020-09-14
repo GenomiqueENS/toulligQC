@@ -97,6 +97,9 @@ class SequencingSummaryExtractor:
         # Rename 'sequence_length_template' and 'mean_qscore_template'
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                            'mean_qscore_template': 'mean_qscore'}, inplace=True)
+        
+        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+        self.dataframe_1d = self.dataframe_1d.fillna(0)
         self.channel_df = self.dataframe_1d['channel']
         self.passes_filtering_df = self.dataframe_1d['passes_filtering']
         self.sequence_length_df = self.dataframe_1d['sequence_length']
@@ -732,7 +735,7 @@ class SequencingSummaryExtractor:
 
 
     def _compute_n50(self):
-        """Compute N50 value of """
+        """Compute N50 value of total sequence length"""
         data = self.sequence_length_df.dropna().values
         data.sort()
         half_sum = data.sum()/2
