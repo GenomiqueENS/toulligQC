@@ -562,7 +562,7 @@ class SequencingSummaryExtractor:
                                                                "or fail (1D fail in red) categories."))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
+        images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
 
@@ -572,16 +572,16 @@ class SequencingSummaryExtractor:
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
-        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over experiment time', self.my_dpi, images_directory,
+        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over time', self.my_dpi, images_directory,
                                                 "Length of reads through run time in hours"))
         images.append(pgg.length_over_time_slider(self.time_df, self.dataframe_dict, 'Sequence length over experiment time with custom number of points', self.my_dpi,
                                                   images_directory, "Custom interpolated scatter plot with sequence length over time"
                                                   ))
-        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over experiment time', self.my_dpi, images_directory,
+        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
-        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over experiment time', self.my_dpi, images_directory,
+        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over time', self.my_dpi, images_directory,
                                           "Speed of reads in base per second through run time in hours"))
-        images.append(pgg.nseq_over_time(self.time_df, 'Test for nseq over time', self.my_dpi, images_directory, "TODO"))
+        images.append(pgg.nseq_over_time(self.time_df, 'Number of reads over time', self.my_dpi, images_directory, "Number of sequences through run time in hours"))
         
         if self.is_barcode:
             images.append(pgg.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
