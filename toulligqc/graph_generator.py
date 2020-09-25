@@ -224,7 +224,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
                          ]
-            label = ("FastQ entries", "1D",'Null sequence length', "1D pass","1D pass barcoded" ,"1D fail","1D fail barcoded")
+            label = ("FastQ entries", "1D",'Null sequence length', "1D pass","1D fail")
             nd = np.arange(len(read_type))
             bars = ax.bar(nd, read_type, align='center', color=["lightblue", "salmon",'purple', "yellowgreen","orangered"],
                           edgecolor="black", linewidth=1)
@@ -261,7 +261,7 @@ def read_count_histogram(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc
 
 
-def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def read_length_multihistogram(result_dict, main, my_dpi, result_directory, desc):
     """
     Plots an histogram of the read length for the different types of read:
     1D, 1Dpass, 1D fail
@@ -269,14 +269,14 @@ def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     minimum, maximum = \
-        min(dataframe_dict["sequence.length"]), \
-        max(dataframe_dict["sequence.length"])
+        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
+        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
     read_type = ['1D', '1D pass', '1D fail']
 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     ax = plt.subplot()
 
-    data = [dataframe_dict["sequence.length"],
+    data = [result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
             result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]]
     ls = 2 ** np.linspace(_safe_log(minimum), _safe_log(maximum), 30)
@@ -296,7 +296,7 @@ def read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result
     ax.set_ylabel('Read number')
 
     dataframe = \
-        pd.DataFrame({"1D": dataframe_dict["sequence.length"],
+        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"],
                       "1D pass": result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"],
                       "1D fail": result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]})
     dataframe = dataframe[["1D", "1D pass", "1D fail"]]
@@ -475,7 +475,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc
 
 
-def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
@@ -492,9 +492,9 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
                             color="orangered")
 
     plt.legend((read_pass, read_fail), ("1D pass", "1D fail"))
-    plt.xlim(np.min(dataframe_dict["sequence.length"]
-                    .loc[dataframe_dict["sequence.length"] > 0]),
-             np.max(dataframe_dict["sequence.length"]))
+    plt.xlim(np.min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
+                    .loc[result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] > 0]),
+             np.max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]))
 
     plt.yticks()
     plt.xscale('log')
@@ -603,7 +603,7 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 #
 
 
-def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -612,11 +612,11 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(dataframe_dict['barcode.arrangement'] != element):
+        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = dataframe_dict["read.pass.barcoded"]
+    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -649,7 +649,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
     return main, output_file, table_html, desc
 
 
-def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -658,11 +658,11 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(dataframe_dict['barcode.arrangement'] != element):
+        if all(result_dict['basecaller.sequencing.summary.1d.extractor.barcode.arrangement'] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = dataframe_dict["read.fail.barcoded"]
+    count_sorted = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -696,7 +696,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
     return main, output_file, table_html, desc
 
 
-def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_directory, desc):
+def barcode_length_boxplot(result_dict, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -705,7 +705,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=datafame_dict['barcode_selection_sequence_length_melted_dataframe'],
+    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_melted_dataframe'],
                      x='barcodes', y='length', hue='passes_filtering',
                      showfliers=False, palette={True: "yellowgreen", False: "orangered"},
                      hue_order=[True, False])
@@ -715,7 +715,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
 
-    df = datafame_dict['barcode_selection_sequence_length_dataframe']
+    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -733,7 +733,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     return main, output_file, table_html, desc
 
 
-def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -742,7 +742,7 @@ def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, re
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    ax = sns.boxplot(data=dataframe_dict['barcode_selection_sequence_phred_melted_dataframe'],
+    ax = sns.boxplot(data=result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_melted_dataframe'],
                      x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
                      palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -750,7 +750,7 @@ def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, re
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
 
-    df = dataframe_dict['barcode_selection_sequence_phred_dataframe']
+    df = result_dict['basecaller.sequencing.summary.1d.extractor.barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -767,7 +767,7 @@ def barcoded_phred_score_frequency(result_dict, dataframe_dict, main, my_dpi, re
     return main, output_file, table_html, desc
 
 #
-#  1Dsquare plots
+#  1Dsquare plots
 #
 
 
@@ -871,14 +871,14 @@ def dsqr_read_length_multihistogram(result_dict, main, my_dpi, result_directory,
     """
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
-    read_1d = result_dict["sequence.length"]
+    read_1d = result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]
     read_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
     read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length']
     read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length']
 
     minimum, maximum = \
-        min(result_dict["sequence.length"]), \
-        max(result_dict["sequence.length"])
+        min(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"]), \
+        max(result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"])
     read_type = ['1D', '1Dsquare', '1Dsquare pass', '1Dsquare fail']
 
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
