@@ -38,60 +38,72 @@ class OneDSquareSequencingSummaryExtractor:
     Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
     """
     def __init__(self, config_dictionary):
-
+        """
+        Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in 
+        sequencing_summary_source and seqencing_summary_1dsqr_source if the path points to a file,
+        the others cases are managed in check_conf and _load_sequencing_summary_data
+        :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary, sequencing_1dsq_summary.txt and barcoding files
+        """
         self.config_dictionary = config_dictionary
-        self.sequencing_summary_source = self.config_dictionary['sequencing_summary_source']
-        self.sequencing_1dsqr_summary_source = self.config_dictionary['sequencing_summary_1dsqr_source']
+        self.sequencing_summary_source = self.config_dictionary[
+            'sequencing_summary_source']
         self.result_directory = config_dictionary['result_directory']
+        self.sequencing_summary_files = self.sequencing_summary_source.split(
+            '\t')
+        # For 1dsqr config
+        self.sequencing_summary_1dsqr_source = self.config_dictionary[
+            'sequencing_summary_1dsqr_source']
+        self.sequencing_summary_1dsqr_files = self.sequencing_summary_1dsqr_source.split(
+            '\t')
+
+        self.is_barcode = False
+        if config_dictionary['barcoding'] == 'True':
+            for f in self.sequencing_summary_files:
+                if self._is_barcode_file(
+                        f) or self._is_sequencing_summary_with_barcodes(
+                            f
+                        ) or self._is_sequencing_summary_1dsqr_with_barcodes(
+                            f):
+                    self.is_barcode = True
+
         self.my_dpi = int(self.config_dictionary['dpi'])
 
-        # Attribute initialized in the init() method
-        self.dataframe_1d = None
-        self.channel = None
-        self.dataframe_1dsqr = None
-        self.barcode_selection = None
-
-        if config_dictionary['barcoding'] == 'True':
-            self.is_barcode = True
-        else:
-            self.is_barcode = False
-
-        self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
-
-        if len(self.sequencing_summary_files) == 1:
-            if os.path.isdir(self.sequencing_summary_source):
-                self.sequencing_summary_files = [self.sequencing_summary_source + "/sequencing_summary.txt"]
-            else:
-                self.sequencing_summary_files = [self.sequencing_summary_source]
-
-        self.sequencing_1dsqr_summary_files = self.sequencing_1dsqr_summary_source.split('\t')
-
-        if len(self.sequencing_1dsqr_summary_files) == 1:
-            if os.path.isdir(self.sequencing_1dsqr_summary_source):
-                self.sequencing_1dsqr_summary_files = [self.sequencing_1dsqr_summary_source + "/sequencing_1dsq_summary.txt"]
-            else:
-                self.sequencing_1dsqr_summary_files = [self.sequencing_1dsqr_summary_source]
-
     def check_conf(self):
-        """Configuration checking"""
+        """
+        Check if the sequencing summary source contains a 1dsqr sequencing summary file and a sequencing summary file
+        :return: boolean and a string for error message
+        """
+        # TODO: never executed ?
+        if not self.sequencing_summary_files[
+                0] or not self.sequencing_summary_1dsqr_files[0]:
+            return False, "No file has been defined"
 
-        # Check if a sequencing summary file has been defined
-        if len(self.sequencing_summary_files) == 0:
-            return False, "No sequencing summary file defined"
+        found = False
+        while not found:
+            for f in self.sequencing_summary_files:
+                try:
+                    if self._is_sequencing_summary_file(
+                            f) or self._is_sequencing_summary_with_barcodes(f):
+                        found = True
+                except FileNotFoundError:
+                    return False, "No such file or directory " + f
+            break
+        if not found:
+            return False, "No sequencing summary file has been found"
 
-        # Check if sequencing summary files exists
-        for f in self.sequencing_summary_files:
-            if not os.path.isfile(f):
-                return False, "Sequencing summary file does not exists: " + f
-
-        # Check if a 1d2 sequencing summary file has been defined
-        if len(self.sequencing_1dsqr_summary_files) == 0:
-            return False, "No 1dsqr sequencing summary file defined"
-
-        # Check if 1d2 sequencing summary files exists
-        for f in self.sequencing_1dsqr_summary_files:
-            if not os.path.isfile(f):
-                return False, "Sequencing summary file does not exists: " + f
+        # For 1dsqr files
+        while not found:
+            for f in self.sequencing_summary_1dsqr_files:
+                try:
+                    if self._is_sequencing_summary_1dsqr_file(
+                            f
+                    ) or self._is_sequencing_summary_1dsqr_with_barcodes(f):
+                        found = True
+                except FileNotFoundError:
+                    return False, "No such file or directory " + f
+            break
+        if not found:
+            return False, "No 1D squared sequencing summary file has been found"
 
         return True, ""
 
@@ -101,25 +113,46 @@ class OneDSquareSequencingSummaryExtractor:
         :return:
         """
 
-        # Panda's object for 1d_summary
-        self.dataframe_1d = pd.read_csv(self.sequencing_summary_files[0], sep="\t")
+        # Variables from sequencing_summary/barcoding files
+        self.dataframe_1d = pd.read_csv(self.sequencing_summary_files[0],
+                                        sep="\t")
         self.channel = self.dataframe_1d['channel']
         self.dataframe_1d = self.dataframe_1d.replace([np.inf, -np.inf], 0)
-        self.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != 0]
-        self.dataframe_1d["Yield"] = sum(self.dataframe_1d['sequence_length_template'])
+        self.dataframe_1d = self.dataframe_1d[
+            self.dataframe_1d['num_events'] != 0]
+        self.dataframe_1d["Yield"] = sum(
+            self.dataframe_1d['sequence_length_template'])
 
-        # Panda's object for 1dsqr_summary
+        # Rename 'sequence_length_template' and 'mean_qscore_template'
+        # self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
+        #                                    'mean_qscore_template': 'meaself.dataframe_1d = self.dataframe_1d[self.dataframe_1d['num_events'] != sequencing_summary_files[0]n_qscore'}, inplace=True)
+
+        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+        # self.dataframe_1d = self.dataframe_1d.fillna(0)
+        # self.channel_df = self.dataframe_1d['channel']
+        # self.passes_filtering_df = self.dataframe_1d['passes_filtering']
+        # self.sequence_length_df = self.dataframe_1d['sequence_length']
+        # self.qscore_df = self.dataframe_1d['mean_qscore']
+        # self.time_df = self.dataframe_1d['start_time']
+        # self.duration_df = self.dataframe_1d['duration']
+
+        # Variables from sequencing_summary_1dsqr/barcoding files
         self.dataframe_1dsqr = self._load_sequencing_summary_data()
 
         if self.is_barcode:
 
-            self.barcode_selection = self.config_dictionary['barcode_selection']
+            self.barcode_selection = self.config_dictionary[
+                'barcode_selection']
 
-            # try:
-            #     self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
-            #         self.barcode_selection), 'barcode_arrangement'] = 'unclassified'
-            # except ValueError:
-            #     sys.exit('No barcode found in sequencing summary file')
+        if self.dataframe_1d.empty or self.dataframe_1dsqr.empty:
+            raise pd.errors.EmptyDataError("Dataframe is empty")
+
+        # Dictionary for storing all pd.Series and pd.Dataframe entries
+        self.dataframe_dict = {}
+
+        if self.is_barcode:
+            self.barcode_selection = self.config_dictionary[
+                'barcode_selection']
 
     @staticmethod
     def get_name():
@@ -183,6 +216,9 @@ class OneDSquareSequencingSummaryExtractor:
         #
         # Extract from 1D summary source
         #
+        
+         # Compute N50
+        result_dict['basecaller.sequencing.summary.1d.extractor.n50'] = self._compute_n50()
 
         # Read count
         result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] = \
@@ -753,15 +789,191 @@ class OneDSquareSequencingSummaryExtractor:
 
         return result
 
-    def _is_barcode_file(self, filename):
+    def _load_sequencing_summary_1dsqr_data(self):
         """
-        Chech if a sequencing summary file is a barcode summary file.
-        :param filename: path of the file to test
-        :return: True if the sequencing summary file is a barcode summary file
+        Load sequencing summary dataframe with or without barcodes
+        :return: a Pandas Dataframe object
         """
+        # Initialization
+        files = self.sequencing_summary_1dsqr_files
 
-        with open(filename) as f:
-            line = f.readline()
-            if not line.startswith('filename'):
-                return True
-            return False
+        summary_dataframe = None
+        barcode_dataframe = None
+
+        sequencing_summary_columns = [
+            'channel', 'start_time1', 'start_time2', 'passes_filtering',
+            'sequence_length', 'mean_qscore', 'trimmed_duration1',
+            'trimmed_duration2'
+        ]
+
+        sequencing_summary_datatypes = {
+            'channel': np.int16,
+            'start_time1': np.float,
+            'start_time2': np.float,
+            'passes_filtering': np.bool,
+            'sequence_length': np.int16,
+            'mean_qscore_template': np.float,
+            'trimmed_duration1': np.float,
+            'trimmed_duration2': np.float
+        }
+
+        # If barcoding files are provided, merging of dataframes must be done on read_id column
+        barcoding_summary_columns = ['read_id', 'barcode_arrangement']
+
+        barcoding_summary_datatypes = {
+            'read_id': object,
+            'barcode_arrangement': object
+        }
+
+        try:
+            # If 1 file and it's a 1dsqr_sequencing_summary.txt
+            if len(files) == 1 and self._is_sequencing_summary_1dsqr_file(
+                    files[0]):
+                return pd.read_csv(files[0],
+                                   sep="\t",
+                                   usecols=sequencing_summary_columns,
+                                   dtype=sequencing_summary_datatypes)
+
+            # If 1 file and it's a 1_dsqr_sequencing_summary.txt with barcode info, load column barcode_arrangement
+            elif len(
+                    files
+            ) == 1 and self._is_sequencing_summary_1dsqr_with_barcodes(
+                    files[0]):
+                sequencing_summary_columns.append('barcode_arrangement')
+                sequencing_summary_datatypes.update(
+                    {'barcode_arrangement': object})
+
+                return pd.read_csv(files[0],
+                                   sep="\t",
+                                   usecols=sequencing_summary_columns,
+                                   dtype=sequencing_summary_datatypes)
+
+            # If multiple files, check if there's a barcoding one and a sequencing one :
+            for f in files:
+
+                # check for presence of barcoding files
+                if self._is_barcode_file(f):
+                    dataframe = pd.read_csv(f,
+                                            sep="\t",
+                                            usecols=barcoding_summary_columns,
+                                            dtype=barcoding_summary_datatypes)
+                    if barcode_dataframe is None:
+                        barcode_dataframe = dataframe
+                    # if a barcoding file has already been read, append the 2 dataframes
+                    else:
+                        barcode_dataframe = barcode_dataframe.append(
+                            dataframe, ignore_index=True)
+
+                # check for presence of sequencing_summary file, if True add column read_id for merging with barcode dataframe
+                else:
+                    if self._is_sequencing_summary_1dsqr_file(f):
+                        sequencing_summary_columns.append('read_id1')
+                        sequencing_summary_datatypes.update(
+                            {'read_id1': object})
+
+                        dataframe = pd.read_csv(
+                            f,
+                            sep="\t",
+                            usecols=sequencing_summary_columns,
+                            dtype=sequencing_summary_datatypes)
+                        if summary_dataframe is None:
+                            summary_dataframe = dataframe
+                        else:
+                            summary_dataframe = summary_dataframe.append(
+                                dataframe, ignore_index=True)
+
+            if barcode_dataframe is None:
+                # If no barcodes in files, no merged dataframes on column 'read_id'
+                return summary_dataframe.drop(columns=['read_id1'])
+            else:
+                summary_dataframe.rename(columns={"read_id1": "read_id"},
+                                         inplace=True)
+                dataframes_merged = pd.merge(summary_dataframe,
+                                             barcode_dataframe,
+                                             on='read_id',
+                                             how='left')
+                # delete column read_id after merging
+                del dataframes_merged['read_id']
+
+                return dataframes_merged
+
+        except IOError:
+            raise FileNotFoundError("Sequencing summary file not found")
+
+    @staticmethod
+    def _is_barcode_file(filename):
+        """
+        Check if input is a barcoding summary file i.e. has the column barcode_arrangement
+        :param filename: path of the file to test
+        :return: True if the filename is a barcoding summary file
+        """
+        try:
+            with open(filename, 'r') as f:
+                header = f.readline()
+            return header.startswith(
+                'read_id') and 'barcode_arrangement' in header
+        except FileNotFoundError:
+            "No barcoding file was found"
+
+    @staticmethod
+    def _is_sequencing_summary_file(filename):
+        """
+        Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
+        :param filename: path of the file to test
+        :return: True if the file is indeed a sequencing summary file
+        """
+        try:
+            with open(filename, 'r') as f:
+                header = f.readline()
+            return header.startswith(
+                'filename') and not 'barcode_arrangement' in header
+        except IOError:
+            raise FileNotFoundError
+
+    @staticmethod
+    def _is_sequencing_summary_with_barcodes(filename):
+        """
+        Check if the sequencing summary has also barcode information :
+        - check for presence of columns "filename" and "barcode_arrangement"
+        :param filename: path of the file to test
+        :return: True if the filename is a sequencing summary file with barcodes
+        """
+        try:
+            with open(filename, 'r') as f:
+                header = f.readline()
+                return header.startswith(
+                    'filename') and 'barcode_arrangement' in header
+        except IOError:
+            raise FileNotFoundError
+
+    # Static methods for checking 1dsqr files
+
+    @staticmethod
+    def _is_sequencing_summary_1dsqr_file(filename):
+        """
+        Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
+        :param filename: path of the file to test
+        :return: True if the file is indeed a sequencing summary file
+        """
+        try:
+            with open(filename, 'r') as f:
+                header = f.readline()
+            return header.startswith(
+                'filename1') and not 'barcode_arrangement' in header
+        except IOError:
+            raise FileNotFoundError
+
+    @staticmethod
+    def _is_sequencing_summary_1dsqr_with_barcodes(filename):
+        pass
+
+    def _compute_n50(self):
+        """Compute N50 value of total sequence length"""
+        data = self.dataframe_1d['sequence_length_template'].dropna().values
+        data.sort()
+        half_sum = data.sum() / 2
+        cum_sum = 0
+        for v in data:
+            cum_sum += v
+            if cum_sum >= half_sum:
+                return int(v)
