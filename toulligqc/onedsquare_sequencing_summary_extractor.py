@@ -28,12 +28,13 @@
 import pandas as pd
 import sys
 from toulligqc import graph_generator
+from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 import numpy as np
 import re
 import os.path
 
 
-class OneDSquareSequencingSummaryExtractor:
+class OneDSquareSequencingSummaryExtractor(SSE):
     """
     Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
     """
@@ -44,25 +45,17 @@ class OneDSquareSequencingSummaryExtractor:
         the others cases are managed in check_conf and _load_sequencing_summary_data
         :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary, sequencing_1dsq_summary.txt and barcoding files
         """
-        self.config_dictionary = config_dictionary
-        self.sequencing_summary_source = self.config_dictionary[
-            'sequencing_summary_source']
-        self.result_directory = config_dictionary['result_directory']
-        self.sequencing_summary_files = self.sequencing_summary_source.split(
-            '\t')
-        # For 1dsqr config
+        SSE.__init__(self, config_dictionary)
         self.sequencing_summary_1dsqr_source = self.config_dictionary[
             'sequencing_summary_1dsqr_source']
         self.sequencing_summary_1dsqr_files = self.sequencing_summary_1dsqr_source.split(
             '\t')
 
+        # overiding attribute .is_barcode
         self.is_barcode = False
         if config_dictionary['barcoding'] == 'True':
-            for f in self.sequencing_summary_files:
-                if self._is_barcode_file(
-                        f) or self._is_sequencing_summary_with_barcodes(
-                            f
-                        ) or self._is_sequencing_summary_1dsqr_with_barcodes(
+            for f in self.sequencing_summary_1dsqr_files:
+                if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(f) or self._is_sequencing_summary_1dsqr_with_barcodes(
                             f):
                     self.is_barcode = True
 
@@ -70,28 +63,19 @@ class OneDSquareSequencingSummaryExtractor:
 
     def check_conf(self):
         """
-        Check if the sequencing summary source contains a 1dsqr sequencing summary file and a sequencing summary file
+        Check if the sequencing summary 1dsqr source contains a 1dsqr sequencing summary file
         :return: boolean and a string for error message
         """
+        # Check the presence of sequencing_summary.txt
+        if SSE.check_conf(self)[0] == False:
+            return False, "No sequencing summary file has been found"
+        
         # TODO: never executed ?
-        if not self.sequencing_summary_files[
-                0] or not self.sequencing_summary_1dsqr_files[0]:
+        if not self.sequencing_summary_1dsqr_files[0]:
             return False, "No file has been defined"
 
+        # Check the presence of sequencing_1dsq_summary.txt
         found = False
-        while not found:
-            for f in self.sequencing_summary_files:
-                try:
-                    if self._is_sequencing_summary_file(
-                            f) or self._is_sequencing_summary_with_barcodes(f):
-                        found = True
-                except FileNotFoundError:
-                    return False, "No such file or directory " + f
-            break
-        if not found:
-            return False, "No sequencing summary file has been found"
-
-        # For 1dsqr files
         while not found:
             for f in self.sequencing_summary_1dsqr_files:
                 try:
@@ -217,7 +201,7 @@ class OneDSquareSequencingSummaryExtractor:
         # Extract from 1D summary source
         #
         
-         # Compute N50
+        # Compute N50
         result_dict['basecaller.sequencing.summary.1d.extractor.n50'] = self._compute_n50()
 
         # Read count
@@ -754,7 +738,7 @@ class OneDSquareSequencingSummaryExtractor:
         Load sequencing summary data frame.
         :return: a Pandas DataFrame object
         """
-        files = self.sequencing_1dsqr_summary_files
+        files = self.sequencing_summary_1dsqr_files
 
         if len(files) == 1:
             return pd.read_csv(files[0], sep="\t")
@@ -914,37 +898,6 @@ class OneDSquareSequencingSummaryExtractor:
                 'read_id') and 'barcode_arrangement' in header
         except FileNotFoundError:
             "No barcoding file was found"
-
-    @staticmethod
-    def _is_sequencing_summary_file(filename):
-        """
-        Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
-        :param filename: path of the file to test
-        :return: True if the file is indeed a sequencing summary file
-        """
-        try:
-            with open(filename, 'r') as f:
-                header = f.readline()
-            return header.startswith(
-                'filename') and not 'barcode_arrangement' in header
-        except IOError:
-            raise FileNotFoundError
-
-    @staticmethod
-    def _is_sequencing_summary_with_barcodes(filename):
-        """
-        Check if the sequencing summary has also barcode information :
-        - check for presence of columns "filename" and "barcode_arrangement"
-        :param filename: path of the file to test
-        :return: True if the filename is a sequencing summary file with barcodes
-        """
-        try:
-            with open(filename, 'r') as f:
-                header = f.readline()
-                return header.startswith(
-                    'filename') and 'barcode_arrangement' in header
-        except IOError:
-            raise FileNotFoundError
 
     # Static methods for checking 1dsqr files
 
