@@ -45,7 +45,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         the others cases are managed in check_conf and _load_sequencing_summary_data
         :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary, sequencing_1dsq_summary.txt and barcoding files
         """
-        SSE.__init__(self, config_dictionary)
+        super().__init__(config_dictionary)
+        self.sse = SSE(config_dictionary)
         self.sequencing_summary_1dsqr_source = self.config_dictionary[
             'sequencing_summary_1dsqr_source']
         self.sequencing_summary_1dsqr_files = self.sequencing_summary_1dsqr_source.split(
@@ -67,7 +68,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :return: boolean and a string for error message
         """
         # Check the presence of sequencing_summary.txt
-        if SSE.check_conf(self)[0] == False:
+        if self.sse.check_conf()[0] == False:
             return False, "No sequencing summary file has been found"
         
         # TODO: never executed ?
@@ -96,16 +97,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         Initialisation
         :return:
         """
-
-        # Variables from sequencing_summary/barcoding files
-        self.dataframe_1d = pd.read_csv(self.sequencing_summary_files[0],
-                                        sep="\t")
-        self.channel = self.dataframe_1d['channel']
-        self.dataframe_1d = self.dataframe_1d.replace([np.inf, -np.inf], 0)
-        self.dataframe_1d = self.dataframe_1d[
-            self.dataframe_1d['num_events'] != 0]
-        self.dataframe_1d["Yield"] = sum(
-            self.dataframe_1d['sequence_length_template'])
+        self.sse.init()
+        self.dataframe_1d = self.sse.dataframe_1d
 
         # Rename 'sequence_length_template' and 'mean_qscore_template'
         # self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
@@ -121,7 +114,15 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # self.duration_df = self.dataframe_1d['duration']
 
         # Variables from sequencing_summary_1dsqr/barcoding files
-        self.dataframe_1dsqr = self._load_sequencing_summary_data()
+        self.dataframe_1dsqr = self._load_sequencing_summary_1dsqr_data()
+        
+        # merging df_1d with df_1dsqr
+        self.df_merged = self.dataframe_1d.merge(self.dataframe_1dsqr, left_on="mean_qscore", right_on="channel", how="right")
+        self.df_merged.dropna(axis=0, how="any", inplace=True)
+        
+        # dataframe_dicts
+        self.dataframe_dict_1dsqr = {}
+        self.dataframe_dict = self.sse.dataframe_dict
 
         if self.is_barcode:
 
@@ -201,130 +202,15 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Extract from 1D summary source
         #
         
-        # Compute N50
-        result_dict['basecaller.sequencing.summary.1d.extractor.n50'] = self._compute_n50()
-
-        # Read count
-        result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] = \
-            len(self.dataframe_1d['num_events'])
-
-        # 1D pass information
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"] = \
-            len(self.dataframe_1d.loc[self.dataframe_1d['passes_filtering'] == bool(True)])
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"] = \
-            self.dataframe_1d.sequence_length_template.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.sorted"] = \
-            sorted(self.dataframe_1d.start_time.loc[self.dataframe_1d['passes_filtering'] == bool(True)] / 3600)
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"] = \
-            self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(True)]
-
-        # 1D fail information
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"] = \
-            len(self.dataframe_1d.loc[self.dataframe_1d['passes_filtering'] == bool(False)])
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"] = \
-            self.dataframe_1d.sequence_length_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.sorted"] = \
-            sorted(self.dataframe_1d.start_time.loc[self.dataframe_1d['passes_filtering'] == bool(False)] / 3600)
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"] = \
-            self.dataframe_1d.mean_qscore_template.loc[self.dataframe_1d['passes_filtering'] == bool(False)]
-
-        # The field  "num_called_template" has been renamed "num_events_template" in Guppy
-        if "num_called_template" in self.dataframe_1d:
-            num_called_template_field = "num_called_template"
-        else:
-            num_called_template_field = "num_events_template"
-
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.count'] = \
-            len(self.dataframe_1d[self.dataframe_1d[num_called_template_field] != 0])
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] = \
-            len(self.dataframe_1d[self.dataframe_1d['sequence_length_template'] == 0])
-
-        # Read proportion
-        result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries.ratio"] = \
-            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] / \
-            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries']
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.count.ratio"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.ratio"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.ratio"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.ratio"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.fastq.entries.frequency"] = \
-            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries'] / \
-            result_dict['basecaller.sequencing.summary.1d.extractor.fastq.entries']*100
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.frequency"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.with.length.equal.zero.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"] = \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"] / \
-            result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]*100
-
-        # Read length information
-        result_dict["basecaller.sequencing.summary.1d.extractor.sequence.length"] = \
-            self.dataframe_1d.sequence_length_template[self.dataframe_1d[num_called_template_field] != 0]
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.passes.filtering"] = \
-            self.dataframe_1d['passes_filtering']
-
-        # Yield
-        result_dict["basecaller.sequencing.summary.1d.extractor.yield"] = \
-            sum(self.dataframe_1d['sequence_length_template'] / 1000000000)
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"] = \
-            sorted(sorted(self.dataframe_1d['start_time'] / 3600))
-
-        result_dict["basecaller.sequencing.summary.1d.extractor.run.time"] = \
-            int(max(result_dict["basecaller.sequencing.summary.1d.extractor.start.time.sorted"]))
-
-        # Qscore information
-        result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"] = self.dataframe_1d.loc[:, "mean_qscore_template"]
-
-        # Channel occupancy information
-        result_dict["basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics"] = self._occupancy_channel()
-        channel_occupancy_statistics = result_dict['basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics']
-
-        for index, value in channel_occupancy_statistics.iteritems():
-            result_dict['basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics.' + index] = value
-
-        # Length's statistic information provided in the result_dict
-        result_dict["basecaller.sequencing.summary.1d.extractor.all.read.length"] = \
-            self.dataframe_1d['sequence_length_template'].describe()
-
-        for index, value in result_dict["basecaller.sequencing.summary.1d.extractor.all.read.length"].iteritems():
-            result_dict["basecaller.sequencing.summary.1d.extractor.all.read.length." + index] = value
-        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.pass.length")
-        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.fail.length")
-
-        # Qscore's statistic information provided in the result_dict
-        result_dict['basecaller.sequencing.summary.1d.extractor.all.read.qscore'] = \
-            pd.DataFrame.describe(self.dataframe_1d['mean_qscore_template']).drop("count")
-
-        for index, value in result_dict["basecaller.sequencing.summary.1d.extractor.all.read.qscore"].iteritems():
-            result_dict["basecaller.sequencing.summary.1d.extractor.all.read.qscore." + index] = value
-
-        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.pass.qscore")
-        self.describe_dict(result_dict, "basecaller.sequencing.summary.1d.extractor.read.fail.qscore")
+        #Karine: la clef sequencing.telemetry.extractor.software.analysis n'est jamais 1dsqr_basecalling
+        # 1D² Basecaller analysis
+        if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
+            result_dict['sequencing.telemetry.extractor.software.analysis'] = '1dsqr_basecalling'
+        
+        # Call to extract parent method to get all keys, values from 1D extractor
+        self.sse.extract(result_dict)
+        self.dataframe_dict = self.sse.dataframe_dict
+        test = self.dataframe_dict["sequence.length"]
 
         #
         # Extract from 1dsqr sequencing summary
@@ -570,13 +456,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images/'
-        images = list([graph_generator.read_count_histogram(result_dict, '1D read count histogram',
-                                                            self.my_dpi, images_directory,
-                                                            "Number of reads produced before (Fast 5 in blue) and after"
-                                                            " (1D in orange) basecalling. The basecalled reads are "
-                                                            "filtered with a 7.5 quality score threshold in pass "
-                                                            "(1D pass in green) or fail (1D fail in red) categories.")])
-
+        # Get all images from 1D data
+        images = self.sse.graph_generation(result_dict)
         images.append(graph_generator.dsqr_read_count_histogram(result_dict, "1Dsquare read count histogram",
                                                                 self.my_dpi, images_directory,
                                                                 "Number of reads produced basecalled (1D in orange) and"
@@ -585,14 +466,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                 "(1Dsquare pass in green) or fail "
                                                                 "(1Dsquare fail in red) categories."))
 
-        images.append(graph_generator.read_length_multihistogram(result_dict, '1D read size histogram',
-                                                                 self.my_dpi, images_directory,
-                                                                 "Size distribution of basecalled reads (1D in orange)."
-                                                                 " The basecalled reads are filtered with a 7.5 quality"
-                                                                 " score threshold in pass (1D pass in green) or fail "
-                                                                 "(1D fail in red) categories."))
-
-        images.append(graph_generator.dsqr_read_length_multihistogram(result_dict, '1Dsquare read size histogram',
+        images.append(graph_generator.dsqr_read_length_multihistogram(result_dict, self.dataframe_dict, '1Dsquare read size histogram',
                                                                       self.my_dpi, images_directory,
                                                                       "Size distribution of basecalled reads "
                                                                       "(1D in orange) and 1Dsquare reads (in gold). "
@@ -600,20 +474,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                       "quality score threshold in pass "
                                                                       "(1Dsquare pass in green) or fail "
                                                                       "(1Dsquare fail in red) categories."))
-
-        images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type',
-                                                         self.my_dpi, images_directory,
-                                                         "Yield plot of basecalled reads (1D in orange). "
-                                                         "The basecalled reads are filtered with a 7.5 quality score "
-                                                         "threshold in pass (1D pass in green) or fail "
-                                                         "(1D fail in red) categories."))
-
-        images.append(graph_generator.read_quality_multiboxplot(result_dict, "1D reads quality boxplot",
-                                                                self.my_dpi, images_directory,
-                                                                "Boxplot of 1D reads (in orange) quality. "
-                                                                "The basecalled reads are filtered with a 7.5 quality "
-                                                                "score threshold in pass (1D pass in green) or fail "
-                                                                "(1D fail in red) categories."))
 
         images.append(graph_generator.dsqr_read_quality_multiboxplot(result_dict, "1Dsquare reads quality boxplot",
                                                                      self.my_dpi, images_directory,
@@ -623,13 +483,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                      "(1Dsquare pass in green) or fail (1Dsquare "
                                                                      "fail in red) categories."))
 
-        images.append(graph_generator.allphred_score_frequency(result_dict, 'Mean Phred score frequency of '
-                                                                            '1D read type',
-                                                               self.my_dpi, images_directory,
-                                                               "The basecalled reads are filtered with a 7.5 quality "
-                                                               "score threshold in pass (1D pass in green) or fail "
-                                                               "(1D fail in red) categories."))
-
         images.append(graph_generator.dsqr_allphred_score_frequency(result_dict, "Mean Phred score frequency of "
                                                                                  "1Dsquare read type",
                                                                     self.my_dpi, images_directory,
@@ -637,19 +490,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                     "quality score threshold in pass (1Dsquare pass "
                                                                     "in green) or fail (1Dsquare fail in red) "
                                                                     "categories."))
-
-        channel_count = self.channel
-        total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
-                                                       self.my_dpi, images_directory,
-                                                       "Number of reads sequenced per pore channel."))
-
-        images.append(graph_generator.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',
-                                                      self.my_dpi, images_directory,
-                                                      "The Mean Phred score varies according to the read length. "
-                                                      "The basecalled reads are filtered with a 7.5 quality score "
-                                                      "threshold in pass (1D pass in green) or fail "
-                                                      "(1D fail in red) categories."))
 
         images.append(graph_generator.scatterplot_1dsqr(result_dict, "Mean Phred score function of 1Dsquare "
                                                                      "read length",
@@ -922,7 +762,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
     def _compute_n50(self):
         """Compute N50 value of total sequence length"""
-        data = self.dataframe_1d['sequence_length_template'].dropna().values
+        data = self.dataframe_1dsqr['sequence_length'].dropna().values
         data.sort()
         half_sum = data.sum() / 2
         cum_sum = 0
