@@ -864,7 +864,7 @@ def dsqr_read_count_histogram(result_dict, main, my_dpi, result_directory, desc)
     return main, output_file, table_html, desc
 
 
-def dsqr_read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def dsqr_read_length_multihistogram(result_dict, dataframe_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plots an histogram of the read length for the different types of read:
     1D, 1D square, 1D square pass, 1D square fail
@@ -872,7 +872,7 @@ def dsqr_read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, r
     output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
 
     read_1d = dataframe_dict["sequence.length"]
-    read_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
+    read_1dsqr = dataframe_dict_1dsqr['sequence.length']
     read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length']
     read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length']
 
@@ -915,7 +915,7 @@ def dsqr_read_length_multihistogram(result_dict, dataframe_dict, main, my_dpi, r
     return main, output_file, table_html, desc
 
 
-def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc):
+def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plots a boxplot of reads quality per read type (1D square, 1D square pass, 1D square fail)
     """
@@ -924,7 +924,7 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     mean_qscore_1d = result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]
 
-    mean_qscore_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']
+    mean_qscore_1dsqr = dataframe_dict_1dsqr["mean.qscore"]
     read_pass_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore']
     read_fail_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
 
@@ -959,7 +959,7 @@ def dsqr_read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, 
     return main, output_file, table_html, desc
 
 
-def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
+def dsqr_phred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plot the distribution of the phred score
     """
@@ -967,17 +967,17 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     plt.subplot()
 
-    sns.distplot(result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'], bins=15, color='goldenrod',
+    sns.distplot(dataframe_dict_1dsqr["mean.qscore"], bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1Dsquare")
 
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
 
-    dataframe = pd.DataFrame({"1Dsquare": result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']})
+    dataframe = pd.DataFrame({"1Dsquare": dataframe_dict_1dsqr["mean.qscore"]})
     rd = dataframe.describe().drop('count').round(2).reset_index()
 
-    plt.axvline(x=result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
+    plt.axvline(x=dataframe_dict_1dsqr["mean.qscore"].describe()['50%'], color='goldenrod')
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -988,7 +988,7 @@ def dsqr_phred_score_frequency(result_dict, main, my_dpi, result_directory, desc
     return main, output_file, table_html, desc
 
 
-def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
+def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plot the distribution of the phred score per read type (1D square , 1D square pass, 1D square fail)
     """
@@ -996,17 +996,17 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[2, 1])
     qscore_1d = result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"]
-    qscore_1dsqr = result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore']
+    qscore_1dsqr = dataframe_dict_1dsqr["mean.qscore"]
     mean_qscore_read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore']
     mean_qscore_read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
 
     ax = plt.subplot(gs[0])
-    sns.distplot(result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'], ax=ax, bins=15, color='goldenrod',
+    sns.distplot(dataframe_dict_1dsqr["mean.qscore"], ax=ax, bins=15, color='goldenrod',
                  hist_kws=dict(edgecolor="k", linewidth=1), hist=True, label="1Dsquare")
 
     ax.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.0f}'))
     ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:.2f}'))
-    plt.axvline(x=result_dict['basecaller.sequencing.summary.1dsqr.extractor.mean.qscore'].describe()['50%'], color='goldenrod')
+    plt.axvline(x=dataframe_dict_1dsqr["mean.qscore"].describe()['50%'], color='goldenrod')
     plt.legend()
     plt.xlabel("Mean Phred score")
     plt.ylabel("Frequency")
@@ -1044,7 +1044,7 @@ def dsqr_allphred_score_frequency(result_dict, main, my_dpi, result_directory, d
     return main, output_file, table_html, desc
 
 
-def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
+def scatterplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length converted in log
     """
@@ -1061,9 +1061,9 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     read_pass = plt.scatter(x=length_1dsqr_read_pass, y=qscore_1dsqr_read_pass, color="yellowgreen")
     read_fail = plt.scatter(x=length_1dsqr_read_fail, y=qscore_1dsqr_read_fail, color="orangered")
     plt.legend((read_pass, read_fail), ("1Dsquare pass", "1Dsquare fail"))
-    plt.xlim(np.min(result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']
-                    .loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length'] > 0]),
-             np.max(result_dict['basecaller.sequencing.summary.1dsqr.extractor.sequence.length']))
+    plt.xlim(np.min(dataframe_dict_1dsqr['sequence.length']
+                    .loc[dataframe_dict_1dsqr['sequence.length'] > 0]),
+             np.max(dataframe_dict_1dsqr['sequence.length']))
     plt.xscale('log')
     plt.xlabel("Sequence length")
     plt.ylabel("Mean Phred score")
