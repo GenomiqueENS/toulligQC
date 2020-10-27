@@ -1081,7 +1081,7 @@ def scatterplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_di
 #
 
 
-def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D square read pass percentage per barcode of a run.
     Needs the sample sheet file describing the barcodes to run.
@@ -1090,11 +1090,11 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict_1dsqr["barcode.arrangement"] != element):
             print("The barcode {} doesn't exist".format(element))
             return False
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded"]
+    count_sorted = dataframe_dict_1dsqr["read.pass.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -1128,7 +1128,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, main, barcode_selection
     return main, output_file, table_html, desc
 
 
-def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D square read fail percentage per barcode of a run.
     Needs the sample sheet file describing the barcodes to run
@@ -1137,10 +1137,10 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
     for element in barcode_selection:
 
-        if all(result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode.arrangement'] != element):
+        if all(dataframe_dict_1dsqr["barcode.arrangement"] != element):
             print("The barcode {} doesn't exist".format(element))
 
-    count_sorted = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded"]
+    count_sorted = dataframe_dict_1dsqr["read.fail.barcoded"]
     barcodes = count_sorted.index.values.tolist()
 
     cs = plt.get_cmap('Spectral')(np.arange(len(barcodes)) / len(barcodes))
@@ -1175,7 +1175,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, main, barcode_selection
     return main, output_file, table_html, desc
 
 
-def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
+def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D square pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -1186,7 +1186,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
 
     ax = \
         sns.boxplot(
-            data=result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_length_melted_dataframe'],
+            data=dataframe_dict_1dsqr['barcode_selection_sequence_length_melted_dataframe'],
             x='barcodes', y='length', hue='passes_filtering', showfliers=False,
             palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -1194,7 +1194,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
     plt.xlabel('Barcodes')
     plt.ylabel('Read length(bp)')
 
-    df = result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_length_dataframe']
+    df = dataframe_dict_1dsqr['barcode_selection_sequence_length_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -1211,7 +1211,7 @@ def barcode_length_boxplot_1dsqr(result_dict, main, my_dpi, result_directory, de
     return main, output_file, table_html, desc
 
 
-def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plot boxplot of the 1D square pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -1222,7 +1222,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
 
     ax = \
         sns.boxplot(
-            data=result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_phred_melted_dataframe'],
+            data=dataframe_dict_1dsqr['barcode_selection_sequence_phred_melted_dataframe'],
             x='barcodes', y='qscore', hue='passes_filtering', showfliers=False,
             palette={True: "yellowgreen", False: "orangered"}, hue_order=[True, False])
     handles, _ = ax.get_legend_handles_labels()
@@ -1230,7 +1230,7 @@ def barcoded_phred_score_frequency_1dsqr(result_dict, main, my_dpi, result_direc
     plt.xlabel('Barcodes')
     plt.ylabel('Mean Phred score')
 
-    df = result_dict['basecaller.sequencing.summary.1dsqr.extractor.barcode_selection_sequence_phred_dataframe']
+    df = dataframe_dict_1dsqr['barcode_selection_sequence_phred_dataframe']
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T

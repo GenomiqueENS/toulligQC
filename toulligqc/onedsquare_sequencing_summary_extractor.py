@@ -152,35 +152,56 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         return '{0}.{1}'.format(self.get_report_data_file_id(), key)
 
-    @staticmethod
-    def describe_dict(result_dict, attribute):
+    def _describe_dict(self, result_dict: dict, function, entry: str):
         """
+        Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
         :param result_dict:
-        :param attribute:
-        :return:
+        :param function: function returning the values to describe
+        :param entry: entry to put in result_dict completed with the statistics
         """
-        dictionary = pd.Series.describe(result_dict[attribute])
-        for key in dict(dictionary):
-            result_dict[attribute + '.' + key] = dictionary[key]
+        stats = pd.Series.describe(function).drop("count")
+        for key, value in stats.iteritems():
+            self._set_result_to_dict(result_dict, entry + '.' + key, value)
 
-    def barcode_frequency(self, result_dict, entry, prefix=''):
+
+    def _barcode_frequency(self, dataframe_dict_1dsqr: dict, entry: str, df_filtered) -> pd.Series:
         """
-        Adds barcode frequency to the result_dict dictionary
-        :param result_dict:
-        :param entry:
+        Count reads by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
+        Regroup all non used barcodes in index "other"
+        Compute all frequency values for each number of barcoded reads
+        :param dataframe_dict_1dsqr: dictionary filled with Pandas type values
+        :param entry: entry about barcoded counts
         :param prefix: key prefix
-        :return: result_dict dictionary filled and barcodes frequency in pandas series type
+        :return: Series with all barcodes (used, non used, and unclassified) frequencies
         """
-        barcode_count = result_dict[self.add_key_to_result_dict(entry)].value_counts()
-        count_sorted = barcode_count.sort_index()[self.barcode_selection]
-        result_dict[self.add_key_to_result_dict(prefix + 'barcoded.count')] = sum(count_sorted.drop("unclassified"))
-        result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")] = (sum(barcode_count)-sum(count_sorted))
-        other_barcode_count = pd.Series(result_dict[self.add_key_to_result_dict(prefix + "with.other.barcodes.count")], index=['other'])
-        count_sorted = count_sorted.append(other_barcode_count).sort_index()
+        # Regroup all barcoded read in Series
+        all_barcode_count = df_filtered.value_counts()
 
-        for key in dict(count_sorted):
-            result_dict[self.add_key_to_result_dict(prefix) + key + ".frequency"] = \
-                count_sorted[key]*100/sum(count_sorted)
+        # Sort by list of barcode_selection
+        count_sorted = all_barcode_count.sort_index()[self.barcode_selection]
+        # Replace all NaN values to zero
+        count_sorted.fillna(0, downcast='int16', inplace=True)
+
+        # Compute sum of all used barcodes without barcode 'unclassified'
+        self.dataframe_dict_1dsqr[entry + '.count'] = sum(count_sorted.drop("unclassified"))
+        
+        # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
+        non_used_barcodes_count = entry.replace(".barcoded", ".non.used.barcodes.count")
+
+        # Compute all reads of barcodes that are not in the barcode_selection list
+        self.dataframe_dict_1dsqr[non_used_barcodes_count] = sum(all_barcode_count) - sum(count_sorted)
+        
+        # Create Series for all non-used barcode counts and rename index array with "other"
+        other_all_barcode_count = pd.Series(self.dataframe_dict_1dsqr[non_used_barcodes_count], index=['other'])
+        
+        # Append Series of non-used barcode counts to the Series of barcode_selection counts
+        count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
+
+        # Compute frequency for all barcode counts and save into dataframe_dict_1dsqr
+        for barcode in count_sorted.to_dict():
+            frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
+            self.dataframe_dict_1dsqr[entry.replace(".barcoded", ".") + barcode + ".frequency"] =  frequency_value
+
         return count_sorted
     
     @staticmethod
@@ -197,7 +218,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
     def _series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str, boolean: bool) -> pd.Series:
         """
         Returns a Panda's Series object with the number of values of different columns filtered by a boolean
-        :param dataframe: dataframe_1d
+        :param dataframe: dataframe_1dsqr
         :param column_name1: 1st column to filter
         :param column_name2: 2nd column to filter
         :param boolean: access columns of dataframe by boolean array
@@ -209,7 +230,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
     def _sorted_list_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool, denominator: int):
         """
         Returns a sorted list of values of different columns filtered by a boolean and divided by the denominator
-        :param dataframe: dataframe_1d
+        :param dataframe: dataframe_1dsqr
         :param column_name1: 1st column to filter
         :param column_name2: 2nd column to filter
         :param boolean: access columns of dataframe by boolean array
@@ -261,9 +282,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Extract from 1D summary source
         #
         
-        #TODO: la clef sequencing.telemetry.extractor.software.analysis n'est jamais 1dsqr_basecalling
-        # 1D² Basecaller analysis
-        if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
+        # If key already in result_dict, replace 1D by 1D² Basecaller analysis
+        if 'sequencing.telemetry.extractor.software.analysis' in result_dict:
             result_dict['sequencing.telemetry.extractor.software.analysis'] = '1dsqr_basecalling'
         
         # Call to extract parent method to get all keys, values from 1D extractor
@@ -316,174 +336,173 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.dataframe_dict_1dsqr["sequence.length"] = self.df_merged["sequence_length"]
         self.dataframe_dict_1dsqr["passes.filtering"] = self.df_merged["passes_filtering"]
         self.dataframe_dict_1dsqr["mean.qscore"] = self.df_merged["mean_qscore"]
+        
+        # Get statistics about all reads length and store each value into result_dict
+        sequence_length_statistics = self.dataframe_1dsqr['sequence_length'].describe()
 
-        # Length's statistic information provided in the result_dict
-        result_dict[self.add_key_to_result_dict('all.read.length')] = \
-            self.dataframe_1dsqr['sequence_length'].describe()
+        for index, value in sequence_length_statistics.items():
+            self._set_result_value(
+                result_dict, "all.read.length." + index, value)
 
-        for index, value in result_dict[self.add_key_to_result_dict('all.read.length')].iteritems():
-            result_dict[self.add_key_to_result_dict('all.read.length.') + index] = value
-        self.describe_dict(result_dict, self.add_key_to_result_dict("read.pass.length"))
-        self.describe_dict(result_dict, self.add_key_to_result_dict("read.fail.length"))
+        # Add statistics (without count) about read pass/fail length in the result_dict
+        self._describe_dict(result_dict, self._get_result_value(
+            result_dict, "read.pass.length"), "read.pass.length")
+        self._describe_dict(result_dict, self._get_result_value(
+            result_dict, "read.fail.length"), "read.fail.length")
 
-        # Qscore's statistic information provided in the result_dict
-        result_dict[self.add_key_to_result_dict('all.read.qscore')] = \
-            pd.DataFrame.describe(self.dataframe_1dsqr['mean_qscore']).drop("count")
+        # Get Qscore statistics without count value and store them into result_dict
+        qscore_statistics = self.dataframe_1dsqr['mean_qscore'].describe().drop(
+            "count")
 
-        for index, value in result_dict[self.add_key_to_result_dict('all.read.qscore')].iteritems():
-            result_dict[self.add_key_to_result_dict('all.read.qscore.') + index] = value
-        self.describe_dict(result_dict, self.add_key_to_result_dict("read.pass.qscore"))
-        self.describe_dict(result_dict, self.add_key_to_result_dict("read.fail.qscore"))
+        for index, value in qscore_statistics.items():
+            self._set_result_value(
+                result_dict, "all.read.qscore." + index, value)
 
-        # In case of barcoded samples
+        # Add statistics (without count) about read pass/fail qscore in the result_dict
+        self._describe_dict(result_dict, self._get_result_value(
+            result_dict, "read.pass.qscore"), "read.pass.qscore")
+        self._describe_dict(result_dict, self._get_result_value(
+            result_dict, "read.fail.qscore"), "read.fail.qscore")
 
         if self.is_barcode:
-            self.barcode_selection.append('unclassified')
+            self._extract_barcode_info(result_dict)
 
-            result_dict[self.add_key_to_result_dict("barcode.arrangement")] = \
-                self.dataframe_1dsqr["barcode_arrangement"]
+    def _extract_barcode_info(self, result_dict):
+        """
+        :param result_dict:
+        Gather all barcode info for graphs : reads pass/fail and frequency per barcodes
+        """
+        # Add values unclassified and other to barcode list
+        if "unclassified" not in self.barcode_selection:
+            self.barcode_selection.append("unclassified")
 
-            result_dict[self.add_key_to_result_dict("read.pass.barcode")] = \
-                self.dataframe_1dsqr.barcode_arrangement.loc[
-                    self.dataframe_1dsqr['passes_filtering'] == bool(True)]
+        # Create keys barcode.arrangement, and read.pass/fail.barcode in dataframe_dict_1dsqr with all values of 
+        # column barcode_arrangement when reads are passed/failed
+        self.dataframe_dict_1dsqr["barcode.arrangement"] = self.dataframe_1dsqr["barcode_arrangement"]
 
-            result_dict[self.add_key_to_result_dict("read.fail.barcode")] = \
-                self.dataframe_1dsqr.barcode_arrangement.loc[
-                    self.dataframe_1dsqr['passes_filtering'] == bool(False)]
+        # Get barcodes frequency by read type
+        series_read_pass_barcode = self._series_cols_boolean_elements(self.dataframe_1dsqr, "barcode_arrangement",
+                                                                      "passes_filtering", True)
+        
+        self.dataframe_dict_1dsqr["read.pass.barcoded"] = self._barcode_frequency(self.dataframe_dict_1dsqr, "read.pass.barcoded",
+                                                         series_read_pass_barcode)
 
-            # Get barcodes frequency by read type
-            result_dict[self.add_key_to_result_dict("all.read.barcoded")] = self.barcode_frequency(result_dict, "barcode.arrangement", 'all.read.')
-            result_dict[self.add_key_to_result_dict("read.pass.barcoded")] = self.barcode_frequency(result_dict, "read.pass.barcode", 'read.pass.')
-            result_dict[self.add_key_to_result_dict("read.fail.barcoded")] = self.barcode_frequency(result_dict, "read.fail.barcode", 'read.fail.')
+        series_read_fail_barcode = self._series_cols_boolean_elements(self.dataframe_1dsqr, "barcode_arrangement",
+                                                                      "passes_filtering", False)
 
-            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count"]/result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"] *100
-            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.frequency"] = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]/result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"] *100
+        self.dataframe_dict_1dsqr["read.fail.barcoded"] = self._barcode_frequency(self.dataframe_dict_1dsqr, "read.fail.barcoded",
+                                                         series_read_fail_barcode)
 
-            self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
-                    self.barcode_selection), 'barcode_arrangement'] = 'other'
+        read_pass_barcoded_count = self.dataframe_dict_1dsqr["read.pass.barcoded.count"]
+        read_fail_barcoded_count = self.dataframe_dict_1dsqr["read.fail.barcoded.count"]
 
-            result_dict[self.add_key_to_result_dict("passes.filtering")] = self.dataframe_1dsqr['passes_filtering']
+        # Add key "read.pass.barcoded.frequency"
+        total_reads = self._get_result_value(result_dict, "read.count")
+        self._set_result_value(result_dict, "read.pass.barcoded.frequency",
+                               (read_pass_barcoded_count / total_reads) * 100)
 
-            pattern = '(\d{2})'
-            length = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
-            phred = {'passes_filtering': result_dict[self.add_key_to_result_dict("passes.filtering")]}
+        # Add key "read.fail.barcoded.frequency"
+        self._set_result_value(result_dict, "read.fail.barcoded.frequency",
+                               (read_fail_barcoded_count / total_reads) * 100)
 
+        # Replaces all rows with unused barcodes (ie not in barcode_selection) in column barcode_arrangement with the 'other' value
+        self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
+            self.barcode_selection), 'barcode_arrangement'] = 'other'
+
+        pattern = '(\\d{2})'
+        if "other" not in self.barcode_selection:
             self.barcode_selection.append('other')
 
-            for index_barcode, barcode in enumerate(self.barcode_selection):
-                barcode_selected_dataframe = \
-                    self.dataframe_1dsqr[self.dataframe_1dsqr['barcode_arrangement'] == barcode]
+        # Create dataframes filtered by barcodes and read quality
+        for index_barcode, barcode in enumerate(self.barcode_selection):
+            barcode_selected_dataframe = self.dataframe_1dsqr[
+                self.dataframe_1dsqr['barcode_arrangement'] == barcode]
+            barcode_selected_read_pass_dataframe = barcode_selected_dataframe.loc[
+                self.dataframe_1dsqr['passes_filtering'] == bool(True)]
+            barcode_selected_read_fail_dataframe = barcode_selected_dataframe.loc[
+                self.dataframe_1dsqr['passes_filtering'] == bool(False)]
+            # search for number of barcode used
+            match = re.search(pattern, barcode)
+        if match:
+            barcode_name = match.group(0)
+        else:
+            barcode_name = barcode
+            # Add all barcode statistics to result_dict based on values of selected dataframes
+            self.sse._barcode_stats(result_dict, barcode_selected_dataframe,
+                                barcode_selected_read_pass_dataframe, barcode_selected_read_fail_dataframe,
+                                barcode_name)
 
-                barcode_selected_read_pass_dataframe = \
-                    barcode_selected_dataframe.loc[barcode_selected_dataframe['passes_filtering'] == bool(True)]
+        # Add filtered dataframes (all info by barcode and by length or qscore) to dataframe_dict_1dsqr
+        self._barcode_selection_dataframe("sequence_length", "barcode_selection_sequence_length_dataframe",
+                                              "length")
+        self._barcode_selection_dataframe("mean_qscore", "barcode_selection_sequence_phred_dataframe",
+                                              "qscore")
+        
+    def _barcode_selection_dataframe(self, df_column_name: str, df_key_name: str, melted_column_name: str):
+        """
+        Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
+        Reshape the dataframes from wide to long format to display barcode, read type and read length or phred score per read
+        These dataframes are used for sequence length and qscore boxplots
+        :param key: string name to put in dataframe_dict_1dsqr
+        :param df_column_name: name of the dataframe_1dsqr column used for the new barcode_selection_dataframes
+        :param melted_column_name: value (qscore or length) to use for renaming column of melted dataframe
+        """
+        # Count total number of rows
+        nrows = self.dataframe_1dsqr.shape[0]
+        # Create a new dataframe with 3 columns : 'passes_filtering', 'barcode_arrangement' and the column name parameter
+        filtered_df = self.dataframe_1dsqr.filter(
+            items=['passes_filtering', df_column_name, 'barcode_arrangement'])
 
-                barcode_selected_read_fail_dataframe = \
-                    barcode_selected_dataframe.loc[barcode_selected_dataframe['passes_filtering'] == bool(False)]
+        # Reshape dataframe with new MultiIndex : numbered index of df length + passes filtering index and then shape data by barcode
+        barcode_selection_dataframe = filtered_df.set_index([pd.RangeIndex(start=0, stop=nrows), 'passes_filtering'],
+                                                            drop=True).pivot(columns="barcode_arrangement")
 
-                match = re.search(pattern, barcode)
-                if match:
-                    length[match.group(0)] = barcode_selected_dataframe['sequence_length']
-                    phred[match.group(0)] = barcode_selected_dataframe['mean_qscore']
+        # Remove the column parameter index
+        barcode_selection_dataframe.columns.droplevel(level=0)
 
-                    for index, value in barcode_selected_dataframe['sequence_length']\
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('all.read.') + barcode + '.length.' + index] = value
+        # Remove sequence_length Multindex to only have barcode_arrangement column labels
+        barcode_selection_dataframe.columns = barcode_selection_dataframe.columns.droplevel(
+            level=0)
 
-                    for index, value in barcode_selected_read_pass_dataframe['sequence_length']\
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('read.pass.') + barcode + '.length.' + index] = value
+        # Reset index to have all labels in the same level
+        barcode_selection_dataframe.reset_index(
+            level='passes_filtering', inplace=True)
 
-                    for index, value in barcode_selected_read_fail_dataframe['sequence_length']\
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.length.' + index] = value
+        # Add final dataframe to dataframe_dict_1dsqr
+        self.dataframe_dict_1dsqr[df_key_name] = barcode_selection_dataframe
 
-                    for index, value in barcode_selected_dataframe['mean_qscore']\
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('all.read.') + barcode + '.qscore.' + index] = value
+        # Unpivot dataframe to have only one column of barcodes + passes filtering + melted column name (qscore/length)
+        melted_dataframe = pd.melt(
+            barcode_selection_dataframe,
+            id_vars=['passes_filtering'],
+            var_name="barcodes", value_name=melted_column_name)
 
-                    for index, value in barcode_selected_read_pass_dataframe['mean_qscore']\
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('read.pass.') + barcode + '.qscore.' + index] = value
+        # Add melted dataframe to dataframe_dict_1dsqr too
+        self.dataframe_dict_1dsqr[df_key_name.replace("_dataframe", "_melted_dataframe")] = melted_dataframe
 
-                    for index, value in barcode_selected_read_fail_dataframe['mean_qscore']\
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('read.fail.') + barcode + '.qscore.' + index] = value
+    def _barcode_stats(self, result_dict, barcode_selected_dataframe, barcode_selected_read_pass_dataframe,
+                       barcode_selected_read_fail_dataframe, barcode_name):
+        """
+        :param result_dict:
+        :param prefix: report.data id of the extractor (string)
+        :param barcode_selected: barcode filtered dataframes
+        Put statistics (with describe method) about barcode length and qscore in result_dict for each selected dataframe : all.read/read.pass and read.fail
+        N.b. does not include count statistic for qscore
+        """
+        df_dict = {'all.read.': barcode_selected_dataframe,
+                   'read.pass.': barcode_selected_read_pass_dataframe,
+                   'read.fail.': barcode_selected_read_fail_dataframe}
 
-                if barcode == 'unclassified':
-                    length['Unclassified'] = barcode_selected_dataframe['sequence_length']
-                    phred['Unclassified'] = barcode_selected_dataframe['mean_qscore']
+        for df_name, df in df_dict.items():  # df_dict.items = all.read/read.pass/read.fail
+            for stats_index, stats_value in df['sequence_length'].describe().items():
+                key_to_result_dict = df_name + barcode_name + '.length.' + stats_index
+                self._set_result_value(
+                    result_dict, key_to_result_dict, stats_value)
 
-                    for index, value in barcode_selected_dataframe['sequence_length']\
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('all.read.unclassified.length.') + index] = value
-
-                    for index, value in barcode_selected_read_pass_dataframe['sequence_length']\
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('read.pass.unclassified.length.') + index] = value
-
-                    for index, value in barcode_selected_read_fail_dataframe['sequence_length']\
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('read.fail.unclassified.length.') + index] = value
-
-                    for index, value in barcode_selected_dataframe['mean_qscore']\
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('all.read.unclassified.qscore.') + index] = value
-
-                    for index, value in barcode_selected_read_pass_dataframe['mean_qscore']\
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('read.pass.unclassified.qscore.') + index] = value
-
-                    for index, value in barcode_selected_read_fail_dataframe['mean_qscore']\
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('read.fail.unclassified.qscore.') + index] = value
-
-                if barcode == 'other':
-
-                    length['Other Barcodes'] = barcode_selected_dataframe['sequence_length']
-                    phred['Other Barcodes'] = barcode_selected_dataframe['mean_qscore']
-
-                    for index, value in barcode_selected_dataframe['sequence_length'] \
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('all.read.with.other.barcodes.length.') + index] = value
-
-                    for index, value in barcode_selected_read_pass_dataframe['sequence_length'] \
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('read.pass.with.other.barcodes.length.') + index] = value
-
-                    for index, value in barcode_selected_read_fail_dataframe['sequence_length'] \
-                            .describe().iteritems():
-                        result_dict[self.add_key_to_result_dict('read.fail.with.other.barcodes.length.') + index] = value
-
-                    for index, value in barcode_selected_dataframe['mean_qscore'] \
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('all.read.with.other.barcodes.qscore.') + index] = value
-
-                    for index, value in barcode_selected_read_pass_dataframe['mean_qscore'] \
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('read.pass.with.other.barcodes.qscore.') + index] = value
-
-                    for index, value in barcode_selected_read_fail_dataframe['mean_qscore'] \
-                            .describe().drop('count').iteritems():
-                        result_dict[self.add_key_to_result_dict('read.fail.with.other.barcodes.qscore.') + index] = value
-
-            # Provide statistic per barcode in the result_dict dictionary
-
-            result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_dataframe')] = \
-                pd.DataFrame(dict([(k, pd.Series(v)) for k, v in length.items()]))
-
-            result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_melted_dataframe')] = \
-                pd.melt(result_dict[self.add_key_to_result_dict('barcode_selection_sequence_length_dataframe')],
-                        id_vars=['passes_filtering'], var_name="barcodes", value_name="length")
-
-            result_dict[self.add_key_to_result_dict('barcode_selection_sequence_phred_dataframe')] = \
-                pd.DataFrame(dict([(k, pd.Series(v)) for k, v in phred.items()]))
-
-            result_dict[self.add_key_to_result_dict('barcode_selection_sequence_phred_melted_dataframe')] = \
-                pd.melt(result_dict[self.add_key_to_result_dict('barcode_selection_sequence_phred_dataframe')],
-                        id_vars=['passes_filtering'], var_name="barcodes", value_name="qscore")
-
-            length.clear()
-            phred.clear()
+            for stats_index, stats_value in df['mean_qscore'].describe().drop('count').items():
+                key_to_result_dict = df_name + barcode_name + '.qscore.' + stats_index
+                self._set_result_value(
+                    result_dict, key_to_result_dict, stats_value)
 
     def graph_generation(self, result_dict):
         """
@@ -501,7 +520,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                 "(1Dsquare pass in green) or fail "
                                                                 "(1Dsquare fail in red) categories."))
 
-        images.append(graph_generator.dsqr_read_length_multihistogram(result_dict, self.dataframe_dict, self.dataframe_dict_1dsqr, '1Dsquare read size histogram',
+        images.append(graph_generator.dsqr_read_length_multihistogram(result_dict, self.dataframe_dict_1dsqr, self.dataframe_dict_1dsqr, '1Dsquare read size histogram',
                                                                       self.my_dpi, images_directory,
                                                                       "Size distribution of basecalled reads "
                                                                       "(1D in orange) and 1Dsquare reads (in gold). "
@@ -535,7 +554,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                         "(1Dsquare fail in red) categories."))
 
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(result_dict,
+            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
                                                                                   "1Dsquare pass reads percentage of "
                                                                                   "different barcodes",
                                                                                   self.barcode_selection, self.my_dpi,
@@ -543,7 +562,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                                   "1Dsquare pass reads distribution "
                                                                                   "per barcode."))
 
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(result_dict,
+            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(result_dict, self.dataframe_dict_1dsqr,
                                                                                   "1Dsquare fail reads percentage of "
                                                                                   "different barcodes",
                                                                                   self.barcode_selection, self.my_dpi,
@@ -551,14 +570,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                                   "1Dsquare fail reads distribution "
                                                                                   "per barcode."))
 
-            images.append(graph_generator.barcode_length_boxplot_1dsqr(result_dict,
+            images.append(graph_generator.barcode_length_boxplot_1dsqr(result_dict, self.dataframe_dict_1dsqr,
                                                                        "1Dsquare read size distribution for "
                                                                        "each barcode",
                                                                        self.my_dpi, images_directory,
                                                                        "Read length boxplot per barcode of pass "
                                                                        "(in green) and fail (in red) 1Dsquare reads."))
 
-            images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(result_dict,
+            images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(result_dict, self.dataframe_dict_1dsqr,
                                                                                "1Dsquare read phred score distribution "
                                                                                "for each barcode",
                                                                                self.my_dpi, images_directory,
