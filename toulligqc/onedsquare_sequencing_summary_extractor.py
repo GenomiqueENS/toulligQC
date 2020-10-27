@@ -14,7 +14,7 @@
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
 #
-# For more information on the ToulligQC project and its aims,feature-refactor-1dsquared-sse
+# For more information on the ToulligQC project and its aims,
 # visit the home page at:
 #
 #      https://github.com/GenomicParisCentre/toulligQC
@@ -42,7 +42,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in 
         sequencing_summary_source and seqencing_summary_1dsqr_source if the path points to a file,
-        the others cases are managed in check_conf and _load_sequencing_summary_data
+        the others cases are managed in check_conf and _load_sequencing_summary_1dsqr_data
         :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary, sequencing_1dsq_summary.txt and barcoding files
         """
         super().__init__(config_dictionary)
@@ -626,46 +626,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         total_number_reads_per_channel = pd.value_counts(channel_count)
         channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
         return channel_count_statistics
-
-    def _load_sequencing_summary_data(self):
-        """
-        Load sequencing summary data frame.
-        :return: a Pandas DataFrame object
-        """
-        files = self.sequencing_summary_1dsqr_files
-
-        if len(files) == 1:
-            return pd.read_csv(files[0], sep="\t")
-
-        summary_df = None
-        barcode_df = None
-
-        for f in files:
-            if self._is_barcode_file(f):
-                df = pd.read_csv(f, sep="\t")
-
-                if barcode_df is None:
-                    barcode_df = df
-                else:
-                    barcode_df = barcode_df.append(df, ignore_index=True)
-
-            else:
-                df = pd.read_csv(f, sep="\t")
-
-                if summary_df is None:
-                    summary_df = df
-                else:
-                    summary_df = summary_df.append(df, ignore_index=True)
-
-        if summary_df is None:
-            sys.exit("Only barcode sequencing summary found")
-
-        if barcode_df is None:
-            return summary_df
-
-        result = summary_df.merge(barcode_df, left_on="read_id1", right_on="read_id", how="left")
-
-        return result
 
     def _load_sequencing_summary_1dsqr_data(self):
         """
