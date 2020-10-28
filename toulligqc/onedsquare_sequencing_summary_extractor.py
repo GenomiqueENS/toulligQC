@@ -758,13 +758,3 @@ class OneDSquareSequencingSummaryExtractor(SSE):
     def _is_sequencing_summary_1dsqr_with_barcodes(filename):
         pass
 
-    def _compute_n50(self):
-        """Compute N50 value of total sequence length"""
-        data = self.dataframe_1dsqr['sequence_length'].dropna().values
-        data.sort()
-        half_sum = data.sum() / 2
-        cum_sum = 0
-        for v in data:
-            cum_sum += v
-            if cum_sum >= half_sum:
-                return int(v)
