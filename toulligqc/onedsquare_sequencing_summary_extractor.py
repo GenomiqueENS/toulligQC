@@ -592,30 +592,20 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :param result_dict:
         :return:
         """
+        keys = ["read.pass.length", "read.fail.length",
+                "read.pass.qscore", "read.fail.qscore"]
 
-        keys = ['sequence.length', 'passes.filtering', 'read.pass.length', 'read.fail.length',
-                'mean.qscore', 'read.pass.qscore', 'read.fail.qscore',
-                'all.read.qscore', 'all.read.length',
-                "barcode.arrangement", "read.pass.barcode", "read.fail.barcode",
-                'barcode_selection_sequence_length_dataframe', 'barcode_selection_sequence_length_melted_dataframe',
-                'barcode_selection_sequence_phred_dataframe', 'barcode_selection_sequence_phred_melted_dataframe',
-                "all.read.barcoded",
-                "read.pass.barcoded",
-                "read.fail.barcoded"]
-
-        key_list = ["basecaller.sequencing.summary.1d.extractor.sequence.length", "basecaller.sequencing.summary.1d.extractor.passes.filtering",
-                    "basecaller.sequencing.summary.1d.extractor.read.pass.length", "basecaller.sequencing.summary.1d.extractor.read.fail.length",
-                    "basecaller.sequencing.summary.1d.extractor.start.time.sorted",
-                    "basecaller.sequencing.summary.1d.extractor.read.pass.sorted", "basecaller.sequencing.summary.1d.extractor.read.fail.sorted",
-                    "basecaller.sequencing.summary.1d.extractor.mean.qscore", "basecaller.sequencing.summary.1d.extractor.read.pass.qscore",
-                    "basecaller.sequencing.summary.1d.extractor.read.fail.qscore",
-                    "basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics",
-                    "basecaller.sequencing.summary.1d.extractor.all.read.qscore", "basecaller.sequencing.summary.1d.extractor.all.read.length"
-                    ]
+        key_list = []
 
         for key in keys:
-            key_list.append(self.add_key_to_result_dict(key))
+            self._get_result_value(result_dict, key)
+            key_list.append(self.get_report_data_file_id() + '.' + str(key))
+
+        if self.is_barcode:
+            key_list.extend([(k, v) for k, v in self.dataframe_dict.items()])
+
         result_dict['unwritten.keys'].extend(key_list)
+        self.dataframe_dict = None
 
     def _occupancy_channel(self):
         """
