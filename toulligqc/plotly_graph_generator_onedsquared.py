@@ -229,3 +229,75 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
 
     return main, output_file, table_html, desc, div
 
+def dsqr_read_length_multihistogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+
+    output_file = result_directory + '/' + '_'.join(main.split())
+    
+    all_read = dataframe_dict_1dsqr["sequence.length"].loc[dataframe_dict_1dsqr["sequence.length"] >= 10].values
+    read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'] >= 10]
+    read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'] >= 10]
+  
+    fig = go.Figure()
+    
+    fig.add_trace(go.Histogram(x=all_read,
+                               name='All reads',
+                               nbinsx=500,
+                               marker_color='#fca311'  # yellow
+                               ))
+
+    fig.add_trace(go.Histogram(x=read_pass,
+                               name='Pass reads',
+                            nbinsx=500,
+                               marker_color='#51a96d'  # green
+                               ))
+
+    fig.add_trace(go.Histogram(x=read_fail,
+                            nbinsx=500,
+                               name='Fail reads',
+                               marker_color='#d90429'  # red
+                               ))
+    
+    fig.update_layout(
+        title={
+            'text': "<b>Distribution of read length</b>",
+            'y': 0.95,
+            'x': 0,
+                    'xanchor': 'left',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Open Sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Read length (bp)</b>",
+            titlefont_size=16,
+            range=[0, 5000]
+        ),
+        yaxis=dict(
+            title='<b>Number of sequences</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=0.95,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        hovermode='x',
+        height=800, width=1400
+    )
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    table_html = None
+
+    return main, output_file, table_html, desc, div

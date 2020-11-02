@@ -28,6 +28,8 @@
 import pandas as pd
 import sys
 from toulligqc import graph_generator
+from toulligqc import plotly_graph_generator as pgg
+from toulligqc import plotly_graph_generator_onedsquared as pgg2
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 import numpy as np
 import re
@@ -526,7 +528,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                 "(1Dsquare pass in green) or fail "
                                                                 "(1Dsquare fail in red) categories."))
 
-        images.append(graph_generator.dsqr_read_length_multihistogram(result_dict, self.dataframe_dict_1dsqr, self.dataframe_dict_1dsqr, '1Dsquare read size histogram',
+        images.append(pgg2.dsqr_read_length_multihistogram(result_dict, self.dataframe_dict_1dsqr, self.dataframe_dict_1dsqr, '1Dsquare read size histogram',
                                                                       self.my_dpi, images_directory,
                                                                       "Size distribution of basecalled reads "
                                                                       "(1D in orange) and 1Dsquare reads (in gold). "
