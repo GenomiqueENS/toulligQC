@@ -301,3 +301,121 @@ def dsqr_read_length_multihistogram(result_dict, dataframe_dict_1dsqr, main, my_
     table_html = None
 
     return main, output_file, table_html, desc, div
+
+def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+    """
+    Boxplot of PHRED score between read pass and read fail
+    Violin plot of PHRED score between read pass and read fail
+    """
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    df = pd.DataFrame(
+        {"1D²": dataframe_dict_1dsqr["mean.qscore"],
+         "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
+         "1D² fail": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
+         })
+
+    # If more than 10.000 reads, interpolate data
+    if len(df["1D²"]) > 10000:
+        dataframe = pd.DataFrame({
+        "1D²" : _interpolate(df["1D²"], 1000),
+        "1D² pass" : _interpolate(df["1D² pass"], 1000),
+        "1D² fail" : _interpolate(df["1D² fail"], 1000)
+    })
+    else:
+        dataframe = df
+    names = {"1D²": "All reads",
+             "1D² pass": "Read pass",
+             "1D² fail": "Read fail"}
+
+    colors = {"1D²": '#fca311',
+              "1D² pass": '#51a96d',
+              "1D² fail": '#d90429'}
+
+    fig = make_subplots(rows=1, cols=2,
+                        subplot_titles=("<b>PHRED score boxplot</b>",
+                                        "<b>PHRED score violin plot</b>"),
+                        horizontal_spacing=0.15)
+
+    for column in dataframe.columns:
+        fig.append_trace(go.Box(
+            y=dataframe[column],
+            name=names[column],
+            marker=dict(
+                opacity=0.3,
+                color=colors[column]
+
+            ),
+            boxmean=True,
+            showlegend=False
+        ), row=1, col=1)
+
+        fig.add_trace(go.Violin(y=dataframe[column],
+                            name=names[column],
+                            meanline_visible=True,
+                      marker=dict(color=colors[column])),
+                      row=1, col=2)
+
+
+    fig.update_layout(
+        title={
+            'text': "<b>1D² PHRED score distribution of all read types</b>",
+            'y': 0.95,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Read type</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>PHRED score</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=0.95,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        hovermode='x',
+        height=800, width=1400
+    )
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    df = df[["1D²", "1D² pass", "1D² fail"]]
+    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(df))
+
+    return main, output_file, table_html, desc, div
+
+def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
+    """
+    Function returning an interpolated version of data passed as input
+    :param x: array of data
+    :param npoints: number of desired points after interpolation (int)
+    :param y: second array in case of 2D data
+    :param interp_type: string specifying the type of interpolation (i.e. linear, nearest, cubic, quadratic etc.)
+    :param axis: number specifying the axis of y along which to interpolate. Default = -1
+    """
+    # In case of single array of data, use
+    if y is None:
+        return np.sort(resample(x, n_samples=npoints, random_state=1))
+    else:
+        f = interp1d(x, y, kind=interp_type, axis=axis)
+        x_int = np.linspace(min(x), max(x), npoints)
+        y_int = f(x_int)
+        return pd.Series(x_int), pd.Series(y_int)

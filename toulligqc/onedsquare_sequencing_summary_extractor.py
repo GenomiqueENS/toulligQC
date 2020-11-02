@@ -537,7 +537,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                       "(1Dsquare pass in green) or fail "
                                                                       "(1Dsquare fail in red) categories."))
 
-        images.append(graph_generator.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, "1Dsquare reads quality boxplot",
+        images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, "1Dsquare reads quality boxplot",
                                                                      self.my_dpi, images_directory,
                                                                      "Boxplot of 1D (in orange) and 1Dsquare (in gold) "
                                                                      "reads quality. The 1Dsquare reads are filtered "
