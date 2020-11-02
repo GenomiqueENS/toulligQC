@@ -56,7 +56,6 @@ def _is_in_result_dict(dict, dict_key, default_value):
         dict[dict_key] = default_value
     return dict[dict_key]
 
-#Stats d'un DF, count = str, autres valeurs avec 2 décimales & renommer 50->median
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -65,7 +64,7 @@ def _make_desribe_dataframe(value):
 
     desc = value.describe()
     desc.loc['count'] = desc.loc['count'].astype(int).astype(str)
-    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: '%.2f' % x) #tout sauf 1ere ligne (count) et 2 décimales
+    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: '%.2f' % x)
     desc.rename({'50%': 'median'}, axis='index', inplace=True)
 
     return desc
