@@ -510,9 +510,15 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images/'
-        # Get all images from 1D data
-        images = self.sse.graph_generation(result_dict)
-        images.append(graph_generator.dsqr_read_count_histogram(result_dict, "1Dsquare read count histogram",
+
+        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
+                                                            self.my_dpi, images_directory,
+                                                            "Number of reads produced before (Fast 5 in blue) "
+                                                            "and after (1D in orange) basecalling. "
+                                                            "The basecalled reads are filtered with a 7.5 quality "
+                                                            "score threshold in pass (1D pass in green) "
+                                                            "or fail (1D fail in red) categories.")])
+        images.append(pgg2.dsqr_read_count_histogram(result_dict, self.dataframe_dict_1dsqr, "1Dsquare read count histogram",
                                                                 self.my_dpi, images_directory,
                                                                 "Number of reads produced basecalled (1D in orange) and"
                                                                 " 1Dsquare reads (in gold). The 1Dsquare reads are "
