@@ -229,11 +229,11 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
 
     return main, output_file, table_html, desc, div
 
-def dsqr_read_length_multihistogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my_dpi, result_directory, desc):
 
     output_file = result_directory + '/' + '_'.join(main.split())
     
-    all_read = dataframe_dict_1dsqr["sequence.length"].loc[dataframe_dict_1dsqr["sequence.length"] >= 10].values
+    all_read = sequence_length_1dsqr.loc[sequence_length_1dsqr >= 10].values
     read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'] >= 10]
     read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'] >= 10]
   
@@ -259,7 +259,7 @@ def dsqr_read_length_multihistogram(result_dict, dataframe_dict_1dsqr, main, my_
     
     fig.update_layout(
         title={
-            'text': "<b>Distribution of read length</b>",
+            'text': "<b>Distribution of 1D² read length</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',

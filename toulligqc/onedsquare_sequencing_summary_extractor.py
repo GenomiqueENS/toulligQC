@@ -103,11 +103,13 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         # Load dataframe_1d and remove duplicate columns that are also present in dataframe_1dsqr
         self.dataframe_1d = self.sse.dataframe_1d
+        self.sequence_length_1d = self.dataframe_1d['sequence_length']
         dataframe_1d_copy = self.dataframe_1d.copy(deep=True)
         dataframe_1d_copy.drop(columns=["sequence_length", "mean_qscore", "passes_filtering"], inplace=True)
 
         # Load dataframe_1dsqr df from 1D² files
         self.dataframe_1dsqr = self._load_sequencing_summary_1dsqr_data()
+        self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length']
         
         # Merge dataframe_1d with dataframe_1dsqr
         self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length", how="right")
@@ -527,8 +529,13 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                 "filtered with a 7.5 quality score threshold in pass "
                                                                 "(1Dsquare pass in green) or fail "
                                                                 "(1Dsquare fail in red) categories."))
-
-        images.append(pgg2.dsqr_read_length_multihistogram(result_dict, self.dataframe_dict_1dsqr, self.dataframe_dict_1dsqr, '1Dsquare read size histogram',
+        images.append(pgg.read_length_multihistogram(result_dict, self.sequence_length_1d, 'Read length histogram',
+                                                                 self.my_dpi, images_directory,
+                                                                 "Size distribution of basecalled reads (1D in orange)."
+                                                                 "The basecalled reads are filtered with a 7.5 quality "
+                                                                 "score threshold in pass (1D pass in green) "
+                                                                 "or fail (1D fail in red) categories."))
+        images.append(pgg2.dsqr_read_length_multihistogram(result_dict, self.sequence_length_1dsqr, '1Dsquare read size histogram',
                                                                       self.my_dpi, images_directory,
                                                                       "Size distribution of basecalled reads "
                                                                       "(1D in orange) and 1Dsquare reads (in gold). "
@@ -536,7 +543,18 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                       "quality score threshold in pass "
                                                                       "(1Dsquare pass in green) or fail "
                                                                       "(1Dsquare fail in red) categories."))
-
+        images.append(pgg.yield_plot(result_dict, 'Yield plot of 1D read type',
+                                                         self.my_dpi, images_directory,
+                                                         "Yield plot of basecalled reads (1D in orange)."
+                                                         " The basecalled reads are filtered with a 7.5 quality "
+                                                         "score threshold in pass (1D pass in green) "
+                                                         "or fail (1D fail in red) categories."))
+        images.append(pgg.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
+                                                                self.my_dpi, images_directory,
+                                                                "Boxplot of 1D reads (in orange) quality."
+                                                                "The basecalled reads are filtered with a 7.5 quality "
+                                                                "score threshold in pass (1D pass in green) "
+                                                                "or fail (1D fail in red) categories."))
         images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, "1Dsquare reads quality boxplot",
                                                                      self.my_dpi, images_directory,
                                                                      "Boxplot of 1D (in orange) and 1Dsquare (in gold) "
