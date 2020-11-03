@@ -402,6 +402,88 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
 
     return main, output_file, table_html, desc, div
 
+def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+    """
+    Plot the distribution of the phred score per read type (1D² , 1D² pass, 1D² fail)
+    """
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    dataframe = \
+        pd.DataFrame({"1D²": dataframe_dict_1dsqr["mean.qscore"],
+                      "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
+                      "1D² fail": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']})
+
+    # If more than 10.000 reads, interpolate data
+    if len(dataframe["1D²"]) > 10000:
+        phred_score_pass = _interpolate(dataframe["1D² pass"], npoints=5000)
+        phred_score_fail = _interpolate(dataframe["1D² fail"], npoints=5000)
+    else:
+        phred_score_pass = dataframe["1D² pass"]
+        phred_score_fail = dataframe["1D² fail"]
+
+    arr_1Dsqr_pass = np.array(pd.Series(phred_score_pass).dropna())
+    x = np.linspace(0, max(arr_1Dsqr_pass), 200)
+    mu, std = norm.fit(arr_1Dsqr_pass)
+    pdf_1Dsqr_pass = norm.pdf(x, mu, std)
+
+    arr_1Dsqr_fail = np.array(pd.Series(phred_score_fail).dropna())
+    x2 = np.linspace(0, max(arr_1Dsqr_fail), 200)
+    mu2, std2 = norm.fit(arr_1Dsqr_fail)
+    pdf_1Dsqr_fail = norm.pdf(x2, mu2, std2)
+
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#4A69FF", histnorm='probability density'))
+    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#CE3D1D", histnorm='probability density'))
+    fig.add_trace(go.Scatter(x=x, y=pdf_1Dsqr_pass, mode="lines", name='Density curve of read pass', line=dict(color='#4A69FF', width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x2, y=pdf_1Dsqr_fail, mode="lines", name='Density curve of read fail', line=dict(color='#CE3D1D', width=3, shape="spline", smoothing=0.5)))
+
+    fig.update_layout(
+        title={
+            'text': "<b>1D² PHRED Score Density Distribution</b>",
+            'y': 0.95,
+            'x': 0.45,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>PHRED score</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Density probability</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=0.95,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        barmode='group',
+        hovermode='x',
+        height=800, width=1400
+    )
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    dataframe = _make_desribe_dataframe(dataframe).drop('count')
+
+    table_html = pd.DataFrame.to_html(dataframe)
+
+    return main, output_file, table_html, desc, div
+
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input
