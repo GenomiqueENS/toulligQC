@@ -568,7 +568,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc, div
 
 
-def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
@@ -591,14 +591,14 @@ def all_scatterplot(result_dict, dataframe_dict, main, my_dpi, result_directory,
     fig.add_trace(go.Scatter(x=pass_data[0],
                              y=pass_data[1],
                              name="Pass reads",
-                             marker_color="#9ad25b",
+                             marker_color="#51a96d",
                              mode="markers"
                              ))
 
     fig.add_trace(go.Scatter(x=fail_data[0],
                              y=fail_data[1],
-                             name='Fail reads',
-                             marker_color='#f48247',
+                             name="Fail reads",
+                             marker_color="#d90429",
                              mode="markers"
                              ))
 

@@ -577,8 +577,13 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                         "quality score threshold in pass (1Dsquare pass "
                                                         "in green) or fail (1Dsquare fail in red) "
                                                         "categories."))
-        images.append(graph_generator.scatterplot_1dsqr(result_dict, self.dataframe_dict_1dsqr, "Mean Phred score function of 1Dsquare "
-                                                                     "read length",
+        images.append(pgg.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',
+                                                      self.my_dpi, images_directory,
+                                                      "The Mean Phred score varies according to the read length."
+                                                      "The basecalled reads are filtered with a 7.5 quality "
+                                                      "score threshold in pass (1D pass in green) "
+                                                      "or fail (1D fail in red) categories."))
+        images.append(pgg2.scatterplot_1dsqr(result_dict, "Mean Phred score function of 1Dsquare read length",
                                                         self.my_dpi, images_directory,
                                                         "The Mean Phred score varies according to the read length. "
                                                         "The 1Dsquare reads are filtered with a 7.5 quality score "

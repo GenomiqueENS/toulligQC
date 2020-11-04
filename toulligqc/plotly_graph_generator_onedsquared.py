@@ -333,8 +333,8 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
         title={
             'text': "<b>1D² PHRED score distribution of all read types</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -413,8 +413,8 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
         title={
             'text': "<b>1D² PHRED Score Density Distribution</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -453,6 +453,89 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
     dataframe = _make_desribe_dataframe(dataframe).drop('count')
 
     table_html = pd.DataFrame.to_html(dataframe)
+
+    return main, output_file, table_html, desc, div
+
+def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
+    """
+    Plot the scatter plot representing the relation between the phred score and the sequence length in log
+    """
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    read_pass_length = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.length"]
+    read_pass_qscore = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore"]
+    read_fail_length = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.length"]
+    read_fail_qscore = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore"]
+
+    # If more than 10.000 reads, interpolate data
+    if len(read_pass_length) > 10000:
+        pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
+        fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
+    else:
+        pass_data = [read_pass_length, read_pass_qscore]
+        fail_data = [read_fail_length, read_fail_qscore]
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x=pass_data[0],
+                             y=pass_data[1],
+                             name="Pass reads",
+                             marker_color="#51a96d",
+                             mode="markers"
+                             ))
+
+    fig.add_trace(go.Scatter(x=fail_data[0],
+                             y=fail_data[1],
+                             name='Fail reads',
+                             marker_color='#d90429',
+                             mode="markers"
+                             ))
+
+    fig.update_layout(
+        title={
+            'text': "<b>Correlation between 1D² read length and PHRED score</b>",
+            'y': 0.95,
+            'x': 0,
+                    'xanchor': 'left',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Sequence length (bp)</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>PHRED score</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Read Type</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=800, width=1400
+    )
+    # Trim x axis to avoid negative values
+    if max(read_pass_length) >= max(read_fail_length):
+        max_val = max(read_pass_length)
+    max_val = max(read_fail_length)
+
+    fig.update_xaxes(range=[0, max_val])
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    table_html = None
 
     return main, output_file, table_html, desc, div
 
