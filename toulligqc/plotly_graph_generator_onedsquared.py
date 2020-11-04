@@ -676,6 +676,103 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
 
     return main, output_file, table_html, desc, div
 
+def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+    """
+    Boxplots all the 1D² pass and fail read length for each barcode indicated in the sample sheet
+    """
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    df = dataframe_dict_1dsqr['barcode_selection_sequence_length_dataframe']
+
+    # Sort reads by read type and drop read type column
+    read_pass_length = df.loc[df['passes_filtering']
+                              == bool(True)].drop(columns='passes_filtering')
+    read_fail_length = df.loc[df['passes_filtering']
+                              == bool(False)].drop(columns='passes_filtering')
+
+    # Remove negative values from all columns of the dataframes
+    for col in read_pass_length.columns:
+        read_pass_length[col] = read_pass_length[col].loc[read_pass_length[col] > 0]
+    for col in read_fail_length.columns:
+        read_fail_length[col] = read_fail_length[col].loc[read_fail_length[col] > 0]
+
+    fig = go.Figure()
+
+    for col in read_pass_length.columns:
+        fig.add_trace(go.Box(
+            y=read_pass_length[col],
+            name='Barcode ' + col,
+            marker_color='#457b9d',
+            legendgroup="pass",
+            offsetgroup="pass"
+        ))
+
+    for col in read_fail_length.columns:
+        fig.add_trace(go.Box(
+            y=read_fail_length[col],
+            name='Barcode ' + col,
+            marker_color='#e63946',
+            legendgroup="fail",
+            offsetgroup="fail"
+        ))
+
+    fig.update_layout(
+        title={
+            'text': "<b>1D² Read size distribution for each barcode</b>",
+            'y': 0.95,
+            'x': 0,
+                    'xanchor': 'left',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        xaxis=dict(
+            title="<b>Barcodes</b>",
+            titlefont_size=16
+        ),
+        yaxis=dict(
+            title='<b>Sequence length (bp)</b>',
+            titlefont_size=16,
+            tickfont_size=14,
+        ),
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>1D² Read Type</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        boxmode='group',
+        boxgap=0.4,
+        boxgroupgap=0,
+        height=700, width=1400
+    )
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    all_read = df.describe().T
+    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
+    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
+    concat = pd.concat([all_read, read_pass, read_fail],
+                       keys=['1D', '1D pass', '1D fail'])
+    dataframe = concat.T
+
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    table_html = pd.DataFrame.to_html(dataframe)
+
+    table_html = None
+
+    return main, output_file, table_html, desc, div
+
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input

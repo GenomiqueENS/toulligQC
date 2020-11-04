@@ -612,7 +612,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                                   "1Dsquare fail reads distribution "
                                                                                   "per barcode."))
 
-            images.append(graph_generator.barcode_length_boxplot_1dsqr(result_dict, self.dataframe_dict_1dsqr,
+            images.append(pgg2.barcode_length_boxplot_1dsqr(result_dict, self.dataframe_dict_1dsqr,
                                                                        "1Dsquare read size distribution for "
                                                                        "each barcode",
                                                                        self.my_dpi, images_directory,
