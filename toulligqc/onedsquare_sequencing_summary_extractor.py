@@ -115,6 +115,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length']
         self.time_1dsqr = self.dataframe_1dsqr['start_time1']
         self.qscore_1dsqr = self.dataframe_1dsqr['mean_qscore']
+        self.duration_1dsqr = self.dataframe_1dsqr['trimmed_duration1'] + self.dataframe_1dsqr['trimmed_duration2'] #duration of the 2 strands sequenced
         
         # Merge dataframe_1d with dataframe_1dsqr
         self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length", how="right")
@@ -596,10 +597,12 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
-        images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, 'Sequence length over time', self.my_dpi, images_directory,
+        images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, '1D² Sequence length over time', self.my_dpi, images_directory,
                                                 "Length of reads through run time in hours"))
-        images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, 'PHRED score over time', self.my_dpi, images_directory,
+        images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, '1D² PHRED score over time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
+        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, 'Read speed over time', self.my_dpi, images_directory,
+                                          "Speed of reads in base per second through run time in hours"))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
@@ -679,14 +682,17 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         sequencing_summary_columns = [
             'passes_filtering',
             'sequence_length', 'mean_qscore',
-            'start_time1'
+            'start_time1',
+            'trimmed_duration1', 'trimmed_duration2'
         ]
 
         sequencing_summary_datatypes = {
             'passes_filtering': np.bool,
             'sequence_length': np.int16,
             'mean_qscore': np.float,
-            'start_time1' : np.float
+            'start_time1' : np.float,
+            'trimmed_duration1' : np.float,
+            'trimmed_duration2' : np.float,
         }
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column

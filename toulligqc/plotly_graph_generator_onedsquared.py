@@ -996,6 +996,77 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
 
         return main, output_file, table_html, desc, div
 
+def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
+
+        output_file = result_directory + '/' + '_'.join(main.split())
+
+        speed = pd.Series(sequence_length_df / duration_df)
+
+        time = [t/3600 for t in time_df]
+        time = np.array(sorted(time))
+
+        # If more than 10.000 reads, interpolate data
+        if len(time) > 10000:
+            time_df, speed_df = _interpolate(time, 200, speed, "nearest")
+        else:
+            time_df = time
+            speed_df = speed
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+        x=time_df,
+        y=speed_df,
+        fill='tozeroy',
+        mode='lines',
+        line=dict(color='#AE3F7B', width=3, shape="linear"))
+        )
+
+        fig.update_layout(
+                title={
+                'text': "<b>1D² Speed over experiment time</b>",
+                'y':0.95,
+                'x':0,
+                'xanchor': 'left',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Speed (bases per second)</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.0,
+                y=0.95,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            hovermode='x',
+            height=800, width=1400
+        )
+        fig.update_yaxes(type="log")
+
+        div = py.plot(fig,
+                            include_plotlyjs=False,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input
