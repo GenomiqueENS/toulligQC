@@ -39,23 +39,6 @@ import plotly.colors as colors
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
 
-figure_image_width = 1000
-figure_image_height = 600
-
-
-def _is_in_result_dict(dict, dict_key, default_value):
-    """
-    Global function to check for the presence of an entry in a dictionary
-    and give it a default value.
-    :param result_dict: result_dict dictionary
-    :param dict_key: entry (string)
-    :param default_value:
-    :return:
-    """
-    if dict_key not in dict or not dict[dict_key]:
-        dict[dict_key] = default_value
-    return dict[dict_key]
-
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -68,17 +51,6 @@ def _make_desribe_dataframe(value):
     desc.rename({'50%': 'median'}, axis='index', inplace=True)
 
     return desc
-
-
-def _safe_log(x):
-    """
-    Verification that we haven't a null value
-    :param x: tested value
-    :return: log2 value or 0
-    """
-    if x <= 0:
-        return 0
-    return np.log2(x)
 
 #
 #  1D² plots

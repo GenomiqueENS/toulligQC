@@ -104,6 +104,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Load dataframe_1d and remove duplicate columns that are also present in dataframe_1dsqr
         self.dataframe_1d = self.sse.dataframe_1d
         self.sequence_length_1d = self.dataframe_1d['sequence_length']
+        self.channel_df = self.dataframe_1d['channel']
+
+        # Copy dataframe to avoid changing original df when dropping columns
         dataframe_1d_copy = self.dataframe_1d.copy(deep=True)
         dataframe_1d_copy.drop(columns=["sequence_length", "mean_qscore", "passes_filtering"], inplace=True)
 
@@ -581,6 +584,11 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                         "The 1Dsquare reads are filtered with a 7.5 quality score "
                                                         "threshold in pass (1Dsquare pass in green) or fail "
                                                         "(1Dsquare fail in red) categories."))
+        channel_count = self.channel_df
+        total_number_reads_per_pore = pd.value_counts(channel_count)
+        images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
+                                                       self.my_dpi, images_directory,
+                                                       "Number of reads sequenced per pore channel."))
 
         if self.is_barcode:
             images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
