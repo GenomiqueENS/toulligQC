@@ -596,7 +596,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                        "Number of reads sequenced per pore channel."))
 
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
+            images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
                                                                                   "1Dsquare pass reads percentage of "
                                                                                   "different barcodes",
                                                                                   self.barcode_selection, self.my_dpi,
@@ -604,7 +604,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                                   "1Dsquare pass reads distribution "
                                                                                   "per barcode."))
 
-            images.append(graph_generator.barcode_percentage_pie_chart_1dsqr_fail(result_dict, self.dataframe_dict_1dsqr,
+            images.append(pgg2.barcode_percentage_pie_chart_1dsqr_fail(result_dict, self.dataframe_dict_1dsqr,
                                                                                   "1Dsquare fail reads percentage of "
                                                                                   "different barcodes",
                                                                                   self.barcode_selection, self.my_dpi,

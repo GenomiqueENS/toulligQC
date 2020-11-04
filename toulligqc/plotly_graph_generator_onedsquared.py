@@ -539,6 +539,143 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
 
     return main, output_file, table_html, desc, div
 
+#
+# For each barcode 1D²
+#
+
+
+def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
+    """
+    Plots a pie chart of 1D² read pass percentage per barcode of a run.
+    Needs the samplesheet file describing the barcodes to run
+    """
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    for element in barcode_selection:
+
+        if all(dataframe_dict_1dsqr['barcode.arrangement'] != element):
+            print("The barcode {} doesn't exist".format(element))
+            return False
+
+    count_sorted = dataframe_dict_1dsqr["read.pass.barcoded"]
+    labels = count_sorted.index.values.tolist()
+
+    fig = go.Figure(data=[go.Pie(labels=labels,
+                                 values=count_sorted)])
+    if len(labels) <= 12:
+        palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275", "#b8e994", "#78e08f"]
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
+    else:
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(line=dict(color='#2a2a2a', width=.5)))
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_layout(
+        title={
+            'text': "<b>1D² Read Pass Barcode Distribution</b>",
+            'y': 0.95,
+            'x': 0,
+                    'xanchor': 'left',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Barcodes</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=500, width=875
+    )
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+                                 "1D² read count": count_sorted})
+    barcode_table.sort_index(inplace=True)
+    pd.options.display.float_format = '{:.2f}%'.format
+    table_html = pd.DataFrame.to_html(barcode_table)
+
+    return main, output_file, table_html, desc, div
+
+
+def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
+    """
+    Plots a pie chart of 1D² read fail percentage per barcode of a run.
+    Needs the samplesheet file describing the barcodes to run
+    """
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    for element in barcode_selection:
+
+        if all(dataframe_dict_1dsqr['barcode.arrangement'] != element):
+            print("The barcode {} doesn't exist".format(element))
+            return False
+
+    count_sorted = dataframe_dict_1dsqr["read.fail.barcoded"]
+    labels = count_sorted.index.values.tolist()
+
+    fig = go.Figure(data=[go.Pie(labels=labels,
+                                 values=count_sorted)])
+    if len(labels) <= 12:
+        palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275"]
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
+    else:
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                  marker=dict(line=dict(color='#2a2a2a', width=.5)))
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_layout(
+        title={
+            'text': "<b>1D² Read Pass Barcode Distribution</b>",
+            'y': 0.95,
+            'x': 0,
+                    'xanchor': 'left',
+                    'yanchor': 'top',
+                    'font': dict(
+                        family="Calibri, sans",
+                        size=26,
+                        color="black")},
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Barcodes</b>",
+            title=dict(font=dict(size=16)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=15)
+        ),
+        height=500, width=875
+    )
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+                                  "1D² read count": count_sorted})
+    barcode_table.sort_index(inplace=True)
+    pd.options.display.float_format = '{:.2f}%'.format
+
+    table_html = pd.DataFrame.to_html(barcode_table)
+
+    return main, output_file, table_html, desc, div
+
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input
