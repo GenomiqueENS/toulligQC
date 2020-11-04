@@ -113,6 +113,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Load dataframe_1dsqr df from 1D² files
         self.dataframe_1dsqr = self._load_sequencing_summary_1dsqr_data()
         self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length']
+        self.time_1dsqr = self.dataframe_1dsqr['start_time1']
         
         # Merge dataframe_1d with dataframe_1dsqr
         self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length", how="right")
@@ -626,6 +627,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                                "Read Mean Phred score boxplot per "
                                                                                "barcode of pass (in green) and fail "
                                                                                "(in red) 1Dsquare reads."))
+            images.append(pgg2.sequence_length_over_time(self.time_1dsqr, self.sequence_length_1dsqr, 'Sequence length over time', self.my_dpi, images_directory,
+                                                "Length of reads through run time in hours"))
         return images
 
     def clean(self, result_dict):
@@ -672,13 +675,15 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         sequencing_summary_columns = [
             'passes_filtering',
-            'sequence_length', 'mean_qscore'
+            'sequence_length', 'mean_qscore',
+            'start_time'
         ]
 
         sequencing_summary_datatypes = {
             'passes_filtering': np.bool,
             'sequence_length': np.int16,
-            'mean_qscore': np.float
+            'mean_qscore': np.float,
+            'start_time1' : np.float
         }
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column

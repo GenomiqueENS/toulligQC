@@ -861,6 +861,77 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 
     return main, output_file, table_html, desc, div
 
+def sequence_length_over_time(time_df, sequence_length_df, main, my_dpi, result_directory, desc):
+
+        output_file = result_directory + '/' + '_'.join(main.split())
+
+        time = [t/3600 for t in time_df.dropna()]
+        time = np.array(sorted(time))
+        length = sequence_length_df
+
+         # If more than 10.000 reads, interpolate data
+        if len(length) > 10000:
+            df_time, df_length = _interpolate(time, 100, length, "nearest")
+        else:
+            df_time = time
+            df_length = length
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+        x=df_time,
+        y=df_length,
+        fill='tozeroy',
+        fillcolor="#2f8769",
+        mode='lines',
+        name='interpolation curve',
+        line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
+        )
+
+        fig.update_layout(
+                title={
+                'text': "<b>1D² Read length over experiment time</b>",
+                'y':0.95,
+                'x':0,
+                'xanchor': 'left',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Read length (bp)</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.0,
+                y=0.95,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            hovermode=False,
+            height=800, width=1400
+        )
+
+        div = py.plot(fig,
+                            include_plotlyjs=False,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input
