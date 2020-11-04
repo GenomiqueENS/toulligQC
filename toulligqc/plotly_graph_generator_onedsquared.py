@@ -861,7 +861,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 
     return main, output_file, table_html, desc, div
 
-def sequence_length_over_time(time_df, sequence_length_df, main, my_dpi, result_directory, desc):
+def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, result_directory, desc):
 
         output_file = result_directory + '/' + '_'.join(main.split())
 
@@ -928,6 +928,70 @@ def sequence_length_over_time(time_df, sequence_length_df, main, my_dpi, result_
                             show_link=False)
         py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+
+def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_directory, desc):
+
+        output_file = result_directory + '/' + '_'.join(main.split())
+
+        # Time data
+        time = [t/3600 for t in time_df.dropna()]
+        time = np.array(sorted(time))
+
+        # Qscore data
+        qscore = qscore_df.dropna()
+
+        #If more than 10.000 reads, interpolate data
+        if len(qscore) > 10000:
+            df_time, df_qscore = _interpolate(time, 50, qscore, "nearest")
+        else:
+            df_time = time
+            df_score = qscore
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df_time,
+            y=df_qscore,
+            fill='tozeroy',
+            fillcolor="#adccf3",
+            mode='lines',
+            name='interpolation curve',
+            line=dict(color='#7aaceb', width=3, shape="spline", smoothing=0.5),
+            marker=dict(
+                size=10,
+                color="blue")))
+
+        fig.update_layout(
+                title={
+                'text': "<b>1D² PHRED score over experiment time</b>",
+                'y':0.95,
+                'x':0,
+                'xanchor': 'left',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>PHRED quality score</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            height=800, width=1400
+        )
+
+        div = py.plot(fig,
+                            include_plotlyjs=False,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
         table_html = None
 
         return main, output_file, table_html, desc, div

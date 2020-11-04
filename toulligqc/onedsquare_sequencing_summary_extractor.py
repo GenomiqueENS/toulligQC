@@ -114,6 +114,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.dataframe_1dsqr = self._load_sequencing_summary_1dsqr_data()
         self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length']
         self.time_1dsqr = self.dataframe_1dsqr['start_time1']
+        self.qscore_1dsqr = self.dataframe_1dsqr['mean_qscore']
         
         # Merge dataframe_1d with dataframe_1dsqr
         self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length", how="right")
@@ -595,6 +596,10 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
+        images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, 'Sequence length over time', self.my_dpi, images_directory,
+                                                "Length of reads through run time in hours"))
+        images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, 'PHRED score over time', self.my_dpi, images_directory,
+                                                "Reads PHRED score through run time in hours"))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
@@ -627,8 +632,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                                "Read Mean Phred score boxplot per "
                                                                                "barcode of pass (in green) and fail "
                                                                                "(in red) 1Dsquare reads."))
-            images.append(pgg2.sequence_length_over_time(self.time_1dsqr, self.sequence_length_1dsqr, 'Sequence length over time', self.my_dpi, images_directory,
-                                                "Length of reads through run time in hours"))
         return images
 
     def clean(self, result_dict):
@@ -676,7 +679,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         sequencing_summary_columns = [
             'passes_filtering',
             'sequence_length', 'mean_qscore',
-            'start_time'
+            'start_time1'
         ]
 
         sequencing_summary_datatypes = {
