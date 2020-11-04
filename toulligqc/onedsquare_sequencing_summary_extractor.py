@@ -619,7 +619,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                        "Read length boxplot per barcode of pass "
                                                                        "(in green) and fail (in red) 1Dsquare reads."))
 
-            images.append(graph_generator.barcoded_phred_score_frequency_1dsqr(result_dict, self.dataframe_dict_1dsqr,
+            images.append(pgg2.barcoded_phred_score_frequency_1dsqr(result_dict, self.dataframe_dict_1dsqr,
                                                                                "1Dsquare read phred score distribution "
                                                                                "for each barcode",
                                                                                self.my_dpi, images_directory,

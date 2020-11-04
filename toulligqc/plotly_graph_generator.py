@@ -243,7 +243,7 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
 
     fig.add_trace(go.Histogram(x=read_pass,
                                name='Pass reads',
-                            nbinsx=500,
+                            nbinsx=20,
                                marker_color='#51a96d'  # green
                                ))
 
