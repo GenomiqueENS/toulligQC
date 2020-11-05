@@ -1067,6 +1067,71 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
 
         return main, output_file, table_html, desc, div
 
+def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
+
+        output_file = result_directory + '/' + '_'.join(main.split())
+
+        time = [t/3600 for t in time_df]
+        time = pd.Series(time)
+
+        # create custom xaxis points to reduce graph size
+        time_points = np.linspace(min(time), max(time), 50)
+        n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=time_points,
+            y=list(n_seq.values), mode='lines',
+            fill="tozeroy",
+            fillcolor="#f4d2a7",
+            line=dict(color='#edb773', width=3, shape="spline", smoothing=0.7)
+        ))
+
+        fig.update_layout(
+                title={
+                'text': "<b>Number of sequences through experiment time</b>",
+                'y':0.95,
+                'x':0,
+                'xanchor': 'left',
+                'yanchor': 'top',
+                'font' : dict(
+                family="Calibri, sans",
+                size=26,
+                color="black")},
+            xaxis=dict(
+                title="<b>Experiment time (hours)</b>",
+                titlefont_size=16
+                ),
+            yaxis=dict(
+                title='<b>Number of sequences</b>',
+                titlefont_size=16,
+                tickfont_size=14,
+            ),
+            legend=dict(
+                x=1.0,
+                y=0.95,
+                title_text="<b>Legend</b>",
+                title=dict(font=dict(size=16)),
+                bgcolor='rgba(255, 255, 255, 0)',
+                bordercolor='rgba(255, 255, 255, 0)',
+                font=dict(size=15)
+            ),
+            hovermode='x',
+            height=800, width=1400
+        )
+
+        div = py.plot(fig,
+                            include_plotlyjs=False,
+                            output_type='div',
+                            auto_open=False,
+                            show_link=False)
+        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
+
+        table_html = None
+
+        return main, output_file, table_html, desc, div
+
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input

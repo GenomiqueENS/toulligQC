@@ -601,8 +601,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                 "Length of reads through run time in hours"))
         images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, '1D² PHRED score over time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
-        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, 'Read speed over time', self.my_dpi, images_directory,
-                                          "Speed of reads in base per second through run time in hours"))
+        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, '1D² Read speed over time', self.my_dpi, images_directory,
+                                          "Speed of 1D² reads in base per second through run time in hours"))
+        images.append(pgg2.nseq_over_time_dsqr(self.time_1dsqr, 'Number of 1D² reads over time', self.my_dpi, images_directory, "Number of 1D² sequences through run time in hours"))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
