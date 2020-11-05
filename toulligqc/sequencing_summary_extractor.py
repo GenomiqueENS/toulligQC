@@ -266,10 +266,6 @@ class SequencingSummaryExtractor:
 
         # Read count
         self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1d))
-        
-        # Read count with length equals zero
-        #TODO: delete this key after redoing graphs
-        self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count", 0)
 
         # 1D pass information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.pass.count",
@@ -300,24 +296,14 @@ class SequencingSummaryExtractor:
         total_reads = self._get_result_value(result_dict, "read.count")
 
         # Ratios
-        #TODO: delete read.with.length.equal.zero.ratio after redoing graphs
-        self._set_result_value(result_dict, "read.with.length.equal.zero.ratio",
-                               (self._get_result_value(result_dict, "read.with.length.equal.zero.count") / total_reads))
         self._set_result_value(result_dict, "read.pass.ratio",
                                (self._get_result_value(result_dict, "read.pass.count") / total_reads))
         self._set_result_value(result_dict, "read.fail.ratio",
                                (self._get_result_value(result_dict, "read.fail.count") / total_reads))
 
         # Frequencies
-        # delete those 2 lines after redoing read count histogram (values always equal to 100)
         self._set_result_value(result_dict, "fastq.entries.frequency", 100)
         self._set_result_value(result_dict, "read.count.frequency", 100)
-        
-        #TODO: delete read.with.length.equal.zero.frequency after redoing graphs
-        read_frequency_zero_length = (self._get_result_value(result_dict,
-                                                             "read.with.length.equal.zero.count") / total_reads) * 100
-        self._set_result_value(
-            result_dict, "read.with.length.equal.zero.frequency", read_frequency_zero_length)
 
         read_pass_frequency = (self._get_result_value(
             result_dict, "read.pass.count") / total_reads) * 100

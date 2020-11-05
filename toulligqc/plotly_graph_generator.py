@@ -42,20 +42,6 @@ from scipy.ndimage.filters import gaussian_filter1d
 figure_image_width = 1000
 figure_image_height = 600
 
-
-def _is_in_result_dict(dict, dict_key, default_value):
-    """
-    Global function to check for the presence of an entry in a dictionary
-    and give it a default value.
-    :param result_dict: result_dict dictionary
-    :param dict_key: entry (string)
-    :param default_value:
-    :return:
-    """
-    if dict_key not in dict or not dict[dict_key]:
-        dict[dict_key] = default_value
-    return dict[dict_key]
-
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -69,19 +55,8 @@ def _make_desribe_dataframe(value):
 
     return desc
 
-
-def _safe_log(x):
-    """
-    Verification that we haven't a null value
-    :param x: tested value
-    :return: log2 value or 0
-    """
-    if x <= 0:
-        return 0
-    return np.log2(x)
-
 #
-#  1D plots
+#  1D plots
 #
 
 
@@ -155,7 +130,6 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                                   "<b>Barcoded reads with qscore > 7</b>",
                                   "<b>Reads of qscore < 7</b>",
                                   "<b>Barcoded reads with qscore < 7</b>"],
-                       #hoverinfo="x",
                        name="Barcoded graph",
                        marker_color=colors,
                        marker_line_color="black",
@@ -179,8 +153,8 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
         title={
             'text': "<b>Read count histogram</b>",
             'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
+            'x': 0,
+            'xanchor': 'left',
             'yanchor': 'top',
             'font': dict(
                 family="Calibri, sans",
@@ -257,8 +231,8 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
         title={
             'text': "<b>Distribution of read length</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Open Sans",
@@ -337,8 +311,8 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
         title={
             'text': "<b>Yield plot through experiment time</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -404,9 +378,6 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
              "1D pass": "Read pass",
              "1D fail": "Read fail"}
     
-    # colors = {"1D": 'Blue',
-    #           "1D pass": '#FFC11E',
-    #           "1D fail": '#ff849a'}
     colors = {"1D": '#fca311',
               "1D pass": '#51a96d',
               "1D fail": '#d90429'}
@@ -425,16 +396,13 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                 color=colors[column]
 
             ),
-            boxmean=True,  # True/sd/False
-            #legendgroup="legend",
+            boxmean=True,
             showlegend=False
-            #boxpoints="outliers"
         ), row=1, col=1)
 
         fig.add_trace(go.Violin(y=dataframe[column],
                             name=names[column],
                             meanline_visible=True,
-                      #legendgroup="violin",
                       marker=dict(color=colors[column])),
                       row=1, col=2) 
 
@@ -443,8 +411,8 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
         title={
             'text': "<b>PHRED score distribution of all read types</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -524,8 +492,8 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
         title={
             'text': "<b>PHRED Score Density Distribution</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -606,7 +574,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
         title={
             'text': "<b>Correlation between read length and PHRED score</b>",
             'y': 0.95,
-            'x': 0.45,
+            'x': 0,
                     'xanchor': 'center',
                     'yanchor': 'top',
                     'font': dict(
@@ -775,8 +743,8 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
         title={
             'text': "<b>Read Pass Barcode Distribution</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -841,8 +809,8 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
         title={
             'text': "<b>Read Pass Barcode Distribution</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -903,7 +871,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
         fig.add_trace(go.Box(
             y=read_pass_length[col],
             name='Barcode ' + col,
-            marker_color='#457b9d',
+            marker_color='#51a96d',
             legendgroup="pass",
             offsetgroup="pass"
         ))
@@ -912,7 +880,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
         fig.add_trace(go.Box(
             y=read_fail_length[col],
             name='Barcode ' + col,
-            marker_color='#e63946',
+            marker_color='#d90429',
             legendgroup="fail",
             offsetgroup="fail"
         ))
@@ -921,8 +889,8 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
         title={
             'text': "<b>Read size distribution for each barcode</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -995,7 +963,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
         fig.add_trace(go.Box(
                              y=final_df['qscore'],
                              name=barcode,
-                             marker_color='#457b9d',
+                             marker_color='#51a96d',
                              legendgroup="pass",
                              offsetgroup="pass"
                              ))
@@ -1005,7 +973,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
         fig.add_trace(go.Box(
                              y=final_df['qscore'],
                              name=barcode,
-                             marker_color='#e63946',
+                             marker_color='#d90429',
                              legendgroup="fail",
                              offsetgroup="fail"
                              ))
@@ -1014,8 +982,8 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
         title={
             'text': "<b>PHRED score distribution for each barcode</b>",
             'y': 0.95,
-            'x': 0.45,
-                    'xanchor': 'center',
+            'x': 0,
+                    'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
                         family="Calibri, sans",
@@ -1085,6 +1053,8 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         fig.add_trace(go.Scatter(
         x=df_time,
         y=df_length,
+        fill='tozeroy',
+        fillcolor="#2f8769",
         mode='lines',
         name='interpolation curve',
         line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
@@ -1094,8 +1064,8 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
                 title={
                 'text': "<b>Read length over experiment time</b>",
                 'y':0.95,
-                'x':0.45,
-                'xanchor': 'center',
+                'x':0,
+                'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
                 family="Calibri, sans",
@@ -1156,18 +1126,21 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=df_time,
-            y=df_qscore,
+            y=df_qscore,fill='tozeroy',
+            fillcolor="#adccf3",
             mode='lines',
+            name='interpolation curve',
+            line=dict(color='#7aaceb', width=3, shape="spline", smoothing=0.5),
             marker=dict(
-        size=10,
-        color="blue")))
+                size=10,
+                color="blue")))
         
         fig.update_layout(    
                 title={
                 'text': "<b>PHRED score over experiment time</b>",
                 'y':0.95,
-                'x':0.45,
-                'xanchor': 'center',
+                'x':0,
+                'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
                 family="Calibri, sans",
@@ -1182,9 +1155,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
                 titlefont_size=16,
                 tickfont_size=14,
             ),
-            height=800, width=1400,
-            paper_bgcolor="#F8F8FF",
-            plot_bgcolor="#F8F8FF"
+            height=800, width=1400
         )
 
         div = py.plot(fig,
@@ -1229,8 +1200,8 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
                 title={
                 'text': "<b>Interpolated read length over experiment time</b>",
                 'y':0.95,
-                'x':0.45,
-                'xanchor': 'center',
+                'x':0,
+                'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
                 family="Calibri, sans",
@@ -1306,7 +1277,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
 
         # If more than 10.000 reads, interpolate data
         if len(time) > 10000:
-            time_df, speed_df = _interpolate(time, 100, speed, "linear")
+            time_df, speed_df = _interpolate(time, 200, speed, "linear")
         else:
             time_df = time
             speed_df = speed
@@ -1325,8 +1296,8 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
                 title={
                 'text': "<b>Speed over experiment time</b>",
                 'y':0.95,
-                'x':0.45,
-                'xanchor': 'center',
+                'x':0,
+                'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
                 family="Calibri, sans",
@@ -1384,16 +1355,16 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
             x=time_points,
             y=list(n_seq.values), mode='lines',
             fill="tozeroy",
-            fillcolor="#b3d2ff",
-            line=dict(color='#65a4ff', width=3, shape="spline", smoothing=0.7)
+            fillcolor="#f4d2a7",
+            line=dict(color='#edb773', width=3, shape="spline", smoothing=0.7)
         ))
 
         fig.update_layout(    
                 title={
                 'text': "<b>Number of sequences through experiment time</b>",
                 'y':0.95,
-                'x':0.45,
-                'xanchor': 'center',
+                'x':0,
+                'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
                 family="Calibri, sans",
@@ -1450,6 +1421,5 @@ def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
         f = interp1d(x, y, kind=interp_type, axis=axis)
         x_int = np.linspace(min(x), max(x), npoints)
         y_int = f(x_int)
-        #return dict(zip(x_int, y_int))
         return pd.Series(x_int), pd.Series(y_int)
 
