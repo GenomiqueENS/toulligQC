@@ -167,7 +167,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
         xaxis=dict(title="<b>1D² Read type</b>",
                    linecolor="black",
                    titlefont=dict(
-                       family="Calibri",
+                       family="Calibri, sans",
                        size=18,
                        color="black"
                    ),
@@ -176,7 +176,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
         yaxis=dict(title="<b>Counts</b>",
                    linecolor="black",
                    titlefont=dict(
-                       family="Calibri",
+                       family="Calibri, sans",
                        size=18,
                        color="black"
                    )),
@@ -237,7 +237,7 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Open Sans",
+                        family="Calibri, sans",
                         size=26,
                         color="black")},
         xaxis=dict(
@@ -701,7 +701,7 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
     for col in read_pass_length.columns:
         fig.add_trace(go.Box(
             y=read_pass_length[col],
-            name='Barcode ' + col,
+            name=col,
             marker_color='#51a96d',
             legendgroup="pass",
             offsetgroup="pass"
@@ -710,7 +710,7 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
     for col in read_fail_length.columns:
         fig.add_trace(go.Box(
             y=read_fail_length[col],
-            name='Barcode ' + col,
+            name=col,
             marker_color='#d90429',
             legendgroup="fail",
             offsetgroup="fail"

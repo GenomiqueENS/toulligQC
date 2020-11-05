@@ -328,7 +328,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                     'passes_filtering', False))
 
         # Ratios & frequencies
-        #TODO: delete read.count.frequency after refactorisation is done
         self._set_result_value(result_dict, "read.count.frequency", 100)
         total_reads = self._get_result_value(result_dict, "read.count")
         self._set_result_value(result_dict, "read.pass.ratio",
@@ -629,7 +628,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                        "Read length boxplot per barcode of pass "
                                                                        "(in green) and fail (in red) 1Dsquare reads."))
 
-            images.append(pgg2.barcoded_phred_score_frequency_1dsqr(result_dict, self.dataframe_dict_1dsqr,
+            images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.barcode_selection, self.dataframe_dict_1dsqr,
                                                                                "1Dsquare read phred score distribution "
                                                                                "for each barcode",
                                                                                self.my_dpi, images_directory,
