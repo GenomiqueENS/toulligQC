@@ -1121,7 +1121,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
             df_time, df_qscore = _interpolate(time, 100, qscore, "nearest")
         else:
             df_time = time
-            df_score = qscore
+            df_qscore = qscore
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
