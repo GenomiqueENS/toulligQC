@@ -511,7 +511,7 @@ class SequencingSummaryExtractor:
 
     def graph_generation(self, result_dict):
         """
-        Generation of the different graphs containing in the graph_generator module
+        Generation of the different graphs containing in the plotly_graph_generator module
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
@@ -609,7 +609,7 @@ class SequencingSummaryExtractor:
         key_list = []
 
         for key in keys:
-            keys_value = self._get_result_value(result_dict, key)
+            self._get_result_value(result_dict, key)
             key_list.append(self.get_report_data_file_id() + '.' + str(key))
 
         if self.is_barcode:

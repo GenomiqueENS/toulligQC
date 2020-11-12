@@ -72,10 +72,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Check the presence of sequencing_summary.txt
         if self.sse.check_conf()[0] == False:
             return False, "No sequencing summary file has been found"
-        
-        # TODO: never executed ?
-        if not self.sequencing_summary_1dsqr_files[0]:
-            return False, "No file has been defined"
 
         # Check the presence of sequencing_1dsq_summary.txt
         found = False
@@ -515,7 +511,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
     def graph_generation(self, result_dict):
         """
-        Generation of the differents graphs containing in the graph_generator module
+        Generation of the differents graphs containing in the plotly_graph_generator modules
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images/'
@@ -663,7 +659,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         Statistics about the channels
         :return: channel_count_statistics containing statistics description about the channel occupancy
         """
-        channel_count = self.channel
+        channel_count = self.channel_df
         total_number_reads_per_channel = pd.value_counts(channel_count)
         channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
         return channel_count_statistics
