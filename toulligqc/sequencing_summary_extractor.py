@@ -27,7 +27,7 @@
 
 import pandas as pd
 import sys
-import graph_generator
+from toulligqc import plotly_graph_generator as pgg
 import numpy as np
 import re
 import os.path
@@ -96,10 +96,15 @@ class SequencingSummaryExtractor:
         # Rename 'sequence_length_template' and 'mean_qscore_template'
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                            'mean_qscore_template': 'mean_qscore'}, inplace=True)
+        
+        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+        self.dataframe_1d = self.dataframe_1d.fillna(0)
         self.channel_df = self.dataframe_1d['channel']
         self.passes_filtering_df = self.dataframe_1d['passes_filtering']
         self.sequence_length_df = self.dataframe_1d['sequence_length']
         self.qscore_df = self.dataframe_1d['mean_qscore']
+        self.time_df = self.dataframe_1d['start_time']
+        self.duration_df = self.dataframe_1d['duration']
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
@@ -235,7 +240,7 @@ class SequencingSummaryExtractor:
         Returns the value associated with the result_dict key
         """
         if not (self.get_report_data_file_id() + '.' + key) in result_dict.keys():
-            raise KeyError(f"Key {key} not found")
+            raise KeyError("Key {key} not found").__format__(key)
         return result_dict.get(self.get_report_data_file_id() + '.' + key)
 
 
@@ -260,10 +265,6 @@ class SequencingSummaryExtractor:
 
         # Read count
         self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1d))
-        
-        # Read count with length equals zero
-        #TODO: delete this key after redoing graphs
-        self._set_result_to_dict(result_dict, "read.with.length.equal.zero.count", 0)
 
         # 1D pass information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.pass.count",
@@ -294,24 +295,14 @@ class SequencingSummaryExtractor:
         total_reads = self._get_result_value(result_dict, "read.count")
 
         # Ratios
-        #TODO: delete read.with.length.equal.zero.ratio after redoing graphs
-        self._set_result_value(result_dict, "read.with.length.equal.zero.ratio",
-                               (self._get_result_value(result_dict, "read.with.length.equal.zero.count") / total_reads))
         self._set_result_value(result_dict, "read.pass.ratio",
                                (self._get_result_value(result_dict, "read.pass.count") / total_reads))
         self._set_result_value(result_dict, "read.fail.ratio",
                                (self._get_result_value(result_dict, "read.fail.count") / total_reads))
 
         # Frequencies
-        # delete those 2 lines after redoing read count histogram (values always equal to 100)
         self._set_result_value(result_dict, "fastq.entries.frequency", 100)
         self._set_result_value(result_dict, "read.count.frequency", 100)
-        
-        #TODO: delete read.with.length.equal.zero.frequency after redoing graphs
-        read_frequency_zero_length = (self._get_result_value(result_dict,
-                                                             "read.with.length.equal.zero.count") / total_reads) * 100
-        self._set_result_value(
-            result_dict, "read.with.length.equal.zero.frequency", read_frequency_zero_length)
 
         read_pass_frequency = (self._get_result_value(
             result_dict, "read.pass.count") / total_reads) * 100
@@ -326,9 +317,11 @@ class SequencingSummaryExtractor:
         # Read length information
         self.dataframe_dict["sequence.length"] = self.sequence_length_df
         
-        # Yield
+        # Yield, n50, run time
         self._set_result_value(result_dict, "yield", sum(self.sequence_length_df))
 
+        self._set_result_value(result_dict, "n50", self._compute_n50())
+        
         self._set_result_to_dict(
             result_dict, "start.time.sorted", sorted(self.dataframe_1d['start_time'] / 3600))
 
@@ -469,12 +462,6 @@ class SequencingSummaryExtractor:
         # Remove the column parameter index
         barcode_selection_dataframe.columns.droplevel(level=0)
 
-        # Change columns names : delete word "barcode"
-        col_names = [values.replace('barcode', '')
-                     for values in self.barcode_selection]
-        barcode_selection_dataframe.columns.set_levels(col_names,
-                                                       level=1, inplace=True)
-
         # Remove sequence_length Multindex to only have barcode_arrangement column labels
         barcode_selection_dataframe.columns = barcode_selection_dataframe.columns.droplevel(
             level=0)
@@ -523,36 +510,36 @@ class SequencingSummaryExtractor:
 
     def graph_generation(self, result_dict):
         """
-        Generation of the different graphs containing in the graph_generator module
+        Generation of the different graphs containing in the plotly_graph_generator module
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
-        images = list([graph_generator.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
+        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
                                                             self.my_dpi, images_directory,
                                                             "Number of reads produced before (Fast 5 in blue) "
                                                             "and after (1D in orange) basecalling. "
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-        images.append(graph_generator.read_length_multihistogram(result_dict, self.dataframe_dict, 'Read length histogram',
+        images.append(pgg.read_length_multihistogram(result_dict, self.sequence_length_df, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-        images.append(graph_generator.allread_number_run(result_dict, 'Yield plot of 1D read type',
+        images.append(pgg.yield_plot(result_dict, 'Yield plot of 1D read type',
                                                          self.my_dpi, images_directory,
                                                          "Yield plot of basecalled reads (1D in orange)."
                                                          " The basecalled reads are filtered with a 7.5 quality "
                                                          "score threshold in pass (1D pass in green) "
                                                          "or fail (1D fail in red) categories."))
-        images.append(graph_generator.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
+        images.append(pgg.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
                                                                 self.my_dpi, images_directory,
                                                                 "Boxplot of 1D reads (in orange) quality."
                                                                 "The basecalled reads are filtered with a 7.5 quality "
                                                                 "score threshold in pass (1D pass in green) "
                                                                 "or fail (1D fail in red) categories."))
-        images.append(graph_generator.allphred_score_frequency(result_dict,
+        images.append(pgg.allphred_score_frequency(result_dict,
                                                                'Mean Phred score frequency of all 1D read type',
                                                                self.my_dpi, images_directory,
                                                                "The basecalled reads are filtered with a 7.5 quality "
@@ -560,36 +547,47 @@ class SequencingSummaryExtractor:
                                                                "or fail (1D fail in red) categories."))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(graph_generator.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
+        images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
 
-        images.append(graph_generator.all_scatterplot(result_dict, self.dataframe_dict, 'Mean Phred score function of 1D read length',
+        images.append(pgg.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',
                                                       self.my_dpi, images_directory,
                                                       "The Mean Phred score varies according to the read length."
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
+        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over time', self.my_dpi, images_directory,
+                                                "Length of reads through run time in hours"))
+        images.append(pgg.length_over_time_slider(self.time_df, self.dataframe_dict, 'Sequence length over experiment time with custom number of points', self.my_dpi,
+                                                  images_directory, "Custom interpolated scatter plot with sequence length over time"
+                                                  ))
+        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over time', self.my_dpi, images_directory,
+                                                "Reads PHRED score through run time in hours"))
+        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over time', self.my_dpi, images_directory,
+                                          "Speed of reads in base per second through run time in hours"))
+        images.append(pgg.nseq_over_time(self.time_df, 'Number of reads over time', self.my_dpi, images_directory, "Number of sequences through run time in hours"))
+        
         if self.is_barcode:
-            images.append(graph_generator.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
                                                                             '1D pass reads percentage of different '
                                                                             'barcodes', self.barcode_selection,
                                                                             self.my_dpi, images_directory,
                                                                             "1D pass read distribution per barcode."))
 
-            images.append(graph_generator.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
                                                                             '1D fail reads percentage of different '
                                                                             'barcodes', self.barcode_selection,
                                                                             self.my_dpi, images_directory,
                                                                             "1D fail read distribution per barcode."))
 
-            images.append(graph_generator.barcode_length_boxplot(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_length_boxplot(result_dict, self.dataframe_dict,
                                                                  '1D reads size distribution for each barcode',
                                                                  self.my_dpi, images_directory,
                                                                  "Read length boxplot per barcode of pass (in green) "
                                                                  "and fail (in red) 1D reads."))
 
-            images.append(graph_generator.barcoded_phred_score_frequency(result_dict, self.dataframe_dict,
+            images.append(pgg.barcoded_phred_score_frequency(self.barcode_selection, self.dataframe_dict,
                                                                          '1D reads Mean Phred score distribution '
                                                                          'for each barcode',
                                                                          self.my_dpi, images_directory,
@@ -610,7 +608,7 @@ class SequencingSummaryExtractor:
         key_list = []
 
         for key in keys:
-            keys_value = self._get_result_value(result_dict, key)
+            self._get_result_value(result_dict, key)
             key_list.append(self.get_report_data_file_id() + '.' + str(key))
 
         if self.is_barcode:
@@ -642,14 +640,17 @@ class SequencingSummaryExtractor:
 
         sequencing_summary_columns = ['channel', 'start_time',
                                       'passes_filtering',
-                                      'sequence_length_template', 'mean_qscore_template']
+                                      'sequence_length_template',
+                                      'mean_qscore_template',
+                                      'duration']
 
         sequencing_summary_datatypes = {
             'channel': np.int16,
             'start_time': np.float,
             'passes_filtering': np.bool,
             'sequence_length_template': np.int16,
-            'mean_qscore_template': np.float}
+            'mean_qscore_template': np.float,
+            'duration' : np.float}
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
         barcoding_summary_columns = ['read_id', 'barcode_arrangement']
@@ -716,6 +717,19 @@ class SequencingSummaryExtractor:
         except IOError:
             raise FileNotFoundError("Sequencing summary file not found")
 
+
+
+    def _compute_n50(self):
+        """Compute N50 value of total sequence length"""
+        data = self.sequence_length_df.dropna().values
+        data.sort()
+        half_sum = data.sum()/2
+        cum_sum = 0
+        for v in data:
+            cum_sum += v
+            if cum_sum >= half_sum:
+                return int(v)
+        
 
     @staticmethod
     def _is_barcode_file(filename):

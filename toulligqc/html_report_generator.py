@@ -55,6 +55,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
+    n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
 
     # from telemetry file
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
@@ -76,6 +77,7 @@ def html_report(config_dictionary, result_dict, graphs):
   <head>
     <title>Report run MinION : {0} </title>
     <meta charset='UTF-8'>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style type="text/css">
     """.format(report_name)
 
@@ -259,6 +261,7 @@ def html_report(config_dictionary, result_dict, graphs):
   
   .after-box {
     clear: left;
+    padding-bottom: 90px;
   }
 
   div.footer {
@@ -281,7 +284,7 @@ def html_report(config_dictionary, result_dict, graphs):
   }
 
   h2 {
-    color: #244C89;
+    color: #000000;
     padding-bottom: 0;
     margin-bottom: 0;
     clear:left;
@@ -351,7 +354,7 @@ def html_report(config_dictionary, result_dict, graphs):
       <h2>Summary</h2>
       <ol>
 """
-    summary += "<li><a href=\"#Basic-statistics" "\"> Basic Statistics </li>\n"
+    summary += "<li><a href=\"#Basic-statistics" "\"> Basic Statistics </a></li>\n"
     for i, t in enumerate(graphs):
         summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
     summary += """      </ol>
@@ -364,7 +367,7 @@ def html_report(config_dictionary, result_dict, graphs):
         <div class = "info-box"> 
             <h2 id=M{0}>Basic Statistics</h2>
             <h2 id=M{0}></h2>
-            <h3>Run info</h3>
+            <h3 style="text-align:center">Run info</h3>
             <table class=\" dataframe \" border="1">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
               <tbody>
@@ -378,18 +381,19 @@ def html_report(config_dictionary, result_dict, graphs):
               <tr><th>Kit</th><td> {7} </td></tr>
               <tr><th>Yield (Gbp)</th><td> {8} </td></tr>
               <tr><th>Read count</th><td> {9} </td></tr>
+              <tr><th>N50 (bp)</th><td> {10} </td></tr>
               </tbody>
             </table> 
         </div> <!-- end .info-box -->
       </div>
-    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count)
+    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count, n50)
 
     main_report += """
       <div class=\"module\">
         <div class = "info-box-left">
             <h2 id=M{0}></h2>
             <h2 id=M{0}></h2>
-            <h3>Software info</h3>
+            <h3 style="text-align:center">Software info</h3>
             <table class=\" dataframe \" border="1">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
@@ -410,7 +414,18 @@ def html_report(config_dictionary, result_dict, graphs):
     """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,model_file)
 
     for i, t in enumerate(graphs):
-        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"{4}\">&#x1F263;</a></h2></div>" \
+      if len(t)==5:
+        main_report += "      <div class=\"module\" id=M{0}></div>".format(i)
+        main_report += t[4]
+        if t[2] is None:
+          main_report += "      <div class=\"after-box\"></div>\n"
+        else:
+          main_report += "      <div class=\"box-left\">\n {} </div>\n".format(t[2])
+          main_report += "      <div class=\"after-box\"><p></p></div>\n"
+
+        
+      else:
+        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"<b>{4}</b>\">&#x1F263;</a></h2></div>" \
             .format(i, t[0], _embedded_image(t[1]), t[2], t[3])
 
         if t[2] is None:

@@ -23,12 +23,12 @@
 # Since version 0.10
 
 
-import fastq_extractor
-import fast5_extractor
-import onedsquare_sequencing_summary_extractor
-import sequencing_summary_extractor
-import albacore_pipeline_log_extractor
-import sequencing_telemetry_extractor
+from toulligqc import fastq_extractor
+from toulligqc import fast5_extractor
+from toulligqc import onedsquare_sequencing_summary_extractor
+from toulligqc import sequencing_summary_extractor
+from toulligqc import albacore_pipeline_log_extractor
+from toulligqc import sequencing_telemetry_extractor
 
 
 class ToulligqcExtractor:
