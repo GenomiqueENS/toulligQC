@@ -2,16 +2,16 @@
 [![PyPI version](https://badge.fury.io/py/toulligqc.svg)](https://badge.fury.io/py/toulligqc) [![Downloads](https://pepy.tech/badge/toulligqc)](https://pepy.tech/project/toulligqc) [![Python 3.6](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) 
 
 
-ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.ens.fr/).
+ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.bio.ens.psl.eu/).
 
 This program is dedicated to the QC analyses of Oxford Nanopore runs.
-Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1Dsquare runs.
-It can work with Albacore or Guppy outputs. 
-It also needs a single FAST5 file (to catch the flowcell Id and the run date) if a telemetry file is not provided and the Albacore outputted FASTQ file (to compute the sequence statistics).
-Flow cells and kits version are retrieved using the telemetry file (Albacore and Guppy) or using the pipeline.log file (Albacore only).
-ToulligQC can take barcoding samples into account with a samplesheet.csv file describing the barcodes used or by adding the barcode list as a command line option.
+Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1D² runs.
+It can work with Guppy outputs. 
+It also needs a single FAST5 file (to catch the flowcell Id and the run date) if a telemetry file is not provided.
+Flow cells and kits version are retrieved using the telemetry file.
+ToulligQC can take barcoding samples by adding the barcode list as a command line option.
 
-To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2, FASTQ and FAST5.
+To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2 and .fast5 to retrieve a FAST5 information.
 This tool will produce a set of graphs, statistic files in txt format and a HTML report.
 
 <a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/Docs/report_v1.2_1dsqr.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/images.png)</a>
@@ -20,9 +20,9 @@ Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicP
 
 ## Authors / Support
 
-Bérengère Laffay, Lionel Ferrato-Berberian, Laurent Jourdren, Sophie Lemoine and Stéphane Le Crom.
+Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Laurent Jourdren, Sophie Lemoine and Stéphane Le Crom.
 
-Support is availlable on [GitHub issue page](https://github.com/GenomicParisCentre/toulligQC/issues) and at **toulligqc** **at** **biologie.ens.fr**.
+Support is availlable on [GitHub issue page](https://github.com/GenomicParisCentre/toulligQC/issues) and at **toulligqc** **at** **bio.ens.psl.eu**.
 
 ## Table of Contents
 
@@ -37,9 +37,7 @@ Support is availlable on [GitHub issue page](https://github.com/GenomicParisCent
   * 2.1 [Command line](#command-line)
       * [Options](#options)
       * [Examples](#examples)
-  * 2.2 [Configuration file](#configuration-file)
-  * 2.3 [Sample sheet for barcoded samples](#sample-sheet-for-barcoded-samples)
-  * 2.4 [Sample data](#sample-data)
+  * 2.2 [Sample data](#sample-data)
   
 * 3.[Output](#output) 
 
@@ -63,11 +61,14 @@ ToulligQC is written with Python 3.
 To run ToulligQC without Docker, you need to install the following Python modules:
 
 * matplotlib
+* plotly
+* seaborn
 * h5py
 * pandas
-* seaborn
 * numpy
-* plotly
+* scipy
+* scikit-learn
+
 
 <a name="pypi-installation"></a>
 ### 1.3 Using a PyPi package
@@ -97,12 +98,8 @@ $ docker pull genomicpariscentre/toulligqc:latest
 $ docker run -ti \
              -u $(id -u):$(ig -g) \
              --rm \  
-             -v /path/to/fast5/directory:/path/to/telemetry/directory \
-             -v /path/to/fastq/directory:/path/to/fastq/directory \
              -v /path/to/basecaller/sequencing/summary/file:/path/to/basecaller/sequencing/summary/file \
              -v /path/to/basecaller/sequencing/telemetry/file:/path/to/basecaller/telemetry/summary/file \
-             -v /path/to/samplesheet/file:/path/to/samplesheet/file \
-             -v /path/to/configuration/file:/path/to/configuration/file \
              -v /path/to/result/directory:/path/to/result/directory \
              toulligqc:latest 
 ```
@@ -135,7 +132,7 @@ RUN_ID
     └── pass
         └── run_id.fastq
 ```
-for 1Dsquare analysis
+for 1D² analysis
 
 ```
 RUN_ID
@@ -156,38 +153,28 @@ RUN_ID
 
 General Options:
 ```
-usage:  [-h] [-c FILE] [-n REPORT_NAME] [-f FAST5_SOURCE]
+usage:  [-h] [-n REPORT_NAME] [-f FAST5_SOURCE]
         [-a SEQUENCING_SUMMARY_SOURCE] [-d SEQUENCING_SUMMARY_1DSQR_SOURCE]
-        [-p ALBACORE_PIPELINE_SOURCE] [-q FASTQ_SOURCE] [-t TELEMETRY_SOURCE]
-        [-o OUTPUT] [-b] [-s SAMPLE_SHEET_FILE] [-l BARCODES] [--quiet]
+        [-t TELEMETRY_SOURCE]
+        [-o OUTPUT] [-b] [-l BARCODES] [--quiet]
         [--version]
 
 optional arguments:
   -h, --help                                                       show this help message and exit
-  -c FILE,
-  --conf-file FILE                                                 Specify config file
   -n REPORT_NAME,
   --report-name REPORT_NAME                                        Report name
   -f FAST5_SOURCE,
   --fast5-source FAST5_SOURCE                                      Fast5 file source
   -a SEQUENCING_SUMMARY_SOURCE,
-  --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE,
-  --albacore-summary-source SEQUENCING_SUMMARY_SOURCE              Basecaller sequencing summary source
+  --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE,           Basecaller sequencing summary source
   -d SEQUENCING_SUMMARY_1DSQR_SOURCE,
-  --sequencing-summary-1dsqr-source SEQUENCING_SUMMARY_1DSQR_SOURCE,
-  --albacore-1dsqr-summary-source SEQUENCING_SUMMARY_1DSQR_SOURCE  Basecaller 1dsq summary source
-  -p ALBACORE_PIPELINE_SOURCE,
-   --albacore-pipeline-source ALBACORE_PIPELINE_SOURCE             Albacore pipeline log source
-  -q FASTQ_SOURCE,
-  --fastq-source FASTQ_SOURCE                                      Fastq file source
+  --sequencing-summary-1dsqr-source SEQUENCING_SUMMARY_1DSQR_SOURCE, Basecaller 1dsq summary source
   -t TELEMETRY_SOURCE,
    --telemetry-source TELEMETRY_SOURCE                             Telemetry file source
   -o OUTPUT,
   --output OUTPUT                                                  Output directory
   -b,
   --barcoding                                                      Barcode usage
-  -s SAMPLE_SHEET_FILE,
-  --samplesheet-file SAMPLE_SHEET_FILE                             Path to sample sheet file
   -l BARCODES,
   --barcodes BARCODES                                              Coma separated barcode list
   --quiet                                                          Quiet mode
@@ -206,7 +193,6 @@ $ toulligqc --report-name FAF0256 \
             --telemetry-source /path/to/basecaller/output/sequencing_telemetry.js \
             --sequencing-summary-source /path/to/basecaller/output/sequencing_summary.txt \
             --sequencing-summary-1dsqr-source /path/to/basecaller/output/sequencing_1dsqr_summary.txt \ (optional)
-            --fastq-source /path/to/fastq/source \
             --output /path/to/output/directory \
 ```
 
@@ -223,65 +209,16 @@ $ toulligqc --report-name FAF0256 \
             --sequencing-summary-1dsqr-source /path/to/basecaller/output/sequencing_1dsqr_summary.txt \ (optional)
             --sequencing-summary-1dsqr-source /path/to/basecaller/output/barcoding_summary_pass.txt \   (optional)
             --sequencing-summary-1dsqr-source /path/to/basecaller/output/barcoding_summary_fail.txt \   (optional)
-            --fastq-source /path/to/fastq/source \
             --output /path/to/output/directory \
-            --sample-sheet-source /path/to/sample/sheet
+            --barcodes BC1,BC2,BC3
 ``` 
- 
-Example with optional arguments with a configuration file:
 
-```bash
-$ python3 toulligqc.py --run-name FAF0256 \
-                       --barcoding \
-                       --albacore-pipeline-source /path/to/albacore/pipeline.log \
-                       --config-file /path/to/configuration/file/
-```
-
-
-<a name="configuration-file"></a>
-### 2.2 Configuration file
-
-A configuration file can be used, the required informations have to be defined as following in the same order :
-
-```ini
-[config]
-;(path to the directory or sequencing_telemetry.js file)
-telemetry_source=/path/to/basecaller/output/directory/or/telemetry/file
-;(containing either FAST5, FAST5.tar.gz or FAST5.tar.bz2 files)
-fast5_source=/path/to/fast5/directory/or/file
-;(Sequencing summary path, if there are multiple sequencing summaries for bacode, a tab character must be used as file separator)
-sequencing_summary_source=/path/to/basecaller/sequencing/summary/directory/or/file
-;(Sequencing summary path, if there are multiple sequencing summaries for bacode, a tab character must be used as file separator)
-sequencing_summary_1dsqr_source=/path/to/basecaller/sequencing/1dsqr/summary/directory/or/file
-;(directory where the 1dsqr results are stored)
-result_directory =/path/to/result/directory/
-fastq_source=/path/to/fastq/directory/or/file 
-sample_sheet_file=/path/to/sample/sheet/file
-```
-
-The samplesheet file can be omitted if barcodes were not used in the run.
-
-<a name="sample-sheet-for-barcoded-samples"></a>
-### 2.3 Samplesheet
- 
-The sample sheet file describes the different barcodes and their corresponding samples.
-The **Index column is mandatory** and  must contain the Oxford Nanopore Technology **barcode number** like **BC01**.
-The other columns are optional but can be useful to define your samples for the following analyses. They can be modified at your convenience.
-
-**Note:** The samplesheet file creation can be avoided by using the <code>--barcodes</code> command line option.
-This command line option takes a list of barcodes separated by comas as argument.
-
-samplesheet.csv example:
-
-index | Reads | 
-------- | ------- 
- BC01 | ```dnacpc14_20170328_FNFAF04250_MN17734_mux_scan_1D_validation_test1_45344_barcode01_template.fastq.bz2``` 
 
 <a name="sample-data"></a>
-### 2.4 Sample data
+### 2.2 Sample data
 
 We provide [sample raw data](http://outils.genomique.biologie.ens.fr/leburon/downloads/toulligqc-example/toulligqc_demo_data.tar.bz2) that can be used to launch and evaluate our software.
-This demo data has been generated using a MinION MKIb with a R9.4.1 flowcell (FLO-MIN106) in 1D (SQK-LSK108) mode with barcoded samples (BC01, BC02, BC03, BC04, BC05 andBC07).
+This demo data has been generated using a MinION MKIb with a R9.4.1 flowcell (FLO-MIN106) in 1D (SQK-LSK108) mode with barcoded samples (BC01, BC02, BC03, BC04, BC05 and BC07).
 Data acquisition was performed using MinKNOW 1.11.5 and basecalling/demultiplexing was completed using Guppy 3.2.4.
 
 * First download and uncompress sample data:
@@ -307,7 +244,7 @@ $ toulligqc \
     --sequencing-summary-source sequencing_summary.txt \
     --sequencing-summary-source barcoding_summary_pass.txt \
     --sequencing-summary-source barcoding_summary_fail.txt \
-    --samplesheet-file          samplesheet.tsv \
+    --barcodes                  BC01,BC02,BC03,BC04,BC05,BC07 \
     --output                    output
 ```
 
