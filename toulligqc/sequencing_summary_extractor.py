@@ -27,7 +27,6 @@
 
 import pandas as pd
 import sys
-from toulligqc import graph_generator
 from toulligqc import plotly_graph_generator as pgg
 import numpy as np
 import re
