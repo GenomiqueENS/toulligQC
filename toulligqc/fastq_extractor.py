@@ -258,7 +258,7 @@ class FastqExtractor:
     def _barcoded_fastq_informations(self, selected_barcode=''):
         """
         Get different information about fastq files
-        :param selected_barcode: barcode selection taken from the samplesheet file
+        :param selected_barcode: barcode selection taken from the command line argument
         """
         total_nucs_template, self.global_length_array, barcode_length_array, template_nucleotide_counter, read_count = \
             self._fastq_metrics()

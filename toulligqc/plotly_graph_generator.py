@@ -715,7 +715,6 @@ def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
 def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
-    Needs the samplesheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split())
 

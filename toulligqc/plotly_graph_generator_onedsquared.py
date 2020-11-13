@@ -547,7 +547,6 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
 def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
     """
     Plots a pie chart of 1D² read pass percentage per barcode of a run.
-    Needs the samplesheet file describing the barcodes to run
     """
     output_file = result_directory + '/' + '_'.join(main.split())
 
