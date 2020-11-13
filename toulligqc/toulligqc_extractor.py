@@ -27,7 +27,6 @@ from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
 from toulligqc import onedsquare_sequencing_summary_extractor
 from toulligqc import sequencing_summary_extractor
-from toulligqc import albacore_pipeline_log_extractor
 from toulligqc import sequencing_telemetry_extractor
 
 
@@ -89,10 +88,6 @@ class ToulligqcExtractor:
         if 'fast5_source' in config_dictionary and config_dictionary['fast5_source']:
             extractors_list.append(fast5_extractor.Fast5Extractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("fast5.extractor")
-
-        if 'albacore_pipeline_source' in config_dictionary and config_dictionary['albacore_pipeline_source']:
-            extractors_list.append(albacore_pipeline_log_extractor.AlbacorePipelineLogExtractor(config_dictionary))
-            result_dict['toulligqc.info.extractors'].append("albacore.log.extractor")
 
         if 'fastq_source' in config_dictionary and config_dictionary['fastq_source']:
             extractors_list.append(fastq_extractor.FastqExtractor(config_dictionary))
