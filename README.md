@@ -71,7 +71,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 
 
 <a name="pypi-installation"></a>
-### 1.3 Using a PyPi package
+### 1.2 Using a PyPi package
 
 ToulligQC can be more easlily installed with a pip package availlable on the PyPi repository. The following command line  will install the latest version of ToulligQC: 
 ```bash
