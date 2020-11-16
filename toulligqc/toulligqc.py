@@ -65,8 +65,6 @@ def _parse_args(config_dictionary):
                         help='Basecaller sequencing summary source')
     parser.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append', dest='sequencing_summary_1dsqr_source',
                         help='Basecaller 1dsq summary source')
-    parser.add_argument('-q', '--fastq-source', action='store', dest='fastq_source',
-                        help='Fastq file source', default=False)
     parser.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
                         help='Telemetry file source', default=False)
     parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
@@ -86,7 +84,6 @@ def _parse_args(config_dictionary):
     sequencing_summary_source = argument_value.sequencing_summary_source
     sequencing_summary_1dsqr_source = argument_value.sequencing_summary_1dsqr_source
     sequencing_telemetry_source = argument_value.telemetry_source
-    fastq_source = argument_value.fastq_source
     report_name = argument_value.report_name
     is_barcode = argument_value.is_barcode
     result_directory = argument_value.output
@@ -102,7 +99,6 @@ def _parse_args(config_dictionary):
         ('sequencing_summary_source', _join_parameter_arguments(sequencing_summary_source)),
         ('sequencing_summary_1dsqr_source', _join_parameter_arguments(sequencing_summary_1dsqr_source)),
         ('sequencing_telemetry_source',sequencing_telemetry_source),
-        ('fastq_source', fastq_source),
         ('result_directory', result_directory),
         ('barcoding', is_barcode),
         ('barcodes', barcodes),

@@ -107,8 +107,8 @@ $ docker run -ti \
 ## 2. Usage
 <a name="command-line"></a>
 
-To run ToulligQC, you need one of your initial Fast5 ONT file (or the telemetry file) and you may also need an Albacore output directory to get the ``` Fastq files ```  and ``` the sequencing_summary.txt ```.
-ToulligQC can perform analyses on your data if the directory is organise as following:
+To run ToulligQC you need the Guppy basecaller output files : ```sequencing_summary.txt``` and ```sequencing_telemetry.js```. You can use your initial Fast5 ONT file too.
+ToulligQC can perform analyses on your data if the directory is organised as the following:
 
 ```
 RUN_ID
@@ -168,8 +168,8 @@ optional arguments:
   --version                                                        show program's version number and exit
 
 ```
-
  <a name="example"></a>
+
  * #### Examples
  
 
@@ -257,7 +257,7 @@ Found in the report.data log file:
 - The information about ToulligQC execution
 - The environment variables
 - Full statistics are provided for complementary analyses if needed : The information by modules is retained in a key-value form, the prefix of a key being the report data file id of the module
-- The nucleotide rate per read or per read and per barcode if FastQ files have been processed 
+- The nucleotide rate per read
 
 Organised in a output directory  like this : 
    
