@@ -55,12 +55,10 @@ from toulligqc import configuration
 def _parse_args(config_dictionary):
     """
     Parsing the command line
-    :return: config_dictionary containing the paths containing in the configuration file or specify by line arguments
+    :return: config_dictionary containing the paths specified by line arguments
     """
 
-    home = str(Path.home())
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--conf-file", help="Specify config file", metavar="FILE")
     parser.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
     parser.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
@@ -84,7 +82,6 @@ def _parse_args(config_dictionary):
 
     # Parsing lone arguments and assign each argument value to a variable
     argument_value = parser.parse_args()
-    conf_file = argument_value.conf_file
     fast5_source = argument_value.fast5_source
     sequencing_summary_source = argument_value.sequencing_summary_source
     sequencing_summary_1dsqr_source = argument_value.sequencing_summary_1dsqr_source
@@ -98,12 +95,6 @@ def _parse_args(config_dictionary):
     barcodes = argument_value.barcodes
 
     config_dictionary['report_name'] = report_name
-
-    # Checking of the presence of a configuration file
-    if argument_value.conf_file:
-        config_dictionary.load(conf_file)
-    elif os.path.isfile(home + '/.toulligqc/config.txt'):
-        config_dictionary.load(home + '/.toulligqc/config.txt')
 
     # Rewrite the configuration file value if argument option is present
     source_file = {

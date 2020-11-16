@@ -60,7 +60,6 @@ def _make_desribe_dataframe(value):
 def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
     Plots the histogram of 1D² count of the different types of reads:
-    FastQ return by MinKNOW
     1D² read return by Guppy
     1D² pass read return by Guppy (Qscore >= 7)
     1D² fail read return by Guppy (Qscore < 7)

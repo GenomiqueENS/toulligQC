@@ -75,15 +75,3 @@ class ToulligqcConf:
     def keys(self):
         return self._config_dictionary.keys()
 
-    def load(self, conf_path):
-
-        with open(conf_path, 'r') as config_file:
-            for line in config_file:
-                if line.startswith('#'):
-                    continue
-                elif line.startswith(('fast5_source', 'albacore_summary_source', 'albacore_1dsqr_summary_source',
-                                      'fastq_source', 'result_directory',
-                                     'sample_sheet_file')):
-                    line = line.replace(" ", "")
-                    path_list = line.strip().split('=')
-                    self._config_dictionary[path_list[0]] = path_list[1]

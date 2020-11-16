@@ -113,11 +113,7 @@ ToulligQC can perform analyses on your data if the directory is organise as foll
 ```
 RUN_ID
 ├── sequencing_summary.txt
-├── pipeline.log
-├── configuration.cfg
 ├── sequencing_telemetry.js
-└── workspace
-    └── run_id.fastq
 ```
 
 or 
@@ -125,23 +121,14 @@ or
 ```
 RUN_ID
 ├── sequencing_summary.txt
-├── pipeline.log
-├── configuration.cfg
 ├── sequencing_telemetry.js
-└── workspace
-    └── pass
-        └── run_id.fastq
 ```
 for 1D² analysis
 
 ```
 RUN_ID
 ├── sequencing_summary.txt
-├── pipeline.log
-├── configuration.cfg
-├── workspace
-│   └── pass
-│       └── run_id.fastq
+├── sequencing_telemetry.js
 └── 1dsq_analysis
     └── sequencing_1dsq_summary.txt
  ```
