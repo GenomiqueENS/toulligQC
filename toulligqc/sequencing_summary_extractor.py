@@ -301,7 +301,6 @@ class SequencingSummaryExtractor:
                                (self._get_result_value(result_dict, "read.fail.count") / total_reads))
 
         # Frequencies
-        self._set_result_value(result_dict, "fastq.entries.frequency", 100)
         self._set_result_value(result_dict, "read.count.frequency", 100)
 
         read_pass_frequency = (self._get_result_value(
