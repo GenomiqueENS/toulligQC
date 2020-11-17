@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.0b1 (2020-11-17)
+* Refactoring of the sequencing_summary_extractor
+* Refactoring of the 1dsqr_sequencing_summary_extractor
+* Many performance improvements (reducing memory usage)
+* Graphs are now made with Plotly
+* Removal of unused options (Albacore log, FASTQ files, configuration file and samplesheet file)
+* N50 information added to report.html
+* Removal of Albacore support
+* Now handle PromethION data
+* Update of required dependencies versions
+* Add unit tests
+* Add new plots (throughput sequencing time)
+* Update graph colors
+
 ## 1.3 (2019-11-07)
 * Add a --barcodes option that allow to avoid samplesheet file creation
 * The size of the graphs are now set to 1000x600px
