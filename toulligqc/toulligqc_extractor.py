@@ -23,7 +23,6 @@
 # Since version 0.10
 
 
-from toulligqc import fastq_extractor
 from toulligqc import fast5_extractor
 from toulligqc import onedsquare_sequencing_summary_extractor
 from toulligqc import sequencing_summary_extractor
