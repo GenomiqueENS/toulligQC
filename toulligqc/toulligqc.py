@@ -41,6 +41,7 @@ import re
 import argparse
 import os
 import time
+import datetime
 import platform as pf
 import tempfile as tp
 import warnings
@@ -58,25 +59,34 @@ def _parse_args(config_dictionary):
     :return: config_dictionary containing the paths specified by line arguments
     """
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
-    parser.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source')
-    parser.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
-                        help='Basecaller sequencing summary source')
-    parser.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append', dest='sequencing_summary_1dsqr_source',
+    parser = argparse.ArgumentParser(prog="ToulligQC V{0}".format(version.__version__), add_help=False)
+    required = parser.add_argument_group('required arguments')
+    optional = parser.add_argument_group('optional arguments')
+
+    # Add all required arguments
+    required.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
+                        help='Basecaller sequencing summary source', metavar='SEQUENCING_SUMMARY_SOURCE' ,required=True)
+    required.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
+                        help='Basecaller telemetry file source', default=False, required=True)
+
+    required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source (necessary if no telemetry file)')
+
+
+    # Add all optional arguments
+    optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
+    optional.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
+    optional.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append', dest='sequencing_summary_1dsqr_source',
                         help='Basecaller 1dsq summary source')
-    parser.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
-                        help='Telemetry file source', default=False)
-    parser.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
-    parser.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Barcode usage",
+    optional.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Option for barcode usage",
                         default=False)
-    parser.add_argument('-l', '--barcodes', action='store', dest='barcodes',
-                        help='Coma separated barcode list')
-    parser.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
+    optional.add_argument('-l', '--barcodes', action='store', dest='barcodes', help='Coma separated barcode list')
+    optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                         default=False)
-    parser.add_argument("--devel-quick-launch", action='store_true', dest='is_quicklaunch',
-                        help=argparse.SUPPRESS, default=False)
-    parser.add_argument('--version', action='version', version=version.__version__)
+    optional.add_argument("--report-only", action='store_true', dest='is_quicklaunch', help="No report.data file, only HTML report",
+                        default=False)
+    optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
+    optional.add_argument('--version', action='version', version=version.__version__)
+
 
     # Parsing lone arguments and assign each argument value to a variable
     argument_value = parser.parse_args()
@@ -91,7 +101,12 @@ def _parse_args(config_dictionary):
     is_quicklaunch = argument_value.is_quicklaunch
     barcodes = argument_value.barcodes
 
-    config_dictionary['report_name'] = report_name
+    # If no report_name specified, create default one : ToulligQC-report-YYYYMMDD_HHMMSS
+    if not report_name:
+        timestamp = datetime.datetime.now()
+        config_dictionary['report_name'] = "Toulligqc-report-" + str((timestamp.strftime("%Y%m%d_%H%M%S")))
+    else:
+        config_dictionary['report_name'] = report_name
 
     # Rewrite the configuration file value if argument option is present
     source_file = {
@@ -128,10 +143,13 @@ def _check_conf(config_dictionary):
     Check the configuration
     :param config_dictionary: configuration dictionary containing the file or directory paths
     """
+    if ('sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']) and \
+    ('sequencing_telemetry_source' not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
+        argparse.ArgumentParser.print_help
 
     if ('fast5_source' not in config_dictionary or not config_dictionary['fast5_source']) and \
        ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
-        sys.exit('The fast5 source argument and telemetry source are empty')
+        sys.exit('The FAST5 source argument and the telemetry file source are empty. One is needed')
 
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
         sys.exit('The sequencing summary source argument is empty')
@@ -140,8 +158,13 @@ def _check_conf(config_dictionary):
         if not 'barcodes' in config_dictionary:
             sys.exit('No barcode list argument provided')
 
+    # If no --output argument provided, create output folder in current directory
     if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
-        sys.exit('The output directory argument is empty')
+        current_directory = os.getcwd()
+        final_directory = os.path.join(current_directory, r'toulligqc_output')
+        if not os.path.exists(final_directory):
+            os.makedirs(final_directory)
+        config_dictionary['result_directory'] = final_directory
 
     # Create the root output directory if not exists
     if not os.path.isdir(config_dictionary['result_directory']):

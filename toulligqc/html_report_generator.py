@@ -215,7 +215,7 @@ def html_report(config_dictionary, result_dict, graphs):
     padding-bottom:1.5em;
     padding-top:1.5em;
   }
-  
+
   .info-box {
     float:left;
     min-width: 400px;
@@ -226,7 +226,7 @@ def html_report(config_dictionary, result_dict, graphs):
     top: 0 auto;
     bottom: 0 auto;
   }
-  
+
   .info-box-left {
     float:left;
     min-width: 400px;
@@ -237,7 +237,7 @@ def html_report(config_dictionary, result_dict, graphs):
     top: 0 auto;
     bottom: 0 auto;
   }
-  
+
   .box {
     float:left;
     min-width: 1150px;
@@ -247,7 +247,7 @@ def html_report(config_dictionary, result_dict, graphs):
     top: 0 auto;
     bottom: 0 auto;
   }
-  
+
     .box-left {
     float:left;
     min-width: 350px;
@@ -258,7 +258,7 @@ def html_report(config_dictionary, result_dict, graphs):
     top: 0.3px;
     bottom: 0 auto;
   }
-  
+
   .after-box {
     clear: left;
     padding-bottom: 90px;
@@ -316,7 +316,7 @@ def html_report(config_dictionary, result_dict, graphs):
     margin-top: 0;
     border-top: 0;
   }
-  
+
   p {
     padding-top: 0;
     margin-top: 0;
@@ -364,15 +364,15 @@ def html_report(config_dictionary, result_dict, graphs):
     main_report = """
     <div class = 'main'>
       <div class=\"module\" id="Basic-statistics">
-        <div class = "info-box"> 
+        <div class = "info-box">
             <h2 id=M{0}>Basic Statistics</h2>
             <h2 id=M{0}></h2>
             <h3 style="text-align:center">Run info</h3>
             <table class=\" dataframe \" border="1">
-              <thead><tr><th>Measure</th><th>Value</th></tr></thead>      
+              <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
-              <tr><th>Run id</th><td> {0} </td></tr>  
-              <tr><th>Sample</th><td> {1} </td></tr>                      
+              <tr><th>Run id</th><td> {0} </td></tr>
+              <tr><th>Sample</th><td> {1} </td></tr>
               <tr><th>Report name </th><td> {2} </td></tr>
               <tr><th>Run date</th><td> {3} </td></tr>
               <tr><th>Run duration </th><td> {4} </td></tr>
@@ -383,7 +383,7 @@ def html_report(config_dictionary, result_dict, graphs):
               <tr><th>Read count</th><td> {9} </td></tr>
               <tr><th>N50 (bp)</th><td> {10} </td></tr>
               </tbody>
-            </table> 
+            </table>
         </div> <!-- end .info-box -->
       </div>
     """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count, n50)
@@ -423,7 +423,7 @@ def html_report(config_dictionary, result_dict, graphs):
           main_report += "      <div class=\"box-left\">\n {} </div>\n".format(t[2])
           main_report += "      <div class=\"after-box\"><p></p></div>\n"
 
-        
+
       else:
         main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"<b>{4}</b>\">&#x1F263;</a></h2></div>" \
             .format(i, t[0], _embedded_image(t[1]), t[2], t[3])
