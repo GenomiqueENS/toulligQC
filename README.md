@@ -1,5 +1,5 @@
-<a href="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png" align="middle" height="50" width="190" > </a> 
-[![PyPI version](https://badge.fury.io/py/toulligqc.svg)](https://badge.fury.io/py/toulligqc) [![Downloads](https://pepy.tech/badge/toulligqc)](https://pepy.tech/project/toulligqc) [![Python 3.6](https://img.shields.io/badge/python-3.8-orange.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) 
+<a href="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png" align="middle" height="50" width="190" > </a>
+[![PyPI version](https://badge.fury.io/py/toulligqc.svg)](https://badge.fury.io/py/toulligqc) [![Downloads](https://pepy.tech/badge/toulligqc)](https://pepy.tech/project/toulligqc) [![Python 3.6](https://img.shields.io/badge/python-3.8-orange.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
 ToulligQC is a program written in Python and developped by the [Genomic facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.bio.ens.psl.eu/).
@@ -16,7 +16,7 @@ This tool will produce a set of graphs, statistic files in txt format and a HTML
 
 <a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/Docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/images.png)</a>
 
-Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/Docs/report.html) to see an report example! 
+Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/Docs/report.html) to see an report example!
 
 ## Authors / Support
 
@@ -28,22 +28,22 @@ Support is availlable on [GitHub issue page](https://github.com/GenomicParisCent
 
 * 1.[Get ToulligQC](#get-toulligqc)
   * 1.1 [Local installation](#local-installation)
-  * 1.2 [PyPi package installation](#pypi-installation) 
+  * 1.2 [PyPi package installation](#pypi-installation)
   * 1.3 [Docker](#docker)
-     *  [Docker image recovery](#docker-image-recovery)    
+     *  [Docker image recovery](#docker-image-recovery)
      *  [Launching Docker image with docker run](#launching-Docker-image-with-docker-run)
-     
+
 * 2.[Usage](#usage)
   * 2.1 [Command line](#command-line)
       * [Options](#options)
       * [Examples](#examples)
   * 2.2 [Sample data](#sample-data)
-  
-* 3.[Output](#output) 
+
+* 3.[Output](#output)
 
 
 <a name="get-toulligqc"></a>
-## 1. Get ToulligQC 
+## 1. Get ToulligQC
 <a name="local-installation"></a>
 ### 1.1 Local
 This option is also suitable if you are interested in further developments of the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
@@ -73,7 +73,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 <a name="pypi-installation"></a>
 ### 1.2 Using a PyPi package
 
-ToulligQC can be more easlily installed with a pip package availlable on the PyPi repository. The following command line  will install the latest version of ToulligQC: 
+ToulligQC can be more easlily installed with a pip package availlable on the PyPi repository. The following command line  will install the latest version of ToulligQC:
 ```bash
 $ pip3 install toulligqc
 ```
@@ -97,11 +97,11 @@ $ docker pull genomicpariscentre/toulligqc:latest
 ```
 $ docker run -ti \
              -u $(id -u):$(id -g) \
-             --rm \  
+             --rm \
              -v /path/to/basecaller/sequencing/summary/file:/path/to/basecaller/sequencing/summary/file \
              -v /path/to/basecaller/sequencing/telemetry/file:/path/to/basecaller/telemetry/summary/file \
              -v /path/to/result/directory:/path/to/result/directory \
-             toulligqc:latest 
+             toulligqc:latest
 ```
 <a name="usage"></a>
 ## 2. Usage
@@ -148,38 +148,36 @@ RUN_ID
 
 General Options:
 ```
-usage:  [-h] [-n REPORT_NAME] [-f FAST5_SOURCE]
-        [-a SEQUENCING_SUMMARY_SOURCE] [-d SEQUENCING_SUMMARY_1DSQR_SOURCE]
-        [-t TELEMETRY_SOURCE]
-        [-o OUTPUT] [-b] [-l BARCODES] [--quiet]
-        [--version]
+usage: ToulligQC -a SEQUENCING_SUMMARY_SOURCE -t TELEMETRY_SOURCE [-f FAST5_SOURCE] [-n REPORT_NAME] [-o OUTPUT] [-d SEQUENCING_SUMMARY_1DSQR_SOURCE] [-b] [-l BARCODES] [--quiet] [--report-only]
+                          [-h] [--version]
+
+required arguments:
+  -a SEQUENCING_SUMMARY_SOURCE, --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE
+                        Basecaller sequencing summary source
+  -t TELEMETRY_SOURCE, --telemetry-source TELEMETRY_SOURCE
+                        Basecaller telemetry file source
+  -f FAST5_SOURCE, --fast5-source FAST5_SOURCE
+                        Fast5 file source (necessary if no telemetry file)
 
 optional arguments:
-  -h, --help                                                       show this help message and exit
-  -n REPORT_NAME,
-  --report-name REPORT_NAME                                        Report name
-  -f FAST5_SOURCE,
-  --fast5-source FAST5_SOURCE                                      Fast5 file source
-  -a SEQUENCING_SUMMARY_SOURCE,
-  --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE,           Basecaller sequencing summary source
-  -d SEQUENCING_SUMMARY_1DSQR_SOURCE,
-  --sequencing-summary-1dsqr-source SEQUENCING_SUMMARY_1DSQR_SOURCE, Basecaller 1dsq summary source
-  -t TELEMETRY_SOURCE,
-   --telemetry-source TELEMETRY_SOURCE                             Telemetry file source
-  -o OUTPUT,
-  --output OUTPUT                                                  Output directory
-  -b,
-  --barcoding                                                      Barcode usage
-  -l BARCODES,
-  --barcodes BARCODES                                              Coma separated barcode list
-  --quiet                                                          Quiet mode
-  --version                                                        show program's version number and exit
-
+  -n REPORT_NAME, --report-name REPORT_NAME
+                        Report name
+  -o OUTPUT, --output OUTPUT
+                        Output directory
+  -d SEQUENCING_SUMMARY_1DSQR_SOURCE, --sequencing-summary-1dsqr-source SEQUENCING_SUMMARY_1DSQR_SOURCE
+                        Basecaller 1dsq summary source
+  -b, --barcoding       Option for barcode usage
+  -l BARCODES, --barcodes BARCODES
+                        Coma separated barcode list
+  --quiet               Quiet mode
+  --report-only         No report.data file, only HTML report
+  -h, --help            Show this help message and exit
+  --version             show program's version number and exit
 ```
  <a name="example"></a>
 
  * #### Examples
- 
+
 
 Example with optional arguments:
 
@@ -247,7 +245,8 @@ More information about this sample data and scripts can be found in the `README`
 
 ## 3.Output
 
-ToulligQC generates :
+If the option --output is not provided, ToulligQC generates all below files and images in the current directory.
+If no report-name is given, ToulligQC creates a default report name.
 
 * A HTML report with :
 

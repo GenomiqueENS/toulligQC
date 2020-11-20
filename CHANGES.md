@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0b2 (2020-11-20)
+
+* Fix import bug
+* Fix graph names partially hidden in HTML summary element
+* Rewrite help and rename arguments for clarity
+* Create required and optional argument groups
+* Create default values for --report-name and --output command line arguments
+* Update report.html example in Docs with the new version of ToulliQC
+* Create new presentation image for README
+
 ## 2.0b1 (2020-11-17)
 * Refactoring of the sequencing_summary_extractor
 * Refactoring of the 1dsqr_sequencing_summary_extractor
