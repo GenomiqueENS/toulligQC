@@ -104,7 +104,7 @@ def _parse_args(config_dictionary):
     # If no report_name specified, create default one : ToulligQC-report-YYYYMMDD_HHMMSS
     if not report_name:
         timestamp = datetime.datetime.now()
-        config_dictionary['report_name'] = "Toulligqc-report-" + str((timestamp.strftime("%Y%m%d_%H%M%S")))
+        config_dictionary['report_name'] = "Toulligqc-report-" + str((timestamp.strftime("%Y-%m-%d-%H%M%S")))
     else:
         config_dictionary['report_name'] = report_name
 

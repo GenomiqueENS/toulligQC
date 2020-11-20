@@ -201,13 +201,13 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
 def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, result_directory, desc):
 
     output_file = result_directory + '/' + '_'.join(main.split())
-    
+
     all_read = sequence_length_df.loc[sequence_length_df >= 10].values
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] >= 10]
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] >= 10]
-  
+
     fig = go.Figure()
-    
+
     fig.add_trace(go.Histogram(x=all_read,
                                name='All reads',
                                nbinsx=500,
@@ -225,7 +225,7 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
                                name='Fail reads',
                                marker_color='#d90429'  # red
                                ))
-    
+
     fig.update_layout(
         title={
             'text': "<b>Distribution of read length</b>",
@@ -277,7 +277,7 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
     output_file = result_directory + '/' + '_'.join(main.split())
-    
+
     all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
@@ -287,9 +287,9 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
         all_read = _interpolate(x=all_read, npoints=200)
         read_pass = _interpolate(x=read_pass, npoints=200)
         read_fail = _interpolate(x=read_fail, npoints=200)
-        
+
     fig = go.Figure()
-    
+
     fig.add_trace(go.Scatter(x=all_read,
                                name='All reads',
                                marker_color='#fca311',
@@ -305,7 +305,7 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
                                name='Fail reads',
                                marker_color='#d90429'
                                ))
-    
+
     fig.update_layout(
         title={
             'text': "<b>Yield plot through experiment time</b>",
@@ -363,7 +363,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
          "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
          "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']
          })
-    
+
     # If more than 10.000 reads, interpolate data
     if len(df["1D"]) > 10000:
         dataframe = pd.DataFrame({
@@ -376,7 +376,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     names = {"1D": "All reads",
              "1D pass": "Read pass",
              "1D fail": "Read fail"}
-    
+
     colors = {"1D": '#fca311',
               "1D pass": '#51a96d',
               "1D fail": '#d90429'}
@@ -403,7 +403,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                             name=names[column],
                             meanline_visible=True,
                       marker=dict(color=colors[column])),
-                      row=1, col=2) 
+                      row=1, col=2)
 
 
     fig.update_layout(
@@ -462,7 +462,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
         pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
                       "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
-        
+
     # If more than 10.000 reads, interpolate data
     if len(dataframe["1D"]) > 10000:
         phred_score_pass = _interpolate(dataframe["1D pass"], npoints=5000)
@@ -470,17 +470,17 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
     else:
         phred_score_pass = dataframe["1D pass"]
         phred_score_fail = dataframe["1D fail"]
-    
+
     arr_1D_pass = np.array(pd.Series(phred_score_pass).dropna())
     x = np.linspace(0, max(arr_1D_pass), 200)
     mu, std = norm.fit(arr_1D_pass)
     pdf_1D_pass = norm.pdf(x, mu, std)
-    
+
     arr_1D_fail = np.array(pd.Series(phred_score_fail).dropna())
     x2 = np.linspace(0, max(arr_1D_fail), 200)
     mu2, std2 = norm.fit(arr_1D_fail)
     pdf_1D_fail = norm.pdf(x2, mu2, std2)
-   
+
     fig = go.Figure()
     fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#4A69FF", histnorm='probability density'))
     fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#CE3D1D", histnorm='probability density'))
@@ -545,7 +545,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     read_pass_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"]
     read_fail_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]
     read_fail_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"]
-    
+
     # If more than 10.000 reads, interpolate data
     if len(read_pass_length) > 10000:
         pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
@@ -604,7 +604,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     if max(read_pass_length) >= max(read_fail_length):
         max_val = max(read_pass_length)
     max_val = max(read_fail_length)
-    
+
     fig.update_xaxes(range=[0, max_val])
 
     div = py.plot(fig,
@@ -613,7 +613,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
                   auto_open=False,
                   show_link=False)
     py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-    
+
     table_html = None
 
     return main, output_file, table_html, desc, div
@@ -725,7 +725,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
 
     count_sorted = dataframe_dict["read.pass.barcoded"]
     labels = count_sorted.index.values.tolist()
-    
+
     fig = go.Figure(data=[go.Pie(labels=labels,
                                  values=count_sorted)])
     if len(labels) <= 12:
@@ -759,7 +759,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode
         ),
         height=500, width=875
     )
-    
+
     div = py.plot(fig,
                   include_plotlyjs=False,
                   output_type='div',
@@ -825,7 +825,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
         ),
         height=500, width=875
     )
-    
+
     div = py.plot(fig,
                   include_plotlyjs=False,
                   output_type='div',
@@ -848,7 +848,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
     output_file = result_directory + '/' + '_'.join(main.split())
-    
+
     df = datafame_dict['barcode_selection_sequence_length_dataframe']
 
     # Sort reads by read type and drop read type column
@@ -949,13 +949,13 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
 
     df = dataframe_dict['barcode_selection_sequence_phred_melted_dataframe']
     barcode_list = barcode_selection
-    
-    # Sort reads by read type and drop read type column 
+
+    # Sort reads by read type and drop read type column
     read_pass_qscore = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering') #Df
     read_fail_qscore = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
-    
+
     fig = go.Figure()
-    
+
     for barcode in barcode_list:
         final_df = read_pass_qscore.loc[read_pass_qscore['barcodes'] == barcode].dropna()
         fig.add_trace(go.Box(
@@ -975,7 +975,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
                              legendgroup="fail",
                              offsetgroup="fail"
                              ))
-    
+
     fig.update_layout(
         title={
             'text': "<b>PHRED score distribution for each barcode</b>",
@@ -1017,7 +1017,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
                   auto_open=False,
                   show_link=False)
     py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-    
+
     all_read = df.describe().T
     read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
@@ -1027,13 +1027,13 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
-    return main, output_file, table_html, desc, div 
+    return main, output_file, table_html, desc, div
 
 
 def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
-        
+
         output_file = result_directory + '/' + '_'.join(main.split())
-        
+
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
 
@@ -1045,9 +1045,9 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         else:
             df_time = time
             df_length = length
-        
+
         fig = go.Figure()
-        
+
         fig.add_trace(go.Scatter(
         x=df_time,
         y=df_length,
@@ -1057,8 +1057,8 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         name='interpolation curve',
         line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
         )
-        
-        fig.update_layout(    
+
+        fig.update_layout(
                 title={
                 'text': "<b>Read length over experiment time</b>",
                 'y':0.95,
@@ -1090,7 +1090,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
             hovermode=False,
             height=800, width=1400
         )
-        
+
         div = py.plot(fig,
                             include_plotlyjs=False,
                             output_type='div',
@@ -1104,13 +1104,13 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
 
 
 def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, desc):
-        
+
         output_file = result_directory + '/' + '_'.join(main.split())
 
         # Time data
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
-        
+
         # Qscore data
         qscore = qscore_df.dropna()
 
@@ -1132,8 +1132,8 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
             marker=dict(
                 size=10,
                 color="blue")))
-        
-        fig.update_layout(    
+
+        fig.update_layout(
                 title={
                 'text': "<b>PHRED score over experiment time</b>",
                 'y':0.95,
@@ -1168,21 +1168,21 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
 
 
 def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
-        
+
         output_file = result_directory + '/' + '_'.join(main.split())
 
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
-        
+
         fig = go.Figure()
-        
+
         length = dataframe_dict.get('sequence.length')
         f = interp1d(time, length, kind="nearest")
         # Add traces, one for each slider step
         for step in range(5, 505, 5):
             x_int = np.linspace(time[0],time[-1], step)
             y_int = f(x_int)
-        
+
             fig.add_trace(go.Scatter(
                 visible=False,
                 x=x_int,
@@ -1190,11 +1190,11 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
                 mode='lines',
                 line=dict(color='#2D85E2', width=2.5, shape="spline", smoothing=0.5))
             )
-        
+
         # Make 60th trace visible
         fig.data[60].visible = True
-        
-        fig.update_layout(    
+
+        fig.update_layout(
                 title={
                 'text': "<b>Interpolated read length over experiment time</b>",
                 'y':0.95,
@@ -1225,7 +1225,7 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
             ),
             height=800, width=1400
         )
-        
+
         # Create and add slider
         npoints = []
         for i in range(len(fig.data)):
@@ -1246,12 +1246,12 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
         fig.update_layout(
             sliders=sliders
         )
-        
+
         # Edit slider labels
         fig['layout']['sliders'][0]['currentvalue']['prefix']='Number of values : '
         for i, points in enumerate(range(5, 505, 5), start = 0):
             fig['layout']['sliders'][0]['steps'][i]['label']=points
-        
+
         div = py.plot(fig,
                             include_plotlyjs=False,
                             output_type='div',
@@ -1263,13 +1263,13 @@ def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_direct
 
         return main, output_file, table_html, desc, div
 
-    
+
 def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
-        
+
         output_file = result_directory + '/' + '_'.join(main.split())
-    
+
         speed = pd.Series(sequence_length_df / duration_df)
-        
+
         time = [t/3600 for t in time_df]
         time = np.array(sorted(time))
 
@@ -1279,9 +1279,9 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         else:
             time_df = time
             speed_df = speed
-    
+
         fig = go.Figure()
-        
+
         fig.add_trace(go.Scatter(
         x=time_df,
         y=speed_df,
@@ -1290,7 +1290,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         line=dict(color='#AE3F7B', width=3, shape="linear"))
         )
 
-        fig.update_layout(    
+        fig.update_layout(
                 title={
                 'text': "<b>Speed over experiment time</b>",
                 'y':0.95,
@@ -1323,7 +1323,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
             height=800, width=1400
         )
         fig.update_yaxes(type="log")
-        
+
         div = py.plot(fig,
                             include_plotlyjs=False,
                             output_type='div',
@@ -1334,21 +1334,21 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         table_html = None
 
         return main, output_file, table_html, desc, div
-    
+
 
 def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
-        
+
         output_file = result_directory + '/' + '_'.join(main.split())
 
         time = [t/3600 for t in time_df]
         time = pd.Series(time)
-        
+
         # create custom xaxis points to reduce graph size
         time_points = np.linspace(min(time), max(time), 50)
         n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
 
         fig = go.Figure()
-        
+
         fig.add_trace(go.Scatter(
             x=time_points,
             y=list(n_seq.values), mode='lines',
@@ -1357,7 +1357,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
             line=dict(color='#edb773', width=3, shape="spline", smoothing=0.7)
         ))
 
-        fig.update_layout(    
+        fig.update_layout(
                 title={
                 'text': "<b>Number of sequences through experiment time</b>",
                 'y':0.95,
@@ -1389,7 +1389,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
             hovermode='x',
             height=800, width=1400
         )
-        
+
         div = py.plot(fig,
                             include_plotlyjs=False,
                             output_type='div',
@@ -1400,7 +1400,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
         table_html = None
 
         return main, output_file, table_html, desc, div
-    
+
 
 def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     """
@@ -1411,10 +1411,10 @@ def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
     :param interp_type: string specifying the type of interpolation (i.e. linear, nearest, cubic, quadratic etc.)
     :param axis: number specifying the axis of y along which to interpolate. Default = -1
     """
-    # In case of single array of data, use 
+    # In case of single array of data, use
     if y is None:
         return np.sort(resample(x, n_samples=npoints, random_state=1))
-        
+
     else:
         f = interp1d(x, y, kind=interp_type, axis=axis)
         x_int = np.linspace(min(x), max(x), npoints)
