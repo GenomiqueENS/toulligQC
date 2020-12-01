@@ -375,13 +375,10 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
               "1D pass": '#51a96d',
               "1D fail": '#d90429'}
 
-    fig = make_subplots(rows=1, cols=2,
-                        subplot_titles=("<b>PHRED score boxplot</b>",
-                                        "<b>PHRED score violin plot</b>"),
-                        horizontal_spacing=0.15)
+    fig = go.Figure()
 
     for column in dataframe.columns:
-        fig.append_trace(go.Box(
+        fig.add_trace(go.Box(
             y=dataframe[column],
             name=names[column],
             marker=dict(
@@ -389,15 +386,15 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                 color=colors[column]
 
             ),
-            boxmean=True,
-            showlegend=False
-        ), row=1, col=1)
+            boxmean=False,
+            showlegend=True
+        ))
 
         fig.add_trace(go.Violin(y=dataframe[column],
                             name=names[column],
                             meanline_visible=True,
-                      marker=dict(color=colors[column])),
-                      row=1, col=2)
+                      marker=dict(color=colors[column]),
+                      visible = False))
 
 
     fig.update_layout(
@@ -432,6 +429,34 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
         height=figure_image_height, width=figure_image_width
     )
 
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type = "buttons",
+                direction = "left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False]}],
+                        label="Boxplot",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True]}],
+                        label="Violin plot",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l":20, "b":20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
+    )
+
     div = py.plot(fig,
                   include_plotlyjs=False,
                   output_type='div',
@@ -443,6 +468,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     table_html = pd.DataFrame.to_html(_make_desribe_dataframe(df))
 
     return main, output_file, table_html, desc, div
+
 
 
 def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):

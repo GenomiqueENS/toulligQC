@@ -300,13 +300,10 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
               "1D² pass": '#51a96d',
               "1D² fail": '#d90429'}
 
-    fig = make_subplots(rows=1, cols=2,
-                        subplot_titles=("<b>PHRED score boxplot</b>",
-                                        "<b>PHRED score violin plot</b>"),
-                        horizontal_spacing=0.15)
+    fig = go.Figure()
 
     for column in dataframe.columns:
-        fig.append_trace(go.Box(
+        fig.add_trace(go.Box(
             y=dataframe[column],
             name=names[column],
             marker=dict(
@@ -314,15 +311,15 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
                 color=colors[column]
 
             ),
-            boxmean=True,
-            showlegend=False
-        ), row=1, col=1)
+            boxmean=False,
+            showlegend=True
+        ))
 
         fig.add_trace(go.Violin(y=dataframe[column],
                             name=names[column],
                             meanline_visible=True,
-                      marker=dict(color=colors[column])),
-                      row=1, col=2)
+                      marker=dict(color=colors[column]),
+                      visible = False))
 
 
     fig.update_layout(
@@ -336,7 +333,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
                         size=20,
                         color="black")},
         xaxis=dict(
-            title="<b>1D² </b>",
+            title="<b>1D² Read type</b>",
             titlefont_size=14
         ),
         yaxis=dict(
@@ -355,6 +352,34 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
         ),
         hovermode='x',
         height=figure_image_height, width=figure_image_width
+    )
+
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type = "buttons",
+                direction = "left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False]}],
+                        label="Boxplot",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True]}],
+                        label="Violin plot",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l":20, "b":20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
     )
 
     div = py.plot(fig,
