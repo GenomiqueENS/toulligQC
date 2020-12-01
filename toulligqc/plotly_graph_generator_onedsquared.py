@@ -39,6 +39,9 @@ import plotly.colors as colors
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
 
+figure_image_width = 1000
+figure_image_height = 600
+
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -55,7 +58,6 @@ def _make_desribe_dataframe(value):
 #
 #  1D² plots
 #
-
 
 def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
     """
@@ -159,15 +161,13 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
             'xanchor': 'left',
             'yanchor': 'top',
             'font': dict(
-                family="Calibri, sans",
-                size=25,
+                size=20,
                 color="black")
         },
         xaxis=dict(title="<b>1D² Read type</b>",
                    linecolor="black",
                    titlefont=dict(
-                       family="Calibri, sans",
-                       size=18,
+                       size=14,
                        color="black"
                    ),
                    categoryorder="trace"
@@ -175,12 +175,11 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
         yaxis=dict(title="<b>Counts</b>",
                    linecolor="black",
                    titlefont=dict(
-                       family="Calibri, sans",
-                       size=18,
+                       size=14,
                        color="black"
                    )),
-        width=800,
-        height=600,
+        width=figure_image_width,
+        height=figure_image_height,
         plot_bgcolor="white",
         paper_bgcolor="white"
     )
@@ -236,17 +235,15 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         xaxis=dict(
             title="<b>Read length (bp)</b>",
-            titlefont_size=16,
-            range=[0, 5000]
+            titlefont_size=16
         ),
         yaxis=dict(
             title='<b>Number of sequences</b>',
-            titlefont_size=16,
+            titlefont_size=14,
             tickfont_size=14,
         ),
         legend=dict(
@@ -259,7 +256,7 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
             font=dict(size=15)
         ),
         hovermode='x',
-        height=800, width=1400
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -336,16 +333,15 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         xaxis=dict(
             title="<b>1D² </b>",
-            titlefont_size=16
+            titlefont_size=14
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
-            titlefont_size=16,
+            titlefont_size=14,
             tickfont_size=14,
         ),
         legend=dict(
@@ -358,7 +354,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
             font=dict(size=15)
         ),
         hovermode='x',
-        height=800, width=1400
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -416,16 +412,15 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         xaxis=dict(
             title="<b>PHRED score</b>",
-            titlefont_size=16
+            titlefont_size=14
         ),
         yaxis=dict(
             title='<b>Density probability</b>',
-            titlefont_size=16,
+            titlefont_size=14,
             tickfont_size=14,
         ),
         legend=dict(
@@ -439,7 +434,7 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
         ),
         barmode='group',
         hovermode='x',
-        height=800, width=1400
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -497,16 +492,15 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         xaxis=dict(
             title="<b>Sequence length (bp)</b>",
-            titlefont_size=16
+            titlefont_size=14
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
-            titlefont_size=16,
+            titlefont_size=14,
             tickfont_size=14,
         ),
         legend=dict(
@@ -518,7 +512,7 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=800, width=1400
+        height=figure_image_height, width=figure_image_width
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):
@@ -541,7 +535,6 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
 #
 # For each barcode 1D²
 #
-
 
 def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
     """
@@ -577,8 +570,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         legend=dict(
             x=1.02,
@@ -589,7 +581,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=500, width=875
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -606,7 +598,6 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
     table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc, div
-
 
 def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
     """
@@ -643,8 +634,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         legend=dict(
             x=1.02,
@@ -655,7 +645,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=500, width=875
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -722,16 +712,15 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         xaxis=dict(
             title="<b>Barcodes</b>",
-            titlefont_size=16
+            titlefont_size=14
         ),
         yaxis=dict(
             title='<b>Sequence length (bp)</b>',
-            titlefont_size=16,
+            titlefont_size=14,
             tickfont_size=14,
         ),
         legend=dict(
@@ -746,7 +735,7 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
-        height=700, width=1400
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -814,16 +803,15 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        family="Calibri, sans",
-                        size=26,
+                        size=20,
                         color="black")},
         xaxis=dict(
             title="<b>Barcodes</b>",
-            titlefont_size=16
+            titlefont_size=14
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
-            titlefont_size=16,
+            titlefont_size=14,
             tickfont_size=14,
         ),
         legend=dict(
@@ -838,7 +826,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
-        height=700, width=1400
+        height=figure_image_height, width=figure_image_width
     )
 
     div = py.plot(fig,
@@ -894,16 +882,15 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, re
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                family="Calibri, sans",
-                size=26,
+                size=20,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=16
+                titlefont_size=14
                 ),
             yaxis=dict(
                 title='<b>Read length (bp)</b>',
-                titlefont_size=16,
+                titlefont_size=14,
                 tickfont_size=14,
             ),
             legend=dict(
@@ -916,7 +903,7 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, re
                 font=dict(size=15)
             ),
             hovermode=False,
-            height=800, width=1400
+            height=figure_image_height, width=figure_image_width
         )
 
         div = py.plot(fig,
@@ -969,19 +956,18 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                family="Calibri, sans",
-                size=26,
+                size=20,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=16
+                titlefont_size=14
                 ),
             yaxis=dict(
                 title='<b>PHRED quality score</b>',
-                titlefont_size=16,
+                titlefont_size=14,
                 tickfont_size=14,
             ),
-            height=800, width=1400
+            height=figure_image_height, width=figure_image_width
         )
 
         div = py.plot(fig,
@@ -1028,16 +1014,15 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                family="Calibri, sans",
-                size=26,
+                size=20,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=16
+                titlefont_size=14
                 ),
             yaxis=dict(
                 title='<b>Speed (bases per second)</b>',
-                titlefont_size=16,
+                titlefont_size=14,
                 tickfont_size=14,
             ),
             legend=dict(
@@ -1050,7 +1035,7 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
                 font=dict(size=15)
             ),
             hovermode='x',
-            height=800, width=1400
+            height=figure_image_height, width=figure_image_width
         )
         fig.update_yaxes(type="log")
 
@@ -1094,16 +1079,15 @@ def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                family="Calibri, sans",
-                size=26,
+                size=20,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=16
+                titlefont_size=14
                 ),
             yaxis=dict(
                 title='<b>Number of sequences</b>',
-                titlefont_size=16,
+                titlefont_size=14,
                 tickfont_size=14,
             ),
             legend=dict(
@@ -1116,7 +1100,7 @@ def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
                 font=dict(size=15)
             ),
             hovermode='x',
-            height=800, width=1400
+            height=figure_image_height, width=figure_image_width
         )
 
         div = py.plot(fig,
