@@ -424,10 +424,10 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
     pdf_1Dsqr_fail = norm.pdf(x2, mu2, std2)
 
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#4A69FF", histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#CE3D1D", histnorm='probability density'))
-    fig.add_trace(go.Scatter(x=x, y=pdf_1Dsqr_pass, mode="lines", name='Density curve of read pass', line=dict(color='#4A69FF', width=3, shape="spline", smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2, y=pdf_1Dsqr_fail, mode="lines", name='Density curve of read fail', line=dict(color='#CE3D1D', width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#51a96d", histnorm='probability density'))
+    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#d90429", histnorm='probability density'))
+    fig.add_trace(go.Scatter(x=x, y=pdf_1Dsqr_pass, mode="lines", name='Density curve of read pass', line=dict(color='#51a96d', width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x2, y=pdf_1Dsqr_fail, mode="lines", name='Density curve of read fail', line=dict(color='#d90429', width=3, shape="spline", smoothing=0.5)))
 
     fig.update_layout(
         title={
