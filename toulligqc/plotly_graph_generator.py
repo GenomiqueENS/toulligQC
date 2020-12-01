@@ -224,7 +224,7 @@ def read_length_multihistogram(result_dict, sequence_length_df, main, my_dpi, re
 
     fig.update_layout(
         title={
-            'text': "<b>Distribution of read length</b>",
+            'text': "<b>Distribution of read lengths</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -1176,102 +1176,6 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
                             auto_open=False,
                             show_link=False)
         py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-        table_html = None
-
-        return main, output_file, table_html, desc, div
-
-
-def length_over_time_slider(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
-
-        output_file = result_directory + '/' + '_'.join(main.split())
-
-        time = [t/3600 for t in time_df.dropna()]
-        time = np.array(sorted(time))
-
-        fig = go.Figure()
-
-        length = dataframe_dict.get('sequence.length')
-        f = interp1d(time, length, kind="nearest")
-        # Add traces, one for each slider step
-        for step in range(5, 505, 5):
-            x_int = np.linspace(time[0],time[-1], step)
-            y_int = f(x_int)
-
-            fig.add_trace(go.Scatter(
-                visible=False,
-                x=x_int,
-                y=y_int,
-                mode='lines',
-                line=dict(color='#2D85E2', width=2.5, shape="spline", smoothing=0.5))
-            )
-
-        # Make 60th trace visible
-        fig.data[60].visible = True
-
-        fig.update_layout(
-                title={
-                'text': "<b>Interpolated read length over experiment time</b>",
-                'y':0.95,
-                'x':0,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font' : dict(
-                size=20,
-                color="black")},
-            xaxis=dict(
-                title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
-                ),
-            yaxis=dict(
-                title='<b>Read length (bp)</b>',
-                titlefont_size=14,
-                tickfont_size=14,
-            ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
-            height=figure_image_height, width=figure_image_width
-        )
-
-        # Create and add slider
-        npoints = []
-        for i in range(len(fig.data)):
-            step = dict(
-                method="update",
-                args=[{"visible": [False] * len(fig.data)}],  # layout attribute
-            )
-            step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
-            npoints.append(step)
-
-        sliders = [dict(
-            active=50,
-            currentvalue={"prefix": "Number of points: "},
-            pad={"t": 100},
-            steps=npoints
-        )]
-
-        fig.update_layout(
-            sliders=sliders
-        )
-
-        # Edit slider labels
-        fig['layout']['sliders'][0]['currentvalue']['prefix']='Number of values : '
-        for i, points in enumerate(range(5, 505, 5), start = 0):
-            fig['layout']['sliders'][0]['steps'][i]['label']=points
-
-        div = py.plot(fig,
-                            include_plotlyjs=False,
-                            output_type='div',
-                            auto_open=False,
-                            show_link=False)
-        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
         table_html = None
 
         return main, output_file, table_html, desc, div

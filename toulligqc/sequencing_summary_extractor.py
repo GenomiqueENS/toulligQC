@@ -92,11 +92,11 @@ class SequencingSummaryExtractor:
         self.dataframe_1d = self._load_sequencing_summary_data()
         if self.dataframe_1d.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
-        
+
         # Rename 'sequence_length_template' and 'mean_qscore_template'
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                            'mean_qscore_template': 'mean_qscore'}, inplace=True)
-        
+
         # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
         self.dataframe_1d = self.dataframe_1d.fillna(0)
         self.channel_df = self.dataframe_1d['channel']
@@ -163,16 +163,16 @@ class SequencingSummaryExtractor:
 
         # Compute sum of all used barcodes without barcode 'unclassified'
         self.dataframe_dict[entry + '.count'] = sum(count_sorted.drop("unclassified"))
-        
+
         # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
         non_used_barcodes_count = entry.replace(".barcoded", ".non.used.barcodes.count")
 
         # Compute all reads of barcodes that are not in the barcode_selection list
         self.dataframe_dict[non_used_barcodes_count] = sum(all_barcode_count) - sum(count_sorted)
-        
+
         # Create Series for all non-used barcode counts and rename index array with "other"
         other_all_barcode_count = pd.Series(self.dataframe_dict[non_used_barcodes_count], index=['other'])
-        
+
         # Append Series of non-used barcode counts to the Series of barcode_selection counts
         count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
 
@@ -315,12 +315,12 @@ class SequencingSummaryExtractor:
 
         # Read length information
         self.dataframe_dict["sequence.length"] = self.sequence_length_df
-        
+
         # Yield, n50, run time
         self._set_result_value(result_dict, "yield", sum(self.sequence_length_df))
 
         self._set_result_value(result_dict, "n50", self._compute_n50())
-        
+
         self._set_result_to_dict(
             result_dict, "start.time.sorted", sorted(self.dataframe_1d['start_time'] / 3600))
 
@@ -383,7 +383,7 @@ class SequencingSummaryExtractor:
         # Get barcodes frequency by read type
         series_read_pass_barcode = self._series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement",
                                                                       "passes_filtering", True)
-        
+
         self.dataframe_dict["read.pass.barcoded"] = self._barcode_frequency(self.dataframe_dict, "read.pass.barcoded",
                                                          series_read_pass_barcode)
 
@@ -558,15 +558,12 @@ class SequencingSummaryExtractor:
                                                       "or fail (1D fail in red) categories."))
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over time', self.my_dpi, images_directory,
                                                 "Length of reads through run time in hours"))
-        images.append(pgg.length_over_time_slider(self.time_df, self.dataframe_dict, 'Sequence length over experiment time with custom number of points', self.my_dpi,
-                                                  images_directory, "Custom interpolated scatter plot with sequence length over time"
-                                                  ))
         images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over time', self.my_dpi, images_directory,
                                                 "Reads PHRED score through run time in hours"))
         images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over time', self.my_dpi, images_directory,
                                           "Speed of reads in base per second through run time in hours"))
         images.append(pgg.nseq_over_time(self.time_df, 'Number of reads over time', self.my_dpi, images_directory, "Number of sequences through run time in hours"))
-        
+
         if self.is_barcode:
             images.append(pgg.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
                                                                             '1D pass reads percentage of different '
@@ -728,7 +725,7 @@ class SequencingSummaryExtractor:
             cum_sum += v
             if cum_sum >= half_sum:
                 return int(v)
-        
+
 
     @staticmethod
     def _is_barcode_file(filename):

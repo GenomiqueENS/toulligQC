@@ -229,7 +229,7 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
     
     fig.update_layout(
         title={
-            'text': "<b>Distribution of 1D² read length</b>",
+            'text': "<b>Distribution of 1D² read lengths</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
