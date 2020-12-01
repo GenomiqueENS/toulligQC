@@ -88,6 +88,9 @@ def html_report(config_dictionary, result_dict, graphs):
     div.summary {
       width: 16em;
       position:absolute;
+      overflow-y:scroll;
+      height:800px;
+      scrollbar-width: auto;
       top: 4.5em;
       margin:1em 0 0 1em;
     }

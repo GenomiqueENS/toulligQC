@@ -1281,7 +1281,7 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                size=26,
+                size=20,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
