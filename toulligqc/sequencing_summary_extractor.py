@@ -520,7 +520,7 @@ class SequencingSummaryExtractor:
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-        images.append(pgg.read_length_multihistogram(result_dict, self.sequence_length_df, 'Read length histogram',
+        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_df, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "

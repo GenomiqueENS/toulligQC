@@ -529,13 +529,13 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                                 "filtered with a 7.5 quality score threshold in pass "
                                                                 "(1Dsquare pass in green) or fail "
                                                                 "(1Dsquare fail in red) categories."))
-        images.append(pgg.read_length_multihistogram(result_dict, self.sequence_length_1d, 'Read length histogram',
+        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_1d, 'Read length histogram',
                                                                  self.my_dpi, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-        images.append(pgg2.dsqr_read_length_multihistogram(result_dict, self.sequence_length_1dsqr, '1Dsquare read size histogram',
+        images.append(pgg2.dsqr_read_length_scatterplot(result_dict, self.sequence_length_1dsqr, '1Dsquare read size histogram',
                                                                       self.my_dpi, images_directory,
                                                                       "Size distribution of basecalled reads "
                                                                       "(1D in orange) and 1Dsquare reads (in gold). "

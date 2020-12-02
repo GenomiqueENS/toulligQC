@@ -202,34 +202,44 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
 def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my_dpi, result_directory, desc):
 
     output_file = result_directory + '/' + '_'.join(main.split())
-    
-    all_read = sequence_length_1dsqr.loc[sequence_length_1dsqr >= 10].values
+
+    all_read = sequence_length_1dsqr.loc[sequence_length_1dsqr >= 10].dropna().values
     read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'] >= 10]
     read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'] >= 10]
-  
-    fig = go.Figure()
-    
-    fig.add_trace(go.Histogram(x=all_read,
-                               name='All reads',
-                               nbinsx=500,
-                               marker_color='#fca311'  # yellow
-                               ))
 
-    fig.add_trace(go.Histogram(x=read_pass,
+    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
+    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
+    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
+
+    # Find 50 percentile for zoomed raange on x axis
+    max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=count_x1,
+                             y=count_y1,
+                             name='All reads',
+                             hoverinfo='x+y',
+                             fill='tozeroy',
+                             marker_color='#fca311'  # yellow
+                             ))
+    fig.add_trace(go.Scatter(x=count_x2,
+                               y=count_y2,
                                name='Pass reads',
-                            nbinsx=500,
+                               hoverinfo='x+y',
+                               fill='tozeroy',
                                marker_color='#51a96d'  # green
                                ))
-
-    fig.add_trace(go.Histogram(x=read_fail,
-                            nbinsx=500,
+    fig.add_trace(go.Scatter(x=count_x3,
+                               y=count_y3,
                                name='Fail reads',
+                               hoverinfo='x+y',
+                               fill='tozeroy',
                                marker_color='#d90429'  # red
                                ))
-    
+
     fig.update_layout(
         title={
-            'text': "<b>Distribution of 1D² read lengths</b>",
+            'text': "<b>1D² Distribution of read lengths</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -238,13 +248,14 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
                         size=20,
                         color="black")},
         xaxis=dict(
-            title="<b>Read length (bp)</b>",
-            titlefont_size=16
+            title="<b>1D² Read length (bp)</b>",
+            titlefont_size=14,
+            range=[0, max_x_range]
         ),
         yaxis=dict(
-            title='<b>Number of sequences</b>',
+            title='<b>Ratio on 10k sequences</b>',
             titlefont_size=14,
-            tickfont_size=14,
+            tickfont_size=14
         ),
         legend=dict(
             x=1.02,
@@ -1156,3 +1167,18 @@ def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
         x_int = np.linspace(min(x), max(x), npoints)
         y_int = f(x_int)
         return pd.Series(x_int), pd.Series(y_int)
+
+def _smooth_data(npoints: int, sigma: int, data):
+    """
+    Function for smmothing data with numpy histogram function
+    Returns a tuple of smooth data (ndarray)
+    :param data: must be array-like data
+    :param npoints: number of desired points for smoothing
+    :param sigma: sigma value of the gaussian filter
+    """
+    bins = np.linspace(np.nanmin(data), np.nanmax(data), num=npoints)
+    count_y, count_x = np.histogram(a=data, bins=bins, density=True)
+    # Removes the first value of count_x1
+    count_x = count_x[1:]
+    count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
+    return count_x, count_y
