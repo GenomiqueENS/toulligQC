@@ -39,8 +39,8 @@ import plotly.colors as colors
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
 
-figure_image_width = 1000
-figure_image_height = 600
+figure_image_width = 1024
+figure_image_height = 576
 
 def _make_desribe_dataframe(value):
     """
@@ -207,7 +207,7 @@ def read_length_scatterplot(result_dict, sequence_length_df, main, my_dpi, resul
     count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
     count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
 
-    # Find 50 percentile for zoomed raange on x axis
+    # Find 50 percentile for zoomed range on x axis
     max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
 
     fig = go.Figure()
@@ -249,7 +249,7 @@ def read_length_scatterplot(result_dict, sequence_length_df, main, my_dpi, resul
             range=[0, max_x_range]
         ),
         yaxis=dict(
-            title='<b>Ratio on 10k sequences</b>',
+            title='<b>Density</b>',
             titlefont_size=14,
             tickfont_size=14
         ),
@@ -288,28 +288,35 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
 
-    # If more than 10.000 reads, interpolate data
-    if len(all_read) > 10000:
-        all_read = _interpolate(x=all_read, npoints=200)
-        read_pass = _interpolate(x=read_pass, npoints=200)
-        read_fail = _interpolate(x=read_fail, npoints=200)
+    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
+    count_y1 = np.cumsum(count_y1)
+    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
+    count_y2 = np.cumsum(count_y2)
+    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
+    count_y3 = np.cumsum(count_y3)
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(x=all_read,
+    fig.add_trace(go.Scatter(x=count_x1,
+                             y=count_y1,
                                name='All reads',
                                marker_color='#fca311',
+                               fill='tozeroy',
                                mode="lines"
                                ))
 
-    fig.add_trace(go.Scatter(x=read_pass,
+    fig.add_trace(go.Scatter(x=count_x2,
+                             y=count_y2,
                                name='Pass reads',
-                               marker_color='#51a96d'
+                               marker_color='#51a96d',
+                               fill='tozeroy'
                                ))
 
-    fig.add_trace(go.Scatter(x=read_fail,
+    fig.add_trace(go.Scatter(x=count_x3,
+                             y=count_y3,
                                name='Fail reads',
-                               marker_color='#d90429'
+                               marker_color='#d90429',
+                               fill='tozeroy'
                                ))
 
     fig.update_layout(
@@ -327,7 +334,7 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
             titlefont_size=14
         ),
         yaxis=dict(
-            title='<b>Number of sequences</b>',
+            title='<b>Density</b>',
             titlefont_size=14,
             tickfont_size=14,
         ),
@@ -386,6 +393,10 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
               "1D pass": '#51a96d',
               "1D fail": '#d90429'}
 
+    # Max yaxis value for displaying same scale between plots
+    max_yaxis = (dataframe.max(skipna=True, numeric_only=True).values.max() + 2.0)
+    min_yaxis = (dataframe.min(skipna=True, numeric_only=True).values.min() - 2.0)
+
     fig = go.Figure()
 
     for column in dataframe.columns:
@@ -407,7 +418,6 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
                       marker=dict(color=colors[column]),
                       visible = False))
 
-
     fig.update_layout(
         title={
             'text': "<b>PHRED score distribution of all read types</b>",
@@ -426,6 +436,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
             title='<b>PHRED score</b>',
             titlefont_size=14,
             tickfont_size=14,
+            range=[min_yaxis, max_yaxis]
         ),
         legend=dict(
             x=1.02,

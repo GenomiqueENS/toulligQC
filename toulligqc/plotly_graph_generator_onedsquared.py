@@ -39,8 +39,8 @@ import plotly.colors as colors
 from collections import defaultdict
 from scipy.ndimage.filters import gaussian_filter1d
 
-figure_image_width = 1000
-figure_image_height = 600
+figure_image_width = 1024
+figure_image_height = 576
 
 def _make_desribe_dataframe(value):
     """
@@ -199,7 +199,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
 
     return main, output_file, table_html, desc, div
 
-def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my_dpi, result_directory, desc):
+def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dpi, result_directory, desc):
 
     output_file = result_directory + '/' + '_'.join(main.split())
 
@@ -211,7 +211,7 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
     count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
     count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
 
-    # Find 50 percentile for zoomed raange on x axis
+    # Find 50 percentile for zoomed range on x axis
     max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
 
     fig = go.Figure()
@@ -253,7 +253,7 @@ def dsqr_read_length_multihistogram(result_dict, sequence_length_1dsqr, main, my
             range=[0, max_x_range]
         ),
         yaxis=dict(
-            title='<b>Ratio on 10k sequences</b>',
+            title='<b>Density</b>',
             titlefont_size=14,
             tickfont_size=14
         ),
@@ -311,6 +311,10 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
               "1D² pass": '#51a96d',
               "1D² fail": '#d90429'}
 
+    # Max yaxis value for displaying same scale between plots
+    max_yaxis = (dataframe.max(skipna=True, numeric_only=True).values.max() + 2.0)
+    min_yaxis = (dataframe.min(skipna=True, numeric_only=True).values.min() - 2.0)
+
     fig = go.Figure()
 
     for column in dataframe.columns:
@@ -332,7 +336,6 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
                       marker=dict(color=colors[column]),
                       visible = False))
 
-
     fig.update_layout(
         title={
             'text': "<b>1D² PHRED score distribution of all read types</b>",
@@ -351,6 +354,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
             title='<b>PHRED score</b>',
             titlefont_size=14,
             tickfont_size=14,
+            range=[min_yaxis, max_yaxis]
         ),
         legend=dict(
             x=1.02,
