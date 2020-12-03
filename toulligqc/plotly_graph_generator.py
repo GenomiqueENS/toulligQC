@@ -289,11 +289,8 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
 
     count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
-    count_y1 = np.cumsum(count_y1)
     count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
-    count_y2 = np.cumsum(count_y2)
     count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
-    count_y3 = np.cumsum(count_y3)
 
     fig = go.Figure()
 
@@ -301,8 +298,7 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
                              y=count_y1,
                                name='All reads',
                                marker_color='#fca311',
-                               fill='tozeroy',
-                               mode="lines"
+                               fill='tozeroy'
                                ))
 
     fig.add_trace(go.Scatter(x=count_x2,
@@ -317,6 +313,31 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
                                name='Fail reads',
                                marker_color='#d90429',
                                fill='tozeroy'
+                               ))
+    # Figures for cumulative yield plot
+    fig.add_trace(go.Scatter(x=count_x1,
+                             y=np.cumsum(count_y1),
+                             name='All reads',
+                             hoverinfo='x+y',
+                             fill='tozeroy',
+                             marker_color='#fca311',
+                             visible=False
+                             ))
+    fig.add_trace(go.Scatter(x=count_x2,
+                               y=np.cumsum(count_y2),
+                               name='Pass reads',
+                               hoverinfo='x+y',
+                               fill='tozeroy',
+                               marker_color='#51a96d',
+                               visible=False
+                               ))
+    fig.add_trace(go.Scatter(x=count_x3,
+                               y=np.cumsum(count_y3),
+                               name='Fail reads',
+                               hoverinfo='x+y',
+                               fill='tozeroy',
+                               marker_color='#d90429',
+                               visible=False
                                ))
 
     fig.update_layout(
@@ -349,6 +370,34 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
         ),
         hovermode='x',
         height=figure_image_height, width=figure_image_width
+    )
+
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type = "buttons",
+                direction = "left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, True, True, False, False, False]}],
+                        label="Yield plot",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, False, True, True, True]}],
+                        label="Cumulative yield plot",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l":20, "b":20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
     )
 
     div = py.plot(fig,
@@ -989,7 +1038,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
     barcode_list = barcode_selection
 
     # Sort reads by read type and drop read type column
-    read_pass_qscore = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering') #Df
+    read_pass_qscore = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
     read_fail_qscore = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
 
     fig = go.Figure()
