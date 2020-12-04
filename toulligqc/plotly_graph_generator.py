@@ -892,7 +892,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     fig.update_layout(
         title={
-            'text': "<b>Read Pass Barcode Distribution</b>",
+            'text': "<b>Read Fail Barcode Distribution</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
