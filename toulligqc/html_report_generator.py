@@ -264,7 +264,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
   .after-box {
     clear: left;
-    padding-bottom: 90px;
+    padding-bottom: 50px;
   }
 
   div.footer {
@@ -331,7 +331,6 @@ def html_report(config_dictionary, result_dict, graphs):
 
     # Define the footer of the page
     footer = """
-  <body>
     <div class="footer"> Produced by <a href="{0}">{1}</a> (version {2})</div>
   </body>
 
@@ -424,8 +423,6 @@ def html_report(config_dictionary, result_dict, graphs):
           main_report += "      <div class=\"after-box\"></div>\n"
         else:
           main_report += "      <div class=\"box-left\">\n {} </div>\n".format(t[2])
-          main_report += "      <div class=\"after-box\"><p></p></div>\n"
-
 
       else:
         main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"<b>{4}</b>\">&#x1F263;</a></h2></div>" \

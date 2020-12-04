@@ -957,8 +957,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
             name=col,
             marker_color='#51a96d',
             legendgroup="pass",
-            offsetgroup="pass",
-            showlegend=True if col=='unclassified' else False
+            offsetgroup="pass"
         ))
 
     for col in read_fail_length.columns:
@@ -967,8 +966,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
             name=col,
             marker_color='#d90429',
             legendgroup="fail",
-            offsetgroup="fail",
-            showlegend=True if col=='unclassified' else False
+            offsetgroup="fail"
         ))
 
     fig.update_layout(
