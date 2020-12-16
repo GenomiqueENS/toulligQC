@@ -449,7 +449,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
     fig = go.Figure()
 
     for column in dataframe.columns:
-        d=precompute_boxplot_values(dataframe[column])
+        d=_precompute_boxplot_values(dataframe[column])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=names[column],
@@ -954,7 +954,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
     fig = go.Figure()
 
     for col in read_pass_length.columns:
-        d = precompute_boxplot_values(read_pass_length[col])
+        d = _precompute_boxplot_values(read_pass_length[col])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=col,
@@ -965,7 +965,7 @@ def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_dire
         ))
 
     for col in read_fail_length.columns:
-        d = precompute_boxplot_values(read_fail_length[col])
+        d = _precompute_boxplot_values(read_fail_length[col])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=col,
@@ -1049,7 +1049,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
 
     for barcode in barcode_list:
         final_df = read_pass_qscore.loc[read_pass_qscore['barcodes'] == barcode].dropna()
-        d = precompute_boxplot_values(final_df['qscore'])
+        d = _precompute_boxplot_values(final_df['qscore'])
         fig.add_trace(go.Box(
                              q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
                              name=barcode,
@@ -1061,7 +1061,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_d
 
     for barcode in barcode_list:
         final_df = read_fail_qscore.loc[read_fail_qscore['barcodes'] == barcode].dropna()
-        d = precompute_boxplot_values(final_df['qscore'])
+        d = _precompute_boxplot_values(final_df['qscore'])
         fig.add_trace(go.Box(
                              q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
                              name=barcode,
@@ -1431,7 +1431,7 @@ def _smooth_data(npoints: int, sigma: int, data):
     count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
     return count_x, count_y
 
-def precompute_boxplot_values(y):
+def _precompute_boxplot_values(y):
     """
     Precompute values for boxplot to avoid data storage in boxplot.
     """
@@ -1443,7 +1443,6 @@ def precompute_boxplot_values(y):
     lower_fence = q1 - (1.5 * iqr)
     import math
     notchspan = 1.57 * iqr / math.sqrt(len(y))
-
 
     return dict(min=min(y),
                 lowerfence=max(lower_fence, float(min(y))),
