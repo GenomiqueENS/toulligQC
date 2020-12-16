@@ -318,9 +318,11 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
     fig = go.Figure()
 
     for column in dataframe.columns:
+        d = precompute_boxplot_values(dataframe[column])
         fig.add_trace(go.Box(
-            y=dataframe[column],
+            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=names[column],
+            x0=names[column],
             marker=dict(
                 opacity=0.3,
                 color=colors[column]
@@ -727,18 +729,22 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
     fig = go.Figure()
 
     for col in read_pass_length.columns:
+        d = precompute_boxplot_values(read_pass_length[col])
         fig.add_trace(go.Box(
-            y=read_pass_length[col],
+            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=col,
+            x0=col,
             marker_color='#51a96d',
             legendgroup="pass",
             offsetgroup="pass"
         ))
 
     for col in read_fail_length.columns:
+        d = precompute_boxplot_values(read_fail_length[col])
         fig.add_trace(go.Box(
-            y=read_fail_length[col],
+            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=col,
+            x0=col,
             marker_color='#d90429',
             legendgroup="fail",
             offsetgroup="fail"
@@ -817,9 +823,11 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 
     for barcode in barcode_list:
         final_df = read_pass_qscore.loc[read_pass_qscore['barcodes'] == barcode].dropna()
+        d = precompute_boxplot_values(final_df['qscore'])
         fig.add_trace(go.Box(
-                             y=final_df['qscore'],
+                             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
                              name=barcode,
+                             x0=barcode,
                              marker_color='#51a96d',
                              legendgroup="pass",
                              offsetgroup="pass"
@@ -827,9 +835,11 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 
     for barcode in barcode_list:
         final_df = read_fail_qscore.loc[read_fail_qscore['barcodes'] == barcode].dropna()
+        d = precompute_boxplot_values(final_df['qscore'])
         fig.add_trace(go.Box(
-                             y=final_df['qscore'],
+                             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
                              name=barcode,
+                             x0=barcode,
                              marker_color='#d90429',
                              legendgroup="fail",
                              offsetgroup="fail"
@@ -1186,3 +1196,26 @@ def _smooth_data(npoints: int, sigma: int, data):
     count_x = count_x[1:]
     count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
     return count_x, count_y
+
+def precompute_boxplot_values(y):
+    """
+    Precompute values for boxplot to avoid data storage in boxplot.
+    """
+
+    q1 = y.quantile(.25)
+    q3 = y.quantile(.75)
+    iqr = q3 - q1
+    upper_fence = q3 + ( 1.5 * iqr)
+    lower_fence = q1 - (1.5 * iqr)
+    import math
+    notchspan = 1.57 * iqr / math.sqrt(len(y))
+
+
+    return dict(min=min(y),
+                lowerfence=max(lower_fence, float(min(y))),
+                q1=q1,
+                median=y.quantile(.5),
+                q3=q3,
+                upperfence=min(upper_fence, float(max(y))),
+                max=max(y),
+                notchspan=notchspan)
