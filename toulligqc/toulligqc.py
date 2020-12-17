@@ -79,7 +79,7 @@ def _parse_args(config_dictionary):
                         help='Basecaller 1dsq summary source')
     optional.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Option for barcode usage",
                         default=False)
-    optional.add_argument('-l', '--barcodes', action='store', dest='barcodes', help='Coma separated barcode list')
+    optional.add_argument('-l', '--barcodes', action='store', default='', dest='barcodes', help='Coma separated barcode list')
     optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                         default=False)
     optional.add_argument("--report-only", action='store_true', dest='is_quicklaunch', help="No report.data file, only HTML report",
@@ -100,6 +100,10 @@ def _parse_args(config_dictionary):
     is_quiet = argument_value.is_quiet
     is_quicklaunch = argument_value.is_quicklaunch
     barcodes = argument_value.barcodes
+
+    # If a barcode list is provided, automatically add --barcoding argument
+    if len(barcodes) > 0:
+        is_barcode = True
 
     # If no report_name specified, create default one : ToulligQC-report-YYYYMMDD_HHMMSS
     if not report_name:
@@ -153,10 +157,6 @@ def _check_conf(config_dictionary):
 
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
         sys.exit('The sequencing summary source argument is empty')
-
-    if config_dictionary['barcoding'] == 'True':
-        if not 'barcodes' in config_dictionary:
-            sys.exit('No barcode list argument provided')
 
     # If no --output argument provided, create output folder in current directory
     if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
@@ -291,6 +291,7 @@ def main():
 
     # Get barcode selection
     if config_dictionary['barcoding'].lower() == 'true':
+        config_dictionary['barcode_selection'] = []
 
         if 'barcodes' in config_dictionary:
             barcode_set = set()
@@ -300,9 +301,10 @@ def main():
                     barcode = 'barcode{}'.format(pattern.group(1))
                     barcode_set.add(barcode)
             barcode_selection = sorted(barcode_set)
-        config_dictionary['barcode_selection'] = barcode_selection
-        if barcode_selection == '':
-            sys.exit("No barcode selected defined")
+
+            if len(barcode_selection) == 0:
+                sys.exit("No known barcode found in provided list of barcodes")
+            config_dictionary['barcode_selection'] = barcode_selection
     else:
         config_dictionary['barcode_selection'] = ''
 
