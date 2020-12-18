@@ -153,10 +153,10 @@ def _check_conf(config_dictionary):
 
     if ('fast5_source' not in config_dictionary or not config_dictionary['fast5_source']) and \
        ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
-        sys.exit('The FAST5 source argument and the telemetry file source are empty. One is needed')
+        sys.exit('ERROR: The FAST5 file argument and the telemetry file source are empty. One is needed')
 
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
-        sys.exit('The sequencing summary source argument is empty')
+        sys.exit('ERROR: The sequencing summary file argument is empty')
 
     # If no --output argument provided, create output folder in current directory
     if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
@@ -287,7 +287,7 @@ def main():
     warnings.simplefilter('ignore')
 
     if not config_dictionary:
-        sys.exit("Error, dico_path is empty")
+        sys.exit("ERROR: dico_path is empty")
 
     # Get barcode selection
     if config_dictionary['barcoding'].lower() == 'true':
@@ -303,7 +303,7 @@ def main():
             barcode_selection = sorted(barcode_set)
 
             if len(barcode_selection) == 0:
-                sys.exit("No known barcode found in provided list of barcodes")
+                sys.exit("ERROR: No known barcode found in provided list of barcodes")
             config_dictionary['barcode_selection'] = barcode_selection
     else:
         config_dictionary['barcode_selection'] = ''
@@ -325,7 +325,7 @@ def main():
     for extractor in extractors_list:
         (check_result, error_message) = extractor.check_conf()
         if not check_result:
-            sys.exit("Error while checking " + extractor.get_name() + " configuration: " + error_message)
+            sys.exit("ERROR: Error while checking " + extractor.get_name() + " configuration: " + error_message)
 
     graphs = []
     qc_start = time.time()
