@@ -26,6 +26,7 @@
 # Generates a quality control report in HTML format including graphs and statistical tables
 import base64
 import datetime
+import pkgutil
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -39,25 +40,109 @@ def html_report(config_dictionary, result_dict, graphs):
     result_directory = config_dictionary['result_directory']
     report_name = config_dictionary['report_name']
 
-    # from sequence summary file
-
-    td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
-    seconds = td.total_seconds()
-    run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
     report_date = result_dict['toulligqc.info.start.time']
 
     # from Fast5 file
     run_date = result_dict['sequencing.telemetry.extractor.exp.start.time']
-    flow_cell_id = result_dict['sequencing.telemetry.extractor.flowcell.id']
     run_id = result_dict['sequencing.telemetry.extractor.sample.id']
+
+
+    # Read CSS file resource
+    css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode('utf8')
+
+    f = open(result_directory + 'report.html', 'w')
+
+    # Create the report
+    report = """<!doctype html>
+<html>
+  <head>
+    <title>Report run MinION : {report_name} </title>
+    <meta charset='UTF-8'>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- CSS stylesheet -->
+    <style type="text/css">
+    {css}
+    </style>
+
+  </head>
+
+    <!-- The banner -->
+    <div class="header">
+      <div id="header_title">ToulligQC report for {report_name} <br/></div>
+      <div id="header_filename">
+        Run id: {run_id} <br>
+        Report name: {report_name} <br>
+        Run date: {run_date} <br>
+        Report date : {report_date} <br>
+      </div>
+    </div>
+
+    <!-- The summary -->
+    <div class='summary'>
+      <h2>Summary</h2>
+      {summary_list}
+    </div>
+
+    <!-- Module results -->
+    <div class = 'main'>
+    {modules_report}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer"> Produced by <a href="{app_url}">{app_name}</a> (version {app_version})</div>
+  </body>
+
+</html>""".format(report_name=report_name,
+                  css=css,
+                  run_id=run_id,
+                  run_date=run_date,
+                  report_date=report_date,
+                  summary_list=_summary(graphs),
+                  modules_report=_modules_report(graphs, result_dict, run_id, report_name, run_date, config_dictionary['app.version']),
+                  app_url=config_dictionary['app.url'],
+                  app_name=config_dictionary['app.name'],
+                  app_version=config_dictionary['app.version'])
+
+    # Write the HTML page
+    f.write(report)
+    f.close()
+
+def _summary(graphs):
+    """
+    Compose the summary section of the page
+    :param graphs:
+    :return: a string with HTML code for the module list
+    """
+    result = "        <ol>\n"
+    result += "          <li><a href=\"#Basic-statistics" "\"> Basic Statistics </a></li>\n"
+    for i, t in enumerate(graphs):
+        result += "          <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
+    result += "        </ol>\n"
+    return result
+
+
+def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligqc_version):
+
+    result =  _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version)
+    result += _other_module_reports(graphs)
+    return result
+
+def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version):
+
     minknow_version = result_dict['sequencing.telemetry.extractor.minknow.version']
+
+    td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
+    seconds = td.total_seconds()
+    run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
     n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
 
     # from telemetry file
+    flow_cell_id = result_dict['sequencing.telemetry.extractor.flowcell.id']
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
     kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
     basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
@@ -69,302 +154,8 @@ def html_report(config_dictionary, result_dict, graphs):
     model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
     sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
 
-    f = open(result_directory + 'report.html', 'w')
-
-# Define the header of the page
-    title = """<!doctype html>
-<html>
-  <head>
-    <title>Report run MinION : {0} </title>
-    <meta charset='UTF-8'>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style type="text/css">
-    """.format(report_name)
-
-    header = """
-
-  @media screen {
-
-    div.summary {
-      width: 16em;
-      position:absolute;
-      overflow-y:scroll;
-      height:800px;
-      scrollbar-width: auto;
-      top: 4.5em;
-      margin:1em 0 0 1em;
-    }
-
-    div.main {
-      display:block;
-      position:absolute;
-      overflow:auto;
-      height:auto;
-      width:auto;
-      top:4.5em;
-      bottom:2.3em;
-      left:18em;
-      right:0;
-      border-left: 1px solid #CCC;
-      padding:0 0 0 1em;
-      background-color: white;
-      z-index:1;
-    }
-
-    div.header {
-      background-color: #EEE;
-      border:0;
-      margin:0;
-      padding: 0.5em;
-      font-size: 200%;
-      font-weight: bold;
-      position:fixed;
-      width:100%;
-      top:0;
-      left:0;
-      z-index:2;
-    }
-
-    div.footer {
-      background-color: #EEE;
-      border:0;
-      margin:0;
-      padding:0.5em;
-      height: 1.3em;
-      overflow:hidden;
-      font-size: 100%;
-      font-weight: bold;
-      position:fixed;
-      bottom:0;
-      width:100%;
-      z-index:2;
-    }
-
-    img.indented {
-      margin-left: 3em;
-    }
-  }
-
-  @media print {
-
-    img {
-      max-width:80% !important;
-      page-break-inside: avoid;
-    }
-
-    h2, h3 {
-      page-break-after: avoid;
-    }
-
-    div.header {
-      background-color: #FFF;
-    }
-
-  }
-
-  body {
-    font-family: sans-serif;
-    color: #000;
-    background-color: #FFF;
-    border: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  div.header {
-    border:0;
-    margin:0;
-    padding: 0.5em;
-    font-size: 200%;
-    font-weight: bold;
-    width:100%;
-  }
-
-  #header_title {
-    display:inline-block;
-    float:left;
-    clear:left;
-  }
-
-  #header_filename {
-    display:inline-block;
-    float:right;
-    clear:right;
-    font-size: 50%;
-    margin-right:2em;
-    text-align: right;
-  }
-
-  div.header h3 {
-    font-size: 50%;
-    margin-bottom: 0;
-  }
-
-  div.summary ul {
-    padding-left:0;
-    list-style-type:none;
-  }
-
-  div.summary ul li img {
-    margin-bottom:-0.5em;
-    margin-top:0.5em;
-  }
-
-  div.main {
-    background-color: white;
-  }
-
-  div.module {
-    padding-bottom:1.5em;
-    padding-top:1.5em;
-  }
-
-  .info-box {
-    float:left;
-    min-width: 400px;
-    height: 350px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:0em;
-    top: 0 auto;
-    bottom: 0 auto;
-  }
-
-  .info-box-left {
-    float:left;
-    min-width: 400px;
-    height: 350px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:0em;
-    top: 0 auto;
-    bottom: 0 auto;
-  }
-
-  .box {
-    float:left;
-    min-width: 1150px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:1.8em;
-    top: 0 auto;
-    bottom: 0 auto;
-  }
-
-    .box-left {
-    float:left;
-    min-width: 350px;
-    height: 350px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:1.5em;
-    top: 0.3px;
-    bottom: 0 auto;
-  }
-
-  .after-box {
-    clear: left;
-    padding-bottom: 50px;
-  }
-
-  div.footer {
-    background-color: #EEE;
-    border:0;
-    margin:0;
-    padding: 0.5em;
-    font-size: 100%;
-    font-weight: bold;
-    width:100%;
-  }
-
-
-  a {
-    color: #000080;
-  }
-
-  a:hover {
-    color: #800000;
-  }
-
-  h2 {
-    color: #000000;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    clear:left;
-  }
-
-  table {
-    margin-left: 3em;
-    text-align: center;
-    border-collapse:collapse;
-  }
-
-  th {
-    text-align: center;
-    background-color: #244C89;
-    color: #FFF;
-    padding: 0.4em;
-  }
-
-  td {
-    font-family: monospace;
-    text-align: right;
-    background-color: #EFEFEF;
-    color: #000;
-    padding: 0.4em;
-  }
-
-  img {
-    padding-top: 0;
-    margin-top: 0;
-    border-top: 0;
-  }
-
-  p {
-    padding-top: 0;
-    margin-top: 0;
-  }
-
-    </style>
-  </head>
-"""
-
-    # Define the footer of the page
-    footer = """
-    <div class="footer"> Produced by <a href="{0}">{1}</a> (version {2})</div>
-  </body>
-
-</html>
-""".format(config_dictionary['app.url'], config_dictionary['app.name'], config_dictionary['app.version'])
-
-    # Compose the Banner of the page
-    banner = """
-    <div class="header">
-      <div id="header_title">ToulligQC report for {0} <br/></div>
-      <div id="header_filename">
-        Run id: {0} <br>
-        Report name: {1} <br>
-        Run date: {2} <br>
-        Report date : {3} <br>
-      </div>
-    </div>
-""".format(run_id, report_name, run_date, report_date)
-
-    # Compose the summary section of the page
-    summary = """
-    <div class='summary'>
-      <h2>Summary</h2>
-      <ol>
-"""
-    summary += "<li><a href=\"#Basic-statistics" "\"> Basic Statistics </a></li>\n"
-    for i, t in enumerate(graphs):
-        summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
-    summary += """      </ol>
-    </div>
-"""
     # Compose the main of the page
-    main_report = """
-    <div class = 'main'>
+    result = """
       <div class=\"module\" id="Basic-statistics">
         <div class = "info-box">
             <h2 id=M{0}>Basic Statistics</h2>
@@ -390,7 +181,7 @@ def html_report(config_dictionary, result_dict, graphs):
       </div>
     """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count, n50)
 
-    main_report += """
+    result += """
       <div class=\"module\">
         <div class = "info-box-left">
             <h2 id=M{0}></h2>
@@ -413,41 +204,70 @@ def html_report(config_dictionary, result_dict, graphs):
         </div> <!-- end .info-box-left -->
         <div class=\"after-box\"><p></p></div>
       </div>
-    """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,model_file)
+    """.format(minknow_version, basecaller_name, basecaller_version, basecaller_analysis, toulligqc_version, hostname, device_type, device_id, model_file)
+
+    return result
+
+def _other_module_reports(graphs):
+
+    result = ""
 
     for i, t in enumerate(graphs):
+
+
       if len(t)==5:
-        main_report += "      <div class=\"module\" id=M{0}></div>".format(i)
-        main_report += t[4]
-        if t[2] is None:
-          main_report += "      <div class=\"after-box\"></div>\n"
+       # Plotly Graph
+
+        name, path, table, tip, html = t
+
+       # Plotly graph with table
+        if table is not None:
+            result += """
+      <div class="module" id=M{i}></div>
+      {html}
+      <div class="box-left">
+      {table}
+      </div>
+      <div class="after-box"><p></p></div>
+""".format(i=i, html=html, table=table)
+
+        # Plotly graph without table
         else:
-          main_report += "      <div class=\"box-left\">\n {} </div>\n".format(t[2])
-          main_report += "      <div class=\"after-box\"><p></p></div>\n"
+            result += """
+      <div class="module" id=M{i}></div>
+      {html}
+      <div class="after-box"><p></p></div>
+""".format(i=i, html=html, table=table)
 
-      else:
-        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"<b>{4}</b>\">&#x1F263;</a></h2></div>" \
-            .format(i, t[0], _embedded_image(t[1]), t[2], t[3])
 
-        if t[2] is None:
-            main_report += "      <div class=\"module\"><p><img src=\"{2}\" " \
-                           "alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
-        else:
-            main_report += "      <div class=\"box\"><img src=\"{2}\">" \
-                           "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+      elif len(t)==4:
+          # image
+          name, path, table, tip = t
 
-            main_report += "      <div class=\"box-left\">\n {3}" \
-                           "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
+          # Image with table
+          if table is not None:
+              result += """
+            <div class="module" id=M{i}>
+              <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+            </div>
+            <div class="box"><img src="{image}">" "</div>
+            <div class=\"box-left\">
+            {table}
+            </div>
+            <div class="after-box"><p></p></div>
+            """.format(i=i, name=name, tip=tip, image=_embedded_image(path), table=table)
 
-            main_report += "      <div class=\"after-box\"><p></p></div>\n"
-    main_report += "    </div>\n"
+          # Image without table
+          else:
+              result += """
+            <div class="module" id=M{i}>
+              <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+            </div>
+            <div class="box"><img src="{image}">" "</div>
+            <div class="after-box"><p></p></div>
+            """.format(i=i, name=name, tip=tip, image=_embedded_image(path))
 
-    # Add all the element of the page
-    report = title + header + banner + summary + main_report + footer
-
-    # Write the HTML page
-    f.write(report)
-    f.close()
+    return result
 
 
 def _embedded_image(image_path):
