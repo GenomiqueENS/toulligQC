@@ -51,6 +51,9 @@ def html_report(config_dictionary, result_dict, graphs):
     # Read CSS file resource
     css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode('utf8')
 
+    # Read Plotly JavaScript code
+    plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')
+
     f = open(result_directory + 'report.html', 'w')
 
     # Create the report
@@ -59,7 +62,7 @@ def html_report(config_dictionary, result_dict, graphs):
   <head>
     <title>Report run MinION : {report_name} </title>
     <meta charset='UTF-8'>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>{plotlyjs}</script>
 
     <!-- CSS stylesheet -->
     <style type="text/css">
@@ -95,6 +98,7 @@ def html_report(config_dictionary, result_dict, graphs):
   </body>
 
 </html>""".format(report_name=report_name,
+                  plotlyjs=plotly_min_js,
                   css=css,
                   run_id=run_id,
                   run_date=run_date,
