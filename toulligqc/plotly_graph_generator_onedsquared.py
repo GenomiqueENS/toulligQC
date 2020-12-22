@@ -41,6 +41,9 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 figure_image_width = 1024
 figure_image_height = 576
+int_format_str = '{:,d}'
+float_format_str = '{:.2f}'
+percent_format_str = '{:.2f}%'
 
 def _make_desribe_dataframe(value):
     """
@@ -49,8 +52,8 @@ def _make_desribe_dataframe(value):
     """
 
     desc = value.describe()
-    desc.loc['count'] = desc.loc['count'].astype(int).astype(str)
-    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: '%.2f' % x)
+    desc.loc['count'] = desc.loc['count'].astype(int).apply(lambda x:int_format_str.format(x))
+    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: float_format_str.format(x))
     desc.rename({'50%': 'median'}, axis='index', inplace=True)
 
     return desc
@@ -193,8 +196,8 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
     py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
     # HTML table
-    dataframe.iloc[0] = dataframe.iloc[0].astype(int).astype(str)
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    dataframe.iloc[0] = dataframe.iloc[0].astype(int).apply(lambda x:int_format_str.format(x))
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc, div
@@ -636,7 +639,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
                                  "1D² read count": count_sorted})
     barcode_table.sort_index(inplace=True)
-    pd.options.display.float_format = '{:.2f}%'.format
+    pd.options.display.float_format_str = float_format_str.format
     table_html = pd.DataFrame.to_html(barcode_table)
 
     return main, output_file, table_html, desc, div
@@ -700,7 +703,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
                                   "1D² read count": count_sorted})
     barcode_table.sort_index(inplace=True)
-    pd.options.display.float_format = '{:.2f}%'.format
+    pd.options.display.float_format_str = float_format_str.format
 
     table_html = pd.DataFrame.to_html(barcode_table)
 
@@ -798,8 +801,8 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
                        keys=['1D', '1D pass', '1D fail'])
     dataframe = concat.T
 
-    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).apply(lambda x:int_format_str.format(x))
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
     table_html = None
@@ -891,8 +894,8 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
     read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
     concat = pd.concat([all_read, read_pass, read_fail], keys=['1D', '1D pass', '1D fail'])
     dataframe = concat.T
-    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
+    dataframe.loc['count'] = dataframe.loc['count'].astype(int).apply(lambda x:int_format_str.format(x))
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
     table_html = pd.DataFrame.to_html(dataframe)
 
     return main, output_file, table_html, desc, div
