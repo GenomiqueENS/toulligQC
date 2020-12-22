@@ -45,6 +45,10 @@ int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
 percent_format_str = '{:.2f}%'
 
+toulligqc_colors = { 'pass': '#51a96d',   # Green
+                     'fail': '#d90429',   # Red
+                     'all':  '#fca311'}   # Yellow
+
 def _make_desribe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -223,21 +227,21 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dp
                              name='All reads',
                              hoverinfo='x+y',
                              fill='tozeroy',
-                             marker_color='#fca311'  # yellow
+                             marker_color=toulligqc_colors['all']
                              ))
     fig.add_trace(go.Scatter(x=count_x2,
                                y=count_y2,
                                name='Pass reads',
                                hoverinfo='x+y',
                                fill='tozeroy',
-                               marker_color='#51a96d'  # green
+                               marker_color=toulligqc_colors['pass']
                                ))
     fig.add_trace(go.Scatter(x=count_x3,
                                y=count_y3,
                                name='Fail reads',
                                hoverinfo='x+y',
                                fill='tozeroy',
-                               marker_color='#d90429'  # red
+                               marker_color=toulligqc_colors['fail']
                                ))
 
     fig.update_layout(
@@ -310,9 +314,9 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
              "1D² pass": "Read pass",
              "1D² fail": "Read fail"}
 
-    colors = {"1D²": '#fca311',
-              "1D² pass": '#51a96d',
-              "1D² fail": '#d90429'}
+    colors = {"1D²": toulligqc_colors['all'],
+              "1D² pass": toulligqc_colors['pass'],
+              "1D² fail": toulligqc_colors['fail']}
 
     # Max yaxis value for displaying same scale between plots
     max_yaxis = (dataframe.max(skipna=True, numeric_only=True).values.max() + 2.0)
@@ -444,10 +448,10 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
     pdf_1Dsqr_fail = norm.pdf(x2, mu2, std2)
 
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#51a96d", histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#d90429", histnorm='probability density'))
-    fig.add_trace(go.Scatter(x=x, y=pdf_1Dsqr_pass, mode="lines", name='Density curve of read pass', line=dict(color='#51a96d', width=3, shape="spline", smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2, y=pdf_1Dsqr_fail, mode="lines", name='Density curve of read fail', line=dict(color='#d90429', width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color=toulligqc_colors['pass'], histnorm='probability density'))
+    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color=toulligqc_colors['fail'], histnorm='probability density'))
+    fig.add_trace(go.Scatter(x=x, y=pdf_1Dsqr_pass, mode="lines", name='Density curve of read pass', line=dict(color=toulligqc_colors['pass'], width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x2, y=pdf_1Dsqr_fail, mode="lines", name='Density curve of read fail', line=dict(color=toulligqc_colors['fail'], width=3, shape="spline", smoothing=0.5)))
 
     fig.update_layout(
         title={
@@ -518,14 +522,14 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     fig.add_trace(go.Scatter(x=pass_data[0],
                              y=pass_data[1],
                              name="Pass reads",
-                             marker_color="#51a96d",
+                             marker_color=toulligqc_colors['pass'],
                              mode="markers"
                              ))
 
     fig.add_trace(go.Scatter(x=fail_data[0],
                              y=fail_data[1],
                              name='Fail reads',
-                             marker_color='#d90429',
+                             marker_color=toulligqc_colors['fail'],
                              mode="markers"
                              ))
 
@@ -737,7 +741,7 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=col,
             x0=col,
-            marker_color='#51a96d',
+            marker_color=toulligqc_colors['pass'],
             legendgroup="pass",
             offsetgroup="pass"
         ))
@@ -748,7 +752,7 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
             name=col,
             x0=col,
-            marker_color='#d90429',
+            marker_color=toulligqc_colors['fail'],
             legendgroup="fail",
             offsetgroup="fail"
         ))
@@ -831,7 +835,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
                              q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
                              name=barcode,
                              x0=barcode,
-                             marker_color='#51a96d',
+                             marker_color=toulligqc_colors['pass'],
                              legendgroup="pass",
                              offsetgroup="pass"
                              ))
@@ -843,7 +847,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
                              q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']], upperfence=[d['upperfence']],
                              name=barcode,
                              x0=barcode,
-                             marker_color='#d90429',
+                             marker_color=toulligqc_colors['fail'],
                              legendgroup="fail",
                              offsetgroup="fail"
                              ))
