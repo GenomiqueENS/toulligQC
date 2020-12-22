@@ -28,6 +28,8 @@ import base64
 import datetime
 import pkgutil
 
+int_format_str = '{:,d}'
+float_format_str = '{:.2f}'
 
 def html_report(config_dictionary, result_dict, graphs):
     """
@@ -139,7 +141,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
 
     td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
     seconds = td.total_seconds()
-    run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
+    run_time = '%dh%02dm%02ds' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
@@ -183,7 +185,8 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
             </table>
         </div> <!-- end .info-box -->
       </div>
-    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count, n50)
+    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version,
+               int_format_str.format(int(run_yield)), int_format_str.format(read_count), int_format_str.format(int(n50)))
 
     result += """
       <div class=\"module\">
