@@ -1,0 +1,111 @@
+# -*- coding: utf-8 -*-
+
+#                  ToulligQC development code
+#
+# This code may be freely distributed and modified under the
+# terms of the GNU General Public License version 3 or later
+# and CeCILL. This should be distributed with the code. If you
+# do not have a copy, see:
+#
+#      http://www.gnu.org/licenses/gpl-3.0-standalone.html
+#      http://www.cecill.info/licences/Licence_CeCILL_V2-en.html
+#
+# Copyright for this code is held jointly by the Genomic platform
+# of the Institut de Biologie de l'École Normale Supérieure and
+# the individual authors.
+#
+# First author: Lionel Ferrato-Berberian, Karine Dias, Laurent Jourdren
+# Maintainer: Karine Dias
+# Since version 2.0
+
+# This module contains common methods for plotly modules.
+
+import pandas as pd
+import numpy as np
+from scipy.ndimage.filters import gaussian_filter1d
+from scipy.interpolate import interp1d
+from sklearn.utils import resample
+
+
+figure_image_width = 1024
+figure_image_height = 576
+int_format_str = '{:,d}'
+float_format_str = '{:.2f}'
+percent_format_str = '{:.2f}%'
+
+toulligqc_colors = { 'pass': '#51a96d',   # Green
+                     'fail': '#d90429',   # Red
+                     'all':  '#fca311'}   # Yellow
+
+
+def _make_describe_dataframe(value):
+    """
+    Creation of a statistics table printed with the graph in report.html
+    :param value: information measured (series)
+    """
+
+    desc = value.describe()
+    desc.loc['count'] = desc.loc['count'].astype(int).apply(lambda x:int_format_str.format(x))
+    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: float_format_str.format(x))
+    desc.rename({'50%': 'median'}, axis='index', inplace=True)
+
+    return desc
+
+def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
+    """
+    Function returning an interpolated version of data passed as input
+    :param x: array of data
+    :param npoints: number of desired points after interpolation (int)
+    :param y: second array in case of 2D data
+    :param interp_type: string specifying the type of interpolation (i.e. linear, nearest, cubic, quadratic etc.)
+    :param axis: number specifying the axis of y along which to interpolate. Default = -1
+    """
+    # In case of single array of data, use
+    if y is None:
+        return np.sort(resample(x, n_samples=npoints, random_state=1))
+
+    else:
+        f = interp1d(x, y, kind=interp_type, axis=axis)
+        x_int = np.linspace(min(x), max(x), npoints)
+        y_int = f(x_int)
+        return pd.Series(x_int), pd.Series(y_int)
+
+def _smooth_data(npoints: int, sigma: int, data):
+    """
+    Function for smmothing data with numpy histogram function
+    Returns a tuple of smooth data (ndarray)
+    :param data: must be array-like data
+    :param npoints: number of desired points for smoothing
+    :param sigma: sigma value of the gaussian filter
+    """
+    bins = np.linspace(np.nanmin(data), np.nanmax(data), num=npoints)
+    count_y, count_x = np.histogram(a=data, bins=bins, density=True)
+    # Removes the first value of count_x1
+    count_x = count_x[1:]
+    count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
+    return count_x, count_y
+
+def _precompute_boxplot_values(y):
+    """
+    Precompute values for boxplot to avoid data storage in boxplot.
+    """
+
+    q1 = y.quantile(.25)
+    q3 = y.quantile(.75)
+    iqr = q3 - q1
+    upper_fence = q3 + ( 1.5 * iqr)
+    lower_fence = q1 - (1.5 * iqr)
+    import math
+    notchspan = 1.57 * iqr / math.sqrt(len(y))
+
+    return dict(min=min(y),
+                lowerfence=max(lower_fence, float(min(y))),
+                q1=q1,
+                median=y.quantile(.5),
+                q3=q3,
+                upperfence=min(upper_fence, float(max(y))),
+                max=max(y),
+                notchspan=notchspan)
+
+def _dataFrame_to_html(df):
+    return pd.DataFrame.to_html(df, border="")
