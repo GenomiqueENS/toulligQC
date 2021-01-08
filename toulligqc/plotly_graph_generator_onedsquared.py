@@ -28,19 +28,19 @@ import plotly.graph_objs as go
 import plotly.offline as py
 
 # Import common function
-from plotly_graph_common import _smooth_data
-from plotly_graph_common import _precompute_boxplot_values
-from plotly_graph_common import _dataFrame_to_html
-from plotly_graph_common import _interpolate
-from plotly_graph_common import _make_describe_dataframe
+from toulligqc.plotly_graph_common import _smooth_data
+from toulligqc.plotly_graph_common import _precompute_boxplot_values
+from toulligqc.plotly_graph_common import _dataFrame_to_html
+from toulligqc.plotly_graph_common import _interpolate
+from toulligqc.plotly_graph_common import _make_describe_dataframe
 
 # Import common constants
-from plotly_graph_common import figure_image_width
-from plotly_graph_common import figure_image_height
-from plotly_graph_common import int_format_str
-from plotly_graph_common import float_format_str
-from plotly_graph_common import percent_format_str
-from plotly_graph_common import toulligqc_colors
+from toulligqc.plotly_graph_common import figure_image_width
+from toulligqc.plotly_graph_common import figure_image_height
+from toulligqc.plotly_graph_common import int_format_str
+from toulligqc.plotly_graph_common import float_format_str
+from toulligqc.plotly_graph_common import percent_format_str
+from toulligqc.plotly_graph_common import toulligqc_colors
 
 #
 #  1D² plots
