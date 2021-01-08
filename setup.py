@@ -41,7 +41,7 @@ setup(
 
     packages=['toulligqc'],
     package_dir={'toulligqc': "toulligqc"},
-    package_data={'toulligqc': ['resources/*.css']},
+    package_data={'toulligqc': ['resources/*.css', 'resources/*.js']},
     zip_safe=False,
     include_package_data=True,
 
