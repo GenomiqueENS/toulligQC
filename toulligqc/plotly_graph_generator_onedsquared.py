@@ -44,6 +44,10 @@ from toulligqc.plotly_graph_common import toulligqc_colors
 from toulligqc.plotly_graph_common import plotly_background_color
 from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import interpolation_threshold
+from toulligqc.plotly_graph_common import legend_font_size
+from toulligqc.plotly_graph_common import axis_font_size
+from toulligqc.plotly_graph_common import on_chart_font_size
+from toulligqc.plotly_graph_common import title_size
 
 #
 #  1D² plots
@@ -151,19 +155,19 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
             'xanchor': 'left',
             'yanchor': 'top',
             'font': dict(
-                size=20,
+                size=title_size,
                 color="black")
         },
         xaxis=dict(title="<b>1D² Read type</b>",
                    titlefont=dict(
-                       size=14,
+                       size=axis_font_size,
                        color="black"
                    ),
                    categoryorder="trace"
                    ),
         yaxis=dict(title="<b>Counts</b>",
                    titlefont=dict(
-                       size=14,
+                       size=axis_font_size,
                        color="black"
                    )),
         width=figure_image_width,
@@ -222,23 +226,23 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dp
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         xaxis=dict(
             title="<b>1D² Read length (bp)</b>",
-            titlefont_size=14,
+            titlefont_size=axis_font_size,
             range=[0, max_x_range]
         ),
         yaxis=dict(
             title='<b>Density</b>',
-            titlefont_size=14,
-            tickfont_size=14
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size
         ),
         legend=dict(
             x=1.02,
             y=0.95,
             title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -314,23 +318,23 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         xaxis=dict(
             title="<b>1D² Read type</b>",
-            titlefont_size=14
+            titlefont_size=axis_font_size
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
-            titlefont_size=14,
-            tickfont_size=14,
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
             range=[min_yaxis, max_yaxis]
         ),
         legend=dict(
             x=1.02,
             y=0.95,
             title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -413,22 +417,22 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         xaxis=dict(
             title="<b>PHRED score</b>",
-            titlefont_size=14
+            titlefont_size=axis_font_size
         ),
         yaxis=dict(
             title='<b>Density probability</b>',
-            titlefont_size=14,
-            tickfont_size=14,
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
         ),
         legend=dict(
             x=1.02,
             y=0.95,
             title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -484,22 +488,22 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         xaxis=dict(
             title="<b>Sequence length (bp)</b>",
-            titlefont_size=14
+            titlefont_size=axis_font_size
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
-            titlefont_size=14,
-            tickfont_size=14,
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
         ),
         legend=dict(
             x=1.02,
             y=.5,
             title_text="<b>1D² Read Type</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -538,10 +542,10 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
                                  values=count_sorted)])
     if len(labels) <= 12:
         palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275", "#b8e994", "#78e08f"]
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=on_chart_font_size,
                   marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
     else:
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=on_chart_font_size,
                   marker=dict(line=dict(color='#2a2a2a', width=.5)))
     fig.update_traces(textposition='inside')
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
@@ -553,13 +557,13 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         legend=dict(
             x=1.02,
             y=.5,
             title_text="<b>Barcodes</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -594,10 +598,10 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
                                  values=count_sorted)])
     if len(labels) <= 12:
         palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275"]
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=on_chart_font_size,
                   marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
     else:
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=on_chart_font_size,
                   marker=dict(line=dict(color='#2a2a2a', width=.5)))
     fig.update_traces(textposition='inside')
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
@@ -609,13 +613,13 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         legend=dict(
             x=1.02,
             y=.5,
             title_text="<b>Barcodes</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -682,22 +686,22 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         xaxis=dict(
             title="<b>Barcodes</b>",
-            titlefont_size=14
+            titlefont_size=axis_font_size
         ),
         yaxis=dict(
             title='<b>Sequence length (bp)</b>',
-            titlefont_size=14,
-            tickfont_size=14,
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
         ),
         legend=dict(
             x=1.02,
             y=.5,
             title_text="<b>1D² Read Type</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -768,22 +772,22 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
                     'xanchor': 'left',
                     'yanchor': 'top',
                     'font': dict(
-                        size=20,
+                        size=title_size,
                         color="black")},
         xaxis=dict(
             title="<b>Barcodes</b>",
-            titlefont_size=14
+            titlefont_size=axis_font_size
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
-            titlefont_size=14,
-            tickfont_size=14,
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
         ),
         legend=dict(
             x=1.02,
             y=.5,
             title_text="<b>1D² Read Type</b>",
-            title=dict(font=dict(size=16)),
+            title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
             font=dict(size=15)
@@ -840,22 +844,22 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, re
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                size=20,
+                size=title_size,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
+                titlefont_size=axis_font_size
                 ),
             yaxis=dict(
                 title='<b>Read length (bp)</b>',
-                titlefont_size=14,
-                tickfont_size=14,
+                titlefont_size=axis_font_size,
+                tickfont_size=axis_font_size,
             ),
             legend=dict(
                 x=1.0,
                 y=0.95,
                 title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
+                title=dict(font=dict(size=legend_font_size)),
                 bgcolor='rgba(255, 255, 255, 0)',
                 bordercolor='rgba(255, 255, 255, 0)',
                 font=dict(size=15)
@@ -905,16 +909,16 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                size=20,
+                size=title_size,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
+                titlefont_size=axis_font_size
                 ),
             yaxis=dict(
                 title='<b>PHRED quality score</b>',
-                titlefont_size=14,
-                tickfont_size=14,
+                titlefont_size=axis_font_size,
+                tickfont_size=axis_font_size,
             ),
             height=figure_image_height, width=figure_image_width
         )
@@ -955,22 +959,22 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                size=20,
+                size=title_size,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
+                titlefont_size=axis_font_size
                 ),
             yaxis=dict(
                 title='<b>Speed (bases per second)</b>',
-                titlefont_size=14,
-                tickfont_size=14,
+                titlefont_size=axis_font_size,
+                tickfont_size=axis_font_size,
             ),
             legend=dict(
                 x=1.0,
                 y=0.95,
                 title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
+                title=dict(font=dict(size=legend_font_size)),
                 bgcolor='rgba(255, 255, 255, 0)',
                 bordercolor='rgba(255, 255, 255, 0)',
                 font=dict(size=15)
@@ -1011,22 +1015,22 @@ def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
                 'xanchor': 'left',
                 'yanchor': 'top',
                 'font' : dict(
-                size=20,
+                size=title_size,
                 color="black")},
             xaxis=dict(
                 title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
+                titlefont_size=axis_font_size
                 ),
             yaxis=dict(
                 title='<b>Number of sequences</b>',
-                titlefont_size=14,
-                tickfont_size=14,
+                titlefont_size=axis_font_size,
+                tickfont_size=axis_font_size,
             ),
             legend=dict(
                 x=1.0,
                 y=0.95,
                 title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
+                title=dict(font=dict(size=legend_font_size)),
                 bgcolor='rgba(255, 255, 255, 0)',
                 bordercolor='rgba(255, 255, 255, 0)',
                 font=dict(size=15)

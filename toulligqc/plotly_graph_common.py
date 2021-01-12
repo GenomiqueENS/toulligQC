@@ -48,6 +48,10 @@ toulligqc_colors = {'all':          '#fca311',  # Yellow
                     }
 
 plotly_background_color = '#e5ecf6'
+legend_font_size = 16
+axis_font_size = 14
+on_chart_font_size = 15
+title_size = 20
 
 
 def _make_describe_dataframe(value):
