@@ -37,6 +37,7 @@ from toulligqc.plotly_graph_common import _precompute_boxplot_values
 from toulligqc.plotly_graph_common import _dataFrame_to_html
 from toulligqc.plotly_graph_common import _interpolate
 from toulligqc.plotly_graph_common import _make_describe_dataframe
+from toulligqc.plotly_graph_common import _transparent_colors
 
 # Import common constants
 from toulligqc.plotly_graph_common import figure_image_width
@@ -45,6 +46,8 @@ from toulligqc.plotly_graph_common import int_format_str
 from toulligqc.plotly_graph_common import float_format_str
 from toulligqc.plotly_graph_common import percent_format_str
 from toulligqc.plotly_graph_common import toulligqc_colors
+from toulligqc.plotly_graph_common import plotly_background_color
+from toulligqc.plotly_graph_common import line_width
 
 #
 #  1D plots
@@ -67,41 +70,42 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
         data = {
             'Read Count': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
             'Read Pass Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-            'Read Pass Barcoded Count': dataframe_dict["read.pass.barcoded.count"],
             'Read Fail Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+            'Read Pass Barcoded Count': dataframe_dict["read.pass.barcoded.count"],
             'Read Fail Barcoded Count': dataframe_dict["read.fail.barcoded.count"]
         }
-        colors = ["#54A8FC", "salmon", '#ffa931', "#50c878", "SlateBlue"]
+
+        colors = [toulligqc_colors["all"], toulligqc_colors["pass"], toulligqc_colors["fail"],
+                  toulligqc_colors["barcode_pass"], toulligqc_colors["barcode_fail"]]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
                                 hovertext=["<b>Total number of reads</b>",
-                                           "<b>Reads of qscore > 7</b>",
-                                           "<b>Barcoded reads with qscore > 7</b>",
-                                           "<b>Reads of qscore < 7</b>",
-                                           "<b>Barcoded reads with qscore < 7</b>"],
-                                #hoverinfo="x",
+                                           "<b>Pass reads</b>",
+                                           "<b>Fail reads</b>",
+                                           "<b>Barcoded pass reads</b>",
+                                           "<b>Barcoded fail reads</b>"],
                                 name="Barcoded graph",
-                                marker_color=colors,
-                                marker_line_color="black",
-                                marker_line_width=1.5, opacity=0.9)
+                                marker_color=_transparent_colors(colors, plotly_background_color, .5),
+                                marker_line_color=colors,
+                                marker_line_width=line_width)
 
         # Array of data for HTML table with barcode reads
         array = np.array(
             #count
             [[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-              dataframe_dict["read.pass.barcoded.count"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+              dataframe_dict["read.pass.barcoded.count"],
               dataframe_dict["read.fail.barcoded.count"]],
              #frequencies
              [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"],
+              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"]]])
 
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Read count", "1D pass", "1D pass barcoded", "1D fail", "1D fail barcoded"])
+                                 columns=["Read count", "1D pass", "1D fail", "1D pass barcoded", "1D fail barcoded"])
 
     # Histogram without barcodes
     else:
@@ -112,18 +116,16 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
             'Read Fail Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
         }
 
-        colors = ["#54A8FC", "salmon", "#50c878"]
+        colors = [toulligqc_colors['all'], toulligqc_colors['pass'], toulligqc_colors['fail']]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
                        hovertext=["<b>Total number of reads</b>",
-                                  "<b>Reads of qscore > 7</b>",
-                                  "<b>Barcoded reads with qscore > 7</b>",
-                                  "<b>Reads of qscore < 7</b>",
-                                  "<b>Barcoded reads with qscore < 7</b>"],
+                                  "<b>Pass reads</b>",
+                                  "<b>Fail reads</b>"],
                        name="Barcoded graph",
-                       marker_color=colors,
-                       marker_line_color="black",
-                       marker_line_width=1.5, opacity=0.9)
+                       marker_color=_transparent_colors(colors, plotly_background_color, .5),
+                       marker_line_color=colors,
+                       marker_line_width=line_width)
 
         # Array of data for HTML table without barcode reads
         array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
@@ -151,7 +153,6 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                 color="black")
         },
         xaxis=dict(title="<b>Read type</b>",
-                   linecolor="black",
                    titlefont=dict(
                        size=14,
                        color="black"
@@ -159,16 +160,12 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
                    categoryorder="total descending"
                    ),
         yaxis=dict(title="<b>Counts</b>",
-                   linecolor="black",
                    titlefont=dict(
                        size=14,
                        color="black"
                    )),
         width=figure_image_width,
-        height=figure_image_height,
-        plot_bgcolor="white",
-        paper_bgcolor="white"
-    )
+        height=figure_image_height)
 
     fig = go.Figure(data=trace, layout=layout)
     div = py.plot(fig,

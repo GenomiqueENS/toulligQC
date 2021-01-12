@@ -33,14 +33,16 @@ from toulligqc.plotly_graph_common import _precompute_boxplot_values
 from toulligqc.plotly_graph_common import _dataFrame_to_html
 from toulligqc.plotly_graph_common import _interpolate
 from toulligqc.plotly_graph_common import _make_describe_dataframe
+from toulligqc.plotly_graph_common import _transparent_colors
 
 # Import common constants
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import figure_image_height
 from toulligqc.plotly_graph_common import int_format_str
 from toulligqc.plotly_graph_common import float_format_str
-from toulligqc.plotly_graph_common import percent_format_str
 from toulligqc.plotly_graph_common import toulligqc_colors
+from toulligqc.plotly_graph_common import plotly_background_color
+from toulligqc.plotly_graph_common import line_width
 
 #
 #  1D² plots
@@ -59,27 +61,28 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
     if 'read.pass.barcoded.count' in dataframe_dict_1dsqr:
 
         data = {
-            '1D² Read Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+            '1D Read Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
             '1D² Read Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
             '1D² Read Pass Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
-            '1D² Read Pass Barcoded Count': dataframe_dict_1dsqr["read.pass.barcoded.count"],
             '1D² Read Fail Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
+            '1D² Read Pass Barcoded Count': dataframe_dict_1dsqr["read.pass.barcoded.count"],
             '1D² Read Fail Barcoded Count': dataframe_dict_1dsqr["read.fail.barcoded.count"]
         }
 
-        colors = ["#54A8FC", "#cb4335 ", "salmon", '#ffa931', "#50c878", "SlateBlue"]
+        colors = [toulligqc_colors["all"], toulligqc_colors["all_1d2"], toulligqc_colors["pass"],
+                  toulligqc_colors["fail"], toulligqc_colors["barcode_pass"], toulligqc_colors["barcode_fail"]]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
                                 hovertext=["<b>Total number of reads</b>",
                                            "<b>Number of 1D² reads</b>",
-                                           "<b>1D² Reads of qscore > 7</b>",
-                                           "<b>1D² Barcoded reads with qscore > 7</b>",
-                                           "<b>1D² Reads of qscore < 7</b>",
-                                           "<b>1D² Barcoded reads with qscore < 7</b>"],
+                                           "<b>1D² pass reads</b>",
+                                           "<b>1D² fail reads</b>",
+                                           "<b>1D² Barcoded pass reads</b>",
+                                           "<b>1D² Barcoded fail reads</b>"],
                                 name="Barcoded graph",
-                                marker_color=colors,
-                                marker_line_color="black",
-                                marker_line_width=1.5, opacity=0.9)
+                                marker_color=_transparent_colors(colors, plotly_background_color, .5),
+                                marker_line_color=colors,
+                                marker_line_width=line_width)
 
         # Array of data for HTML table with barcode reads
         array = np.array(
@@ -87,19 +90,20 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
             [[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
-              dataframe_dict_1dsqr["read.pass.barcoded.count"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
+              dataframe_dict_1dsqr["read.pass.barcoded.count"],
               dataframe_dict_1dsqr["read.fail.barcoded.count"]],
              #frequencies
              [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
-              result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.frequency"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"],
+              result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.frequency"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.frequency"]]])
 
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Read count", "1D² Read count","1D² pass", "1D² pass barcoded", "1D² fail", "1D² fail barcoded"])
+                                 columns=["Read count", "1D² Read count", "1D² pass", "1D² fail", "1D² pass barcoded",
+                                          "1D² fail barcoded"])
 
     # Histogram without barcodes
     else:
@@ -111,18 +115,18 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
             'Read Fail Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"]
         }
 
-        colors = ["#54A8FC", "#cb4335", "salmon", "#50c878"]
+        colors = [toulligqc_colors["all"], toulligqc_colors["all_1d2"], toulligqc_colors["pass"],
+                  toulligqc_colors["fail"]]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
                        hovertext=["<b>Total number of reads</b>",
-                                  "<b>Reads of qscore > 7</b>",
-                                  "<b>Barcoded reads with qscore > 7</b>",
-                                  "<b>Reads of qscore < 7</b>",
-                                  "<b>Barcoded reads with qscore < 7</b>"],
+                                  "<b>Number of 1D² reads</b>",
+                                  "<b>1D² pass reads</b>",
+                                  "<b>1D² fail reads</b>"],
                        name="Barcoded graph",
-                       marker_color=colors,
-                       marker_line_color="black",
-                       marker_line_width=1.5, opacity=0.9)
+                       marker_color=_transparent_colors(colors, plotly_background_color, .5),
+                       marker_line_color=colors,
+                       marker_line_width=line_width)
 
         # Array of data for HTML table without barcode reads
         array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
@@ -131,9 +135,9 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
                            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"]],
                           # frequencies
                           [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
-                            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
-                          result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
-                          result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"]]])
+                           result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
+                           result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.frequency"],
+                           result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"]]])
 
         # Create dataframe with array data
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
@@ -152,7 +156,6 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
                 color="black")
         },
         xaxis=dict(title="<b>1D² Read type</b>",
-                   linecolor="black",
                    titlefont=dict(
                        size=14,
                        color="black"
@@ -160,16 +163,12 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
                    categoryorder="trace"
                    ),
         yaxis=dict(title="<b>Counts</b>",
-                   linecolor="black",
                    titlefont=dict(
                        size=14,
                        color="black"
                    )),
         width=figure_image_width,
-        height=figure_image_height,
-        plot_bgcolor="white",
-        paper_bgcolor="white"
-    )
+        height=figure_image_height)
 
     fig = go.Figure(data=trace, layout=layout)
     div = py.plot(fig,

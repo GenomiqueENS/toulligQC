@@ -26,16 +26,22 @@ from scipy.ndimage.filters import gaussian_filter1d
 from scipy.interpolate import interp1d
 from sklearn.utils import resample
 
-
 figure_image_width = 1024
 figure_image_height = 576
 int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
 percent_format_str = '{:.2f}%'
+line_width = 2
 
-toulligqc_colors = { 'pass': '#51a96d',   # Green
-                     'fail': '#d90429',   # Red
-                     'all':  '#fca311'}   # Yellow
+toulligqc_colors = {'all':          '#fca311',  # Yellow
+                    'all_1d2':      '#fca311',  # Yellow
+                    'pass':         '#51a96d',  # Green
+                    'fail':         '#d90429',  # Red
+                    'barcode_pass': '#51a96d',  # Green
+                    'barcode_fail': '#d90429',  # Red
+                    }
+
+plotly_background_color = '#e5ecf6'
 
 
 def _make_describe_dataframe(value):
@@ -51,7 +57,8 @@ def _make_describe_dataframe(value):
 
     return desc
 
-def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
+
+def _interpolate(x, npoints: int, y=None, interp_type=None, axis=-1):
     """
     Function returning an interpolated version of data passed as input
     :param x: array of data
@@ -70,6 +77,7 @@ def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
         y_int = f(x_int)
         return pd.Series(x_int), pd.Series(y_int)
 
+
 def _smooth_data(npoints: int, sigma: int, data):
     """
     Function for smmothing data with numpy histogram function
@@ -85,6 +93,7 @@ def _smooth_data(npoints: int, sigma: int, data):
     count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
     return count_x, count_y
 
+
 def _precompute_boxplot_values(y):
     """
     Precompute values for boxplot to avoid data storage in boxplot.
@@ -93,7 +102,7 @@ def _precompute_boxplot_values(y):
     q1 = y.quantile(.25)
     q3 = y.quantile(.75)
     iqr = q3 - q1
-    upper_fence = q3 + ( 1.5 * iqr)
+    upper_fence = q3 + (1.5 * iqr)
     lower_fence = q1 - (1.5 * iqr)
     import math
     notchspan = 1.57 * iqr / math.sqrt(len(y))
@@ -109,3 +118,32 @@ def _precompute_boxplot_values(y):
 
 def _dataFrame_to_html(df):
     return pd.DataFrame.to_html(df, border="")
+
+
+def _transparent_colors(colors, background_color, a):
+    result = []
+
+    br = int(background_color[1:3], 16)
+    bg = int(background_color[3:5], 16)
+    bb = int(background_color[5:7], 16)
+
+    for c in colors:
+        r = int(c[1:3], 16)
+        g = int(c[3:5], 16)
+        b = int(c[5:7], 16)
+        new_c = '#' + \
+                _transparent_component(r, br, a) + \
+                _transparent_component(g, bg,  a) + \
+                _transparent_component(b, bb, a)
+        result.append(new_c)
+
+    return result
+
+
+def _transparent_component(c, b, a):
+    v = (1-a) * c + a * b
+    r = hex(int(v))[2:]
+
+    if len(r) == 1:
+        return '0' + r
+    return r
