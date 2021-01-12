@@ -22,6 +22,7 @@
 
 import pandas as pd
 import numpy as np
+import plotly.offline as py
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy.interpolate import interp1d
 from sklearn.utils import resample
@@ -151,3 +152,21 @@ def _transparent_component(c, b, a):
     if len(r) == 1:
         return '0' + r
     return r
+
+def _create_and_save_div(fig, result_directory, main):
+
+    output_file = result_directory + '/' + '_'.join(main.split())
+
+    div = py.plot(fig,
+                  include_plotlyjs=False,
+                  output_type='div',
+                  auto_open=False,
+                  show_link=False)
+    py.plot(fig,
+            filename=output_file,
+            output_type="file",
+            include_plotlyjs="directory",
+            auto_open=False)
+
+    return div, output_file
+
