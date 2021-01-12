@@ -39,6 +39,10 @@ toulligqc_colors = {'all':          '#fca311',  # Yellow
                     'fail':         '#d90429',  # Red
                     'barcode_pass': '#51a96d',  # Green
                     'barcode_fail': '#d90429',  # Red
+                    'sequence_length_over_time': '#205b47',
+                    'phred_score_over_time':     '#7aaceb',
+                    'speed_over_time':           '#AE3F7B',
+                    'nseq_over_time':            '#edb773',
                     }
 
 plotly_background_color = '#e5ecf6'

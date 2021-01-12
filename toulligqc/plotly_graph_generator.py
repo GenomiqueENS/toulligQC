@@ -1137,11 +1137,10 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         x=df_time,
         y=df_length,
         fill='tozeroy',
-        fillcolor="#2f8769",
         mode='lines',
-        name='interpolation curve',
-        line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
-        )
+        line=dict(color=toulligqc_colors['sequence_length_over_time'],
+                  width=line_width,
+                  shape="spline")))
 
         fig.update_layout(
                 title={
@@ -1162,17 +1161,9 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
                 titlefont_size=14,
                 tickfont_size=14,
             ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
-            hovermode=False,
-            height=figure_image_height, width=figure_image_width
+            hovermode='x',
+            height=figure_image_height,
+            width=figure_image_width
         )
 
         div = py.plot(fig,
@@ -1210,13 +1201,10 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
             x=df_time,
             y=df_qscore,
             fill='tozeroy',
-            fillcolor="#adccf3",
             mode='lines',
-            name='interpolation curve',
-            line=dict(color='#7aaceb', width=3, shape="spline", smoothing=0.5),
-            marker=dict(
-                size=10,
-                color="blue")))
+            line=dict(color=toulligqc_colors['phred_score_over_time'],
+                      width=line_width,
+                      shape="spline")))
 
         fig.update_layout(
                 title={
@@ -1274,8 +1262,9 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         y=speed_df,
         fill='tozeroy',
         mode='lines',
-        line=dict(color='#AE3F7B', width=3, shape="linear"))
-        )
+        line=dict(color=toulligqc_colors['speed_over_time'],
+                  width=line_width,
+                  shape="spline")))
 
         fig.update_layout(
                 title={
@@ -1296,17 +1285,9 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
                 titlefont_size=14,
                 tickfont_size=14,
             ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
             hovermode='x',
-            height=figure_image_height, width=figure_image_width
+            height=figure_image_height,
+            width=figure_image_width
         )
         fig.update_yaxes(type="log")
 
@@ -1337,11 +1318,12 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
 
         fig.add_trace(go.Scatter(
             x=time_points,
-            y=list(n_seq.values), mode='lines',
+            y=list(n_seq.values),
+            mode='lines',
             fill="tozeroy",
-            fillcolor="#f4d2a7",
-            line=dict(color='#edb773', width=3, shape="spline", smoothing=0.7)
-        ))
+            line=dict(color=toulligqc_colors['nseq_over_time'],
+                      width=line_width,
+                      shape="spline")))
 
         fig.update_layout(
                 title={
@@ -1362,17 +1344,9 @@ def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
                 titlefont_size=14,
                 tickfont_size=14,
             ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
             hovermode='x',
-            height=figure_image_height, width=figure_image_width
+            height=figure_image_height,
+            width=figure_image_width
         )
 
         div = py.plot(fig,
