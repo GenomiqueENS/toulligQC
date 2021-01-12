@@ -24,12 +24,9 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
-from matplotlib.pyplot import table
 
 from scipy.stats import norm
 import plotly.graph_objs as go
-import plotly.offline as py
 
 # Import common function
 from toulligqc.plotly_graph_common import _smooth_data
@@ -182,9 +179,9 @@ def read_length_scatterplot(result_dict, sequence_length_df, main, my_dpi, resul
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] >= 10]
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] >= 10]
 
-    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
+    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
+    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
+    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
 
     # Find 50 percentile for zoomed range on x axis
     max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
@@ -258,9 +255,9 @@ def yield_plot(result_dict, main, my_dpi, result_directory, desc):
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
     read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
 
-    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
+    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
+    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
+    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
 
     fig = go.Figure()
 

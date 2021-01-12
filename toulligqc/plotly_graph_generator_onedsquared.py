@@ -25,7 +25,6 @@ import numpy as np
 
 from scipy.stats import norm
 import plotly.graph_objs as go
-import plotly.offline as py
 
 # Import common function
 from toulligqc.plotly_graph_common import _smooth_data
@@ -184,9 +183,9 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dp
     read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'] >= 10]
     read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'] >= 10]
 
-    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
+    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
+    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
+    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
 
     # Find 50 percentile for zoomed range on x axis
     max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
@@ -882,7 +881,7 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
             df_time, df_qscore = _interpolate(time, 50, qscore, "nearest")
         else:
             df_time = time
-            df_score = qscore
+            df_qscore = qscore
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
