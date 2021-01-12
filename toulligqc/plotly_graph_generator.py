@@ -646,40 +646,6 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     return main, output_file, table_html, desc, div
 
 
-def channel_count_histogram(Guppy_log, main, my_dpi, result_directory, desc):
-    """
-    Plots an histogram of the channel count according to the channel number (not use anymore)
-    """
-    output_file = result_directory + '/' + '_'.join(main.split())
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
-    ax.hist(Guppy_log['channel'], edgecolor='black',
-            bins=range(min(Guppy_log['channel']), max(Guppy_log['channel']) + 64, 64))
-    ax.set_xlabel("Channel number")
-    ax.set_ylabel("Count")
-
-    channel_count = Guppy_log['channel']
-    total_number_reads_per_channel = pd.value_counts(channel_count)
-    plt.subplot(gs[1])
-
-    dataframe = table(ax, np.round(total_number_reads_per_channel
-                                   .describe().drop(['mean', 'std', '50%', '75%', '25%']), 2), loc='center')
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.axis('off')
-
-    dataframe.set_fontsize(12)
-    dataframe.scale(1, 1.2)
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-    table_html = _dataFrame_to_html(total_number_reads_per_channel.describe())
-
-    return main, output_file, table_html, desc
-
-
 def _minion_flowcell_layout():
     """
     Represents the layout of a minion flowcell (not use anymore)
