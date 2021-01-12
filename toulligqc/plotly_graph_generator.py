@@ -46,6 +46,7 @@ from toulligqc.plotly_graph_common import percent_format_str
 from toulligqc.plotly_graph_common import toulligqc_colors
 from toulligqc.plotly_graph_common import plotly_background_color
 from toulligqc.plotly_graph_common import line_width
+from toulligqc.plotly_graph_common import interpolation_threshold
 
 #
 #  1D plots
@@ -384,7 +385,7 @@ def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc)
          })
 
     # If more than 10.000 reads, interpolate data
-    if len(df["1D"]) > 10000:
+    if len(df["1D"]) > interpolation_threshold:
         dataframe = pd.DataFrame({
         "1D" : _interpolate(df["1D"], 1000),
         "1D pass" : _interpolate(df["1D pass"], 1000),
@@ -506,7 +507,7 @@ def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
                       "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
 
     # If more than 10.000 reads, interpolate data
-    if len(dataframe["1D"]) > 10000:
+    if len(dataframe["1D"]) > interpolation_threshold:
         phred_score_pass = _interpolate(dataframe["1D pass"], npoints=5000)
         phred_score_fail = _interpolate(dataframe["1D fail"], npoints=5000)
     else:
@@ -579,7 +580,7 @@ def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
     read_fail_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"]
 
     # If more than 10.000 reads, interpolate data
-    if len(read_pass_length) > 10000:
+    if len(read_pass_length) > interpolation_threshold:
         pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
         fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
     else:
@@ -1000,7 +1001,7 @@ def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_dire
         length = dataframe_dict.get('sequence.length')
 
          # If more than 10.000 reads, interpolate data
-        if len(length) > 10000:
+        if len(length) > interpolation_threshold:
             df_time, df_length = _interpolate(time, 200, length, "linear")
         else:
             df_time = time
@@ -1056,7 +1057,7 @@ def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, de
         qscore = qscore_df.dropna()
 
         #If more than 10.000 reads, interpolate data
-        if len(qscore) > 10000:
+        if len(qscore) > interpolation_threshold:
             df_time, df_qscore = _interpolate(time, 100, qscore, "nearest")
         else:
             df_time = time
@@ -1107,7 +1108,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, resu
         time = np.array(sorted(time))
 
         # If more than 10.000 reads, interpolate data
-        if len(time) > 10000:
+        if len(time) > interpolation_threshold:
             time_df, speed_df = _interpolate(time, 200, speed, "linear")
         else:
             time_df = time

@@ -33,6 +33,7 @@ int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
 percent_format_str = '{:.2f}%'
 line_width = 2
+interpolation_threshold = 10000
 
 toulligqc_colors = {'all':          '#fca311',  # Yellow
                     'all_1d2':      '#fca311',  # Yellow
