@@ -73,8 +73,10 @@ def html_report(config_dictionary, result_dict, graphs):
 
   </head>
 
+  <body>
+
     <!-- The banner -->
-    <div class="header">
+    <div id="banner">
       <div id="header_title">ToulligQC report for {report_name} <br/></div>
       <div id="header_filename">
         Run id: {run_id} <br>
@@ -85,18 +87,18 @@ def html_report(config_dictionary, result_dict, graphs):
     </div>
 
     <!-- The summary -->
-    <div class='summary'>
+    <div id="leftCol">
       <h2>Summary</h2>
       {summary_list}
     </div>
 
     <!-- Module results -->
-    <div class = 'main'>
+    <div id="content">
     {modules_report}
-    </div>
+    </div> <!-- End of Content -->
 
     <!-- Footer -->
-    <div class="footer"> Produced by <a href="{app_url}">{app_name}</a> (version {app_version})</div>
+    <div id="footer"> Produced by <a href="{app_url}">{app_name}</a> (version {app_version})</div>
   </body>
 
 </html>""".format(report_name=report_name,
@@ -122,7 +124,8 @@ def _summary(graphs):
     :return: a string with HTML code for the module list
     """
     result = "        <ol>\n"
-    result += "          <li><a href=\"#Basic-statistics" "\"> Basic Statistics </a></li>\n"
+    result += "          <li><a href=\"#Run-statistics" "\"> Run Statistics </a></li>\n"
+    result += "          <li><a href=\"#Software-info" "\"> Software information </a></li>\n"
     for i, t in enumerate(graphs):
         result += "          <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
     result += "        </ol>\n"
@@ -162,12 +165,9 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
 
     # Compose the main of the page
     result = """
-      <div class=\"module\" id="Basic-statistics">
-        <div class = "info-box">
-            <h2 id=M{0}>Basic Statistics</h2>
-            <h2 id=M{0}></h2>
-            <h3 style="text-align:center">Run info</h3>
-            <table class=\" dataframe \" border="1">
+      <div class="module" id="Run-statistics">
+            <h2>Run Statistics <a title="Run Statistics">&#x1F263;</a></h2>
+            <table class="dataframe" border="">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
               <tr><th>Run id</th><td> {0} </td></tr>
@@ -183,18 +183,14 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
               <tr><th>N50 (bp)</th><td> {10} </td></tr>
               </tbody>
             </table>
-        </div> <!-- end .info-box -->
-      </div>
+      </div> <!-- End of "Run-statistics" module -->
     """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version,
                int_format_str.format(int(run_yield)), int_format_str.format(read_count), int_format_str.format(int(n50)))
 
     result += """
-      <div class=\"module\">
-        <div class = "info-box-left">
-            <h2 id=M{0}></h2>
-            <h2 id=M{0}></h2>
-            <h3 style="text-align:center">Software info</h3>
-            <table class=\" dataframe \" border="1">
+      <div class="module" id="Software-info">
+            <h2>Software info <a title="Software information">&#x1F263;</a></h2>
+            <table class="dataframe" border="">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
                 <tr><th>MinKNOW version </th><td> {0} </td></tr>
@@ -208,9 +204,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
                 <tr><th>Model file</th><td> {8} </td></tr>
                 </tbody>
             </table>
-        </div> <!-- end .info-box-left -->
-        <div class=\"after-box\"><p></p></div>
-      </div>
+      </div> <!-- End of "Software-info" module -->
     """.format(minknow_version, basecaller_name, basecaller_version, basecaller_analysis, toulligqc_version, hostname, device_type, device_id, model_file)
 
     return result
@@ -230,21 +224,21 @@ def _other_module_reports(graphs):
        # Plotly graph with table
         if table is not None:
             result += """
-      <div class="module" id=M{i}></div>
-      {html}
-      <div class="box-left">
-      {table}
+      <div class="module" id=M{i}>
+        <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+        {html}
+        {table}
       </div>
-      <div class="after-box"><p></p></div>
-""".format(i=i, html=html, table=table)
+""".format(i=i, name=name, tip=tip, html=html, table=table)
 
         # Plotly graph without table
         else:
             result += """
-      <div class="module" id=M{i}></div>
-      {html}
-      <div class="after-box"><p></p></div>
-""".format(i=i, html=html, table=table)
+      <div class="module" id=M{i}>
+        <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+        {html}
+      </div>
+""".format(i=i,  name=name, tip=tip, html=html, table=table)
 
 
       elif len(t)==4:
@@ -256,12 +250,9 @@ def _other_module_reports(graphs):
               result += """
             <div class="module" id=M{i}>
               <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+              <div class="box"><img src="{image}"/></div>
+              {table}
             </div>
-            <div class="box"><img src="{image}">" "</div>
-            <div class=\"box-left\">
-            {table}
-            </div>
-            <div class="after-box"><p></p></div>
             """.format(i=i, name=name, tip=tip, image=_embedded_image(path), table=table)
 
           # Image without table
@@ -269,9 +260,8 @@ def _other_module_reports(graphs):
               result += """
             <div class="module" id=M{i}>
               <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+              <div class="box"><img src="{image}">" "</div>
             </div>
-            <div class="box"><img src="{image}">" "</div>
-            <div class="after-box"><p></p></div>
             """.format(i=i, name=name, tip=tip, image=_embedded_image(path))
 
     return result
