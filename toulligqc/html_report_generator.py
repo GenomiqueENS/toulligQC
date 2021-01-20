@@ -30,6 +30,8 @@ import pkgutil
 
 int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
+from toulligqc.plotly_graph_common import figure_image_width
+
 
 def html_report(config_dictionary, result_dict, graphs):
     """
@@ -52,6 +54,9 @@ def html_report(config_dictionary, result_dict, graphs):
 
     # Read CSS file resource
     css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode('utf8')
+
+    # Set CSS module class width to the width of the figures
+    css = css.replace("{figure_image_width}", str(figure_image_width) + "px")
 
     # Read Plotly JavaScript code
     plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')
@@ -88,13 +93,13 @@ def html_report(config_dictionary, result_dict, graphs):
 
     <!-- The summary -->
     <div id="leftCol">
-      <h2>Summary</h2>
-      {summary_list}
+      <!--h2>Summary</h2-->
+{summary_list}
     </div>
 
     <!-- Module results -->
     <div id="content">
-    {modules_report}
+{modules_report}
     </div> <!-- End of Content -->
 
     <!-- Footer -->
@@ -123,12 +128,12 @@ def _summary(graphs):
     :param graphs:
     :return: a string with HTML code for the module list
     """
-    result = "        <ol>\n"
-    result += "          <li><a href=\"#Run-statistics" "\"> Run Statistics </a></li>\n"
-    result += "          <li><a href=\"#Software-info" "\"> Software information </a></li>\n"
+    result = "        <ul class=\"menu-vertical\">\n"
+    result += "          <li class=\"mv-item\"><a href=\"#Run-statistics" "\"> Run Statistics </a></li>\n"
+    result += "          <li class=\"mv-item\"><a href=\"#Software-info" "\"> Software information </a></li>\n"
     for i, t in enumerate(graphs):
-        result += "          <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
-    result += "        </ol>\n"
+        result += "          <li class=\"mv-item\"><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
+    result += "        </ul>\n"
     return result
 
 
@@ -260,7 +265,7 @@ def _other_module_reports(graphs):
               result += """
             <div class="module" id=M{i}>
               <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
-              <div class="box"><img src="{image}">" "</div>
+              <div class="box"><img src="{image}"/></div>
             </div>
             """.format(i=i, name=name, tip=tip, image=_embedded_image(path))
 
