@@ -48,6 +48,7 @@ from toulligqc.plotly_graph_common import legend_font_size
 from toulligqc.plotly_graph_common import axis_font_size
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import title_size
+from toulligqc.plotly_graph_common import graph_font
 
 #
 #  1D² plots
@@ -170,6 +171,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
                        size=axis_font_size,
                        color="black"
                    )),
+        font=dict(family=graph_font),
         width=figure_image_width,
         height=figure_image_height)
 
@@ -248,7 +250,9 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dp
             font=dict(size=15)
         ),
         hovermode='x',
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     table_html = None
@@ -340,7 +344,9 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
             font=dict(size=15)
         ),
         hovermode='x',
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     # Add buttons
@@ -439,7 +445,9 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
         ),
         barmode='group',
         hovermode='x',
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     dataframe = _make_describe_dataframe(dataframe).drop('count')
@@ -508,7 +516,9 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):
@@ -568,7 +578,9 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
@@ -624,7 +636,9 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
             bordercolor='white',
             font=dict(size=15)
         ),
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
@@ -709,7 +723,9 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     all_read = df.describe().T
@@ -795,7 +811,9 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
-        height=figure_image_height, width=figure_image_width
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
     )
 
     all_read = df.describe().T
@@ -855,6 +873,7 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, re
                 tickfont_size=axis_font_size,
             ),
             hovermode='x',
+            font=dict(family=graph_font),
             height=figure_image_height,
             width=figure_image_width
         )
@@ -908,6 +927,7 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
                 titlefont_size=axis_font_size,
                 tickfont_size=axis_font_size,
             ),
+            font=dict(family=graph_font),
             height=figure_image_height,
             width=figure_image_width
         )
@@ -962,6 +982,7 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
                 tickfont_size=axis_font_size,
             ),
             hovermode='x',
+            font=dict(family=graph_font),
             height=figure_image_height,
             width=figure_image_width
         )
@@ -1012,6 +1033,7 @@ def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
                 tickfont_size=axis_font_size,
             ),
             hovermode='x',
+            font=dict(family=graph_font),
             height=figure_image_height,
             width=figure_image_width
         )

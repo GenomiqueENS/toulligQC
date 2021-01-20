@@ -52,6 +52,8 @@ legend_font_size = 16
 axis_font_size = 14
 on_chart_font_size = 15
 title_size = 20
+graph_font = 'Open sans, Helvetica, Arial, sans-serif'
+
 
 
 def _make_describe_dataframe(value):
