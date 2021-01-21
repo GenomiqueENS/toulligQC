@@ -737,7 +737,7 @@ def plot_performance(pore_measure, my_dpi, result_directory):
 #
 
 
-def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, barcode_selection, result_directory):
+def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_directory):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
@@ -799,7 +799,7 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, barcode_selec
     return graph_name, output_file, table_html, div
 
 
-def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, barcode_selection, result_directory):
+def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_directory):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -862,7 +862,7 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, barcode_selec
     return graph_name, output_file, table_html, div
 
 
-def barcode_length_boxplot(result_dict, datafame_dict, result_directory):
+def barcode_length_boxplot(datafame_dict, result_directory):
     """
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """

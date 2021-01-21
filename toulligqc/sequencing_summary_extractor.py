@@ -529,15 +529,15 @@ class SequencingSummaryExtractor:
         images.append(pgg.nseq_over_time(self.time_df, images_directory))
 
         if self.is_barcode:
-            images.append(pgg.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
                                                                             self.barcode_selection,
                                                                             images_directory))
 
-            images.append(pgg.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
                                                                             self.barcode_selection,
                                                                             images_directory))
 
-            images.append(pgg.barcode_length_boxplot(result_dict, self.dataframe_dict,
+            images.append(pgg.barcode_length_boxplot(self.dataframe_dict,
                                                                  images_directory))
 
             images.append(pgg.barcoded_phred_score_frequency(self.barcode_selection, self.dataframe_dict,

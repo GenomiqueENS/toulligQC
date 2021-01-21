@@ -549,7 +549,7 @@ def scatterplot_1dsqr(result_dict, result_directory):
 # For each barcode 1D²
 #
 
-def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, barcode_selection, result_directory):
+def barcode_percentage_pie_chart_1dsqr_pass(dataframe_dict_1dsqr, barcode_selection, result_directory):
     """
     Plots a pie chart of 1D² read pass percentage per barcode of a run.
     """
@@ -609,7 +609,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, b
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
-def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, barcode_selection, result_directory):
+def barcode_percentage_pie_chart_1dsqr_fail(dataframe_dict_1dsqr, barcode_selection, result_directory):
     """
     Plots a pie chart of 1D² read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -670,7 +670,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, b
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
-def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, result_directory):
+def barcode_length_boxplot_1dsqr(dataframe_dict_1dsqr, result_directory):
     """
     Boxplots all the 1D² pass and fail read length for each barcode indicated in the sample sheet
     """
