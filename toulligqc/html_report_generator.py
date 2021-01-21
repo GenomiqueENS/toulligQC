@@ -31,7 +31,8 @@ import pkgutil
 int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
 from toulligqc.plotly_graph_common import figure_image_width
-
+from toulligqc.plotly_graph_common import title_size
+from toulligqc.plotly_graph_common import graph_font
 
 def html_report(config_dictionary, result_dict, graphs):
     """
@@ -56,7 +57,9 @@ def html_report(config_dictionary, result_dict, graphs):
     css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode('utf8')
 
     # Set CSS module class width to the width of the figures
-    css = css.replace("{figure_image_width}", str(figure_image_width) + "px")
+    css = css.replace("{figure_image_width}", str(figure_image_width) + "px") \
+             .replace("{title_size}", str(title_size)) \
+             .replace("{graph_font}", str(graph_font))
 
     # Read Plotly JavaScript code
     plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')

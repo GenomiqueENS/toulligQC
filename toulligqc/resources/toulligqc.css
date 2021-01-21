@@ -3,7 +3,7 @@
   margin: 0;
   padding: 0;
 
-  font-family: "Open Sans", Helvetica, Arial;
+  font-family: {graph_font};
   font-weight: lighter;
   font-size: 14px;
   color: #444;
@@ -125,6 +125,7 @@ h2 {
   margin-top: 0;
   padding-top: 1em;
   font-style: italic;
+  font-size: {title_size};
 }
 
 td, th {
