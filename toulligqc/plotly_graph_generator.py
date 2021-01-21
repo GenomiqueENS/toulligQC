@@ -58,7 +58,7 @@ from toulligqc.plotly_graph_common import graph_font
 #
 
 
-def read_count_histogram(result_dict, dataframe_dict, result_directory, desc):
+def read_count_histogram(result_dict, dataframe_dict, result_directory):
     """
     Plots the histogram of count of the different types of reads:
     1D read return by Guppy
@@ -180,10 +180,10 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory, desc):
     table_html = _dataFrame_to_html(dataframe)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def read_length_scatterplot(result_dict, sequence_length_df, result_directory, desc):
+def read_length_scatterplot(result_dict, sequence_length_df, result_directory):
 
     graph_name = "Distribution of read lengths"
 
@@ -258,10 +258,10 @@ def read_length_scatterplot(result_dict, sequence_length_df, result_directory, d
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def yield_plot(result_dict, result_directory, desc):
+def yield_plot(result_dict, result_directory):
     """
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
@@ -388,10 +388,10 @@ def yield_plot(result_dict, result_directory, desc):
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def read_quality_multiboxplot(result_dict, result_directory, desc):
+def read_quality_multiboxplot(result_dict, result_directory):
     """
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
@@ -516,11 +516,11 @@ def read_quality_multiboxplot(result_dict, result_directory, desc):
     table_html = _dataFrame_to_html(_make_describe_dataframe(df))
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
 
-def allphred_score_frequency(result_dict, result_directory, desc):
+def allphred_score_frequency(result_dict, result_directory):
     """
     Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
     """
@@ -595,10 +595,10 @@ def allphred_score_frequency(result_dict, result_directory, desc):
     table_html = _dataFrame_to_html(dataframe)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def all_scatterplot(result_dict, result_directory, desc):
+def all_scatterplot(result_dict, result_directory):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
@@ -674,7 +674,7 @@ def all_scatterplot(result_dict, result_directory, desc):
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
 def _minion_flowcell_layout():
@@ -694,7 +694,7 @@ def _minion_flowcell_layout():
     return flowcell_layout
 
 
-def plot_performance(pore_measure, my_dpi, result_directory, desc):
+def plot_performance(pore_measure, my_dpi, result_directory):
     """
     Plots the channels occupancy by the reads
     @:param pore_measure: reads number per pore
@@ -730,14 +730,14 @@ def plot_performance(pore_measure, my_dpi, result_directory, desc):
     plt.close()
 
     table_html = None
-    return graph_name, output_file, table_html, desc
+    return graph_name, output_file, table_html
 
 #
 # For each barcode 1D
 #
 
 
-def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, barcode_selection, result_directory, desc):
+def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, barcode_selection, result_directory):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
@@ -796,10 +796,10 @@ def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, barcode_selec
     table_html = _dataFrame_to_html(barcode_table)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, barcode_selection, result_directory, desc):
+def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, barcode_selection, result_directory):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -859,10 +859,10 @@ def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, barcode_selec
     table_html = _dataFrame_to_html(barcode_table)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def barcode_length_boxplot(result_dict, datafame_dict, result_directory, desc):
+def barcode_length_boxplot(result_dict, datafame_dict, result_directory):
     """
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -956,10 +956,10 @@ def barcode_length_boxplot(result_dict, datafame_dict, result_directory, desc):
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_directory, desc):
+def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_directory):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -1046,10 +1046,10 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, desc, div
+    return graph_name, output_file, table_html, div
 
 
-def sequence_length_over_time(time_df, dataframe_dict, result_directory, desc):
+def sequence_length_over_time(time_df, dataframe_dict, result_directory):
 
         graph_name = "Read length over experiment time"
 
@@ -1103,10 +1103,10 @@ def sequence_length_over_time(time_df, dataframe_dict, result_directory, desc):
 
         table_html = None
         div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-        return graph_name, output_file, table_html, desc, div
+        return graph_name, output_file, table_html, div
 
 
-def phred_score_over_time(qscore_df, time_df, result_directory, desc):
+def phred_score_over_time(qscore_df, time_df, result_directory):
 
         graph_name = "PHRED score over experiment time"
 
@@ -1160,10 +1160,10 @@ def phred_score_over_time(qscore_df, time_df, result_directory, desc):
 
         table_html = None
         div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-        return graph_name, output_file, table_html, desc, div
+        return graph_name, output_file, table_html, div
 
 
-def speed_over_time(duration_df, sequence_length_df, time_df, result_directory, desc):
+def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
 
         graph_name = "Speed over experiment time"
 
@@ -1218,10 +1218,10 @@ def speed_over_time(duration_df, sequence_length_df, time_df, result_directory, 
 
         table_html = None
         div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-        return graph_name, output_file, table_html, desc, div
+        return graph_name, output_file, table_html, div
 
 
-def nseq_over_time(time_df, result_directory, desc):
+def nseq_over_time(time_df, result_directory):
 
         graph_name = "Number of sequences through experiment time"
 
@@ -1270,4 +1270,4 @@ def nseq_over_time(time_df, result_directory, desc):
 
         table_html = None
         div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-        return graph_name, output_file, table_html, desc, div
+        return graph_name, output_file, table_html, div

@@ -223,10 +223,10 @@ def _other_module_reports(graphs):
     for i, t in enumerate(graphs):
 
 
-      if len(t)==5:
+      if len(t)==4:
        # Plotly Graph
 
-        name, path, table, tip, html = t
+        name, path, table, html = t
 
        # Plotly graph with table
         if table is not None:
@@ -235,7 +235,7 @@ def _other_module_reports(graphs):
         {html}
         {table}
       </div>
-""".format(i=i, name=name, tip=tip, html=html, table=table)
+""".format(i=i, name=name, html=html, table=table)
 
         # Plotly graph without table
         else:
@@ -243,12 +243,12 @@ def _other_module_reports(graphs):
       <div class="module" id=M{i}>
         {html}
       </div>
-""".format(i=i,  name=name, tip=tip, html=html, table=table)
+""".format(i=i,  name=name, html=html, table=table)
 
 
-      elif len(t)==4:
+      elif len(t)==3:
           # image
-          name, path, table, tip = t
+          name, path, table  = t
 
           # Image with table
           if table is not None:
@@ -258,7 +258,7 @@ def _other_module_reports(graphs):
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
-            """.format(i=i, name=name, tip=tip, image=_embedded_image(path), table=table)
+            """.format(i=i, name=name,  image=_embedded_image(path), table=table)
 
           # Image without table
           else:
@@ -267,7 +267,7 @@ def _other_module_reports(graphs):
               <h2>{name}</h2>
               <div class="box"><img src="{image}"/></div>
             </div>
-            """.format(i=i, name=name, tip=tip, image=_embedded_image(path))
+            """.format(i=i, name=name, image=_embedded_image(path))
 
     return result
 
