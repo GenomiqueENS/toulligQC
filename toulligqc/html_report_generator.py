@@ -85,7 +85,7 @@ def html_report(config_dictionary, result_dict, graphs):
 
     <!-- The banner -->
     <div id="banner">
-      <div id="header_title">ToulligQC report for {report_name} <br/></div>
+      <div id="header_title"><img id="header_logo" alt="ToulligQC" src="{toulligqc_logo}"/>Report for {report_name}</div>
       <div id="header_filename">
         Run id: {run_id} <br>
         Run date: {run_date} <br>
@@ -109,6 +109,7 @@ def html_report(config_dictionary, result_dict, graphs):
   </body>
 
 </html>""".format(report_name=report_name,
+                  toulligqc_logo=_embedded_image("resources/toulligqc.png", True),
                   plotlyjs=plotly_min_js,
                   css=css,
                   run_id=run_id,
@@ -272,14 +273,20 @@ def _other_module_reports(graphs):
     return result
 
 
-def _embedded_image(image_path):
+def _embedded_image(image_path, resource=False):
     """
     Embedded an image
     :param image_path: path of the image
     :return: a string with the image in base64
     """
-    with open(image_path, "rb") as image_file:
-        result = "data:image/png;base64," + base64.b64encode(image_file.read()).decode('ascii')
+
+    if resource:
+        data = pkgutil.get_data(__name__, image_path)
+    else:
+        with open(image_path, "rb") as image_file:
+            data = image_file.read()
+
+    result = "data:image/png;base64," + base64.b64encode(data).decode('ascii')
 
     return result
 

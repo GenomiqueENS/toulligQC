@@ -79,6 +79,11 @@
   text-align: right;
 }
 
+#header_logo {
+  margin-right: 0.25em;
+  vertical-align:middle;
+}
+
 /* Menu */
 
 .menu-vertical {
