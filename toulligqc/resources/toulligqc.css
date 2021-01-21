@@ -27,14 +27,14 @@
   position: fixed;
   top: 5em;
   margin: 1em 0 0 1em;
-  width: 18em;
+  width: 24em;
 }
 
 #content {
   display: block;
   position: absolute;
   top: 5em;
-  left: 18em;
+  left: 24em;
   right: 0;
   bottom: 2.3em;
   height: auto;
