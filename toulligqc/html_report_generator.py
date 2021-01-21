@@ -85,7 +85,6 @@ def html_report(config_dictionary, result_dict, graphs):
       <div id="header_title">ToulligQC report for {report_name} <br/></div>
       <div id="header_filename">
         Run id: {run_id} <br>
-        Report name: {report_name} <br>
         Run date: {run_date} <br>
         Report date : {report_date} <br>
       </div>
