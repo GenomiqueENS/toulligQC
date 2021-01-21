@@ -291,7 +291,7 @@ def _embedded_image(image_path, resource=False):
     return result
 
 
-def _get_result_value(result_dict, key , default_value = ""):
+def _get_result_value(result_dict, key, default_value=""):
     """
     Get the value of the result dictionary or a default value if the key does not exists.
     :param result_dict: result dictionary
@@ -300,6 +300,8 @@ def _get_result_value(result_dict, key , default_value = ""):
     :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
     """
     if key in result_dict:
-        return result_dict[key]
-    else:
-        return default_value
+        result = result_dict[key]
+        if len(result) > 0:
+            return result
+
+    return default_value
