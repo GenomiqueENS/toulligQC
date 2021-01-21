@@ -24,8 +24,8 @@
 
 
 from toulligqc import fast5_extractor
-from toulligqc import onedsquare_sequencing_summary_extractor
 from toulligqc import sequencing_summary_extractor
+from toulligqc import sequencing_summary_onedsquare_extractor
 from toulligqc import sequencing_telemetry_extractor
 
 
@@ -89,7 +89,7 @@ class ToulligqcExtractor:
             result_dict['toulligqc.info.extractors'].append("fast5.extractor")
 
         if 'sequencing_summary_1dsqr_source' in config_dictionary and config_dictionary['sequencing_summary_1dsqr_source']:
-            extractors_list.append(onedsquare_sequencing_summary_extractor.
+            extractors_list.append(sequencing_summary_onedsquare_extractor.
                                    OneDSquareSequencingSummaryExtractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("sequencing.summary.1dsqr.extractor")
         else:
