@@ -28,7 +28,7 @@
 import pandas as pd
 import sys
 from toulligqc import plotly_graph_generator as pgg
-from toulligqc import plotly_graph_generator_onedsquared as pgg2
+from toulligqc import plotly_graph_onedsquare_generator as pgg2
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 import numpy as np
 import re
