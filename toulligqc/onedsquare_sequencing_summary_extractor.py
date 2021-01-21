@@ -515,118 +515,99 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         images_directory = self.result_directory + '/images/'
 
-        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
-                                                            self.my_dpi, images_directory,
+        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, images_directory,
                                                             "Number of reads produced before (Fast 5 in blue) "
                                                             "and after (1D in orange) basecalling. "
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-        images.append(pgg2.dsqr_read_count_histogram(result_dict, self.dataframe_dict_1dsqr, "1Dsquare read count histogram",
-                                                                self.my_dpi, images_directory,
+        images.append(pgg2.dsqr_read_count_histogram(result_dict, self.dataframe_dict_1dsqr, images_directory,
                                                                 "Number of reads produced basecalled (1D in orange) and"
                                                                 " 1Dsquare reads (in gold). The 1Dsquare reads are "
                                                                 "filtered with a 7.5 quality score threshold in pass "
                                                                 "(1Dsquare pass in green) or fail "
                                                                 "(1Dsquare fail in red) categories."))
-        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_1d, 'Read length histogram',
-                                                                 self.my_dpi, images_directory,
+        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_1d, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-        images.append(pgg2.dsqr_read_length_scatterplot(result_dict, self.sequence_length_1dsqr, '1Dsquare read size histogram',
-                                                                      self.my_dpi, images_directory,
+        images.append(pgg2.dsqr_read_length_scatterplot(result_dict, self.sequence_length_1dsqr, images_directory,
                                                                       "Size distribution of basecalled reads "
                                                                       "(1D in orange) and 1Dsquare reads (in gold). "
                                                                       "The 1Dsquare reads are filtered with a 7.5 "
                                                                       "quality score threshold in pass "
                                                                       "(1Dsquare pass in green) or fail "
                                                                       "(1Dsquare fail in red) categories."))
-        images.append(pgg.yield_plot(result_dict, 'Yield plot of 1D read type',
-                                                         self.my_dpi, images_directory,
+        images.append(pgg.yield_plot(result_dict, images_directory,
                                                          "Yield plot of basecalled reads (1D in orange)."
                                                          " The basecalled reads are filtered with a 7.5 quality "
                                                          "score threshold in pass (1D pass in green) "
                                                          "or fail (1D fail in red) categories."))
-        images.append(pgg.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
-                                                                self.my_dpi, images_directory,
+        images.append(pgg.read_quality_multiboxplot(result_dict, images_directory,
                                                                 "Boxplot of 1D reads (in orange) quality."
                                                                 "The basecalled reads are filtered with a 7.5 quality "
                                                                 "score threshold in pass (1D pass in green) "
                                                                 "or fail (1D fail in red) categories."))
-        images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, "1Dsquare reads quality boxplot",
-                                                                     self.my_dpi, images_directory,
+        images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, images_directory,
                                                                      "Boxplot of 1D (in orange) and 1Dsquare (in gold) "
                                                                      "reads quality. The 1Dsquare reads are filtered "
                                                                      "with a 7.5 quality score threshold in pass "
                                                                      "(1Dsquare pass in green) or fail (1Dsquare "
                                                                      "fail in red) categories."))
-        images.append(pgg.allphred_score_frequency(result_dict, 'Mean Phred score frequency of all 1D read type',
-                                                               self.my_dpi, images_directory,
+        images.append(pgg.allphred_score_frequency(result_dict, images_directory,
                                                                "The basecalled reads are filtered with a 7.5 quality "
                                                                "score threshold in pass (1D pass in green) "
                                                                "or fail (1D fail in red) categories."))
         images.append(pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr,
-                                                        "Mean Phred score frequency of "
-                                                        "1Dsquare read type", self.my_dpi, images_directory,
+                                                        images_directory,
                                                         "The 1Dsquare reads are filtered with a 7.5 "
                                                         "quality score threshold in pass (1Dsquare pass "
                                                         "in green) or fail (1Dsquare fail in red) "
                                                         "categories."))
-        images.append(pgg.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',
-                                                      self.my_dpi, images_directory,
+        images.append(pgg.all_scatterplot(result_dict, images_directory,
                                                       "The Mean Phred score varies according to the read length."
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
-        images.append(pgg2.scatterplot_1dsqr(result_dict, "Mean Phred score function of 1Dsquare read length",
-                                                        self.my_dpi, images_directory,
+        images.append(pgg2.scatterplot_1dsqr(result_dict, images_directory,
                                                         "The Mean Phred score varies according to the read length. "
                                                         "The 1Dsquare reads are filtered with a 7.5 quality score "
                                                         "threshold in pass (1Dsquare pass in green) or fail "
                                                         "(1Dsquare fail in red) categories."))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
+        images.append(pgg.plot_performance(total_number_reads_per_pore,
                                                        self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
-        images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, '1Dsquare Sequence length over time', self.my_dpi, images_directory,
+        images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory,
                                                 "Length of reads through run time in hours"))
-        images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, '1Dsquare PHRED score over time', self.my_dpi, images_directory,
+        images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, images_directory,
                                                 "Reads PHRED score through run time in hours"))
-        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, '1Dsquare Read speed over time', self.my_dpi, images_directory,
+        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, images_directory,
                                           "Speed of 1Dsquare reads in base per second through run time in hours"))
-        images.append(pgg2.nseq_over_time_dsqr(self.time_1dsqr, 'Number of 1Dsquare reads over time', self.my_dpi, images_directory, "Number of 1Dsquare sequences through run time in hours"))
+        images.append(pgg2.nseq_over_time_dsqr(self.time_1dsqr, images_directory, "Number of 1Dsquare sequences through run time in hours"))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(result_dict, self.dataframe_dict_1dsqr,
-                                                                                  "1Dsquare pass reads percentage of "
-                                                                                  "different barcodes",
-                                                                                  self.barcode_selection, self.my_dpi,
+                                                                                  self.barcode_selection,
                                                                                   images_directory,
                                                                                   "1Dsquare pass reads distribution "
                                                                                   "per barcode."))
 
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_fail(result_dict, self.dataframe_dict_1dsqr,
-                                                                                  "1Dsquare fail reads percentage of "
-                                                                                  "different barcodes",
-                                                                                  self.barcode_selection, self.my_dpi,
+                                                                                  self.barcode_selection,
                                                                                   images_directory,
                                                                                   "1Dsquare fail reads distribution "
                                                                                   "per barcode."))
 
             images.append(pgg2.barcode_length_boxplot_1dsqr(result_dict, self.dataframe_dict_1dsqr,
-                                                                       "1Dsquare read size distribution for "
-                                                                       "each barcode",
-                                                                       self.my_dpi, images_directory,
+                                                                       images_directory,
                                                                        "Read length boxplot per barcode of pass "
                                                                        "(in green) and fail (in red) 1Dsquare reads."))
 
             images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.barcode_selection, self.dataframe_dict_1dsqr,
-                                                                               "1Dsquare read phred score distribution "
-                                                                               "for each barcode",
-                                                                               self.my_dpi, images_directory,
+                                                                               images_directory,
                                                                                "Read Mean Phred score boxplot per "
                                                                                "barcode of pass (in green) and fail "
                                                                                "(in red) 1Dsquare reads."))

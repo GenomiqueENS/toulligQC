@@ -54,13 +54,16 @@ from toulligqc.plotly_graph_common import graph_font
 #  1D² plots
 #
 
-def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_directory, desc):
     """
     Plots the histogram of 1D² count of the different types of reads:
     1D² read return by Guppy
     1D² pass read return by Guppy (Qscore >= 7)
     1D² fail read return by Guppy (Qscore < 7)
     """
+
+    graph_name = "1D² Read count histogram"
+
     # Histogram with barcoded read counts
     if 'read.pass.barcoded.count' in dataframe_dict_1dsqr:
 
@@ -150,7 +153,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
     layout = go.Layout(
         hovermode="x",
         title={
-            'text': "<b>1D² Read count histogram</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
             'xanchor': 'left',
@@ -181,10 +184,12 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, main, my_dpi, r
     dataframe.iloc[0] = dataframe.iloc[0].astype(int).apply(lambda x:int_format_str.format(x))
     dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
     table_html = _dataFrame_to_html(dataframe)
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dpi, result_directory, desc):
+def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, result_directory, desc):
+
+    graph_name = "1D² Distribution of read lengths"
 
     all_read = sequence_length_1dsqr.loc[sequence_length_1dsqr >= 10].dropna().values
     read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'] >= 10]
@@ -222,7 +227,7 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dp
 
     fig.update_layout(
         title={
-            'text': "<b>1D² Distribution of read lengths</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -256,14 +261,17 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, main, my_dp
     )
 
     table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_directory, desc):
     """
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
     """
+
+    graph_name = "1D² PHRED score distribution of all read types"
+
     df = pd.DataFrame(
         {"1D²": dataframe_dict_1dsqr["mean.qscore"],
          "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
@@ -316,7 +324,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
 
     fig.update_layout(
         title={
-            'text': "<b>1D² PHRED score distribution of all read types</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -379,13 +387,16 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, main, my_d
 
     df = df[["1D²", "1D² pass", "1D² fail"]]
     table_html = _dataFrame_to_html(_make_describe_dataframe(df))
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_directory, desc):
     """
     Plot the distribution of the phred score per read type (1D² , 1D² pass, 1D² fail)
     """
+
+    graph_name = "1D² PHRED Score Density Distribution"
+
     dataframe = \
         pd.DataFrame({"1D²": dataframe_dict_1dsqr["mean.qscore"],
                       "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
@@ -417,7 +428,7 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
 
     fig.update_layout(
         title={
-            'text': "<b>1D² PHRED Score Density Distribution</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -453,13 +464,16 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, main, my_dp
     dataframe = _make_describe_dataframe(dataframe).drop('count')
 
     table_html = _dataFrame_to_html(dataframe)
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
+def scatterplot_1dsqr(result_dict, result_directory, desc):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
+
+    graph_name = "Correlation between 1D² read length and PHRED score"
+
     read_pass_length = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.length"]
     read_pass_qscore = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore"]
     read_fail_length = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.length"]
@@ -490,7 +504,7 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
 
     fig.update_layout(
         title={
-            'text': "<b>Correlation between 1D² read length and PHRED score</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -528,17 +542,20 @@ def scatterplot_1dsqr(result_dict, main, my_dpi, result_directory, desc):
     fig.update_xaxes(range=[0, max_val])
 
     table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
 #
 # For each barcode 1D²
 #
 
-def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, barcode_selection, result_directory, desc):
     """
     Plots a pie chart of 1D² read pass percentage per barcode of a run.
     """
+
+    graph_name = "1D² Read Pass Barcode Distribution"
+
     for element in barcode_selection:
 
         if all(dataframe_dict_1dsqr['barcode.arrangement'] != element):
@@ -561,7 +578,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     fig.update_layout(
         title={
-            'text': "<b>1D² Read Pass Barcode Distribution</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -589,14 +606,17 @@ def barcode_percentage_pie_chart_1dsqr_pass(result_dict, dataframe_dict_1dsqr, m
     pd.options.display.float_format = float_format_str.format
     barcode_table["1D² read count"] = barcode_table["1D² read count"].astype(int).apply(lambda x: int_format_str.format(x))
     table_html = _dataFrame_to_html(barcode_table)
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, barcode_selection, result_directory, desc):
     """
     Plots a pie chart of 1D² read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
     """
+
+    graph_name = "1D² Read Pass Barcode Distribution"
+
     for element in barcode_selection:
 
         if all(dataframe_dict_1dsqr['barcode.arrangement'] != element):
@@ -619,7 +639,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     fig.update_layout(
         title={
-            'text': "<b>1D² Read Pass Barcode Distribution</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -647,13 +667,16 @@ def barcode_percentage_pie_chart_1dsqr_fail(result_dict, dataframe_dict_1dsqr, m
     pd.options.display.float_format = float_format_str.format
     barcode_table["1D² read count"] = barcode_table["1D² read count"].astype(int).apply(lambda x: int_format_str.format(x))
     table_html = _dataFrame_to_html(barcode_table)
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, result_directory, desc):
     """
     Boxplots all the 1D² pass and fail read length for each barcode indicated in the sample sheet
     """
+
+    graph_name = "1D² Read size distribution for each barcode"
+
     df = dataframe_dict_1dsqr['barcode_selection_sequence_length_dataframe']
 
     # Sort reads by read type and drop read type column
@@ -694,7 +717,7 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
 
     fig.update_layout(
         title={
-            'text': "<b>1D² Read size distribution for each barcode</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -740,13 +763,16 @@ def barcode_length_boxplot_1dsqr(result_dict, dataframe_dict_1dsqr, main, my_dpi
     table_html = _dataFrame_to_html(dataframe)
 
     table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr, main, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr, result_directory, desc):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
+
+    graph_name = "1D² PHRED score distribution for each barcode"
+
     df = dataframe_dict_1dsqr['barcode_selection_sequence_phred_melted_dataframe']
     barcode_list = barcode_selection
 
@@ -782,7 +808,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 
     fig.update_layout(
         title={
-            'text': "<b>1D² PHRED score distribution for each barcode</b>",
+            'text': "<b>" + graph_name + "</b>",
             'y': 0.95,
             'x': 0,
                     'xanchor': 'left',
@@ -826,10 +852,12 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
     table_html = _dataFrame_to_html(dataframe)
 
     table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, main)
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, desc, div
 
-def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, result_directory, desc):
+def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory, desc):
+
+        graph_name = "1D² Read length over experiment time"
 
         time = [t/3600 for t in time_df.dropna()]
         time = np.array(sorted(time))
@@ -855,7 +883,7 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, re
 
         fig.update_layout(
                 title={
-                'text': "<b>1D² Read length over experiment time</b>",
+                'text': "<b>" + graph_name + "</b>",
                 'y':0.95,
                 'x':0,
                 'xanchor': 'left',
@@ -879,10 +907,12 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, main, my_dpi, re
         )
 
         table_html = None
-        div, output_file = _create_and_save_div(fig, result_directory, main)
-        return main, output_file, table_html, desc, div
+        div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+        return graph_name, output_file, table_html, desc, div
 
-def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_directory, desc):
+def phred_score_over_time_dsqr(qscore_df, time_df, result_directory, desc):
+
+        graph_name = "1D² PHRED score over experiment time"
 
         # Time data
         time = [t/3600 for t in time_df.dropna()]
@@ -910,7 +940,7 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
 
         fig.update_layout(
                 title={
-                'text': "<b>1D² PHRED score over experiment time</b>",
+                'text': "<b>" + graph_font + "</b>",
                 'y':0.95,
                 'x':0,
                 'xanchor': 'left',
@@ -933,10 +963,12 @@ def phred_score_over_time_dsqr(qscore_df, time_df, main, my_dpi, result_director
         )
 
         table_html = None
-        div, output_file = _create_and_save_div(fig, result_directory, main)
-        return main, output_file, table_html, desc, div
+        div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+        return graph_name, output_file, table_html, desc, div
 
-def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
+def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, result_directory, desc):
+
+        graph_name = "1D² Speed over experiment time"
 
         speed = pd.Series(sequence_length_df / duration_df)
 
@@ -964,7 +996,7 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
 
         fig.update_layout(
                 title={
-                'text': "<b>1D² Speed over experiment time</b>",
+                'text': "<b>" + graph_name + "</b>",
                 'y':0.95,
                 'x':0,
                 'xanchor': 'left',
@@ -989,10 +1021,12 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, main, my_dpi,
         fig.update_yaxes(type="log")
 
         table_html = None
-        div, output_file = _create_and_save_div(fig, result_directory, main)
-        return main, output_file, table_html, desc, div
+        div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+        return graph_name, output_file, table_html, desc, div
 
-def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
+def nseq_over_time_dsqr(time_df, result_directory, desc):
+
+        graph_name = "Number of sequences through experiment time"
 
         time = [t/3600 for t in time_df]
         time = pd.Series(time)
@@ -1015,7 +1049,7 @@ def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
 
         fig.update_layout(
                 title={
-                'text': "<b>Number of sequences through experiment time</b>",
+                'text': "<b>" + graph_name + "</b>",
                 'y':0.95,
                 'x':0,
                 'xanchor': 'left',
@@ -1039,5 +1073,5 @@ def nseq_over_time_dsqr(time_df, main, my_dpi, result_directory, desc):
         )
 
         table_html = None
-        div, output_file = _create_and_save_div(fig, result_directory, main)
-        return main, output_file, table_html, desc, div
+        div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+        return graph_name, output_file, table_html, desc, div
