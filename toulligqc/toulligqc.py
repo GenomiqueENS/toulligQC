@@ -132,7 +132,7 @@ def _parse_args(config_dictionary):
 
     # Directory paths must ends with '/'
     for key, value in config_dictionary.items():
-        if type(value) == str and os.path.isdir(value) and (not value.endswith('/')):
+        if type(value) == str and (key.endswith('_source') or key.endswith('_directory')) and os.path.isdir(value) and (not value.endswith('/')):
             config_dictionary[key] = value + '/'
 
     # Convert all configuration values in strings
