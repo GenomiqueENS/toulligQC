@@ -759,10 +759,10 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
     if len(labels) <= 12:
         palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275", "#b8e994", "#78e08f"]
         fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=on_chart_font_size,
-                  marker=dict(colors=palette, line=dict(width=line_width)))
+                  marker=dict(colors=palette, line=dict(width=line_width, color='#808080')))
     else:
         fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=on_chart_font_size,
-                  marker=dict(line=dict(width=line_width)))
+                  marker=dict(line=dict(width=line_width, color='#808080')))
     fig.update_traces(textposition='inside')
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     fig.update_layout(
@@ -822,10 +822,10 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
     if len(labels) <= 12:
         palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275"]
         fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                  marker=dict(colors=palette, line=dict(width=line_width)))
+                  marker=dict(colors=palette, line=dict(width=line_width, color='#808080')))
     else:
         fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                  marker=dict(line=dict(width=line_width)))
+                  marker=dict(line=dict(width=line_width, color='#808080')))
     fig.update_traces(textposition='inside')
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     fig.update_layout(
