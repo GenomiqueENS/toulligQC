@@ -68,12 +68,12 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
     if 'read.pass.barcoded.count' in dataframe_dict_1dsqr:
 
         data = {
-            '1D Read Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
-            '1D² Read Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
-            '1D² Read Pass Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
-            '1D² Read Fail Count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
-            '1D² Read Pass Barcoded Count': dataframe_dict_1dsqr["read.pass.barcoded.count"],
-            '1D² Read Fail Barcoded Count': dataframe_dict_1dsqr["read.fail.barcoded.count"]
+            '1D read count': result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
+            '1D² read count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
+            '1D² read pass count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
+            '1D² read fail count': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
+            '1D² read pass barcoded count': dataframe_dict_1dsqr["read.pass.barcoded.count"],
+            '1D² read fail barcoded count': dataframe_dict_1dsqr["read.fail.barcoded.count"]
         }
 
         colors = [toulligqc_colors["all"], toulligqc_colors["all_1d2"], toulligqc_colors["pass"],
@@ -395,7 +395,7 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_dire
     Plot the distribution of the phred score per read type (1D² , 1D² pass, 1D² fail)
     """
 
-    graph_name = "1D² PHRED Score Density Distribution"
+    graph_name = "1D² PHRED score density distribution"
 
     dataframe = \
         pd.DataFrame({"1D²": dataframe_dict_1dsqr["mean.qscore"],
@@ -524,7 +524,7 @@ def scatterplot_1dsqr(result_dict, result_directory):
         legend=dict(
             x=1.02,
             y=.5,
-            title_text="<b>1D² Read Type</b>",
+            title_text="<b>1D² Read type</b>",
             title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
@@ -554,7 +554,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(dataframe_dict_1dsqr, barcode_select
     Plots a pie chart of 1D² read pass percentage per barcode of a run.
     """
 
-    graph_name = "1D² Read Pass Barcode Distribution"
+    graph_name = "1D² read pass barcode distribution"
 
     for element in barcode_selection:
 
@@ -600,7 +600,7 @@ def barcode_percentage_pie_chart_1dsqr_pass(dataframe_dict_1dsqr, barcode_select
         width=figure_image_width
     )
 
-    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+    barcode_table = pd.DataFrame({"Barcode arrangement (%)": count_sorted/sum(count_sorted)*100,
                                  "1D² read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = float_format_str.format
@@ -615,7 +615,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(dataframe_dict_1dsqr, barcode_select
     Needs the samplesheet file describing the barcodes to run
     """
 
-    graph_name = "1D² Read Pass Barcode Distribution"
+    graph_name = "1D² read pass barcode distribution"
 
     for element in barcode_selection:
 
@@ -661,7 +661,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(dataframe_dict_1dsqr, barcode_select
         width=figure_image_width
     )
 
-    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
+    barcode_table = pd.DataFrame({"Barcode arrangement (%)": count_sorted/sum(count_sorted)*100,
                                   "1D² read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = float_format_str.format
@@ -675,7 +675,7 @@ def barcode_length_boxplot_1dsqr(dataframe_dict_1dsqr, result_directory):
     Boxplots all the 1D² pass and fail read length for each barcode indicated in the sample sheet
     """
 
-    graph_name = "1D² Read size distribution for each barcode"
+    graph_name = "1D² read size distribution for each barcode"
 
     df = dataframe_dict_1dsqr['barcode_selection_sequence_length_dataframe']
 
@@ -737,7 +737,7 @@ def barcode_length_boxplot_1dsqr(dataframe_dict_1dsqr, result_directory):
         legend=dict(
             x=1.02,
             y=.5,
-            title_text="<b>1D² Read Type</b>",
+            title_text="<b>1D² read type</b>",
             title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
@@ -828,7 +828,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
         legend=dict(
             x=1.02,
             y=.5,
-            title_text="<b>1D² Read Type</b>",
+            title_text="<b>1D² read type</b>",
             title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
@@ -940,7 +940,7 @@ def phred_score_over_time_dsqr(qscore_df, time_df, result_directory):
 
         fig.update_layout(
                 title={
-                'text': "<b>" + graph_font + "</b>",
+                'text': "<b>" + graph_name + "</b>",
                 'y':0.95,
                 'x':0,
                 'xanchor': 'left',

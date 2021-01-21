@@ -526,7 +526,7 @@ def allphred_score_frequency(result_dict, result_directory):
     Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
     """
 
-    graph_name = "PHRED Score Density Distribution"
+    graph_name = "PHRED score density distribution"
 
     dataframe = \
         pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
@@ -656,7 +656,7 @@ def all_scatterplot(result_dict, result_directory):
         legend=dict(
             x=1.02,
             y=.5,
-            title_text="<b>Read Type</b>",
+            title_text="<b>Read type</b>",
             title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
@@ -743,7 +743,7 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
 
-    graph_name = "Read Pass Barcode Distribution"
+    graph_name = "Read pass barcode distribution"
 
     for element in barcode_selection:
 
@@ -789,8 +789,8 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
         width=figure_image_width
     )
 
-    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
-                                 "read count": count_sorted})
+    barcode_table = pd.DataFrame({"Barcode arrangement (%)": count_sorted/sum(count_sorted)*100,
+                                 "Read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
     barcode_table["read count"] = barcode_table["read count"].astype(int).apply(lambda x: int_format_str.format(x))
@@ -806,7 +806,7 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
     Needs the samplesheet file describing the barcodes to run
     """
 
-    graph_name = "Read Fail Barcode Distribution"
+    graph_name = "Read fail barcode distribution"
 
     for element in barcode_selection:
 
@@ -852,8 +852,8 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
         width=figure_image_width
     )
 
-    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
-                                  "read count": count_sorted})
+    barcode_table = pd.DataFrame({"Barcode arrangement (%)": count_sorted/sum(count_sorted)*100,
+                                  "Read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
     barcode_table["read count"] = barcode_table["read count"].astype(int).apply(lambda x: int_format_str.format(x))
@@ -930,7 +930,7 @@ def barcode_length_boxplot(datafame_dict, result_directory):
         legend=dict(
             x=1.02,
             y=.5,
-            title_text="<b>Read Type</b>",
+            title_text="<b>Read type</b>",
             title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
@@ -1022,7 +1022,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
         legend=dict(
             x=1.02,
             y=.5,
-            title_text="<b>Read Type</b>",
+            title_text="<b>Read type</b>",
             title=dict(font=dict(size=legend_font_size)),
             bgcolor='white',
             bordercolor='white',
