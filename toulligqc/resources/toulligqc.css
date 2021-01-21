@@ -5,7 +5,7 @@
 
   font-family: {graph_font};
   font-weight: lighter;
-  font-size: 14px;
+  font-size: 16px;
   color: #444;
 }
 
@@ -124,8 +124,8 @@
 h2 {
   margin-top: 0;
   padding-top: 1em;
-  font-style: italic;
   font-size: {title_size};
+  color: black;
 }
 
 td, th {

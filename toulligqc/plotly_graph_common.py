@@ -27,8 +27,8 @@ from scipy.ndimage.filters import gaussian_filter1d
 from scipy.interpolate import interp1d
 from sklearn.utils import resample
 
-figure_image_width = 1024
-figure_image_height = 576
+figure_image_width = 1000
+figure_image_height = 562
 int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
 percent_format_str = '{:.2f}%'
@@ -51,7 +51,7 @@ plotly_background_color = '#e5ecf6'
 legend_font_size = 16
 axis_font_size = 14
 on_chart_font_size = 15
-title_size = 20
+title_size = 24
 graph_font = 'Open sans, Helvetica, Arial, sans-serif'
 
 
