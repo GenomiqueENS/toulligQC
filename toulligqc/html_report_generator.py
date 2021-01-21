@@ -170,7 +170,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
     # Compose the main of the page
     result = """
       <div class="module" id="Run-statistics">
-            <h2>Run Statistics <a title="Run Statistics">&#x1F263;</a></h2>
+            <h2>Run Statistics</h2>
             <table class="dataframe" border="">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
@@ -193,7 +193,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
 
     result += """
       <div class="module" id="Software-info">
-            <h2>Software info <a title="Software information">&#x1F263;</a></h2>
+            <h2>Software information</h2>
             <table class="dataframe" border="">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
@@ -229,7 +229,6 @@ def _other_module_reports(graphs):
         if table is not None:
             result += """
       <div class="module" id=M{i}>
-        <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
         {html}
         {table}
       </div>
@@ -239,7 +238,6 @@ def _other_module_reports(graphs):
         else:
             result += """
       <div class="module" id=M{i}>
-        <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
         {html}
       </div>
 """.format(i=i,  name=name, tip=tip, html=html, table=table)
@@ -253,7 +251,7 @@ def _other_module_reports(graphs):
           if table is not None:
               result += """
             <div class="module" id=M{i}>
-              <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+              <h2>{name}</h2>
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
@@ -263,7 +261,7 @@ def _other_module_reports(graphs):
           else:
               result += """
             <div class="module" id=M{i}>
-              <h2>{name} <a title="{tip}">&#x1F263;</a></h2>
+              <h2>{name}</h2>
               <div class="box"><img src="{image}"/></div>
             </div>
             """.format(i=i, name=name, tip=tip, image=_embedded_image(path))
