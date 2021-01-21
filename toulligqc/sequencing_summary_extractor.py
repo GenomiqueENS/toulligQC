@@ -513,80 +513,67 @@ class SequencingSummaryExtractor:
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
-        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, 'Read count histogram',
-                                                            self.my_dpi, images_directory,
+        images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, images_directory,
                                                             "Number of reads produced before (Fast 5 in blue) "
                                                             "and after (1D in orange) basecalling. "
                                                             "The basecalled reads are filtered with a 7.5 quality "
                                                             "score threshold in pass (1D pass in green) "
                                                             "or fail (1D fail in red) categories.")])
-        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_df, 'Read length histogram',
-                                                                 self.my_dpi, images_directory,
+        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_df, images_directory,
                                                                  "Size distribution of basecalled reads (1D in orange)."
                                                                  "The basecalled reads are filtered with a 7.5 quality "
                                                                  "score threshold in pass (1D pass in green) "
                                                                  "or fail (1D fail in red) categories."))
-        images.append(pgg.yield_plot(result_dict, 'Yield plot of 1D read type',
-                                                         self.my_dpi, images_directory,
+        images.append(pgg.yield_plot(result_dict, images_directory,
                                                          "Yield plot of basecalled reads (1D in orange)."
                                                          " The basecalled reads are filtered with a 7.5 quality "
                                                          "score threshold in pass (1D pass in green) "
                                                          "or fail (1D fail in red) categories."))
-        images.append(pgg.read_quality_multiboxplot(result_dict, "Read type quality boxplot",
-                                                                self.my_dpi, images_directory,
+        images.append(pgg.read_quality_multiboxplot(result_dict, images_directory,
                                                                 "Boxplot of 1D reads (in orange) quality."
                                                                 "The basecalled reads are filtered with a 7.5 quality "
                                                                 "score threshold in pass (1D pass in green) "
                                                                 "or fail (1D fail in red) categories."))
-        images.append(pgg.allphred_score_frequency(result_dict,
-                                                               'Mean Phred score frequency of all 1D read type',
-                                                               self.my_dpi, images_directory,
+        images.append(pgg.allphred_score_frequency(result_dict, images_directory,
                                                                "The basecalled reads are filtered with a 7.5 quality "
                                                                "score threshold in pass (1D pass in green) "
                                                                "or fail (1D fail in red) categories."))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(pgg.plot_performance(total_number_reads_per_pore, 'Channel occupancy of the flowcell',
-                                                       self.my_dpi, images_directory,
+        images.append(pgg.plot_performance(total_number_reads_per_pore, self.my_dpi, images_directory,
                                                        "Number of reads sequenced per pore channel."))
 
-        images.append(pgg.all_scatterplot(result_dict, 'Mean Phred score function of 1D read length',
-                                                      self.my_dpi, images_directory,
+        images.append(pgg.all_scatterplot(result_dict, images_directory,
                                                       "The Mean Phred score varies according to the read length."
                                                       "The basecalled reads are filtered with a 7.5 quality "
                                                       "score threshold in pass (1D pass in green) "
                                                       "or fail (1D fail in red) categories."))
-        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, 'Sequence length over time', self.my_dpi, images_directory,
+        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, images_directory,
                                                 "Length of reads through run time in hours"))
-        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, 'PHRED score over time', self.my_dpi, images_directory,
+        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, images_directory,
                                                 "Reads PHRED score through run time in hours"))
-        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, 'Read speed over time', self.my_dpi, images_directory,
+        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, images_directory,
                                           "Speed of reads in base per second through run time in hours"))
-        images.append(pgg.nseq_over_time(self.time_df, 'Number of reads over time', self.my_dpi, images_directory, "Number of sequences through run time in hours"))
+        images.append(pgg.nseq_over_time(self.time_df, images_directory, "Number of sequences through run time in hours"))
 
         if self.is_barcode:
             images.append(pgg.barcode_percentage_pie_chart_pass(result_dict, self.dataframe_dict,
-                                                                            '1D pass reads percentage of different '
-                                                                            'barcodes', self.barcode_selection,
-                                                                            self.my_dpi, images_directory,
+                                                                            self.barcode_selection,
+                                                                            images_directory,
                                                                             "1D pass read distribution per barcode."))
 
             images.append(pgg.barcode_percentage_pie_chart_fail(result_dict, self.dataframe_dict,
-                                                                            '1D fail reads percentage of different '
-                                                                            'barcodes', self.barcode_selection,
-                                                                            self.my_dpi, images_directory,
+                                                                            self.barcode_selection,
+                                                                            images_directory,
                                                                             "1D fail read distribution per barcode."))
 
             images.append(pgg.barcode_length_boxplot(result_dict, self.dataframe_dict,
-                                                                 '1D reads size distribution for each barcode',
-                                                                 self.my_dpi, images_directory,
+                                                                 images_directory,
                                                                  "Read length boxplot per barcode of pass (in green) "
                                                                  "and fail (in red) 1D reads."))
 
             images.append(pgg.barcoded_phred_score_frequency(self.barcode_selection, self.dataframe_dict,
-                                                                         '1D reads Mean Phred score distribution '
-                                                                         'for each barcode',
-                                                                         self.my_dpi, images_directory,
+                                                                         images_directory,
                                                                          "Read Mean Phred score boxplot per barcode of "
                                                                          "pass (in green) and fail (in red) 1D reads."))
         return images
