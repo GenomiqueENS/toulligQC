@@ -39,7 +39,6 @@ class ToulligqcConf:
                                    'app.url': "https://github.com/GenomicParisCentre/toulligQC",
                                    'app.version':  version.__version__,
                                    'quiet': 'False',
-                                   'dpi': '100',
                                    'tmpdir': tempfile.gettempdir(),
                                    'barcoding': 'False',
                                    'is_quicklaunch': 'False'}

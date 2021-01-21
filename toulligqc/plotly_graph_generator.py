@@ -52,6 +52,7 @@ from toulligqc.plotly_graph_common import axis_font_size
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import graph_font
+from toulligqc.plotly_graph_common import image_dpi
 
 #
 #  1D plots
@@ -694,7 +695,7 @@ def _minion_flowcell_layout():
     return flowcell_layout
 
 
-def plot_performance(pore_measure, my_dpi, result_directory):
+def plot_performance(pore_measure, result_directory):
     """
     Plots the channels occupancy by the reads
     @:param pore_measure: reads number per pore
@@ -721,7 +722,7 @@ def plot_performance(pore_measure, my_dpi, result_directory):
 
     d = df.pivot("Row number", "Column number", "tot_reads")
     df.pivot("Row number", "Column number", "labels")
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
+    plt.figure(figsize=(figure_image_width / image_dpi, figure_image_height / image_dpi), dpi=image_dpi)
     sns.heatmap(d, fmt="", linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7},
                 cbar_kws={'label': 'Read number per pore channel', "orientation": "horizontal"})
 

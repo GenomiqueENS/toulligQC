@@ -57,9 +57,6 @@ class SequencingSummaryExtractor:
                 if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(f):
                     self.is_barcode = True
 
-        self.my_dpi = int(self.config_dictionary['dpi'])
-
-
     def check_conf(self):
         """
         Check if the sequencing summary source contains a sequencing summary file
@@ -520,7 +517,7 @@ class SequencingSummaryExtractor:
         images.append(pgg.allphred_score_frequency(result_dict, images_directory))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(pgg.plot_performance(total_number_reads_per_pore, self.my_dpi, images_directory))
+        images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
 
         images.append(pgg.all_scatterplot(result_dict, images_directory))
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, images_directory))

@@ -53,6 +53,7 @@ axis_font_size = 14
 on_chart_font_size = 15
 title_size = 24
 graph_font = 'Open sans, Helvetica, Arial, sans-serif'
+image_dpi = 100
 
 
 

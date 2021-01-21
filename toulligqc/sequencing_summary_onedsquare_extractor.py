@@ -61,8 +61,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                             f):
                     self.is_barcode = True
 
-        self.my_dpi = int(self.config_dictionary['dpi'])
-
     def check_conf(self):
         """
         Check if the sequencing summary 1dsqr source contains a 1dsqr sequencing summary file
@@ -529,8 +527,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg2.scatterplot_1dsqr(result_dict, images_directory))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(pgg.plot_performance(total_number_reads_per_pore,
-                                                       self.my_dpi, images_directory))
+        images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
         images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory))
         images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, images_directory))
         images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, images_directory))
