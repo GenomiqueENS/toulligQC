@@ -229,7 +229,6 @@ class Fast5Extractor:
 
         for k in h5py_file['/'].keys():
             new_group = '/' + k + '/' + group
-            print(new_group)
             if new_group in h5py_file:
                 tracking_id_items = list(h5py_file[new_group].attrs.items())
                 tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
