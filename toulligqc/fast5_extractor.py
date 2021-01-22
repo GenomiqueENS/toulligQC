@@ -111,22 +111,22 @@ class Fast5Extractor:
         :return: result_dict filled
         """
         h5py_file = self._read_fast5()
+        tracking_id_dict = self._get_fast5_items(h5py_file, 'tracking_id')
+
+        if len(tracking_id_dict) == 0:
+            return
+
         result_dict['sequencing.telemetry.extractor.source'] = self.fast5_source
-        result_dict['sequencing.telemetry.extractor.flowcell.id'] = self._get_fast5_items(h5py_file, 'flow_cell_id')
-        result_dict['sequencing.telemetry.extractor.minknow.version'] = self._get_fast5_items(h5py_file, 'version')
-        result_dict['sequencing.telemetry.extractor.hostname'] = self._get_fast5_items(h5py_file, 'hostname')
+        result_dict['sequencing.telemetry.extractor.flowcell.id'] = tracking_id_dict['flow_cell_id']
+        result_dict['sequencing.telemetry.extractor.minknow.version'] = tracking_id_dict['version']
+        result_dict['sequencing.telemetry.extractor.hostname'] = tracking_id_dict['hostname']
 
-        result_dict['sequencing.telemetry.extractor.operating.system'] = \
-            self._get_fast5_items(h5py_file, 'operating_system')
-        result_dict['sequencing.telemetry.extractor.device.id'] = self._get_fast5_items(h5py_file, 'device_id')
+        result_dict['sequencing.telemetry.extractor.operating.system'] = tracking_id_dict['operating_system']
+        result_dict['sequencing.telemetry.extractor.device.id'] = tracking_id_dict['device_id']
 
-        result_dict['sequencing.telemetry.extractor.protocol.run.id'] = \
-            self._get_fast5_items(h5py_file, 'protocol_run_id')
-        result_dict['sequencing.telemetry.extractor.sample.id'] = self._get_fast5_items(h5py_file, 'sample_id')
-
-        run_date = self._get_fast5_items(h5py_file, 'exp_start_time')
-        exp_start_time = dateutil.parser.parse(run_date)
-        result_dict['sequencing.telemetry.extractor.exp.start.time'] = exp_start_time.strftime("%x %X %Z")
+        result_dict['sequencing.telemetry.extractor.protocol.run.id'] = tracking_id_dict['protocol_run_id']
+        result_dict['sequencing.telemetry.extractor.sample.id'] = tracking_id_dict['sample_id']
+        result_dict['sequencing.telemetry.extractor.exp.start.time'] = tracking_id_dict['exp_start_time']
 
 
     def graph_generation(self, result_dict):
@@ -220,19 +220,20 @@ class Fast5Extractor:
 
         return h5py_file
 
-    def _get_fast5_items(self, h5py_file, params):
+    def _get_fast5_items(self, h5py_file, group):
         """
         Global function to extract run information stores in h5py format
         :param h5py_file: fast5 file store in a h5py object
-        :param params:  required h5py attributes
+        :param key:  required h5py attributes
         :return: h5py value, for example flow_cell_id : FAE22827
         """
-        if [key for key in h5py_file['/'].keys()][0] == 'Raw':
-            tracking_id_items = list(h5py_file["/UniqueGlobalKey/tracking_id"].attrs.items())
-            tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
 
-        else:
-            tracking_id_items = list(h5py_file[[key for key in h5py_file['/'].keys()][0]+'/tracking_id'].attrs.items())
-            tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
+        for k in h5py_file['/'].keys():
+            new_group = '/' + k + '/' + group
+            print(new_group)
+            if new_group in h5py_file:
+                tracking_id_items = list(h5py_file[new_group].attrs.items())
+                tracking_id_dict = {key: value.decode('utf-8') for key, value in tracking_id_items}
+                return tracking_id_dict
 
-        return tracking_id_dict[params]
+        return {}
