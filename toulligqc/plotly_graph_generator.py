@@ -793,7 +793,7 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
                                  "Read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
-    barcode_table["read count"] = barcode_table["read count"].astype(int).apply(lambda x: int_format_str.format(x))
+    barcode_table["Read count"] = barcode_table["Read count"].astype(int).apply(lambda x: int_format_str.format(x))
     table_html = _dataFrame_to_html(barcode_table)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
@@ -856,7 +856,7 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
                                   "Read count": count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
-    barcode_table["read count"] = barcode_table["read count"].astype(int).apply(lambda x: int_format_str.format(x))
+    barcode_table["Read count"] = barcode_table["Read count"].astype(int).apply(lambda x: int_format_str.format(x))
     table_html = _dataFrame_to_html(barcode_table)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
