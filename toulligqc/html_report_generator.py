@@ -27,6 +27,7 @@
 import base64
 import datetime
 import pkgutil
+import datetime
 
 int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
@@ -46,11 +47,14 @@ def html_report(config_dictionary, result_dict, graphs):
     report_name = config_dictionary['report_name']
 
 
-    report_date = result_dict['toulligqc.info.start.time']
+    report_date = _iso8601_to_formatted_date(result_dict['toulligqc.info.start.time'])
 
     # from Fast5 file
-    run_date = result_dict['sequencing.telemetry.extractor.exp.start.time']
-    run_id = result_dict['sequencing.telemetry.extractor.sample.id']
+    if 'sequencing.telemetry.extractor.exp.start.time' in result_dict:
+        run_date = _iso8601_to_formatted_date(result_dict['sequencing.telemetry.extractor.exp.start.time'])
+    else:
+        run_date = "Unknown"
+    run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
 
 
     # Read CSS file resource
@@ -148,7 +152,7 @@ def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligq
 
 def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version):
 
-    minknow_version = result_dict['sequencing.telemetry.extractor.minknow.version']
+    minknow_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.minknow.version', "Unknown")
 
     td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
     seconds = td.total_seconds()
@@ -159,7 +163,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
     n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
 
     # from telemetry file
-    flow_cell_id = result_dict['sequencing.telemetry.extractor.flowcell.id']
+    flow_cell_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.id', "Unknown")
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
     kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
     basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
@@ -305,3 +309,12 @@ def _get_result_value(result_dict, key, default_value=""):
             return result
 
     return default_value
+
+
+def _iso8601_to_formatted_date(date_string):
+    d = datetime.datetime.fromisoformat(date_string.replace('Z','+00:00'))
+
+    result = d.strftime("%a %b %d %H:%M:%S %Z %Y")
+
+    return result
+
