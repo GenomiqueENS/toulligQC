@@ -98,27 +98,54 @@ class SequencingTelemetryExtractor:
             array = json.load(f)
 
             result_dict[self.get_report_data_file_id() + '.source'] = self.telemetry_file
-            result_dict[self.get_report_data_file_id() + '.flowcell.id'] = array[0]['tracking_id']['flow_cell_id']
-            result_dict[self.get_report_data_file_id() + '.minknow.version'] = array[0]['tracking_id']['version']
-            result_dict[self.get_report_data_file_id() + '.hostname'] = array[0]['tracking_id']['hostname']
-            result_dict[self.get_report_data_file_id() + '.operating.system'] = array[0]['tracking_id']['operating_system']
-            result_dict[self.get_report_data_file_id() + '.protocol.run.id'] = array[0]['tracking_id']['protocol_run_id']
-            result_dict[self.get_report_data_file_id() + '.sample.id'] = array[0]['tracking_id']['sample_id']
-            result_dict[self.get_report_data_file_id() + '.exp.start.time'] = array[0]['tracking_id']['exp_start_time']
-            result_dict[self.get_report_data_file_id() + '.device.id'] = array[0]['tracking_id']['device_id']
-            result_dict[self.get_report_data_file_id() + '.software.name'] = array[0]['software']['name']
-            result_dict[self.get_report_data_file_id() + '.software.version'] = array[0]['software']['version']
-            result_dict[self.get_report_data_file_id() + '.software.analysis'] = array[0]['software']['analysis']
+
+            self._set_result_dict_value(result_dict, '.flowcell.id', array, 'tracking_id', 'flow_cell_id')
+            self._set_result_dict_value(result_dict, '.minknow.version', array, 'tracking_id', 'version')
+            self._set_result_dict_value(result_dict, '.hostname', array, 'tracking_id', 'hostname')
+            self._set_result_dict_value(result_dict, '.operating.system', array, 'tracking_id', 'operating_system')
+            self._set_result_dict_value(result_dict, '.run.id', array, 'tracking_id', 'run_id')
+            self._set_result_dict_value(result_dict, '.protocol.run.id', array, 'tracking_id', 'protocol_run_id')
+            self._set_result_dict_value(result_dict, '.sample.id', array, 'tracking_id', 'sample_id')
+            self._set_result_dict_value(result_dict, '.exp.start.time', array, 'tracking_id', 'exp_start_time')
+            self._set_result_dict_value(result_dict, '.device.id', array, 'tracking_id', 'device_id')
+            self._set_result_dict_value(result_dict, '.device.type', array, 'tracking_id', 'device_type')
+            self._set_result_dict_value(result_dict, '.distribution.version', array, 'tracking_id', 'distribution_version')
+            self._set_result_dict_value(result_dict, '.flow.cell.product.code', array, 'tracking_id', 'flow_cell_product_code')
+            self._set_result_dict_value(result_dict, '.basecalling.date', array, 'tracking_id', 'time_stamp')
+
+            self._set_result_dict_value(result_dict, '.software.name', array, 'software', 'name')
+            self._set_result_dict_value(result_dict, '.software.version', array, 'software', 'version')
+            self._set_result_dict_value(result_dict, '.software.analysis', array, 'software', 'analysis')
 
             if 'albacore_opts' in array[0]:
-                result_dict[self.get_report_data_file_id() + '.kit.version'] = array[0]['albacore_opts']['kit']
-                result_dict[self.get_report_data_file_id() + '.flowcell.version'] = array[0]['albacore_opts']['flowcell']
-                result_dict[self.get_report_data_file_id() + '.model.file'] = array[0]['context_tags']['local_bc_temp_model']
-            else:
-                result_dict[self.get_report_data_file_id() + '.kit.version'] = array[0]['opts']['kit']
-                result_dict[self.get_report_data_file_id() + '.flowcell.version'] = array[0]['opts']['flowcell']
-                result_dict[self.get_report_data_file_id() + '.model.file'] = array[0]['opts']['model_file']
-                if 'device_type' in array[0]['tracking_id']:
-                    result_dict[self.get_report_data_file_id() + '.device.type'] = array[0]['tracking_id']['device_type']
+                self._set_result_dict_value(result_dict, '.kit.version', array, 'albacore_opts', 'kit')
+                self._set_result_dict_value(result_dict, '.flowcell.version', array, 'albacore_opts', 'flowcell')
+                self._set_result_dict_value(result_dict, '.model.file', array, 'albacore_opts', 'local_bc_temp_model')
 
-        return
+            if 'opts' in array[0]:
+                self._set_result_dict_value(result_dict, '.kit.version', array, 'opts', 'kit')
+                self._set_result_dict_value(result_dict, '.flowcell.version', array, 'opts', 'flowcell')
+                self._set_result_dict_value(result_dict, '.model.file', array, 'opts', 'model_file')
+
+    def _set_result_dict_value(self, result_dict, key, array, dict_name, dict_key):
+
+        final_key = self.get_report_data_file_id() + key
+        current_value = None
+        new_value = None
+
+        if final_key in result_dict:
+            current_value = result_dict[final_key]
+            if len(current_value) == 0:
+                current_value = None
+
+        if dict_name in array[0] and dict_key in array[0][dict_name]:
+            new_value = array[0][dict_name][dict_key]
+
+        if new_value is None:
+            new_value = current_value
+
+        if new_value is None:
+            new_value = ''
+
+        result_dict[final_key] = new_value
+

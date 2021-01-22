@@ -52,8 +52,7 @@ def html_report(config_dictionary, result_dict, graphs):
     # Get run date
     run_date = _get_result_date_value(result_dict,'sequencing.telemetry.extractor.exp.start.time', "Unknown")
 
-    run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
-
+    sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
 
     # Read CSS file resource
     css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode('utf8')
@@ -89,7 +88,7 @@ def html_report(config_dictionary, result_dict, graphs):
     <div id="banner">
       <div id="header_title"><img id="header_logo" alt="ToulligQC" src="{toulligqc_logo}"/>Report for {report_name}</div>
       <div id="header_filename">
-        Run id: {run_id} <br>
+        Sample ID: {sample_id} <br>
         Run date: {run_date} <br>
         Report date : {report_date} <br>
       </div>
@@ -114,11 +113,11 @@ def html_report(config_dictionary, result_dict, graphs):
                   toulligqc_logo=_embedded_image("resources/toulligqc.png", True),
                   plotlyjs=plotly_min_js,
                   css=css,
-                  run_id=run_id,
+                  sample_id=sample_id,
                   run_date=run_date,
                   report_date=report_date,
                   summary_list=_summary(graphs),
-                  modules_report=_modules_report(graphs, result_dict, run_id, report_name, run_date, config_dictionary['app.version']),
+                  modules_report=_modules_report(graphs, result_dict, sample_id, report_name, run_date, config_dictionary['app.version']),
                   app_url=config_dictionary['app.url'],
                   app_name=config_dictionary['app.name'],
                   app_version=config_dictionary['app.version'])
@@ -148,7 +147,7 @@ def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligq
     result += _other_module_reports(graphs)
     return result
 
-def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version):
+def _basic_statistics_module_report(result_dict, sample_id, report_name, run_date, toulligqc_version):
 
     minknow_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.minknow.version', "Unknown")
 
@@ -162,6 +161,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
 
     # from telemetry file
     flow_cell_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.id', "Unknown")
+    run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.run.id', "Unknown")
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
     kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
     basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
@@ -171,7 +171,11 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
     device_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.id', "Unknown")
     device_type = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.type', "Unknown")
     model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
-    sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
+
+    distribution_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.distribution.version', "Unknown")
+    operating_system = _get_result_value(result_dict, 'sequencing.telemetry.extractor.operating.system', "Unknown")
+    flow_cell_product_code = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flow.cell.product.code', "Unknown")
+    basecalling_date = _get_result_date_value(result_dict,'sequencing.telemetry.extractor.basecalling.date', "Unknown")
 
     # Compose the main of the page
     result = """
@@ -181,11 +185,12 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
               <tr><th>Report name </th><td>{report_name}</td></tr>
-              <tr><th>Run id</th><td>{run_id}</td></tr>
-              <tr><th>Sample</th><td>{sample_id}</td></tr>
+              <tr><th>Sample ID</th><td>{sample_id}</td></tr>
+              <tr><th>Run ID</th><td>{run_id}</td></tr>
               <tr><th>Run date</th><td>{run_date}</td></tr>
               <tr><th>Run duration </th><td>{run_time}</td></tr>
               <tr><th>Flowcell ID</th><td>{flow_cell_id}</td></tr>
+              <tr><th>Flowcell product code</th><td>{flow_cell_product_code}</td></tr>
               <tr><th>Flowcell version</th><td>{flowcell_version}</td></tr>
               <tr><th>Kit</th><td>{kit_version}</td></tr>
               <tr><th>Yield (Gbp)</th><td>{run_yield}</td></tr>
@@ -200,6 +205,7 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
                run_date=run_date,
                run_time=run_time,
                flow_cell_id=flow_cell_id,
+               flow_cell_product_code=flow_cell_product_code,
                flowcell_version=flowcell_version,
                kit_version=kit_version,
                run_yield=int_format_str.format(int(run_yield)),
@@ -212,13 +218,16 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
             <table class="dataframe" border="">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
-                <tr><th>Device</th><td>{device_type}</td></tr>
+                <tr><th>Device type</th><td>{device_type}</td></tr>
                 <tr><th>Device ID</th><td>{device_id}</td></tr>
-                <tr><th>Hostname</th><td>{hostname}</td></tr>
+                <tr><th>Device hostname</th><td>{hostname}</td></tr>
+                <tr><th>Device OS</th><td>{operating_system}</td></tr>
+                <tr><th>Distribution version</th><td>{distribution_version}</td></tr>
                 <tr><th>MinKNOW version</th><td>{minknow_version}</td></tr>
                 <tr><th>Basecaller name</th><td>{basecaller_name} </td></tr>
                 <tr><th>Basecaller version</th><td>{basecaller_version}</td></tr>
                 <tr><th>Basecaller analysis</th><td>{basecaller_analysis}</td></tr>
+                <tr><th>Basecalling date</th><td>{basecalling_date}</td></tr>
                 <tr><th>Model file</th><td>{model_file}</td></tr>
                 <tr><th>ToulligQC version</th><td>{toulligqc_version}</td></tr>
                 </tbody>
@@ -228,8 +237,11 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
                basecaller_name=basecaller_name,
                basecaller_version=basecaller_version,
                basecaller_analysis=basecaller_analysis,
+               basecalling_date=basecalling_date,
                toulligqc_version=toulligqc_version,
                hostname=hostname,
+               operating_system=operating_system,
+               distribution_version=distribution_version,
                device_type=device_type,
                device_id=device_id,
                model_file=model_file)

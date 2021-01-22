@@ -115,18 +115,20 @@ class Fast5Extractor:
         if len(tracking_id_dict) == 0:
             return
 
-        result_dict['sequencing.telemetry.extractor.source'] = self.fast5_source
-        result_dict['sequencing.telemetry.extractor.flowcell.id'] = tracking_id_dict['flow_cell_id']
-        result_dict['sequencing.telemetry.extractor.minknow.version'] = tracking_id_dict['version']
-        result_dict['sequencing.telemetry.extractor.hostname'] = tracking_id_dict['hostname']
-
-        result_dict['sequencing.telemetry.extractor.operating.system'] = tracking_id_dict['operating_system']
-        result_dict['sequencing.telemetry.extractor.device.id'] = tracking_id_dict['device_id']
-
-        result_dict['sequencing.telemetry.extractor.protocol.run.id'] = tracking_id_dict['protocol_run_id']
-        result_dict['sequencing.telemetry.extractor.sample.id'] = tracking_id_dict['sample_id']
-        result_dict['sequencing.telemetry.extractor.exp.start.time'] = tracking_id_dict['exp_start_time']
-
+        prefix = 'sequencing.telemetry.extractor'
+        result_dict[prefix + '.source'] = self.fast5_source
+        _set_result_dict_value(result_dict, prefix + '.flowcell.id', tracking_id_dict, 'flow_cell_id')
+        _set_result_dict_value(result_dict, prefix + '.minknow.version', tracking_id_dict, 'version')
+        _set_result_dict_value(result_dict, prefix + '.hostname', tracking_id_dict, 'hostname')
+        _set_result_dict_value(result_dict, prefix + '.operating.system', tracking_id_dict, 'operating_system')
+        _set_result_dict_value(result_dict, prefix + '.run.id', tracking_id_dict, 'run_id')
+        _set_result_dict_value(result_dict, prefix + '.protocol.run.id', tracking_id_dict, 'protocol_run_id')
+        _set_result_dict_value(result_dict, prefix + '.sample.id', tracking_id_dict, 'sample_id')
+        _set_result_dict_value(result_dict, prefix + '.exp.start.time', tracking_id_dict, 'exp_start_time')
+        _set_result_dict_value(result_dict, prefix + '.device.id', tracking_id_dict, 'device_id')
+        _set_result_dict_value(result_dict, prefix + '.device.type', tracking_id_dict, 'device_type')
+        _set_result_dict_value(result_dict, prefix + '.distribution.version', tracking_id_dict, 'distribution_version')
+        _set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict, 'flow_cell_product_code')
 
     def graph_generation(self, result_dict):
         """
@@ -235,3 +237,11 @@ class Fast5Extractor:
                 return tracking_id_dict
 
         return {}
+
+def _set_result_dict_value(result_dict, key,  tracking_id_dict, dict_key):
+
+    value = ''
+    if dict_key in tracking_id_dict:
+        value = tracking_id_dict[dict_key]
+
+    result_dict[key] = value
