@@ -67,7 +67,7 @@ def _parse_args(config_dictionary):
     required.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
                         help='Basecaller sequencing summary source', metavar='SEQUENCING_SUMMARY_SOURCE' ,required=True)
     required.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
-                        help='Basecaller telemetry file source', default=False, required=True)
+                        help='Basecaller telemetry file source', default=False)
 
     required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source (necessary if no telemetry file)')
 
@@ -150,10 +150,6 @@ def _check_conf(config_dictionary):
     if ('sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']) and \
     ('sequencing_telemetry_source' not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
         argparse.ArgumentParser.print_help
-
-    if ('fast5_source' not in config_dictionary or not config_dictionary['fast5_source']) and \
-       ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
-        sys.exit('ERROR: The FAST5 file argument and the telemetry file source are empty. One is needed')
 
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
         sys.exit('ERROR: The sequencing summary file argument is empty')
@@ -246,7 +242,7 @@ def _extractors_list_and_result_dictionary_initialisation(config_dictionary, res
     result_dict['toulligqc.info.python.implementation'] = pf.python_implementation()
     result_dict['toulligqc.info.hostname'] = os.uname()[1]
     result_dict['toulligqc.info.report.name'] = config_dictionary['report_name']
-    result_dict['toulligqc.info.start.time'] = time.strftime("%x %X %Z")
+    result_dict['toulligqc.info.start.time'] = datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
     result_dict['toulligqc.info.command.line'] = sys.argv
     result_dict['toulligqc.info.executable.path'] = sys.argv[0]
     result_dict['toulligqc.info.version'] = config_dictionary['app.version']
