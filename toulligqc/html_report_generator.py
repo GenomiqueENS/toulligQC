@@ -46,14 +46,12 @@ def html_report(config_dictionary, result_dict, graphs):
     result_directory = config_dictionary['result_directory']
     report_name = config_dictionary['report_name']
 
+    # Get report date
+    report_date = _get_result_date_value(result_dict,'toulligqc.info.start.time', "Unknown")
 
-    report_date = _iso8601_to_formatted_date(result_dict['toulligqc.info.start.time'])
+    # Get run date
+    run_date = _get_result_date_value(result_dict,'sequencing.telemetry.extractor.exp.start.time', "Unknown")
 
-    # from Fast5 file
-    if 'sequencing.telemetry.extractor.exp.start.time' in result_dict:
-        run_date = _iso8601_to_formatted_date(result_dict['sequencing.telemetry.extractor.exp.start.time'])
-    else:
-        run_date = "Unknown"
     run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
 
 
@@ -311,10 +309,33 @@ def _get_result_value(result_dict, key, default_value=""):
     return default_value
 
 
+def _get_result_date_value(result_dict, key, default_value=""):
+    """
+    Get a date value of the result dictionary and formot it. A default value is returned if the key does not exists.
+    :param result_dict: result dictionary
+    :param key: the key to use
+    :param default_value: the default value
+    :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
+    """
+
+    if key in result_dict:
+        result = result_dict[key]
+        if len(result) > 0:
+            return _iso8601_to_formatted_date(result)
+
+    return default_value
+
+
 def _iso8601_to_formatted_date(date_string):
-    d = datetime.datetime.fromisoformat(date_string.replace('Z','+00:00'))
+    """
+    Format an ISO 8601 date.
+    :param date_string: date to format
+    :return: a formatted date
+    """
+    try:
+        d = datetime.datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+    except ValueError:
+        return date_string
 
-    result = d.strftime("%a %b %d %H:%M:%S %Z %Y")
-
-    return result
+    return d.strftime("%a %b %d %H:%M:%S %Z %Y")
 
