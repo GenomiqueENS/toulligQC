@@ -134,8 +134,8 @@ def _summary(graphs):
     :return: a string with HTML code for the module list
     """
     result = "        <ul class=\"menu-vertical\">\n"
-    result += "          <li class=\"mv-item\"><a href=\"#Run-statistics" "\"> Run Statistics </a></li>\n"
-    result += "          <li class=\"mv-item\"><a href=\"#Software-info" "\"> Software information </a></li>\n"
+    result += "          <li class=\"mv-item\"><a href=\"#Run-statistics" "\">Run Statistics</a></li>\n"
+    result += "          <li class=\"mv-item\"><a href=\"#Software-info" "\">Device and software</a></li>\n"
     for i, t in enumerate(graphs):
         result += "          <li class=\"mv-item\"><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
     result += "        </ul>\n"
@@ -180,42 +180,59 @@ def _basic_statistics_module_report(result_dict, run_id, report_name, run_date, 
             <table class="dataframe" border="">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
-              <tr><th>Run id</th><td> {0} </td></tr>
-              <tr><th>Sample</th><td> {1} </td></tr>
-              <tr><th>Report name </th><td> {2} </td></tr>
-              <tr><th>Run date</th><td> {3} </td></tr>
-              <tr><th>Run duration </th><td> {4} </td></tr>
-              <tr><th>Flowcell id </th><td> {5} </td></tr>
-              <tr><th>Flowcell version</th><td> {6} </td></tr>
-              <tr><th>Kit</th><td> {7} </td></tr>
-              <tr><th>Yield (Gbp)</th><td> {8} </td></tr>
-              <tr><th>Read count</th><td> {9} </td></tr>
-              <tr><th>N50 (bp)</th><td> {10} </td></tr>
+              <tr><th>Report name </th><td>{report_name}</td></tr>
+              <tr><th>Run id</th><td>{run_id}</td></tr>
+              <tr><th>Sample</th><td>{sample_id}</td></tr>
+              <tr><th>Run date</th><td>{run_date}</td></tr>
+              <tr><th>Run duration </th><td>{run_time}</td></tr>
+              <tr><th>Flowcell ID</th><td>{flow_cell_id}</td></tr>
+              <tr><th>Flowcell version</th><td>{flowcell_version}</td></tr>
+              <tr><th>Kit</th><td>{kit_version}</td></tr>
+              <tr><th>Yield (Gbp)</th><td>{run_yield}</td></tr>
+              <tr><th>Read count</th><td>{read_count}</td></tr>
+              <tr><th>N50 (bp)</th><td>{n50}</td></tr>
               </tbody>
             </table>
       </div> <!-- End of "Run-statistics" module -->
-    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version,
-               int_format_str.format(int(run_yield)), int_format_str.format(read_count), int_format_str.format(int(n50)))
+    """.format(run_id=run_id,
+               sample_id=sample_id,
+               report_name=report_name,
+               run_date=run_date,
+               run_time=run_time,
+               flow_cell_id=flow_cell_id,
+               flowcell_version=flowcell_version,
+               kit_version=kit_version,
+               run_yield=int_format_str.format(int(run_yield)),
+               read_count=int_format_str.format(read_count),
+               n50=int_format_str.format(int(n50)))
 
     result += """
       <div class="module" id="Software-info">
-            <h2>Software information</h2>
+            <h2>Device and software information</h2>
             <table class="dataframe" border="">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
-                <tr><th>MinKNOW version </th><td> {0} </td></tr>
-                <tr><th>Basecaller name</th><td> {1} </td></tr>
-                <tr><th>Basecaller version</th><td> {2} </td></tr>
-                <tr><th>Basecaller analysis</th><td> {3} </td></tr>
-                <tr><th>ToulligQC version</th><td> {4} </td></tr>
-                <tr><th>Hostname</th><td> {5} </td></tr>
-                <tr><th>Device</th><td> {6} </td></tr>
-                <tr><th>Device ID</th><td> {7} </td></tr>
-                <tr><th>Model file</th><td> {8} </td></tr>
+                <tr><th>Device</th><td>{device_type}</td></tr>
+                <tr><th>Device ID</th><td>{device_id}</td></tr>
+                <tr><th>Hostname</th><td>{hostname}</td></tr>
+                <tr><th>MinKNOW version</th><td>{minknow_version}</td></tr>
+                <tr><th>Basecaller name</th><td>{basecaller_name} </td></tr>
+                <tr><th>Basecaller version</th><td>{basecaller_version}</td></tr>
+                <tr><th>Basecaller analysis</th><td>{basecaller_analysis}</td></tr>
+                <tr><th>Model file</th><td>{model_file}</td></tr>
+                <tr><th>ToulligQC version</th><td>{toulligqc_version}</td></tr>
                 </tbody>
             </table>
       </div> <!-- End of "Software-info" module -->
-    """.format(minknow_version, basecaller_name, basecaller_version, basecaller_analysis, toulligqc_version, hostname, device_type, device_id, model_file)
+    """.format(minknow_version=minknow_version,
+               basecaller_name=basecaller_name,
+               basecaller_version=basecaller_version,
+               basecaller_analysis=basecaller_analysis,
+               toulligqc_version=toulligqc_version,
+               hostname=hostname,
+               device_type=device_type,
+               device_id=device_id,
+               model_file=model_file)
 
     return result
 
