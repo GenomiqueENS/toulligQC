@@ -31,7 +31,6 @@ import os
 import tarfile
 import shutil
 import tempfile
-import dateutil
 
 
 class Fast5Extractor:
