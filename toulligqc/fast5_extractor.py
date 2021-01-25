@@ -24,13 +24,14 @@
 
 # Extraction of the information about the FAST5 files
 
-import h5py
 import glob
-import sys
 import os
-import tarfile
 import shutil
+import sys
+import tarfile
 import tempfile
+
+import h5py
 
 
 class Fast5Extractor:
@@ -52,7 +53,6 @@ class Fast5Extractor:
         self.fast5_file_extension = ''
         self.fast5_file = ''
         self.get_report_data_file_id()
-
 
     def check_conf(self):
         """
@@ -128,7 +128,8 @@ class Fast5Extractor:
         _set_result_dict_value(result_dict, prefix + '.device.id', tracking_id_dict, 'device_id')
         _set_result_dict_value(result_dict, prefix + '.device.type', tracking_id_dict, 'device_type')
         _set_result_dict_value(result_dict, prefix + '.distribution.version', tracking_id_dict, 'distribution_version')
-        _set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict, 'flow_cell_product_code')
+        _set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict,
+                               'flow_cell_product_code')
 
     def graph_generation(self, result_dict):
         """
@@ -202,16 +203,16 @@ class Fast5Extractor:
 
         elif self.fast5_file_extension == 'fast5_directory':
 
-            if glob.glob(self.fast5_source+'/*.fast5'):
-                self.fast5_file = self.fast5_source+os.listdir(self.fast5_source)[0]
+            if glob.glob(self.fast5_source + '/*.fast5'):
+                self.fast5_file = self.fast5_source + os.listdir(self.fast5_source)[0]
 
             elif glob.glob(self.fast5_source + '/*.tar.bz2'):
-                tar_bz2_file = self.fast5_source+self.report_name+'.tar.bz2'
+                tar_bz2_file = self.fast5_source + self.report_name + '.tar.bz2'
                 self.fast5_file = \
                     self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file,
                                                                                     self.temporary_directory)
             elif glob.glob(self.fast5_source + '/*.tar.gz'):
-                tar_gz_file = self.fast5_source+self.report_name + '.tar.gz'
+                tar_gz_file = self.fast5_source + self.report_name + '.tar.gz'
                 self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file,
                                                                                                  self.result_directory)
         else:
@@ -238,8 +239,8 @@ class Fast5Extractor:
 
         return {}
 
-def _set_result_dict_value(result_dict, key,  tracking_id_dict, dict_key):
 
+def _set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
     value = ''
     if dict_key in tracking_id_dict:
         value = tracking_id_dict[dict_key]

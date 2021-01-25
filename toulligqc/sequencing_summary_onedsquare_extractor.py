@@ -25,20 +25,21 @@
 
 # Extraction of statistics from 1dsqr_sequencing_summary.txt file (1Dsquare chemistry)
 
+import re
+
+import numpy as np
 import pandas as pd
-import sys
+
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc import plotly_graph_onedsquare_generator as pgg2
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
-import numpy as np
-import re
-import os.path
 
 
 class OneDSquareSequencingSummaryExtractor(SSE):
     """
     Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
     """
+
     def __init__(self, config_dictionary):
         """
         Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in
@@ -57,8 +58,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.is_barcode = False
         if config_dictionary['barcoding'] == 'True':
             for f in self.sequencing_summary_1dsqr_files:
-                if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(f) or self._is_sequencing_summary_1dsqr_with_barcodes(
-                            f):
+                if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(
+                        f) or self._is_sequencing_summary_1dsqr_with_barcodes(
+                        f):
                     self.is_barcode = True
 
     def check_conf(self):
@@ -108,17 +110,18 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length']
         self.time_1dsqr = self.dataframe_1dsqr['start_time1']
         self.qscore_1dsqr = self.dataframe_1dsqr['mean_qscore']
-        self.duration_1dsqr = self.dataframe_1dsqr['trimmed_duration1'] + self.dataframe_1dsqr['trimmed_duration2'] #duration of the 2 strands sequenced
+        self.duration_1dsqr = self.dataframe_1dsqr['trimmed_duration1'] + self.dataframe_1dsqr[
+            'trimmed_duration2']  # duration of the 2 strands sequenced
 
         # Merge dataframe_1d with dataframe_1dsqr
-        self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length", how="right")
+        self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length",
+                                                 how="right")
 
         # dataframe_dicts
         self.dataframe_dict_1dsqr = {}
         self.dataframe_dict = self.sse.dataframe_dict
 
         if self.is_barcode:
-
             self.barcode_selection = self.config_dictionary[
                 'barcode_selection']
 
@@ -166,7 +169,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         for key, value in stats.iteritems():
             self._set_result_to_dict(result_dict, entry + '.' + key, value)
 
-
     def _barcode_frequency(self, dataframe_dict_1dsqr: dict, entry: str, df_filtered) -> pd.Series:
         """
         Count reads by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
@@ -203,7 +205,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Compute frequency for all barcode counts and save into dataframe_dict_1dsqr
         for barcode in count_sorted.to_dict():
             frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
-            self.dataframe_dict_1dsqr[entry.replace(".barcoded", ".") + barcode + ".frequency"] =  frequency_value
+            self.dataframe_dict_1dsqr[entry.replace(".barcoded", ".") + barcode + ".frequency"] = frequency_value
 
         return count_sorted
 
@@ -216,7 +218,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         return len(dataframe.loc[dataframe[column_name] == bool(boolean)])
 
-
     @staticmethod
     def _series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str, boolean: bool) -> pd.Series:
         """
@@ -228,9 +229,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
 
-
     @staticmethod
-    def _sorted_list_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool, denominator: int):
+    def _sorted_list_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
+                                              denominator: int):
         """
         Returns a sorted list of values of different columns filtered by a boolean and divided by the denominator
         :param dataframe: dataframe_1dsqr
@@ -240,7 +241,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :param denominator: number to divide by
         """
         return sorted(dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator)
-
 
     def _set_result_value(self, dict, key: str, value):
         """
@@ -255,7 +255,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             ("Invalid type for key {0} or value {1} ".format(
                 type(key), type(value)))
 
-
     def _get_result_value(self, result_dict, key: str):
         """
         :param result_dict:
@@ -265,7 +264,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         if not (self.get_report_data_file_id() + '.' + key) in result_dict.keys():
             raise KeyError("Key {key} not found").__format__(key)
         return result_dict.get(self.get_report_data_file_id() + '.' + key)
-
 
     def _set_result_to_dict(self, result_dict, key: str, function):
         """
@@ -386,14 +384,16 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         series_read_pass_barcode = self._series_cols_boolean_elements(self.dataframe_1dsqr, "barcode_arrangement",
                                                                       "passes_filtering", True)
 
-        self.dataframe_dict_1dsqr["read.pass.barcoded"] = self._barcode_frequency(self.dataframe_dict_1dsqr, "read.pass.barcoded",
-                                                         series_read_pass_barcode)
+        self.dataframe_dict_1dsqr["read.pass.barcoded"] = self._barcode_frequency(self.dataframe_dict_1dsqr,
+                                                                                  "read.pass.barcoded",
+                                                                                  series_read_pass_barcode)
 
         series_read_fail_barcode = self._series_cols_boolean_elements(self.dataframe_1dsqr, "barcode_arrangement",
                                                                       "passes_filtering", False)
 
-        self.dataframe_dict_1dsqr["read.fail.barcoded"] = self._barcode_frequency(self.dataframe_dict_1dsqr, "read.fail.barcoded",
-                                                         series_read_fail_barcode)
+        self.dataframe_dict_1dsqr["read.fail.barcoded"] = self._barcode_frequency(self.dataframe_dict_1dsqr,
+                                                                                  "read.fail.barcoded",
+                                                                                  series_read_fail_barcode)
 
         read_pass_barcoded_count = self.dataframe_dict_1dsqr["read.pass.barcoded.count"]
         read_fail_barcoded_count = self.dataframe_dict_1dsqr["read.fail.barcoded.count"]
@@ -431,14 +431,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             barcode_name = barcode
             # Add all barcode statistics to result_dict based on values of selected dataframes
             self.sse._barcode_stats(result_dict, barcode_selected_dataframe,
-                                barcode_selected_read_pass_dataframe, barcode_selected_read_fail_dataframe,
-                                barcode_name)
+                                    barcode_selected_read_pass_dataframe, barcode_selected_read_fail_dataframe,
+                                    barcode_name)
 
         # Add filtered dataframes (all info by barcode and by length or qscore) to dataframe_dict_1dsqr
         self._barcode_selection_dataframe("sequence_length", "barcode_selection_sequence_length_dataframe",
-                                              "length")
+                                          "length")
         self._barcode_selection_dataframe("mean_qscore", "barcode_selection_sequence_phred_dataframe",
-                                              "qscore")
+                                          "qscore")
 
     def _barcode_selection_dataframe(self, df_column_name: str, df_key_name: str, melted_column_name: str):
         """
@@ -518,35 +518,37 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_1d, images_directory))
         images.append(pgg2.dsqr_read_length_scatterplot(result_dict, self.sequence_length_1dsqr, images_directory))
         images.append(pgg.yield_plot(result_dict, images_directory))
-        images.append(pgg.read_quality_multiboxplot(result_dict, images_directory,))
+        images.append(pgg.read_quality_multiboxplot(result_dict, images_directory, ))
         images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, images_directory))
         images.append(pgg.allphred_score_frequency(result_dict, images_directory))
         images.append(pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr,
-                                                        images_directory))
+                                                         images_directory))
         images.append(pgg.all_scatterplot(result_dict, images_directory))
         images.append(pgg2.scatterplot_1dsqr(result_dict, images_directory))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
-        images.append(pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory))
+        images.append(
+            pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory))
         images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, images_directory))
-        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr, images_directory))
+        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr,
+                                                images_directory))
         images.append(pgg2.nseq_over_time_dsqr(self.time_1dsqr, images_directory))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(self.dataframe_dict_1dsqr,
-                                                                                  self.barcode_selection,
-                                                                                  images_directory))
-
-            images.append(pgg2.barcode_percentage_pie_chart_1dsqr_fail(self.dataframe_dict_1dsqr,
-                                                                                  self.barcode_selection,
-                                                                                  images_directory))
-
-            images.append(pgg2.barcode_length_boxplot_1dsqr(self.dataframe_dict_1dsqr,
+                                                                       self.barcode_selection,
                                                                        images_directory))
 
+            images.append(pgg2.barcode_percentage_pie_chart_1dsqr_fail(self.dataframe_dict_1dsqr,
+                                                                       self.barcode_selection,
+                                                                       images_directory))
+
+            images.append(pgg2.barcode_length_boxplot_1dsqr(self.dataframe_dict_1dsqr,
+                                                            images_directory))
+
             images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.barcode_selection, self.dataframe_dict_1dsqr,
-                                                                               images_directory))
+                                                                    images_directory))
         return images
 
     def clean(self, result_dict):
@@ -602,9 +604,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             'passes_filtering': np.bool,
             'sequence_length': np.int16,
             'mean_qscore': np.float,
-            'start_time1' : np.float,
-            'trimmed_duration1' : np.float,
-            'trimmed_duration2' : np.float,
+            'start_time1': np.float,
+            'trimmed_duration1': np.float,
+            'trimmed_duration2': np.float,
         }
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
@@ -628,7 +630,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             elif len(
                     files
             ) == 1 and self._is_sequencing_summary_1dsqr_with_barcodes(
-                    files[0]):
+                files[0]):
                 sequencing_summary_columns.append('barcode_arrangement')
                 sequencing_summary_datatypes.update(
                     {'barcode_arrangement': object})

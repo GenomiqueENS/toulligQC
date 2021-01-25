@@ -27,13 +27,13 @@
 import base64
 import datetime
 import pkgutil
-import datetime
 
 int_format_str = '{:,d}'
 float_format_str = '{:.2f}'
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import graph_font
+
 
 def html_report(config_dictionary, result_dict, graphs):
     """
@@ -47,10 +47,10 @@ def html_report(config_dictionary, result_dict, graphs):
     report_name = config_dictionary['report_name']
 
     # Get report date
-    report_date = _get_result_date_value(result_dict,'toulligqc.info.start.time', "Unknown")
+    report_date = _get_result_date_value(result_dict, 'toulligqc.info.start.time', "Unknown")
 
     # Get run date
-    run_date = _get_result_date_value(result_dict,'sequencing.telemetry.extractor.exp.start.time', "Unknown")
+    run_date = _get_result_date_value(result_dict, 'sequencing.telemetry.extractor.exp.start.time', "Unknown")
 
     sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
 
@@ -59,8 +59,8 @@ def html_report(config_dictionary, result_dict, graphs):
 
     # Set CSS module class width to the width of the figures
     css = css.replace("{figure_image_width}", str(figure_image_width) + "px") \
-             .replace("{title_size}", str(title_size)) \
-             .replace("{graph_font}", str(graph_font))
+        .replace("{title_size}", str(title_size)) \
+        .replace("{graph_font}", str(graph_font))
 
     # Read Plotly JavaScript code
     plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')
@@ -117,7 +117,8 @@ def html_report(config_dictionary, result_dict, graphs):
                   run_date=run_date,
                   report_date=report_date,
                   summary_list=_summary(graphs),
-                  modules_report=_modules_report(graphs, result_dict, sample_id, report_name, run_date, config_dictionary['app.version']),
+                  modules_report=_modules_report(graphs, result_dict, sample_id, report_name, run_date,
+                                                 config_dictionary['app.version']),
                   app_url=config_dictionary['app.url'],
                   app_name=config_dictionary['app.name'],
                   app_version=config_dictionary['app.version'])
@@ -125,6 +126,7 @@ def html_report(config_dictionary, result_dict, graphs):
     # Write the HTML page
     f.write(report)
     f.close()
+
 
 def _summary(graphs):
     """
@@ -142,13 +144,12 @@ def _summary(graphs):
 
 
 def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligqc_version):
-
-    result =  _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version)
+    result = _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version)
     result += _other_module_reports(graphs)
     return result
 
-def _basic_statistics_module_report(result_dict, sample_id, report_name, run_date, toulligqc_version):
 
+def _basic_statistics_module_report(result_dict, sample_id, report_name, run_date, toulligqc_version):
     minknow_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.minknow.version', "Unknown")
 
     td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
@@ -156,7 +157,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     run_time = '%dh%02dm%02ds' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-    run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
+    run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"] / 1000000000, 2)
     n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
 
     # from telemetry file
@@ -172,10 +173,12 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     device_type = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.type', "Unknown")
     model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
 
-    distribution_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.distribution.version', "Unknown")
+    distribution_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.distribution.version',
+                                             "Unknown")
     operating_system = _get_result_value(result_dict, 'sequencing.telemetry.extractor.operating.system', "Unknown")
-    flow_cell_product_code = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flow.cell.product.code', "Unknown")
-    basecalling_date = _get_result_date_value(result_dict,'sequencing.telemetry.extractor.basecalling.date', "Unknown")
+    flow_cell_product_code = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flow.cell.product.code',
+                                               "Unknown")
+    basecalling_date = _get_result_date_value(result_dict, 'sequencing.telemetry.extractor.basecalling.date', "Unknown")
 
     # Compose the main of the page
     result = """
@@ -248,53 +251,52 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
 
     return result
 
-def _other_module_reports(graphs):
 
+def _other_module_reports(graphs):
     result = ""
 
     for i, t in enumerate(graphs):
 
+        if len(t) == 4:
+            # Plotly Graph
 
-      if len(t)==4:
-       # Plotly Graph
+            name, path, table, html = t
 
-        name, path, table, html = t
-
-       # Plotly graph with table
-        if table is not None:
-            result += """
+            # Plotly graph with table
+            if table is not None:
+                result += """
       <div class="module" id=M{i}>
         {html}
         {table}
       </div>
 """.format(i=i, name=name, html=html, table=table)
 
-        # Plotly graph without table
-        else:
-            result += """
+            # Plotly graph without table
+            else:
+                result += """
       <div class="module" id=M{i}>
         {html}
       </div>
-""".format(i=i,  name=name, html=html, table=table)
+""".format(i=i, name=name, html=html, table=table)
 
 
-      elif len(t)==3:
-          # image
-          name, path, table  = t
+        elif len(t) == 3:
+            # image
+            name, path, table = t
 
-          # Image with table
-          if table is not None:
-              result += """
+            # Image with table
+            if table is not None:
+                result += """
             <div class="module" id=M{i}>
               <h2>{name}</h2>
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
-            """.format(i=i, name=name,  image=_embedded_image(path), table=table)
+            """.format(i=i, name=name, image=_embedded_image(path), table=table)
 
-          # Image without table
-          else:
-              result += """
+            # Image without table
+            else:
+                result += """
             <div class="module" id=M{i}>
               <h2>{name}</h2>
               <div class="box"><img src="{image}"/></div>
@@ -367,4 +369,3 @@ def _iso8601_to_formatted_date(date_string):
         return date_string
 
     return d.strftime("%a %b %d %H:%M:%S %Z %Y")
-

@@ -27,6 +27,7 @@
 #
 
 import tempfile
+
 from toulligqc import version
 
 
@@ -34,10 +35,11 @@ class ToulligqcConf:
     """
     Dictionary for the storage of configuration file
     """
+
     def __init__(self):
         self._config_dictionary = {'app.name': "ToulligQC",
                                    'app.url': "https://github.com/GenomicParisCentre/toulligQC",
-                                   'app.version':  version.__version__,
+                                   'app.version': version.__version__,
                                    'quiet': 'False',
                                    'tmpdir': tempfile.gettempdir(),
                                    'barcoding': 'False',
@@ -73,4 +75,3 @@ class ToulligqcConf:
 
     def keys(self):
         return self._config_dictionary.keys()
-

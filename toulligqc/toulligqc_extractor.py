@@ -88,7 +88,8 @@ class ToulligqcExtractor:
             extractors_list.append(fast5_extractor.Fast5Extractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("fast5.extractor")
 
-        if 'sequencing_summary_1dsqr_source' in config_dictionary and config_dictionary['sequencing_summary_1dsqr_source']:
+        if 'sequencing_summary_1dsqr_source' in config_dictionary and config_dictionary[
+            'sequencing_summary_1dsqr_source']:
             extractors_list.append(sequencing_summary_onedsquare_extractor.
                                    OneDSquareSequencingSummaryExtractor(config_dictionary))
             result_dict['toulligqc.info.extractors'].append("sequencing.summary.1dsqr.extractor")

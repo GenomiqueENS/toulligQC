@@ -109,8 +109,10 @@ class SequencingTelemetryExtractor:
             self._set_result_dict_value(result_dict, '.exp.start.time', array, 'tracking_id', 'exp_start_time')
             self._set_result_dict_value(result_dict, '.device.id', array, 'tracking_id', 'device_id')
             self._set_result_dict_value(result_dict, '.device.type', array, 'tracking_id', 'device_type')
-            self._set_result_dict_value(result_dict, '.distribution.version', array, 'tracking_id', 'distribution_version')
-            self._set_result_dict_value(result_dict, '.flow.cell.product.code', array, 'tracking_id', 'flow_cell_product_code')
+            self._set_result_dict_value(result_dict, '.distribution.version', array, 'tracking_id',
+                                        'distribution_version')
+            self._set_result_dict_value(result_dict, '.flow.cell.product.code', array, 'tracking_id',
+                                        'flow_cell_product_code')
             self._set_result_dict_value(result_dict, '.basecalling.date', array, 'tracking_id', 'time_stamp')
 
             self._set_result_dict_value(result_dict, '.software.name', array, 'software', 'name')
@@ -148,4 +150,3 @@ class SequencingTelemetryExtractor:
             new_value = ''
 
         result_dict[final_key] = new_value
-

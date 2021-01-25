@@ -20,11 +20,11 @@
 
 # This module contains common methods for plotly modules.
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.offline as py
-from scipy.ndimage.filters import gaussian_filter1d
 from scipy.interpolate import interp1d
+from scipy.ndimage.filters import gaussian_filter1d
 from sklearn.utils import resample
 
 figure_image_width = 1000
@@ -35,16 +35,16 @@ percent_format_str = '{:.2f}%'
 line_width = 2
 interpolation_threshold = 10000
 
-toulligqc_colors = {'all':          '#fca311',  # Yellow
-                    'all_1d2':      '#fca311',  # Yellow
-                    'pass':         '#51a96d',  # Green
-                    'fail':         '#d90429',  # Red
+toulligqc_colors = {'all': '#fca311',  # Yellow
+                    'all_1d2': '#fca311',  # Yellow
+                    'pass': '#51a96d',  # Green
+                    'fail': '#d90429',  # Red
                     'barcode_pass': '#51a96d',  # Green
                     'barcode_fail': '#d90429',  # Red
                     'sequence_length_over_time': '#205b47',
-                    'phred_score_over_time':     '#7aaceb',
-                    'speed_over_time':           '#AE3F7B',
-                    'nseq_over_time':            '#edb773',
+                    'phred_score_over_time': '#7aaceb',
+                    'speed_over_time': '#AE3F7B',
+                    'nseq_over_time': '#edb773',
                     }
 
 plotly_background_color = '#e5ecf6'
@@ -56,7 +56,6 @@ graph_font = 'Open sans, Helvetica, Arial, sans-serif'
 image_dpi = 100
 
 
-
 def _make_describe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -64,7 +63,7 @@ def _make_describe_dataframe(value):
     """
 
     desc = value.describe()
-    desc.loc['count'] = desc.loc['count'].astype(int).apply(lambda x:int_format_str.format(x))
+    desc.loc['count'] = desc.loc['count'].astype(int).apply(lambda x: int_format_str.format(x))
     desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: float_format_str.format(x))
     desc.rename({'50%': 'median'}, axis='index', inplace=True)
 
@@ -129,6 +128,7 @@ def _precompute_boxplot_values(y):
                 max=max(y),
                 notchspan=notchspan)
 
+
 def _dataFrame_to_html(df):
     return pd.DataFrame.to_html(df, border="")
 
@@ -146,7 +146,7 @@ def _transparent_colors(colors, background_color, a):
         b = int(c[5:7], 16)
         new_c = '#' + \
                 _transparent_component(r, br, a) + \
-                _transparent_component(g, bg,  a) + \
+                _transparent_component(g, bg, a) + \
                 _transparent_component(b, bb, a)
         result.append(new_c)
 
@@ -154,15 +154,15 @@ def _transparent_colors(colors, background_color, a):
 
 
 def _transparent_component(c, b, a):
-    v = (1-a) * c + a * b
+    v = (1 - a) * c + a * b
     r = hex(int(v))[2:]
 
     if len(r) == 1:
         return '0' + r
     return r
 
-def _create_and_save_div(fig, result_directory, main):
 
+def _create_and_save_div(fig, result_directory, main):
     output_file = result_directory + '/' + '_'.join(main.split())
 
     div = py.plot(fig,
@@ -177,4 +177,3 @@ def _create_and_save_div(fig, result_directory, main):
             auto_open=False)
 
     return div, output_file
-

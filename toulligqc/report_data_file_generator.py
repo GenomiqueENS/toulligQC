@@ -24,7 +24,7 @@
 # Since version 0.1
 
 # Creation of a text file containing statistics retrieved from the result_dict dictionary.
-# The information by modules is retained in a key-value form.
+#  The information by modules is retained in a key-value form.
 # The prefix of a key being the report data file id of the module.
 
 import os

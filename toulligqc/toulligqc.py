@@ -33,10 +33,10 @@
 # 5. It uses all the information collected to generate a qc in the form of a htl-report and a report.data file
 
 import matplotlib
+
 matplotlib.use('Agg')
 import shutil
 import sys
-import csv
 import re
 import argparse
 import os
@@ -49,7 +49,6 @@ from toulligqc import toulligqc_extractor
 from toulligqc import report_data_file_generator
 from toulligqc import html_report_generator
 from toulligqc import version
-from pathlib import Path
 from toulligqc import configuration
 
 
@@ -65,28 +64,31 @@ def _parse_args(config_dictionary):
 
     # Add all required arguments
     required.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
-                        help='Basecaller sequencing summary source', metavar='SEQUENCING_SUMMARY_SOURCE' ,required=True)
+                          help='Basecaller sequencing summary source', metavar='SEQUENCING_SUMMARY_SOURCE',
+                          required=True)
     required.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
-                        help='Basecaller telemetry file source', default=False)
+                          help='Basecaller telemetry file source', default=False)
 
-    required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source (necessary if no telemetry file)')
-
+    required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source',
+                          help='Fast5 file source (necessary if no telemetry file)')
 
     # Add all optional arguments
     optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     optional.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
-    optional.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append', dest='sequencing_summary_1dsqr_source',
-                        help='Basecaller 1dsq summary source')
+    optional.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append',
+                          dest='sequencing_summary_1dsqr_source',
+                          help='Basecaller 1dsq summary source')
     optional.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Option for barcode usage",
-                        default=False)
-    optional.add_argument('-l', '--barcodes', action='store', default='', dest='barcodes', help='Coma separated barcode list')
+                          default=False)
+    optional.add_argument('-l', '--barcodes', action='store', default='', dest='barcodes',
+                          help='Coma separated barcode list')
     optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
-                        default=False)
-    optional.add_argument("--report-only", action='store_true', dest='is_quicklaunch', help="No report.data file, only HTML report",
-                        default=False)
+                          default=False)
+    optional.add_argument("--report-only", action='store_true', dest='is_quicklaunch',
+                          help="No report.data file, only HTML report",
+                          default=False)
     optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
     optional.add_argument('--version', action='version', version=version.__version__)
-
 
     # Parsing lone arguments and assign each argument value to a variable
     argument_value = parser.parse_args()
@@ -117,7 +119,7 @@ def _parse_args(config_dictionary):
         ('fast5_source', fast5_source),
         ('sequencing_summary_source', _join_parameter_arguments(sequencing_summary_source)),
         ('sequencing_summary_1dsqr_source', _join_parameter_arguments(sequencing_summary_1dsqr_source)),
-        ('sequencing_telemetry_source',sequencing_telemetry_source),
+        ('sequencing_telemetry_source', sequencing_telemetry_source),
         ('result_directory', result_directory),
         ('barcoding', is_barcode),
         ('barcodes', barcodes),
@@ -132,7 +134,8 @@ def _parse_args(config_dictionary):
 
     # Directory paths must ends with '/'
     for key, value in config_dictionary.items():
-        if type(value) == str and (key.endswith('_source') or key.endswith('_directory')) and os.path.isdir(value) and (not value.endswith('/')):
+        if type(value) == str and (key.endswith('_source') or key.endswith('_directory')) and os.path.isdir(value) and (
+        not value.endswith('/')):
             config_dictionary[key] = value + '/'
 
     # Convert all configuration values in strings
@@ -148,7 +151,8 @@ def _check_conf(config_dictionary):
     :param config_dictionary: configuration dictionary containing the file or directory paths
     """
     if ('sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']) and \
-    ('sequencing_telemetry_source' not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
+            ('sequencing_telemetry_source' not in config_dictionary or not config_dictionary[
+                'sequencing_telemetry_source']):
         argparse.ArgumentParser.print_help
 
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
@@ -184,7 +188,6 @@ def _create_output_directories(config_dictionary):
     """
     image_directory = config_dictionary['result_directory'] + 'images/'
     os.makedirs(image_directory)
-
 
 
 def _welcome(config_dictionary):
@@ -328,7 +331,6 @@ def main():
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
-
         _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
         extractor_start = time.time()
 
