@@ -42,14 +42,17 @@ import argparse
 import os
 import time
 import datetime
-import platform as pf
-import tempfile as tp
+
 import warnings
-from toulligqc import toulligqc_extractor
+from toulligqc import toulligqc_info_extractor
 from toulligqc import report_data_file_generator
 from toulligqc import html_report_generator
 from toulligqc import version
 from toulligqc import configuration
+from toulligqc import fast5_extractor
+from toulligqc import sequencing_summary_extractor
+from toulligqc import sequencing_summary_onedsquare_extractor
+from toulligqc import sequencing_telemetry_extractor
 
 
 def _parse_args(config_dictionary):
@@ -135,7 +138,7 @@ def _parse_args(config_dictionary):
     # Directory paths must ends with '/'
     for key, value in config_dictionary.items():
         if type(value) == str and (key.endswith('_source') or key.endswith('_directory')) and os.path.isdir(value) and (
-        not value.endswith('/')):
+                not value.endswith('/')):
             config_dictionary[key] = value + '/'
 
     # Convert all configuration values in strings
@@ -229,49 +232,26 @@ def _join_parameter_arguments(arg):
     return '\t'.join(arg)
 
 
-def _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict):
-    """
-    Initialization of the result_dict with the OS parameters and the environment variables
-    :param config_dictionary: details from command user line
-    :param result_dict: Dictionary which gathers all the extracted
-    information that will be reported in the report.data file
-    :return: result_dict dictionary and extractors list
-    """
-    result_dict['toulligqc.info.username'] = os.environ.get('USERNAME')
-    result_dict['toulligqc.info.user.home'] = os.environ['HOME']
-    result_dict['toulligqc.info.temporary.directory'] = tp.gettempdir()
-    result_dict['toulligqc.info.operating.system'] = pf.processor()
-    result_dict['toulligqc.info.python.version'] = pf.python_version()
-    result_dict['toulligqc.info.python.implementation'] = pf.python_implementation()
-    result_dict['toulligqc.info.hostname'] = os.uname()[1]
-    result_dict['toulligqc.info.report.name'] = config_dictionary['report_name']
-    result_dict['toulligqc.info.start.time'] = datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
-    result_dict['toulligqc.info.command.line'] = sys.argv
-    result_dict['toulligqc.info.executable.path'] = sys.argv[0]
-    result_dict['toulligqc.info.version'] = config_dictionary['app.version']
-    result_dict['toulligqc.info.output.dir'] = config_dictionary['result_directory']
-    result_dict['toulligqc.info.barcode.option'] = "False"
-    if config_dictionary['barcoding'].lower() == 'true':
-        result_dict['toulligqc.info.barcode.option'] = "True"
-        result_dict['toulligqc.info.barcode.selection'] = config_dictionary['barcode_selection']
-    dependancies_version(result_dict)
+def _create_extractor_list(config_dictionary):
+    result = []
 
-    return result_dict
+    if 'sequencing_telemetry_source' in config_dictionary and \
+            config_dictionary['sequencing_telemetry_source']:
+        result.append(sequencing_telemetry_extractor.SequencingTelemetryExtractor(config_dictionary))
 
+    if 'fast5_source' in config_dictionary and config_dictionary['fast5_source']:
+        result.append(fast5_extractor.Fast5Extractor(config_dictionary))
 
-def dependancies_version(result_dict):
-    """
-    Get the environment variables
-    :param result_dict: result_dict dictionnary
-    :return: result_dict entries about the environment variable like LANG
-    """
-    for name, module in sorted(sys.modules.items()):
-        if hasattr(module, '__version__'):
-            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.__version__
-        elif hasattr(module, 'VERSION'):
-            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.VERSION
-    for name, value in os.environ.items():
-        result_dict['toulligqc.info.env.' + name] = value
+    if 'sequencing_summary_1dsqr_source' in config_dictionary and \
+            config_dictionary['sequencing_summary_1dsqr_source']:
+        result.append(sequencing_summary_onedsquare_extractor.
+                      OneDSquareSequencingSummaryExtractor(config_dictionary))
+    else:
+        result.append(sequencing_summary_extractor.SequencingSummaryExtractor(config_dictionary))
+
+    result.insert(0, toulligqc_info_extractor.ToulligqcInfoExtractor(config_dictionary, result))
+
+    return result
 
 
 def main():
@@ -313,12 +293,8 @@ def main():
     # Configuration checking and initialisation of the extractors
     _show(config_dictionary, "* Initialize extractors")
 
-    extractors_list = []
-    result_dict = {'unwritten.keys': ['unwritten.keys']}
-    result_dict = _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict)
-
-    toulligqc_extractor.ToulligqcExtractor.init(config_dictionary)
-    toulligqc_extractor.ToulligqcExtractor.extract(config_dictionary, extractors_list, result_dict)
+    # Create the list of extractors to execute
+    extractors_list = _create_extractor_list(config_dictionary)
 
     # Check extractor configuration
     for extractor in extractors_list:
@@ -326,6 +302,7 @@ def main():
         if not check_result:
             sys.exit("ERROR: Error while checking " + extractor.get_name() + " configuration: " + error_message)
 
+    result_dict = {}
     graphs = []
     qc_start = time.time()
 
