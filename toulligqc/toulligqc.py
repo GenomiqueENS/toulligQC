@@ -87,24 +87,17 @@ def _parse_args(config_dictionary):
                           help='Coma separated barcode list')
     optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                           default=False)
-    optional.add_argument("--report-only", action='store_true', dest='is_quicklaunch',
+    optional.add_argument("--report-only", action='store_true', dest='report_only',
                           help="No report.data file, only HTML report",
                           default=False)
     optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
     optional.add_argument('--version', action='version', version=version.__version__)
 
     # Parsing lone arguments and assign each argument value to a variable
-    argument_value = parser.parse_args()
-    fast5_source = argument_value.fast5_source
-    sequencing_summary_source = argument_value.sequencing_summary_source
-    sequencing_summary_1dsqr_source = argument_value.sequencing_summary_1dsqr_source
-    sequencing_telemetry_source = argument_value.telemetry_source
-    report_name = argument_value.report_name
-    is_barcode = argument_value.is_barcode
-    result_directory = argument_value.output
-    is_quiet = argument_value.is_quiet
-    is_quicklaunch = argument_value.is_quicklaunch
-    barcodes = argument_value.barcodes
+    args = parser.parse_args()
+    report_name = args.report_name
+    is_barcode = args.is_barcode
+    barcodes = args.barcodes
 
     # If a barcode list is provided, automatically add --barcoding argument
     if len(barcodes) > 0:
@@ -119,15 +112,15 @@ def _parse_args(config_dictionary):
 
     # Rewrite the configuration file value if argument option is present
     source_file = {
-        ('fast5_source', fast5_source),
-        ('sequencing_summary_source', _join_parameter_arguments(sequencing_summary_source)),
-        ('sequencing_summary_1dsqr_source', _join_parameter_arguments(sequencing_summary_1dsqr_source)),
-        ('sequencing_telemetry_source', sequencing_telemetry_source),
-        ('result_directory', result_directory),
+        ('fast5_source', args.fast5_source),
+        ('sequencing_summary_source', _join_parameter_arguments(args.sequencing_summary_source)),
+        ('sequencing_summary_1dsqr_source', _join_parameter_arguments(args.sequencing_summary_1dsqr_source)),
+        ('sequencing_telemetry_source', args.telemetry_source),
+        ('result_directory', args.output),
         ('barcoding', is_barcode),
         ('barcodes', barcodes),
-        ('quiet', is_quiet),
-        ('is_quicklaunch', is_quicklaunch)
+        ('quiet', args.is_quiet),
+        ('report_only', args.report_only)
     }
 
     # Put arguments values in configuration object
@@ -331,7 +324,7 @@ def main():
     qc_end = time.time()
     result_dict['toulligqc.info.execution.duration'] = round((qc_end - qc_start), 2)
 
-    if config_dictionary['is_quicklaunch'].lower() != 'true':
+    if config_dictionary['report_only'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         report_data_file_generator.statistics_generator(config_dictionary, result_dict)
     _show(config_dictionary, "* End of the QC extractor (done in {})".format(_format_time(qc_end - qc_start)))
