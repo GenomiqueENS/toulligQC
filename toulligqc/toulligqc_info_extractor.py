@@ -44,7 +44,10 @@ class ToulligqcInfoExtractor:
     def __init__(self, config_dictionary, extractors_list):
         self._config_dictionary = config_dictionary
         self._extractors_list = extractors_list
-        self._debug = True
+        self._debug = False
+
+        if 'debug' in config_dictionary and config_dictionary['debug'].lower() == 'true':
+            self._debug = True
 
     @staticmethod
     def get_name() -> str:

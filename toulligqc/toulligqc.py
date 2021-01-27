@@ -90,6 +90,8 @@ def _parse_args(config_dictionary):
     optional.add_argument("--report-only", action='store_true', dest='report_only',
                           help="No report.data file, only HTML report",
                           default=False)
+    optional.add_argument("--debug", action='store_true', dest='debug', help=argparse.SUPPRESS,
+                          default=False)
     optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
     optional.add_argument('--version', action='version', version=version.__version__)
 
@@ -120,7 +122,8 @@ def _parse_args(config_dictionary):
         ('barcoding', is_barcode),
         ('barcodes', barcodes),
         ('quiet', args.is_quiet),
-        ('report_only', args.report_only)
+        ('report_only', args.report_only),
+        ('debug', args.debug)
     }
 
     # Put arguments values in configuration object
