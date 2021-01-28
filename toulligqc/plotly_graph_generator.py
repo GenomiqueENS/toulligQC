@@ -892,29 +892,35 @@ def barcode_length_boxplot(datafame_dict, result_directory):
 
     fig = go.Figure()
 
+    first = True
     for col in read_pass_length.columns:
         d = _precompute_boxplot_values(read_pass_length[col])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name=col,
+            name="Read pass",
             x0=col,
             marker_color=toulligqc_colors['pass'],
-            legendgroup="pass",
-            offsetgroup="pass"
+            offsetgroup="pass",
+            showlegend=first
         ))
+        if first:
+            first=False
 
+    first = True
     for col in read_fail_length.columns:
         d = _precompute_boxplot_values(read_fail_length[col])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name=col,
+            name="Read fail",
             x0=col,
             marker_color=toulligqc_colors['fail'],
-            legendgroup="fail",
-            offsetgroup="fail"
+            offsetgroup="fail",
+            showlegend=first
         ))
+        if first:
+            first = False
 
     fig.update_layout(
         title={
@@ -984,31 +990,37 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
 
     fig = go.Figure()
 
+    first = True
     for barcode in barcode_list:
         final_df = read_pass_qscore.loc[read_pass_qscore['barcodes'] == barcode].dropna()
         d = _precompute_boxplot_values(final_df['qscore'])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name=barcode,
+            name="Read pass",
             x0=barcode,
             marker_color=toulligqc_colors['pass'],
-            legendgroup="pass",
-            offsetgroup="pass"
+            offsetgroup="pass",
+            showlegend=first
         ))
+        if first:
+            first=False
 
+    first = True
     for barcode in barcode_list:
         final_df = read_fail_qscore.loc[read_fail_qscore['barcodes'] == barcode].dropna()
         d = _precompute_boxplot_values(final_df['qscore'])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name=barcode,
+            name="Read fail",
             x0=barcode,
             marker_color=toulligqc_colors['fail'],
-            legendgroup="fail",
-            offsetgroup="fail"
+            offsetgroup="fail",
+            showlegend=first
         ))
+        if first:
+            first=False
 
     fig.update_layout(
         title={
