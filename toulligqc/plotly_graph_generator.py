@@ -72,22 +72,22 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
     if 'read.pass.barcoded.count' in dataframe_dict:
 
         data = {
-            'Read Count': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-            'Read Pass Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-            'Read Fail Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
-            'Read Pass Barcoded Count': dataframe_dict["read.pass.barcoded.count"],
-            'Read Fail Barcoded Count': dataframe_dict["read.fail.barcoded.count"]
+            'All reads': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+            'Pass reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+            'Fail reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
+            'Pass barcoded reads': dataframe_dict["read.pass.barcoded.count"],
+            'Fail barcoded reads': dataframe_dict["read.fail.barcoded.count"]
         }
 
         colors = [toulligqc_colors["all"], toulligqc_colors["pass"], toulligqc_colors["fail"],
                   toulligqc_colors["barcode_pass"], toulligqc_colors["barcode_fail"]]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
-                       hovertext=["<b>Total number of reads</b>",
+                       hovertext=["<b>All reads</b>",
                                   "<b>Pass reads</b>",
                                   "<b>Fail reads</b>",
-                                  "<b>Barcoded pass reads</b>",
-                                  "<b>Barcoded fail reads</b>"],
+                                  "<b>Pass barcoded reads</b>",
+                                  "<b>Fail barcoded reads</b>"],
                        name="Barcoded graph",
                        marker_color=_transparent_colors(colors, plotly_background_color, .5),
                        marker_line_color=colors,
@@ -109,21 +109,22 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"]]])
 
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Read count", "1D pass", "1D fail", "1D pass barcoded", "1D fail barcoded"])
+                                 columns=["All reads", "Pass reads", "Fail reads", "Pass barcoded reads",
+                                          "Fail barcoded reads"])
 
     # Histogram without barcodes
     else:
 
         data = {
-            'Read Count': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-            'Read Pass Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-            'Read Fail Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
+            'All reads': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
+            'Pass reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
+            'Fail reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
         }
 
         colors = [toulligqc_colors['all'], toulligqc_colors['pass'], toulligqc_colors['fail']]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
-                       hovertext=["<b>Total number of reads</b>",
+                       hovertext=["<b>All reads</b>",
                                   "<b>Pass reads</b>",
                                   "<b>Fail reads</b>"],
                        name="Barcoded graph",
@@ -142,7 +143,7 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
 
         # Create dataframe with array data
         dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Read count", "1D pass", "1D fail"])
+                                 columns=["All reads", "Pass reads", "Fail reads"])
 
     layout = go.Layout(
         hovermode="x",
@@ -416,8 +417,8 @@ def read_quality_multiboxplot(result_dict, result_directory):
     else:
         dataframe = df
     names = {"1D": "All reads",
-             "1D pass": "Read pass",
-             "1D fail": "Read fail"}
+             "1D pass": "Pass reads",
+             "1D fail": "Fail reads"}
 
     colors = {"1D": toulligqc_colors['all'],
               "1D pass": toulligqc_colors['pass'],
@@ -515,6 +516,7 @@ def read_quality_multiboxplot(result_dict, result_directory):
     )
 
     df = df[["1D", "1D pass", "1D fail"]]
+    df.columns=["All reads", "Pass reads", "Fail reads"]
     table_html = _dataFrame_to_html(_make_describe_dataframe(df))
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
@@ -552,13 +554,13 @@ def allphred_score_frequency(result_dict, result_directory):
     pdf_1D_fail = norm.pdf(x2, mu2, std2)
 
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color=toulligqc_colors['pass'],
+    fig.add_trace(go.Histogram(x=phred_score_pass, name="Pass reads", marker_color=toulligqc_colors['pass'],
                                histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color=toulligqc_colors['fail'],
+    fig.add_trace(go.Histogram(x=phred_score_fail, name="Fail reads", marker_color=toulligqc_colors['fail'],
                                histnorm='probability density'))
-    fig.add_trace(go.Scatter(x=x, y=pdf_1D_pass, mode="lines", name='Density curve of read pass',
+    fig.add_trace(go.Scatter(x=x, y=pdf_1D_pass, mode="lines", name='Density curve of pass reads',
                              line=dict(color=toulligqc_colors['pass'], width=3, shape="spline", smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2, y=pdf_1D_fail, mode="lines", name='Density curve of read fail',
+    fig.add_trace(go.Scatter(x=x2, y=pdf_1D_fail, mode="lines", name='Density curve of fail reads',
                              line=dict(color=toulligqc_colors['fail'], width=3, shape="spline", smoothing=0.5)))
 
     fig.update_layout(
@@ -597,6 +599,7 @@ def allphred_score_frequency(result_dict, result_directory):
     )
 
     dataframe = _make_describe_dataframe(dataframe).drop('count')
+    dataframe.columns = ['All reads', 'Pass reads', 'Fail reads']
     table_html = _dataFrame_to_html(dataframe)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
@@ -748,7 +751,7 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
 
-    graph_name = "Read pass barcode distribution"
+    graph_name = "Pass barcoded reads distribution"
 
     for element in barcode_selection:
 
@@ -812,7 +815,7 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
     Needs the samplesheet file describing the barcodes to run
     """
 
-    graph_name = "Read fail barcode distribution"
+    graph_name = "Fail barcoded reads distribution"
 
     for element in barcode_selection:
 
@@ -898,14 +901,14 @@ def barcode_length_boxplot(datafame_dict, result_directory):
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name="Read pass",
+            name="Pass reads",
             x0=col,
             marker_color=toulligqc_colors['pass'],
             offsetgroup="pass",
             showlegend=first
         ))
         if first:
-            first=False
+            first = False
 
     first = True
     for col in read_fail_length.columns:
@@ -913,7 +916,7 @@ def barcode_length_boxplot(datafame_dict, result_directory):
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name="Read fail",
+            name="Fail reads",
             x0=col,
             marker_color=toulligqc_colors['fail'],
             offsetgroup="fail",
@@ -997,14 +1000,14 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name="Read pass",
+            name="Pass reads",
             x0=barcode,
             marker_color=toulligqc_colors['pass'],
             offsetgroup="pass",
             showlegend=first
         ))
         if first:
-            first=False
+            first = False
 
     first = True
     for barcode in barcode_list:
@@ -1013,14 +1016,14 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
-            name="Read fail",
+            name="Fail reads",
             x0=barcode,
             marker_color=toulligqc_colors['fail'],
             offsetgroup="fail",
             showlegend=first
         ))
         if first:
-            first=False
+            first = False
 
     fig.update_layout(
         title={
