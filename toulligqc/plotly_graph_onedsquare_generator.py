@@ -272,7 +272,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
     Violin plot of PHRED score between read pass and read fail
     """
 
-    graph_name = "1D² PHRED score distribution of all read types"
+    graph_name = "1D² PHRED score distribution"
 
     df = pd.DataFrame(
         {"1D²": dataframe_dict_1dsqr["mean.qscore"],
@@ -692,7 +692,7 @@ def barcode_length_boxplot_1dsqr(dataframe_dict_1dsqr, result_directory):
     Boxplots all the 1D² pass and fail read length for each barcode indicated in the sample sheet
     """
 
-    graph_name = "1D² read size distribution for each barcode"
+    graph_name = "1D² read size distribution for barcodes"
 
     df = dataframe_dict_1dsqr['barcode_selection_sequence_length_dataframe']
 
@@ -797,7 +797,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
 
-    graph_name = "1D² PHRED score distribution for each barcode"
+    graph_name = "1D² PHRED score distribution for barcodes"
 
     df = dataframe_dict_1dsqr['barcode_selection_sequence_phred_melted_dataframe']
     barcode_list = barcode_selection
@@ -891,7 +891,7 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 
 
 def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory):
-    graph_name = "1D² Read length over experiment time"
+    graph_name = "1D² Read length over time"
 
     time = [t / 3600 for t in time_df.dropna()]
     time = np.array(sorted(time))
@@ -946,7 +946,7 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory
 
 
 def phred_score_over_time_dsqr(qscore_df, time_df, result_directory):
-    graph_name = "1D² PHRED score over experiment time"
+    graph_name = "1D² PHRED score over time"
 
     # Time data
     time = [t / 3600 for t in time_df.dropna()]
@@ -1002,7 +1002,7 @@ def phred_score_over_time_dsqr(qscore_df, time_df, result_directory):
 
 
 def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, result_directory):
-    graph_name = "1D² Speed over experiment time"
+    graph_name = "1D² Speed over time"
 
     speed = pd.Series(sequence_length_df / duration_df)
 
@@ -1060,7 +1060,7 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, result_direct
 
 
 def nseq_over_time_dsqr(time_df, result_directory):
-    graph_name = "Number of sequences through experiment time"
+    graph_name = "Number of sequences through time"
 
     time = [t / 3600 for t in time_df]
     time = pd.Series(time)

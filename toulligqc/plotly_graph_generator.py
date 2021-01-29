@@ -268,7 +268,7 @@ def yield_plot(result_dict, result_directory):
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
 
-    graph_name = "Yield plot through experiment time"
+    graph_name = "Yield plot through time"
 
     all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
     read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
@@ -399,7 +399,7 @@ def read_quality_multiboxplot(result_dict, result_directory):
     Violin plot of PHRED score between read pass and read fail
     """
 
-    graph_name = "PHRED score distribution of all read types"
+    graph_name = "PHRED score distribution"
 
     df = pd.DataFrame(
         {"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
@@ -877,7 +877,7 @@ def barcode_length_boxplot(datafame_dict, result_directory):
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
 
-    graph_name = "Read size distribution for each barcode"
+    graph_name = "Read size distribution for barcodes"
 
     df = datafame_dict['barcode_selection_sequence_length_dataframe']
 
@@ -982,7 +982,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
 
-    graph_name = "PHRED score distribution for each barcode"
+    graph_name = "PHRED score distribution for barcodes"
 
     df = dataframe_dict['barcode_selection_sequence_phred_melted_dataframe']
     barcode_list = barcode_selection
@@ -1076,7 +1076,7 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
 
 
 def sequence_length_over_time(time_df, dataframe_dict, result_directory):
-    graph_name = "Read length over experiment time"
+    graph_name = "Read length over time"
 
     time = [t / 3600 for t in time_df.dropna()]
     time = np.array(sorted(time))
@@ -1132,7 +1132,7 @@ def sequence_length_over_time(time_df, dataframe_dict, result_directory):
 
 
 def phred_score_over_time(qscore_df, time_df, result_directory):
-    graph_name = "PHRED score over experiment time"
+    graph_name = "PHRED score over time"
 
     # Time data
     time = [t / 3600 for t in time_df.dropna()]
@@ -1188,7 +1188,7 @@ def phred_score_over_time(qscore_df, time_df, result_directory):
 
 
 def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
-    graph_name = "Speed over experiment time"
+    graph_name = "Speed over time"
 
     speed = pd.Series(sequence_length_df / duration_df)
 
@@ -1245,7 +1245,7 @@ def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
 
 
 def nseq_over_time(time_df, result_directory):
-    graph_name = "Number of sequences through experiment time"
+    graph_name = "Number of sequences through time"
 
     time = [t / 3600 for t in time_df]
     time = pd.Series(time)
