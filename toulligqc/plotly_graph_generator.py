@@ -50,6 +50,7 @@ from toulligqc.plotly_graph_common import plotly_background_color
 from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import toulligqc_colors
 from toulligqc.plotly_graph_common import _over_time_graph
+from toulligqc.plotly_graph_common import _barcode_boxplot_graph
 
 #
 #  1D plots
@@ -879,100 +880,15 @@ def barcode_length_boxplot(datafame_dict, result_directory):
 
     df = datafame_dict['barcode_selection_sequence_length_dataframe']
 
-    # Sort reads by read type and drop read type column
-    read_pass_length = df.loc[df['passes_filtering']
-                              == bool(True)].drop(columns='passes_filtering')
-    read_fail_length = df.loc[df['passes_filtering']
-                              == bool(False)].drop(columns='passes_filtering')
-
-    # Remove negative values from all columns of the dataframes
-    for col in read_pass_length.columns:
-        read_pass_length[col] = read_pass_length[col].loc[read_pass_length[col] > 0]
-    for col in read_fail_length.columns:
-        read_fail_length[col] = read_fail_length[col].loc[read_fail_length[col] > 0]
-
-    fig = go.Figure()
-
-    first = True
-    for col in read_pass_length.columns:
-        d = _precompute_boxplot_values(read_pass_length[col])
-        fig.add_trace(go.Box(
-            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name="Pass reads",
-            x0=col,
-            marker_color=toulligqc_colors['pass'],
-            offsetgroup="pass",
-            showlegend=first
-        ))
-        if first:
-            first = False
-
-    first = True
-    for col in read_fail_length.columns:
-        d = _precompute_boxplot_values(read_fail_length[col])
-        fig.add_trace(go.Box(
-            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name="Fail reads",
-            x0=col,
-            marker_color=toulligqc_colors['fail'],
-            offsetgroup="fail",
-            showlegend=first
-        ))
-        if first:
-            first = False
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>Barcodes</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>Sequence length (bp)</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Read type</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
-        boxmode='group',
-        boxgap=0.4,
-        boxgroupgap=0,
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    all_read = df.describe().T
-    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
-    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
-    concat = pd.concat([all_read, read_pass, read_fail],
-                       keys=['1D', '1D pass', '1D fail'])
-    dataframe = concat.T
-
-    dataframe.loc['count'] = dataframe.loc['count'].astype(int).apply(lambda x: int_format_str.format(x))
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
-    table_html = _dataFrame_to_html(dataframe)
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _barcode_boxplot_graph(graph_name=graph_name,
+                                  df=df,
+                                  qscore=False,
+                                  barcode_selection=df.columns.drop('passes_filtering'),
+                                  pass_color=toulligqc_colors['pass'],
+                                  fail_color=toulligqc_colors['fail'],
+                                  yaxis_title="Sequence length (bp)",
+                                  legend_title="Read type",
+                                  result_directory=result_directory)
 
 
 def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_directory):
@@ -983,94 +899,16 @@ def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, result_dir
     graph_name = "PHRED score distribution for barcodes"
 
     df = dataframe_dict['barcode_selection_sequence_phred_melted_dataframe']
-    barcode_list = barcode_selection
 
-    # Sort reads by read type and drop read type column
-    read_pass_qscore = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
-    read_fail_qscore = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
-
-    fig = go.Figure()
-
-    first = True
-    for barcode in barcode_list:
-        final_df = read_pass_qscore.loc[read_pass_qscore['barcodes'] == barcode].dropna()
-        d = _precompute_boxplot_values(final_df['qscore'])
-        fig.add_trace(go.Box(
-            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name="Pass reads",
-            x0=barcode,
-            marker_color=toulligqc_colors['pass'],
-            offsetgroup="pass",
-            showlegend=first
-        ))
-        if first:
-            first = False
-
-    first = True
-    for barcode in barcode_list:
-        final_df = read_fail_qscore.loc[read_fail_qscore['barcodes'] == barcode].dropna()
-        d = _precompute_boxplot_values(final_df['qscore'])
-        fig.add_trace(go.Box(
-            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name="Fail reads",
-            x0=barcode,
-            marker_color=toulligqc_colors['fail'],
-            offsetgroup="fail",
-            showlegend=first
-        ))
-        if first:
-            first = False
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>Barcodes</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Read type</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
-        boxmode='group',
-        boxgap=0.4,
-        boxgroupgap=0,
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    all_read = df.describe().T
-    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
-    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
-    concat = pd.concat([all_read, read_pass, read_fail], keys=['1D', '1D pass', '1D fail'])
-    dataframe = concat.T
-    dataframe.loc['count'] = dataframe.loc['count'].astype(int).apply(lambda x: int_format_str.format(x))
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
-    table_html = _dataFrame_to_html(dataframe)
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _barcode_boxplot_graph(graph_name=graph_name,
+                                  df=df,
+                                  qscore=True,
+                                  barcode_selection=barcode_selection,
+                                  pass_color=toulligqc_colors['pass'],
+                                  fail_color=toulligqc_colors['fail'],
+                                  yaxis_title="PHRED score",
+                                  legend_title="Read type",
+                                  result_directory=result_directory)
 
 
 def sequence_length_over_time(time_df, dataframe_dict, result_directory):

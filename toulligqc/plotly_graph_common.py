@@ -225,4 +225,109 @@ def _over_time_graph(x, y, result_directory, graph_name, color, yaxis_title, log
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
+def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color, fail_color, yaxis_title, legend_title, result_directory):
+
+    # Sort reads by read type and drop read type column
+    pass_df = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
+    fail_df = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
+
+    fig = go.Figure()
+
+    first = True
+    for barcode in barcode_selection:
+
+        if qscore:
+            final_df = pass_df.loc[pass_df['barcodes'] == barcode].dropna()
+            d = _precompute_boxplot_values(final_df['qscore'])
+        else:
+            pass_df[barcode] = pass_df[barcode].loc[pass_df[barcode] > 0]
+            d = _precompute_boxplot_values(pass_df[barcode])
+        fig.add_trace(go.Box(
+            q1=[d['q1']],
+            median=[d['median']],
+            q3=[d['q3']],
+            lowerfence=[d['lowerfence']],
+            upperfence=[d['upperfence']],
+            name="Pass reads",
+            x0=barcode,
+            marker_color=pass_color,
+            offsetgroup="pass",
+            showlegend=first
+        ))
+        if first:
+            first = False
+
+    first = True
+    for barcode in barcode_selection:
+        if qscore:
+            final_df = fail_df.loc[fail_df['barcodes'] == barcode].dropna()
+            d = _precompute_boxplot_values(final_df['qscore'])
+        else:
+            fail_df[barcode] = fail_df[barcode].loc[fail_df[barcode] > 0]
+            d = _precompute_boxplot_values(fail_df[barcode])
+        fig.add_trace(go.Box(
+            q1=[d['q1']],
+            median=[d['median']],
+            q3=[d['q3']],
+            lowerfence=[d['lowerfence']],
+            upperfence=[d['upperfence']],
+            name="Fail reads",
+            x0=barcode,
+            marker_color=fail_color,
+            offsetgroup="fail",
+            showlegend=first
+        ))
+        if first:
+            first = False
+
+    fig.update_layout(
+        title={
+            'text': "<b>" + graph_name + "</b>",
+            'y': 0.95,
+            'x': 0,
+            'xanchor': 'left',
+            'yanchor': 'top',
+            'font': dict(
+                size=title_size,
+                color="black")},
+        xaxis=dict(
+            title="<b>Barcodes</b>",
+            titlefont_size=axis_font_size
+        ),
+        yaxis=dict(
+            title='<b>' + yaxis_title + '</b>',
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
+        ),
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>" + legend_title + "</b>",
+            title=dict(font=dict(size=legend_font_size)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=legend_font_size)
+        ),
+        boxmode='group',
+        boxgap=0.4,
+        boxgroupgap=0,
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
+    )
+
+    # all_read = all_df.describe().T
+    # read_pass = pass_df.describe().T
+    # read_fail = fail_df.describe().T
+    # concat = pd.concat([all_read, read_pass, read_fail],
+    #                    keys=['1D', '1D pass', '1D fail'])
+    # dataframe = concat.T
+    #
+    # dataframe.loc['count'] = dataframe.loc['count'].astype(int).apply(lambda x: int_format_str.format(x))
+    # dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
+    # table_html = _dataFrame_to_html(dataframe)
+
+    table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
 
