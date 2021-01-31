@@ -32,12 +32,10 @@ from toulligqc.plotly_graph_common import _dataFrame_to_html
 from toulligqc.plotly_graph_common import _interpolate
 from toulligqc.plotly_graph_common import _make_describe_dataframe
 from toulligqc.plotly_graph_common import _precompute_boxplot_values
-# Import common function
 from toulligqc.plotly_graph_common import _smooth_data
 from toulligqc.plotly_graph_common import _transparent_colors
 from toulligqc.plotly_graph_common import axis_font_size
 from toulligqc.plotly_graph_common import figure_image_height
-# Import common constants
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import float_format_str
 from toulligqc.plotly_graph_common import graph_font
@@ -51,7 +49,7 @@ from toulligqc.plotly_graph_common import percent_format_str
 from toulligqc.plotly_graph_common import plotly_background_color
 from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import toulligqc_colors
-
+from toulligqc.plotly_graph_common import _over_time_graph
 
 #
 #  1D plots
@@ -1085,50 +1083,18 @@ def sequence_length_over_time(time_df, dataframe_dict, result_directory):
 
     # If more than 10.000 reads, interpolate data
     if len(length) > interpolation_threshold:
-        df_time, df_length = _interpolate(time, 200, length, "linear")
+        time_df, length_df = _interpolate(time, 200, length, "linear")
     else:
-        df_time = time
-        df_length = length
+        time_df = time
+        length_df = length
 
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=df_time,
-        y=df_length,
-        fill='tozeroy',
-        mode='lines',
-        line=dict(color=toulligqc_colors['sequence_length_over_time'],
-                  width=line_width,
-                  shape="spline")))
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>Experiment time (hours)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>Read length (bp)</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _over_time_graph(x=time_df,
+                            y=length_df,
+                            result_directory=result_directory,
+                            graph_name=graph_name,
+                            color=toulligqc_colors['sequence_length_over_time'],
+                            yaxis_title='Read length (bp)',
+                            log=False)
 
 
 def phred_score_over_time(qscore_df, time_df, result_directory):
@@ -1143,48 +1109,18 @@ def phred_score_over_time(qscore_df, time_df, result_directory):
 
     # If more than 10.000 reads, interpolate data
     if len(qscore) > interpolation_threshold:
-        df_time, df_qscore = _interpolate(time, 100, qscore, "nearest")
+        time_df, qscore_df = _interpolate(time, 100, qscore, "nearest")
     else:
-        df_time = time
-        df_qscore = qscore
+        time_df = time
+        qscore_df = qscore
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=df_time,
-        y=df_qscore,
-        fill='tozeroy',
-        mode='lines',
-        line=dict(color=toulligqc_colors['phred_score_over_time'],
-                  width=line_width,
-                  shape="spline")))
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>Experiment time (hours)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>PHRED quality score</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _over_time_graph(x=time_df,
+                            y=qscore_df,
+                            result_directory=result_directory,
+                            graph_name=graph_name,
+                            color=toulligqc_colors['phred_score_over_time'],
+                            yaxis_title='PHRED quality score',
+                            log=False)
 
 
 def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
@@ -1202,46 +1138,13 @@ def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
         time_df = time
         speed_df = speed
 
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=time_df,
-        y=speed_df,
-        fill='tozeroy',
-        mode='lines',
-        line=dict(color=toulligqc_colors['speed_over_time'],
-                  width=line_width,
-                  shape="spline")))
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>Experiment time (hours)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>Speed (bases per second)</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-    fig.update_yaxes(type="log")
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _over_time_graph(x=time_df,
+                            y=speed_df,
+                            result_directory=result_directory,
+                            graph_name=graph_name,
+                            color=toulligqc_colors['speed_over_time'],
+                            yaxis_title='Speed (bases per second)',
+                            log=True)
 
 
 def nseq_over_time(time_df, result_directory):
@@ -1254,42 +1157,10 @@ def nseq_over_time(time_df, result_directory):
     time_points = np.linspace(min(time), max(time), 50)
     n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
 
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=time_points,
-        y=list(n_seq.values),
-        mode='lines',
-        fill="tozeroy",
-        line=dict(color=toulligqc_colors['nseq_over_time'],
-                  width=line_width,
-                  shape="spline")))
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>Experiment time (hours)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>Number of sequences</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _over_time_graph(x=time_points,
+                            y=list(n_seq.values),
+                            result_directory=result_directory,
+                            graph_name=graph_name,
+                            color=toulligqc_colors['nseq_over_time'],
+                            yaxis_title='Number of sequences',
+                            log=False)

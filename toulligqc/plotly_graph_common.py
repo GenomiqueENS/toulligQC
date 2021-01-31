@@ -26,6 +26,7 @@ import plotly.offline as py
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter1d
 from sklearn.utils import resample
+import plotly.graph_objs as go
 
 figure_image_width = 1000
 figure_image_height = 562
@@ -177,3 +178,51 @@ def _create_and_save_div(fig, result_directory, main):
             auto_open=False)
 
     return div, output_file
+
+
+def _over_time_graph(x, y, result_directory, graph_name, color, yaxis_title, log=False):
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y,
+        mode='lines',
+        fill="tozeroy",
+        line=dict(color=color,
+                  width=line_width,
+                  shape="spline")))
+
+    fig.update_layout(
+        title={
+            'text': "<b>" + graph_name + "</b>",
+            'y': 0.95,
+            'x': 0,
+            'xanchor': 'left',
+            'yanchor': 'top',
+            'font': dict(
+                size=title_size,
+                color="black")},
+        xaxis=dict(
+            title="<b>Experiment time (hours)</b>",
+            titlefont_size=axis_font_size
+        ),
+        yaxis=dict(
+            title='<b>' + yaxis_title + '</b>',
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
+        ),
+        hovermode='x',
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
+    )
+
+    if log:
+        fig.update_yaxes(type="log")
+
+    table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
+
+
