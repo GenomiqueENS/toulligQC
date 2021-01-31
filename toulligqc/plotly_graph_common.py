@@ -46,6 +46,8 @@ toulligqc_colors = {'all': '#fca311',  # Yellow
                     'phred_score_over_time': '#7aaceb',
                     'speed_over_time': '#AE3F7B',
                     'nseq_over_time': '#edb773',
+                    'pie_chart_palette': ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2",
+                                          "63cdda", "ea8685", "596275"]
                     }
 
 plotly_background_color = '#e5ecf6'
@@ -328,6 +330,59 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
     # table_html = _dataFrame_to_html(dataframe)
 
     table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
+
+
+def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, result_directory):
+    labels = count_sorted.index.values.tolist()
+
+    fig = go.Figure(data=[go.Pie(labels=labels,
+                                 values=count_sorted)])
+    if len(labels) <= len(color_palette):
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                          marker=dict(colors=color_palette, line=dict(width=line_width, color='#808080')))
+    else:
+        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
+                          marker=dict(line=dict(width=line_width, color='#808080')))
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_layout(
+        title={
+            'text': "<b>" + graph_name + "</b>",
+            'y': 0.95,
+            'x': 0,
+            'xanchor': 'left',
+            'yanchor': 'top',
+            'font': dict(
+                size=title_size,
+                color="black")},
+        legend=dict(
+            x=1.02,
+            y=.5,
+            title_text="<b>Barcodes</b>",
+            title=dict(font=dict(size=legend_font_size)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=legend_font_size)
+        ),
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
+    )
+
+    if one_d_square:
+        count_col_name = '1D² read count'
+    else:
+        count_col_name = 'Read count'
+
+    barcode_table = pd.DataFrame({"Barcode arrangement (%)": count_sorted / sum(count_sorted) * 100,
+                                  count_col_name: count_sorted})
+    barcode_table.sort_index(inplace=True)
+    pd.options.display.float_format = percent_format_str.format
+    barcode_table[count_col_name] = barcode_table[count_col_name].astype(int).apply(lambda x: int_format_str.format(x))
+    table_html = _dataFrame_to_html(barcode_table)
+
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
