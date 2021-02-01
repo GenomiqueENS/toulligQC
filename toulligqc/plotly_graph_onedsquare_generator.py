@@ -262,7 +262,11 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, result_dire
         width=figure_image_width
     )
 
-    table_html = None
+    # Create data for HTML table
+    table_df = pd.concat([pd.Series(all_read), read_pass, read_fail], axis=1,
+                         keys=['All reads', 'Pass reads', 'Fail reads'])
+    table_html = _dataFrame_to_html(_make_describe_dataframe(table_df))
+
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
