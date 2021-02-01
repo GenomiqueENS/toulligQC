@@ -105,6 +105,7 @@ class SequencingTelemetryExtractor:
             self._set_result_dict_value(result_dict, '.operating.system', array, 'tracking_id', 'operating_system')
             self._set_result_dict_value(result_dict, '.run.id', array, 'tracking_id', 'run_id')
             self._set_result_dict_value(result_dict, '.protocol.run.id', array, 'tracking_id', 'protocol_run_id')
+            self._set_result_dict_value(result_dict, '.protocol.group.id', array, 'tracking_id', 'protocol_group_id')
             self._set_result_dict_value(result_dict, '.sample.id', array, 'tracking_id', 'sample_id')
             self._set_result_dict_value(result_dict, '.exp.start.time', array, 'tracking_id', 'exp_start_time')
             self._set_result_dict_value(result_dict, '.device.id', array, 'tracking_id', 'device_id')

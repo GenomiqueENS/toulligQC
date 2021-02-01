@@ -162,6 +162,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
 
     # from telemetry file
     flow_cell_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.id', "Unknown")
+    experiment_group = _get_result_value(result_dict, 'sequencing.telemetry.extractor.protocol.group.id', "Unknown")
     run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.run.id', "Unknown")
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
     kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
@@ -188,6 +189,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
               <tr><th>Report name </th><td>{report_name}</td></tr>
+              <tr><th>Experiment group</th><td>{experiment_group}</td></tr>
               <tr><th>Sample ID</th><td>{sample_id}</td></tr>
               <tr><th>Run ID</th><td>{run_id}</td></tr>
               <tr><th>Run date</th><td>{run_date}</td></tr>
@@ -203,6 +205,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
             </table>
       </div> <!-- End of "Run-statistics" module -->
     """.format(run_id=run_id,
+               experiment_group=experiment_group,
                sample_id=sample_id,
                report_name=report_name,
                run_date=run_date,

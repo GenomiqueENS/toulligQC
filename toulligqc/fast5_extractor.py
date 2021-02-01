@@ -123,6 +123,7 @@ class Fast5Extractor:
         _set_result_dict_value(result_dict, prefix + '.operating.system', tracking_id_dict, 'operating_system')
         _set_result_dict_value(result_dict, prefix + '.run.id', tracking_id_dict, 'run_id')
         _set_result_dict_value(result_dict, prefix + '.protocol.run.id', tracking_id_dict, 'protocol_run_id')
+        _set_result_dict_value(result_dict, prefix + '.protocol.group.id', tracking_id_dict, 'protocol_group_id')
         _set_result_dict_value(result_dict, prefix + '.sample.id', tracking_id_dict, 'sample_id')
         _set_result_dict_value(result_dict, prefix + '.exp.start.time', tracking_id_dict, 'exp_start_time')
         _set_result_dict_value(result_dict, prefix + '.device.id', tracking_id_dict, 'device_id')
