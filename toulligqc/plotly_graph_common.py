@@ -213,6 +213,7 @@ def _over_time_graph(x, y, result_directory, graph_name, color, yaxis_title, log
             title='<b>' + yaxis_title + '</b>',
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
+            fixedrange=True
         ),
         hovermode='x',
         font=dict(family=graph_font),
@@ -226,6 +227,7 @@ def _over_time_graph(x, y, result_directory, graph_name, color, yaxis_title, log
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
+
 
 def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color, fail_color, yaxis_title, legend_title, result_directory):
 
