@@ -283,26 +283,6 @@ def yield_plot(result_dict, result_directory):
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=count_y1,
-                             name='All reads',
-                             marker_color=toulligqc_colors['all'],
-                             fill='tozeroy'
-                             ))
-
-    fig.add_trace(go.Scatter(x=count_x2,
-                             y=count_y2,
-                             name='Pass reads',
-                             marker_color=toulligqc_colors['pass'],
-                             fill='tozeroy'
-                             ))
-
-    fig.add_trace(go.Scatter(x=count_x3,
-                             y=count_y3,
-                             name='Fail reads',
-                             marker_color=toulligqc_colors['fail'],
-                             fill='tozeroy'
-                             ))
     # Figures for cumulative yield plot
     fig.add_trace(go.Scatter(x=count_x1,
                              y=np.cumsum(count_y1),
@@ -310,7 +290,7 @@ def yield_plot(result_dict, result_directory):
                              hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=toulligqc_colors['all'],
-                             visible=False
+                             visible=True
                              ))
     fig.add_trace(go.Scatter(x=count_x2,
                              y=np.cumsum(count_y2),
@@ -318,7 +298,7 @@ def yield_plot(result_dict, result_directory):
                              hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=toulligqc_colors['pass'],
-                             visible=False
+                             visible=True
                              ))
     fig.add_trace(go.Scatter(x=count_x3,
                              y=np.cumsum(count_y3),
@@ -326,6 +306,50 @@ def yield_plot(result_dict, result_directory):
                              hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=toulligqc_colors['fail'],
+                             visible=True
+                             ))
+
+    # Threshold
+    for p in [50, 75, 90, 99]:
+        y = np.cumsum(count_y1)
+        ymax = max(y)
+        index = (np.abs(y-ymax*p/100)).argmin()
+        x0 = count_x1[index]
+        fig.add_trace(go.Scatter(
+                      mode="lines+text",
+                      name='All reads',
+                      x=[x0, x0],
+                      y=[0, ymax],
+                      line=dict(color="gray", width=1, dash="dot"),
+                      text=["", str(p) + "% all reads"],
+                      textposition="top center",
+                      hoverinfo="skip",
+                      showlegend=False,
+                      visible=True
+                     ))
+
+    # Yield
+    fig.add_trace(go.Scatter(x=count_x1,
+                             y=count_y1,
+                             name='All reads',
+                             marker_color=toulligqc_colors['all'],
+                             fill='tozeroy',
+                             visible=False
+                             ))
+
+    fig.add_trace(go.Scatter(x=count_x2,
+                             y=count_y2,
+                             name='Pass reads',
+                             marker_color=toulligqc_colors['pass'],
+                             fill='tozeroy',
+                             visible=False
+                             ))
+
+    fig.add_trace(go.Scatter(x=count_x3,
+                             y=count_y3,
+                             name='Fail reads',
+                             marker_color=toulligqc_colors['fail'],
+                             fill='tozeroy',
                              visible=False
                              ))
 
@@ -341,12 +365,14 @@ def yield_plot(result_dict, result_directory):
                 color="black")},
         xaxis=dict(
             title="<b>Time (hours)</b>",
-            titlefont_size=axis_font_size
+            titlefont_size=axis_font_size,
+            rangemode = "tozero"
         ),
         yaxis=dict(
             title='<b>Density</b>',
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
+            rangemode="tozero"
         ),
         legend=dict(
             x=1.02,
@@ -364,6 +390,7 @@ def yield_plot(result_dict, result_directory):
     )
 
     # Add buttons
+
     fig.update_layout(
         updatemenus=[
             dict(
@@ -371,13 +398,17 @@ def yield_plot(result_dict, result_directory):
                 direction="left",
                 buttons=list([
                     dict(
-                        args=[{'visible': [True, True, True, False, False, False]}],
-                        label="Yield plot",
+                        args=[{'visible': [True, True, True,
+                                           True, True, True, True,
+                                           False, False, False]}],
+                        label="Cumulative yield plot",
                         method="update"
                     ),
                     dict(
-                        args=[{'visible': [False, False, False, True, True, True]}],
-                        label="Cumulative yield plot",
+                        args=[{'visible': [False, False, False,
+                                           False, False, False, False,
+                                           True, True, True]}],
+                        label="Yield plot",
                         method="update"
                     )
                 ]),
@@ -390,7 +421,6 @@ def yield_plot(result_dict, result_directory):
             ),
         ]
     )
-
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
