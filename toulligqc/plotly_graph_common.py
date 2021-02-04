@@ -386,3 +386,104 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
+
+def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_color, pass_color, fail_color,
+                              xaxis_title, result_directory):
+
+    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
+    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
+    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
+
+    # Find 50 percentile for zoomed range on x axis
+    max_x_range = np.percentile(all_read, 99)
+    max_y = max(max(count_y1), max(count_y2), max(count_y3))
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=count_x1,
+                             y=count_y1,
+                             name='All reads',
+                             hoverinfo='x+y',
+                             fill='tozeroy',
+                             marker_color=all_color
+                             ))
+    fig.add_trace(go.Scatter(x=count_x2,
+                             y=count_y2,
+                             name='Pass reads',
+                             hoverinfo='x+y',
+                             fill='tozeroy',
+                             marker_color=pass_color
+                             ))
+    fig.add_trace(go.Scatter(x=count_x3,
+                             y=count_y3,
+                             name='Fail reads',
+                             hoverinfo='x+y',
+                             fill='tozeroy',
+                             marker_color=fail_color
+                             ))
+
+    # Threshold
+    for p in [25, 50, 75]:
+        x0 = np.percentile(all_read, p)
+        if p == 50:
+            t = 'median<br>all reads'
+        else:
+            t = str(p) + "%<br>all reads"
+        fig.add_trace(go.Scatter(
+                      mode="lines+text",
+                      name='All reads',
+                      x=[x0, x0],
+                      y=[0, max_y],
+                      line=dict(color="gray", width=1, dash="dot"),
+                      text=["", t],
+                      textposition="top center",
+                      hoverinfo="skip",
+                      showlegend=False,
+                      visible=True
+                     ))
+
+    fig.update_layout(
+        title={
+            'text': "<b>" + graph_name + "</b>",
+            'y': 0.95,
+            'x': 0,
+            'xanchor': 'left',
+            'yanchor': 'top',
+            'font': dict(
+                size=title_size,
+                color="black")},
+        xaxis=dict(
+            title='<b>' + xaxis_title + '</b>',
+            titlefont_size=axis_font_size,
+            range=[0, max_x_range]
+        ),
+        yaxis=dict(
+            title='<b>Density</b>',
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
+            range=[0, max(count_y1) * 1.10],
+            fixedrange=True
+        ),
+        legend=dict(
+            x=1.02,
+            y=0.95,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=legend_font_size)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=legend_font_size)
+        ),
+        hovermode='x',
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
+    )
+
+    # Create data for HTML table
+    table_df = pd.concat([pd.Series(all_read), read_pass, read_fail], axis=1,
+                         keys=['All reads', 'Pass reads', 'Fail reads'])
+    table_html = _dataFrame_to_html(_make_describe_dataframe(table_df))
+
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
+
+

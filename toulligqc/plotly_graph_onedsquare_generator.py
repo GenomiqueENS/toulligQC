@@ -48,6 +48,7 @@ from toulligqc.plotly_graph_common import toulligqc_colors
 from toulligqc.plotly_graph_common import _over_time_graph
 from toulligqc.plotly_graph_common import _barcode_boxplot_graph
 from toulligqc.plotly_graph_common import _pie_chart_graph
+from toulligqc.plotly_graph_common import _read_length_distribution
 
 
 #
@@ -197,78 +198,15 @@ def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, result_dire
     read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'].loc[
         result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'] >= 10]
 
-    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
-
-    # Find 50 percentile for zoomed range on x axis
-    max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=count_y1,
-                             name='All reads',
-                             hoverinfo='x+y',
-                             fill='tozeroy',
-                             marker_color=toulligqc_colors['all']
-                             ))
-    fig.add_trace(go.Scatter(x=count_x2,
-                             y=count_y2,
-                             name='Pass reads',
-                             hoverinfo='x+y',
-                             fill='tozeroy',
-                             marker_color=toulligqc_colors['pass']
-                             ))
-    fig.add_trace(go.Scatter(x=count_x3,
-                             y=count_y3,
-                             name='Fail reads',
-                             hoverinfo='x+y',
-                             fill='tozeroy',
-                             marker_color=toulligqc_colors['fail']
-                             ))
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>1D² Read length (bp)</b>",
-            titlefont_size=axis_font_size,
-            range=[0, max_x_range]
-        ),
-        yaxis=dict(
-            title='<b>Density</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size
-        ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    # Create data for HTML table
-    table_df = pd.concat([pd.Series(all_read), read_pass, read_fail], axis=1,
-                         keys=['All reads', 'Pass reads', 'Fail reads'])
-    table_html = _dataFrame_to_html(_make_describe_dataframe(table_df))
-
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _read_length_distribution(graph_name=graph_name,
+                                     all_read=all_read,
+                                     read_pass=read_pass,
+                                     read_fail=read_fail,
+                                     all_color=toulligqc_colors['all'],
+                                     pass_color=toulligqc_colors['pass'],
+                                     fail_color=toulligqc_colors['fail'],
+                                     xaxis_title='1D² Read length (bp)',
+                                     result_directory=result_directory)
 
 
 def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_directory):
