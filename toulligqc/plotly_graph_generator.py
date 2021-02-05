@@ -511,31 +511,74 @@ def allphred_score_frequency(result_dict, result_directory):
 
     # If more than 10.000 reads, interpolate data
     if len(dataframe["1D"]) > interpolation_threshold:
+        phred_score_all = _interpolate(dataframe["1D"], npoints=5000)
         phred_score_pass = _interpolate(dataframe["1D pass"], npoints=5000)
         phred_score_fail = _interpolate(dataframe["1D fail"], npoints=5000)
     else:
+        phred_score_all = dataframe["1D"]
         phred_score_pass = dataframe["1D pass"]
         phred_score_fail = dataframe["1D fail"]
 
+    arr_1D_all = np.array(pd.Series(phred_score_all).dropna())
+    x1 = np.linspace(0, max(arr_1D_all), 200)
+    mu1, std1 = norm.fit(arr_1D_all)
+    pdf_1D_all = norm.pdf(x1, mu1, std1)
+
     arr_1D_pass = np.array(pd.Series(phred_score_pass).dropna())
-    x = np.linspace(0, max(arr_1D_pass), 200)
-    mu, std = norm.fit(arr_1D_pass)
-    pdf_1D_pass = norm.pdf(x, mu, std)
+    x2 = np.linspace(0, max(arr_1D_pass), 200)
+    mu2, std2 = norm.fit(arr_1D_pass)
+    pdf_1D_pass = norm.pdf(x2, mu2, std2)
 
     arr_1D_fail = np.array(pd.Series(phred_score_fail).dropna())
-    x2 = np.linspace(0, max(arr_1D_fail), 200)
-    mu2, std2 = norm.fit(arr_1D_fail)
-    pdf_1D_fail = norm.pdf(x2, mu2, std2)
+    x3 = np.linspace(0, max(arr_1D_fail), 200)
+    mu3, std3 = norm.fit(arr_1D_fail)
+    pdf_1D_fail = norm.pdf(x3, mu3, std3)
+
+    x_max = max(max(x1), max(x2), max(x3))
 
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_pass, name="Pass reads", marker_color=toulligqc_colors['pass'],
-                               histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=phred_score_fail, name="Fail reads", marker_color=toulligqc_colors['fail'],
-                               histnorm='probability density'))
-    fig.add_trace(go.Scatter(x=x, y=pdf_1D_pass, mode="lines", name='Density curve of pass reads',
-                             line=dict(color=toulligqc_colors['pass'], width=3, shape="spline", smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2, y=pdf_1D_fail, mode="lines", name='Density curve of fail reads',
-                             line=dict(color=toulligqc_colors['fail'], width=3, shape="spline", smoothing=0.5)))
+    fig.add_trace(go.Histogram(x=phred_score_all,
+                               name="All reads",
+                               marker_color=toulligqc_colors['all'],
+                               histnorm='probability density',
+                               visible=True))
+    fig.add_trace(go.Histogram(x=phred_score_pass,
+                               name="Pass reads",
+                               marker_color=toulligqc_colors['pass'],
+                               histnorm='probability density',
+                               visible=False))
+    fig.add_trace(go.Histogram(x=phred_score_fail,
+                               name="Fail reads",
+                               marker_color=toulligqc_colors['fail'],
+                               histnorm='probability density',
+                               visible=False))
+    fig.add_trace(go.Scatter(x=x1,
+                             y=pdf_1D_all,
+                             mode="lines",
+                             name='Density curve',
+                             visible=True,
+                             line=dict(color="gray",
+                                       width=3,
+                                       shape="spline",
+                                       smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x2,
+                             y=pdf_1D_pass,
+                             mode="lines",
+                             name='Density curve',
+                             visible=False,
+                             line=dict(color="gray",
+                                       width=3,
+                                       shape="spline",
+                                       smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x3,
+                             y=pdf_1D_fail,
+                             mode="lines",
+                             name='Density curve',
+                             visible=False,
+                             line=dict(color="gray",
+                                       width=3,
+                                       shape="spline",
+                                       smoothing=0.5)))
 
     fig.update_layout(
         title={
@@ -549,12 +592,14 @@ def allphred_score_frequency(result_dict, result_directory):
                 color="black")},
         xaxis=dict(
             title="<b>PHRED score</b>",
-            titlefont_size=axis_font_size
+            titlefont_size=axis_font_size,
+            range=[0, x_max]
         ),
         yaxis=dict(
             title='<b>Density probability</b>',
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
+            rangemode="tozero",
         ),
         legend=dict(
             x=1.02,
@@ -570,6 +615,39 @@ def allphred_score_frequency(result_dict, result_directory):
         font=dict(family=graph_font),
         height=figure_image_height,
         width=figure_image_width
+    )
+
+    # Add Button
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False, False, True, False, False]}],
+                        label="All reads",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True, False, False, True, False]}],
+                        label="Pass reads",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, True, False, False, True]}],
+                        label="Fail reads",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
     )
 
     dataframe = _make_describe_dataframe(dataframe).drop('count')
