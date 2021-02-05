@@ -197,7 +197,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.dataframe_dict_1dsqr[non_used_barcodes_count] = sum(all_barcode_count) - sum(count_sorted)
 
         # Create Series for all non-used barcode counts and rename index array with "other"
-        other_all_barcode_count = pd.Series(self.dataframe_dict_1dsqr[non_used_barcodes_count], index=['other'])
+        other_all_barcode_count = pd.Series(self.dataframe_dict_1dsqr[non_used_barcodes_count], index=['other barcodes'])
 
         # Append Series of non-used barcode counts to the Series of barcode_selection counts
         count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
@@ -409,11 +409,11 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         # Replaces all rows with unused barcodes (ie not in barcode_selection) in column barcode_arrangement with the 'other' value
         self.dataframe_1dsqr.loc[~self.dataframe_1dsqr['barcode_arrangement'].isin(
-            self.barcode_selection), 'barcode_arrangement'] = 'other'
+            self.barcode_selection), 'barcode_arrangement'] = 'other barcodes'
 
         pattern = '(\\d{2})'
-        if "other" not in self.barcode_selection:
-            self.barcode_selection.append('other')
+        if 'other barcodes' not in self.barcode_selection:
+            self.barcode_selection.append('other barcodes')
 
         # Create dataframes filtered by barcodes and read quality
         for index_barcode, barcode in enumerate(self.barcode_selection):
