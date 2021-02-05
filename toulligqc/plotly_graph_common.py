@@ -239,7 +239,7 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
     fig = go.Figure()
 
     first = True
-    for barcode in barcode_selection:
+    for barcode in sorted(barcode_selection):
 
         if qscore:
             final_df = pass_df.loc[pass_df['barcodes'] == barcode].dropna()
