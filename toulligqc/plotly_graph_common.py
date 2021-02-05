@@ -296,12 +296,14 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
                 color="black")},
         xaxis=dict(
             title="<b>Barcodes</b>",
-            titlefont_size=axis_font_size
+            titlefont_size=axis_font_size,
+            fixedrange=True
         ),
         yaxis=dict(
             title='<b>' + yaxis_title + '</b>',
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
+            fixedrange=True
         ),
         legend=dict(
             x=1.02,

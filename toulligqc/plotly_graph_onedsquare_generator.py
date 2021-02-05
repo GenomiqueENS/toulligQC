@@ -164,6 +164,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
                 color="black")
         },
         xaxis=dict(title="<b>1D² Read type</b>",
+                   fixedrange=True,
                    titlefont=dict(
                        size=axis_font_size,
                        color="black"
@@ -171,6 +172,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
                    categoryorder="trace"
                    ),
         yaxis=dict(title="<b>Counts</b>",
+                   fixedrange=True,
                    titlefont=dict(
                        size=axis_font_size,
                        color="black"
@@ -280,10 +282,12 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
                 color="black")},
         xaxis=dict(
             title="<b>1D² Read type</b>",
-            titlefont_size=axis_font_size
+            titlefont_size=axis_font_size,
+            fixedrange=True,
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
+            fixedrange=True,
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
             range=[min_yaxis, max_yaxis]

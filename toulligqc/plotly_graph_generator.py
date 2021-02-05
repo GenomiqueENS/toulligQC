@@ -159,16 +159,18 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
                 color="black")
         },
         xaxis=dict(title="<b>Read type</b>",
+                   fixedrange=True,
                    titlefont=dict(
                        size=axis_font_size,
-                       color="black"
+                       color="black",
                    ),
                    categoryorder="total descending"
                    ),
         yaxis=dict(title="<b>Counts</b>",
+                   fixedrange=True,
                    titlefont=dict(
                        size=axis_font_size,
-                       color="black"
+                       color="black",
                    )),
         font=dict(family=graph_font),
         width=figure_image_width,
@@ -438,13 +440,15 @@ def read_quality_multiboxplot(result_dict, result_directory):
                 color="black")},
         xaxis=dict(
             title="<b>Read type</b>",
-            titlefont_size=axis_font_size
+            titlefont_size=axis_font_size,
+            fixedrange=True
         ),
         yaxis=dict(
             title='<b>PHRED score</b>',
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
-            range=[min_yaxis, max_yaxis]
+            range=[min_yaxis, max_yaxis],
+            fixedrange=True
         ),
         legend=dict(
             x=1.02,
@@ -600,6 +604,7 @@ def allphred_score_frequency(result_dict, result_directory):
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
             rangemode="tozero",
+            fixedrange=True
         ),
         legend=dict(
             x=1.02,
