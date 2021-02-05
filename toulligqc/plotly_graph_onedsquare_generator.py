@@ -49,6 +49,7 @@ from toulligqc.plotly_graph_common import _over_time_graph
 from toulligqc.plotly_graph_common import _barcode_boxplot_graph
 from toulligqc.plotly_graph_common import _pie_chart_graph
 from toulligqc.plotly_graph_common import _read_length_distribution
+from toulligqc.plotly_graph_common import _phred_score_density
 
 
 #
@@ -354,75 +355,13 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_dire
                       "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
                       "1D² fail": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']})
 
-    # If more than 10.000 reads, interpolate data
-    if len(dataframe["1D²"]) > interpolation_threshold:
-        phred_score_pass = _interpolate(dataframe["1D² pass"], npoints=5000)
-        phred_score_fail = _interpolate(dataframe["1D² fail"], npoints=5000)
-    else:
-        phred_score_pass = dataframe["1D² pass"]
-        phred_score_fail = dataframe["1D² fail"]
-
-    arr_1Dsqr_pass = np.array(pd.Series(phred_score_pass).dropna())
-    x = np.linspace(0, max(arr_1Dsqr_pass), 200)
-    mu, std = norm.fit(arr_1Dsqr_pass)
-    pdf_1Dsqr_pass = norm.pdf(x, mu, std)
-
-    arr_1Dsqr_fail = np.array(pd.Series(phred_score_fail).dropna())
-    x2 = np.linspace(0, max(arr_1Dsqr_fail), 200)
-    mu2, std2 = norm.fit(arr_1Dsqr_fail)
-    pdf_1Dsqr_fail = norm.pdf(x2, mu2, std2)
-
-    fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color=toulligqc_colors['pass'],
-                               histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color=toulligqc_colors['fail'],
-                               histnorm='probability density'))
-    fig.add_trace(go.Scatter(x=x, y=pdf_1Dsqr_pass, mode="lines", name='Density curve of read pass',
-                             line=dict(color=toulligqc_colors['pass'], width=3, shape="spline", smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2, y=pdf_1Dsqr_fail, mode="lines", name='Density curve of read fail',
-                             line=dict(color=toulligqc_colors['fail'], width=3, shape="spline", smoothing=0.5)))
-
-    fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
-        xaxis=dict(
-            title="<b>PHRED score</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>Density probability</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        barmode='group',
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
-    )
-
-    dataframe = _make_describe_dataframe(dataframe).drop('count')
-    dataframe.columns = ['All reads', 'Pass reads', 'Fail reads']
-
-    table_html = _dataFrame_to_html(dataframe)
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _phred_score_density(graph_name=graph_name,
+                                dataframe=dataframe,
+                                prefix="1D²",
+                                all_color=toulligqc_colors['all'],
+                                pass_color=toulligqc_colors['pass'],
+                                fail_color=toulligqc_colors['fail'],
+                                result_directory=result_directory)
 
 
 def scatterplot_1dsqr(result_dict, result_directory):

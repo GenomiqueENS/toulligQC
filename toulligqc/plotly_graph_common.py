@@ -27,6 +27,7 @@ from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter1d
 from sklearn.utils import resample
 import plotly.graph_objs as go
+from scipy.stats import norm
 
 figure_image_width = 1000
 figure_image_height = 562
@@ -490,4 +491,154 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
+
+def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, fail_color, result_directory):
+    # If more than 10.000 reads, interpolate data
+    if len(dataframe[prefix]) > interpolation_threshold:
+        phred_score_all = _interpolate(dataframe[prefix], npoints=5000)
+        phred_score_pass = _interpolate(dataframe[prefix + " pass"], npoints=5000)
+        phred_score_fail = _interpolate(dataframe[prefix + " fail"], npoints=5000)
+    else:
+        phred_score_all = dataframe[prefix]
+        phred_score_pass = dataframe[prefix + " pass"]
+        phred_score_fail = dataframe[prefix + " fail"]
+
+    arr_1D_all = np.array(pd.Series(phred_score_all).dropna())
+    x1 = np.linspace(0, max(arr_1D_all), 200)
+    mu1, std1 = norm.fit(arr_1D_all)
+    pdf_1D_all = norm.pdf(x1, mu1, std1)
+
+    arr_1D_pass = np.array(pd.Series(phred_score_pass).dropna())
+    x2 = np.linspace(0, max(arr_1D_pass), 200)
+    mu2, std2 = norm.fit(arr_1D_pass)
+    pdf_1D_pass = norm.pdf(x2, mu2, std2)
+
+    arr_1D_fail = np.array(pd.Series(phred_score_fail).dropna())
+    x3 = np.linspace(0, max(arr_1D_fail), 200)
+    mu3, std3 = norm.fit(arr_1D_fail)
+    pdf_1D_fail = norm.pdf(x3, mu3, std3)
+
+    x_max = max(max(x1), max(x2), max(x3))
+
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(x=phred_score_all,
+                               name="All reads",
+                               marker_color=all_color,
+                               histnorm='probability density',
+                               visible=True))
+    fig.add_trace(go.Histogram(x=phred_score_pass,
+                               name="Pass reads",
+                               marker_color=pass_color,
+                               histnorm='probability density',
+                               visible=False))
+    fig.add_trace(go.Histogram(x=phred_score_fail,
+                               name="Fail reads",
+                               marker_color=fail_color,
+                               histnorm='probability density',
+                               visible=False))
+    fig.add_trace(go.Scatter(x=x1,
+                             y=pdf_1D_all,
+                             mode="lines",
+                             name='Density curve',
+                             visible=True,
+                             line=dict(color="gray",
+                                       width=3,
+                                       shape="spline",
+                                       smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x2,
+                             y=pdf_1D_pass,
+                             mode="lines",
+                             name='Density curve',
+                             visible=False,
+                             line=dict(color="gray",
+                                       width=3,
+                                       shape="spline",
+                                       smoothing=0.5)))
+    fig.add_trace(go.Scatter(x=x3,
+                             y=pdf_1D_fail,
+                             mode="lines",
+                             name='Density curve',
+                             visible=False,
+                             line=dict(color="gray",
+                                       width=3,
+                                       shape="spline",
+                                       smoothing=0.5)))
+
+    fig.update_layout(
+        title={
+            'text': "<b>" + graph_name + "</b>",
+            'y': 0.95,
+            'x': 0,
+            'xanchor': 'left',
+            'yanchor': 'top',
+            'font': dict(
+                size=title_size,
+                color="black")},
+        xaxis=dict(
+            title="<b>PHRED score</b>",
+            titlefont_size=axis_font_size,
+            range=[0, x_max]
+        ),
+        yaxis=dict(
+            title='<b>Density probability</b>',
+            titlefont_size=axis_font_size,
+            tickfont_size=axis_font_size,
+            rangemode="tozero",
+            fixedrange=True
+        ),
+        legend=dict(
+            x=1.02,
+            y=0.95,
+            title_text="<b>Legend</b>",
+            title=dict(font=dict(size=legend_font_size)),
+            bgcolor='white',
+            bordercolor='white',
+            font=dict(size=legend_font_size)
+        ),
+        barmode='group',
+        hovermode='x',
+        font=dict(family=graph_font),
+        height=figure_image_height,
+        width=figure_image_width
+    )
+
+    # Add Button
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False, False, True, False, False]}],
+                        label="All reads",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True, False, False, True, False]}],
+                        label="Pass reads",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, True, False, False, True]}],
+                        label="Fail reads",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
+    )
+
+    dataframe = _make_describe_dataframe(dataframe).drop('count')
+    dataframe.columns = ['All reads', 'Pass reads', 'Fail reads']
+    table_html = _dataFrame_to_html(dataframe)
+
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
 
