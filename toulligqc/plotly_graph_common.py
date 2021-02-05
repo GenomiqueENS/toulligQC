@@ -407,21 +407,18 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
     fig.add_trace(go.Scatter(x=count_x1,
                              y=count_y1,
                              name='All reads',
-                             hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=all_color
                              ))
     fig.add_trace(go.Scatter(x=count_x2,
                              y=count_y2,
                              name='Pass reads',
-                             hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=pass_color
                              ))
     fig.add_trace(go.Scatter(x=count_x3,
                              y=count_y3,
                              name='Fail reads',
-                             hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=fail_color
                              ))

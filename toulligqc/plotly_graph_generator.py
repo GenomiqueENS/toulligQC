@@ -229,7 +229,6 @@ def yield_plot(result_dict, result_directory):
     fig.add_trace(go.Scatter(x=count_x1,
                              y=np.cumsum(count_y1),
                              name='All reads',
-                             hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=toulligqc_colors['all'],
                              visible=True
@@ -238,7 +237,6 @@ def yield_plot(result_dict, result_directory):
     fig.add_trace(go.Scatter(x=count_x2,
                              y=np.cumsum(count_y2),
                              name='Pass reads',
-                             hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=toulligqc_colors['pass'],
                              visible=True
@@ -247,7 +245,6 @@ def yield_plot(result_dict, result_directory):
     fig.add_trace(go.Scatter(x=count_x3,
                              y=np.cumsum(count_y3),
                              name='Fail reads',
-                             hoverinfo='x+y',
                              fill='tozeroy',
                              marker_color=toulligqc_colors['fail'],
                              visible=True
