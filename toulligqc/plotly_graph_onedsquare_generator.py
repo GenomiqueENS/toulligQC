@@ -192,14 +192,12 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
     return graph_name, output_file, table_html, div
 
 
-def dsqr_read_length_scatterplot(result_dict, sequence_length_1dsqr, result_directory):
+def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, sequence_length_1dsqr, result_directory):
     graph_name = "1D² Distribution of read lengths"
 
     all_read = sequence_length_1dsqr.loc[sequence_length_1dsqr >= 10].dropna().values
-    read_pass = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'].loc[
-        result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.length'] >= 10]
-    read_fail = result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'].loc[
-        result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.length'] >= 10]
+    read_pass = dataframe_dict_1dsqr['read.pass.length'].loc[dataframe_dict_1dsqr['read.pass.length'] >= 10]
+    read_fail = dataframe_dict_1dsqr['read.fail.length'].loc[dataframe_dict_1dsqr['read.fail.length'] >= 10]
 
     return _read_length_distribution(graph_name=graph_name,
                                      all_read=all_read,
@@ -222,8 +220,8 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
 
     df = pd.DataFrame(
         {"1D²": dataframe_dict_1dsqr["mean.qscore"],
-         "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
-         "1D² fail": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']
+         "1D² pass": dataframe_dict_1dsqr['read.pass.qscore'],
+         "1D² fail": dataframe_dict_1dsqr['read.fail.qscore']
          })
 
     # If more than 10.000 reads, interpolate data
@@ -352,8 +350,8 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_dire
 
     dataframe = \
         pd.DataFrame({"1D²": dataframe_dict_1dsqr["mean.qscore"],
-                      "1D² pass": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore'],
-                      "1D² fail": result_dict['basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore']})
+                      "1D² pass": dataframe_dict_1dsqr['read.pass.qscore'],
+                      "1D² fail": dataframe_dict_1dsqr['read.fail.qscore']})
 
     return _phred_score_density(graph_name=graph_name,
                                 dataframe=dataframe,
@@ -364,17 +362,17 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_dire
                                 result_directory=result_directory)
 
 
-def scatterplot_1dsqr(result_dict, result_directory):
+def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
 
     graph_name = "Correlation between 1D² read length and PHRED score"
 
-    read_pass_length = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.length"]
-    read_pass_qscore = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.qscore"]
-    read_fail_length = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.length"]
-    read_fail_qscore = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.qscore"]
+    read_pass_length = dataframe_dict_1dsqr["read.pass.length"]
+    read_pass_qscore = dataframe_dict_1dsqr["read.pass.qscore"]
+    read_fail_length = dataframe_dict_1dsqr["read.fail.length"]
+    read_fail_qscore = dataframe_dict_1dsqr["read.fail.qscore"]
 
     # If more than 10.000 reads, interpolate data
     if len(read_pass_length) > interpolation_threshold:

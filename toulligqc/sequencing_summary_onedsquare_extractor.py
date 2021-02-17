@@ -249,11 +249,13 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :param key: string entry to add to result_dict
         :param value: int, float, list, pd.Series or pd.Dataframe value of the corresponding key
         """
-        try:
-            dict[self.get_report_data_file_id() + '.' + key] = value
-        except TypeError:
-            ("Invalid type for key {0} or value {1} ".format(
-                type(key), type(value)))
+        if not isinstance(key, str):
+            raise TypeError("Invalid type for key: {}".format(type(key)))
+
+        if not isinstance(value, int) and not isinstance(value, float) and not isinstance(value, str):
+            raise TypeError("Invalid type for the value of the key {}: {} ".format(key, type(value)))
+
+        dict[self.get_report_data_file_id() + '.' + key] = value
 
     def _get_result_value(self, result_dict, key: str):
         """
@@ -301,22 +303,18 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # 1D² pass information : count, length and qscore values
         self._set_result_to_dict(result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.df_merged, 'passes_filtering', True))
-        self._set_result_to_dict(result_dict, "read.pass.length",
-                                 self._series_cols_boolean_elements(self.df_merged, 'sequence_length',
-                                                                    'passes_filtering', True))
-        self._set_result_to_dict(result_dict, "read.pass.qscore",
-                                 self._series_cols_boolean_elements(self.df_merged, 'mean_qscore',
-                                                                    'passes_filtering', True))
+        self.dataframe_dict_1dsqr["read.pass.length"] = self._series_cols_boolean_elements(self.df_merged, 'sequence_length',
+                                                                    'passes_filtering', True)
+        self.dataframe_dict_1dsqr["read.pass.qscore"] = self._series_cols_boolean_elements(self.df_merged, 'mean_qscore',
+                                                                    'passes_filtering', True)
 
         # 1D² fail information : count, length and qscore values
         self._set_result_to_dict(result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.df_merged, 'passes_filtering', False))
-        self._set_result_to_dict(result_dict, "read.fail.length",
-                                 self._series_cols_boolean_elements(self.df_merged, 'sequence_length',
-                                                                    'passes_filtering', False))
-        self._set_result_to_dict(result_dict, "read.fail.qscore",
-                                 self._series_cols_boolean_elements(self.df_merged, 'mean_qscore',
-                                                                    'passes_filtering', False))
+        self.dataframe_dict_1dsqr["read.fail.length"] = self._series_cols_boolean_elements(self.df_merged, 'sequence_length',
+                                                                    'passes_filtering', False)
+        self.dataframe_dict_1dsqr["read.fail.qscore"] = self._series_cols_boolean_elements(self.df_merged, 'mean_qscore',
+                                                                    'passes_filtering', False)
 
         # Ratios & frequencies
         self._set_result_value(result_dict, "read.count.frequency", 100)
@@ -345,10 +343,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.pass.length"), "read.pass.length")
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.fail.length"), "read.fail.length")
+        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.pass.length"], "read.pass.length")
+        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.fail.length"], "read.fail.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1dsqr['mean_qscore'].describe().drop(
@@ -359,10 +355,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 result_dict, "all.read.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.pass.qscore"), "read.pass.qscore")
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.fail.qscore"), "read.fail.qscore")
+        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.pass.qscore"], "read.pass.qscore")
+        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.fail.qscore"], "read.fail.qscore")
 
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
@@ -515,16 +509,16 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, images_directory)])
         images.append(pgg2.dsqr_read_count_histogram(result_dict, self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_1d, images_directory))
-        images.append(pgg2.dsqr_read_length_scatterplot(result_dict, self.sequence_length_1dsqr, images_directory))
-        images.append(pgg.yield_plot(result_dict, images_directory))
-        images.append(pgg.read_quality_multiboxplot(result_dict, images_directory, ))
+        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.sequence_length_1d, images_directory))
+        images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, self.sequence_length_1dsqr, images_directory))
+        images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
+        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory, ))
         images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg.allphred_score_frequency(result_dict, images_directory))
+        images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
         images.append(pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr,
                                                          images_directory))
-        images.append(pgg.all_scatterplot(result_dict, images_directory))
-        images.append(pgg2.scatterplot_1dsqr(result_dict, images_directory))
+        images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
+        images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, images_directory))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
@@ -563,8 +557,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         key_list = []
 
         for key in keys:
-            self._get_result_value(result_dict, key)
-            key_list.append(self.get_report_data_file_id() + '.' + str(key))
+            if key in result_dict:
+                self._get_result_value(result_dict, key)
+                key_list.append(self.get_report_data_file_id() + '.' + str(key))
 
         if self.is_barcode:
             key_list.extend([(k, v) for k, v in self.dataframe_dict.items()])

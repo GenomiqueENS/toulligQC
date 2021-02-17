@@ -215,11 +215,14 @@ class SequencingSummaryExtractor:
         :param key: string entry to add to result_dict
         :param value: int, float, list, pd.Series or pd.Dataframe value of the corresponding key
         """
-        try:
-            dict[self.get_report_data_file_id() + '.' + key] = value
-        except TypeError:
-            ("Invalid type for key {0} or value {1} ".format(
-                type(key), type(value)))
+
+        if not isinstance(key, str):
+            raise TypeError("Invalid type for key: {}".format(type(key)))
+
+        if not isinstance(value, int) and not isinstance(value, float) and not isinstance(value, str):
+            raise TypeError("Invalid type for the value of the key {}: {} ".format(key, type(value)))
+
+        dict[self.get_report_data_file_id() + '.' + key] = value
 
     def _get_result_value(self, result_dict, key: str):
         """
@@ -255,28 +258,22 @@ class SequencingSummaryExtractor:
         # 1D pass information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
-        self._set_result_to_dict(result_dict, "read.pass.length",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
-                                                                    'passes_filtering', True))
-        self._set_result_to_dict(result_dict, "read.pass.qscore",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
-                                                                    'passes_filtering', True))
-        self._set_result_to_dict(result_dict, "read.pass.sorted",
-                                 self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
-                                                                            'passes_filtering', True, 3600))
+        self.dataframe_dict["read.pass.length"] = self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
+                                                                    'passes_filtering', True)
+        self.dataframe_dict["read.pass.qscore"] = self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
+                                                                    'passes_filtering', True)
+        self.dataframe_dict["read.pass.sorted"] = self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
+                                                                            'passes_filtering', True, 3600)
 
         # 1D fail information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
-        self._set_result_to_dict(result_dict, "read.fail.length",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
-                                                                    'passes_filtering', False))
-        self._set_result_to_dict(result_dict, "read.fail.qscore",
-                                 self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
-                                                                    'passes_filtering', False))
-        self._set_result_to_dict(result_dict, "read.fail.sorted",
-                                 self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
-                                                                            'passes_filtering', False, 3600))
+        self.dataframe_dict["read.fail.length"] = self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
+                                                                    'passes_filtering', False)
+        self.dataframe_dict["read.fail.qscore"] = self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
+                                                                    'passes_filtering', False)
+        self.dataframe_dict["read.fail.sorted"] = self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
+                                                                            'passes_filtering', False, 3600)
 
         total_reads = self._get_result_value(result_dict, "read.count")
 
@@ -307,15 +304,13 @@ class SequencingSummaryExtractor:
 
         self._set_result_value(result_dict, "n50", self._compute_n50())
 
-        self._set_result_to_dict(
-            result_dict, "start.time.sorted", sorted(self.dataframe_1d['start_time'] / 3600))
+        self.dataframe_dict["start.time.sorted"] = sorted(self.dataframe_1d['start_time'] / 3600)
 
         self._set_result_value(result_dict, "run.time", max(
-            self._get_result_value(result_dict, "start.time.sorted")))
+            self.dataframe_dict["start.time.sorted"]))
 
         # Retrieve Qscore column information and save it in mean.qscore entry
-        self._set_result_value(result_dict, "mean.qscore",
-                               self.qscore_df)
+        self.dataframe_dict["mean.qscore"] = self.qscore_df
 
         # Get channel occupancy statistics and store each value into result_dict
         for index, value in self._occupancy_channel().items():
@@ -330,10 +325,8 @@ class SequencingSummaryExtractor:
                 result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.pass.length"), "read.pass.length")
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.fail.length"), "read.fail.length")
+        self._describe_dict(result_dict, self.dataframe_dict["read.pass.length"], "read.pass.length")
+        self._describe_dict(result_dict, self.dataframe_dict["read.fail.length"], "read.fail.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1d['mean_qscore'].describe().drop(
@@ -344,10 +337,8 @@ class SequencingSummaryExtractor:
                 result_dict, "all.read.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.pass.qscore"), "read.pass.qscore")
-        self._describe_dict(result_dict, self._get_result_value(
-            result_dict, "read.fail.qscore"), "read.fail.qscore")
+        self._describe_dict(result_dict, self.dataframe_dict["read.pass.qscore"], "read.pass.qscore")
+        self._describe_dict(result_dict, self.dataframe_dict["read.fail.qscore"], "read.fail.qscore")
 
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
@@ -496,15 +487,15 @@ class SequencingSummaryExtractor:
         """
         images_directory = self.result_directory + '/images'
         images = list([pgg.read_count_histogram(result_dict, self.dataframe_dict, images_directory)])
-        images.append(pgg.read_length_scatterplot(result_dict, self.sequence_length_df, images_directory))
-        images.append(pgg.yield_plot(result_dict, images_directory))
-        images.append(pgg.read_quality_multiboxplot(result_dict, images_directory))
-        images.append(pgg.allphred_score_frequency(result_dict, images_directory))
+        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.sequence_length_df, images_directory))
+        images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
+        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory))
+        images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
         channel_count = self.channel_df
         total_number_reads_per_pore = pd.value_counts(channel_count)
         images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
 
-        images.append(pgg.all_scatterplot(result_dict, images_directory))
+        images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, images_directory))
         images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, images_directory))
         images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, images_directory))
@@ -538,8 +529,9 @@ class SequencingSummaryExtractor:
         key_list = []
 
         for key in keys:
-            self._get_result_value(result_dict, key)
-            key_list.append(self.get_report_data_file_id() + '.' + str(key))
+            if key in result_dict:
+                self._get_result_value(result_dict, key)
+                key_list.append(self.get_report_data_file_id() + '.' + str(key))
 
         if self.is_barcode:
             key_list.extend([(k, v) for k, v in self.dataframe_dict.items()])

@@ -188,14 +188,12 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def read_length_scatterplot(result_dict, sequence_length_df, result_directory):
+def read_length_scatterplot(dataframe_dict, sequence_length_df, result_directory):
     graph_name = "Distribution of read lengths"
 
     all_read = sequence_length_df.loc[sequence_length_df >= 10].dropna().values
-    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] >= 10]
-    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[
-        result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] >= 10]
+    read_pass = dataframe_dict['read.pass.length'].loc[dataframe_dict['read.pass.length'] >= 10]
+    read_fail = dataframe_dict['read.fail.length'].loc[dataframe_dict['read.fail.length'] >= 10]
 
     return _read_length_distribution(graph_name=graph_name,
                                      all_read=all_read,
@@ -208,16 +206,16 @@ def read_length_scatterplot(result_dict, sequence_length_df, result_directory):
                                      result_directory=result_directory)
 
 
-def yield_plot(result_dict, result_directory):
+def yield_plot(dataframe_dict, result_directory):
     """
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
 
     graph_name = "Yield plot through time"
 
-    all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
-    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
-    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
+    all_read = dataframe_dict['start.time.sorted']
+    read_pass = dataframe_dict['read.pass.sorted']
+    read_fail = dataframe_dict['read.fail.sorted']
 
     count_x1, count_y1 = _smooth_data(10000, 5, all_read)
     count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
@@ -367,7 +365,7 @@ def yield_plot(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def read_quality_multiboxplot(result_dict, result_directory):
+def read_quality_multiboxplot(dataframe_dict, result_directory):
     """
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
@@ -376,9 +374,9 @@ def read_quality_multiboxplot(result_dict, result_directory):
     graph_name = "PHRED score distribution"
 
     df = pd.DataFrame(
-        {"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
-         "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-         "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']
+        {"1D": dataframe_dict['mean.qscore'],
+         "1D pass": dataframe_dict['read.pass.qscore'],
+         "1D fail": dataframe_dict['read.fail.qscore']
          })
 
     # If more than 10.000 reads, interpolate data
@@ -499,7 +497,7 @@ def read_quality_multiboxplot(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def allphred_score_frequency(result_dict, result_directory):
+def allphred_score_frequency(dataframe_dict, result_directory):
     """
     Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
     """
@@ -507,9 +505,9 @@ def allphred_score_frequency(result_dict, result_directory):
     graph_name = "PHRED score density distribution"
 
     dataframe = \
-        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
-                      "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-                      "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
+        pd.DataFrame({"1D": dataframe_dict['mean.qscore'],
+                      "1D pass": dataframe_dict['read.pass.qscore'],
+                      "1D fail": dataframe_dict['read.fail.qscore']})
 
     return _phred_score_density(graph_name=graph_name,
                                 dataframe=dataframe,
@@ -520,17 +518,17 @@ def allphred_score_frequency(result_dict, result_directory):
                                 result_directory=result_directory)
 
 
-def all_scatterplot(result_dict, result_directory):
+def all_scatterplot(dataframe_dict, result_directory):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
 
     graph_name = "Correlation between read length and PHRED score"
 
-    read_pass_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"]
-    read_pass_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"]
-    read_fail_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]
-    read_fail_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"]
+    read_pass_length = dataframe_dict["read.pass.length"]
+    read_pass_qscore = dataframe_dict["read.pass.qscore"]
+    read_fail_length = dataframe_dict["read.fail.length"]
+    read_fail_qscore = dataframe_dict["read.fail.qscore"]
 
     # If more than 10.000 reads, interpolate data
     if len(read_pass_length) > interpolation_threshold:
