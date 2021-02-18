@@ -129,6 +129,7 @@ class SequencingTelemetryExtractor:
                 self._set_result_dict_value(result_dict, '.kit.version', array, 'opts', 'kit')
                 self._set_result_dict_value(result_dict, '.flowcell.version', array, 'opts', 'flowcell')
                 self._set_result_dict_value(result_dict, '.model.file', array, 'opts', 'model_file')
+                self._set_result_dict_value(result_dict, '.pass.threshold.qscore', array, 'opts', 'min_qscore')
 
     def _set_result_dict_value(self, result_dict, key, array, dict_name, dict_key):
 

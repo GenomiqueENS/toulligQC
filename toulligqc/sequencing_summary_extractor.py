@@ -497,7 +497,7 @@ class SequencingSummaryExtractor:
 
         images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
         images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, images_directory))
-        images.append(pgg.phred_score_over_time(self.qscore_df, self.time_df, images_directory))
+        images.append(pgg.phred_score_over_time(result_dict, self.qscore_df, self.time_df, images_directory))
         images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, images_directory))
 
         if self.is_barcode:

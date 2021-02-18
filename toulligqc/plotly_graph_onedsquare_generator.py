@@ -541,8 +541,13 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory
                             yaxis_title='Read length (bp)')
 
 
-def phred_score_over_time_dsqr(qscore_df, time_df, result_directory):
+def phred_score_over_time_dsqr(result_dict, qscore_df, time_df, result_directory):
     graph_name = "1D² PHRED score over time"
+
+    pass_min_qscore = 7
+    key= 'sequencing.telemetry.extractor.pass.threshold.qscore'
+    if key in result_dict:
+        pass_min_qscore=float(result_dict[key])
 
     return _over_time_graph(data_series=qscore_df,
                             time_series=time_df,
@@ -551,7 +556,7 @@ def phred_score_over_time_dsqr(qscore_df, time_df, result_directory):
                             color=toulligqc_colors['phred_score_over_time'],
                             yaxis_title='PHRED quality score',
                             yaxis_starts_zero=True,
-                            green_zone_starts_at=7,
+                            green_zone_starts_at=pass_min_qscore,
                             green_zone_color=toulligqc_colors['green_zone_color'])
 
 

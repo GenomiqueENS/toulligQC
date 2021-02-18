@@ -524,7 +524,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
         images.append(
             pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory))
-        images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, images_directory))
+        images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.qscore_1dsqr, self.time_1dsqr, images_directory))
         images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr,
                                                 images_directory))
 
