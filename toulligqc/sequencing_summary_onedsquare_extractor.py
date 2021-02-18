@@ -527,7 +527,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg2.phred_score_over_time_dsqr(self.qscore_1dsqr, self.time_1dsqr, images_directory))
         images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr,
                                                 images_directory))
-        images.append(pgg2.nseq_over_time_dsqr(self.time_1dsqr, images_directory))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(self.dataframe_dict_1dsqr,

@@ -533,19 +533,8 @@ def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr
 def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory):
     graph_name = "1D² Read length over time"
 
-    time = [t / 3600 for t in time_df.dropna()]
-    time = np.array(sorted(time))
-    length = sequence_length_df
-
-    # If more than 10.000 reads, interpolate data
-    if len(length) > interpolation_threshold:
-        time_df, length_df = _interpolate(time, 200, length, "nearest")
-    else:
-        time_df = time
-        length_df = length
-
-    return _over_time_graph(x=time_df,
-                            y=length_df,
+    return _over_time_graph(data_series=sequence_length_df,
+                            time_series=time_df,
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['sequence_length_over_time'],
@@ -556,22 +545,8 @@ def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory
 def phred_score_over_time_dsqr(qscore_df, time_df, result_directory):
     graph_name = "1D² PHRED score over time"
 
-    # Time data
-    time = [t / 3600 for t in time_df.dropna()]
-    time = np.array(sorted(time))
-
-    # Qscore data
-    qscore = qscore_df.dropna()
-
-    # If more than 10.000 reads, interpolate data
-    if len(qscore) > interpolation_threshold:
-        time_df, qscore_df = _interpolate(time, 100, qscore, "nearest")
-    else:
-        time_df = time
-        qscore_df = qscore
-
-    return _over_time_graph(x=time_df,
-                            y=qscore_df,
+    return _over_time_graph(data_series=qscore_df,
+                            time_series=time_df,
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['phred_score_over_time'],
@@ -584,39 +559,10 @@ def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, result_direct
 
     speed = pd.Series(sequence_length_df / duration_df)
 
-    time = [t / 3600 for t in time_df]
-    time = np.array(sorted(time))
-
-    # If more than 10.000 reads, interpolate data
-    if len(time) > interpolation_threshold:
-        time_df, speed_df = _interpolate(time, 200, speed, "nearest")
-    else:
-        time_df = time
-        speed_df = speed
-
-    return _over_time_graph(x=time_df,
-                            y=speed_df,
+    return _over_time_graph(data_series=speed,
+                            time_series=time_df,
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['speed_over_time'],
                             yaxis_title='Speed (bases per second)',
                             log=True)
-
-
-def nseq_over_time_dsqr(time_df, result_directory):
-    graph_name = "Number of sequences through time"
-
-    time = [t / 3600 for t in time_df]
-    time = pd.Series(time)
-
-    # create custom xaxis points to reduce graph size
-    time_points = np.linspace(min(time), max(time), 50)
-    n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
-
-    return _over_time_graph(x=time_points,
-                            y=list(n_seq.values),
-                            result_directory=result_directory,
-                            graph_name=graph_name,
-                            color=toulligqc_colors['nseq_over_time'],
-                            yaxis_title='Number of sequences',
-                            log=False)

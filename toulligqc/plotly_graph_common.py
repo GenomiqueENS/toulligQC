@@ -28,6 +28,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 from sklearn.utils import resample
 import plotly.graph_objs as go
 from scipy.stats import norm
+from collections import defaultdict
 
 figure_image_width = 1000
 figure_image_height = 562
@@ -183,16 +184,59 @@ def _create_and_save_div(fig, result_directory, main):
     return div, output_file
 
 
-def _over_time_graph(x, y, result_directory, graph_name, color, yaxis_title, log=False):
+def _over_time_graph(data_series, time_series, result_directory, graph_name, color, yaxis_title, log=False, time_bins=1000):
+
+    t = (time_series/3600).values
+    x = np.linspace(t.min(), t.max(), num=time_bins)
+    t = np.digitize(t, bins=x, right=True)
+
+    bin_dict = defaultdict(list)
+    for bin_idx, val in zip(t, data_series):
+        bin = x[bin_idx]
+        bin_dict[bin].append(val)
+
+    y = [[], [] , []]
+    for bin in x:
+        if bin in bin_dict:
+            y[0].append(np.percentile(bin_dict[bin], 25))
+            y[1].append(np.percentile(bin_dict[bin], 50))
+            y[2].append(np.percentile(bin_dict[bin], 75))
+        else:
+            y[0].append(np.nan)
+            y[1].append(np.nan)
+            y[2].append(np.nan)
+
+    for i,v in enumerate(y):
+        y[i] = gaussian_filter1d(v, sigma=1)
 
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
         x=x,
-        y=y,
+        y=y[0],
+        name="25% quartile",
         mode='lines',
-        fill="tozeroy",
+        fill="none",
         line=dict(color=color,
+                  width=line_width,
+                  shape="spline")))
+
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y[2],
+        name="75% quartile",
+        mode='lines',
+        fill="tonexty",
+        line=dict(color=color,
+                  width=line_width,
+                  shape="spline")))
+
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y[1],
+        name="Median",
+        mode='lines',
+        line=dict(color="black",
                   width=line_width,
                   shape="spline")))
 
