@@ -48,8 +48,8 @@ toulligqc_colors = {'all': '#fca311',  # Yellow
                     'phred_score_over_time': '#7aaceb',
                     'speed_over_time': '#AE3F7B',
                     'nseq_over_time': '#edb773',
-                    'pie_chart_palette': ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2",
-                                          "63cdda", "ea8685", "596275"],
+                    'pie_chart_palette': ["#f3a683", "#f7d794", "#778beb", "#e77f67", "#cf6a87", "#786fa6", "#f8a5c2",
+                                          "#63cdda", "#ea8685", "#596275"],
                     'green_zone_color': 'rgba(0,100,0,.1)'
                     }
 
@@ -466,16 +466,35 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
 def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, result_directory):
     labels = count_sorted.index.values.tolist()
 
-    fig = go.Figure(data=[go.Pie(labels=labels,
-                                 values=count_sorted)])
+    fig = go.Figure()
+
     if len(labels) <= len(color_palette):
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                          marker=dict(colors=color_palette, line=dict(width=line_width, color='#808080')))
+        pie_marker = dict(colors=color_palette, line=dict(width=line_width, color='#808080'))
+        bar_colors = color_palette
     else:
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                          marker=dict(line=dict(width=line_width, color='#808080')))
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        pie_marker = dict(line=dict(width=line_width, color='#808080'))
+        bar_colors = color_palette[0]
+
+    # Pie chart
+    fig.add_trace(go.Pie(labels=labels,
+                         values=count_sorted,
+                         hoverinfo='label+percent',
+                         textinfo='percent',
+                         textfont_size=14,
+                         marker=pie_marker,
+                         textposition='inside',
+                         visible=True
+                         ))
+    # Histogram
+    fig.add_trace(go.Bar(x=labels,
+                         y=count_sorted,
+                         marker_color=bar_colors,
+                         marker_line_color='gray',
+                         marker_line_width=line_width,
+                         visible=False
+                         ))
+
+    # Layout
     fig.update_layout(
         title={
             'text': "<b>" + graph_name + "</b>",
@@ -497,7 +516,46 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
         ),
         font=dict(family=graph_font),
         height=figure_image_height,
-        width=figure_image_width
+        width=figure_image_width,
+        uniformtext_minsize=12,
+        uniformtext_mode='hide',
+        xaxis={'visible': False},
+        yaxis={'visible': False},
+        plot_bgcolor='white',
+    )
+
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False]},
+                              {'xaxis': {'visible': False},
+                               'yaxis': {'visible': False},
+                               'plot_bgcolor': 'white'}],
+                        label="Pie chart",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True]},
+                              {'xaxis': {'visible': True},
+                               'yaxis': {'visible': True},
+                               'plot_bgcolor': plotly_background_color}],
+                        label="Histogram",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
     )
 
     if one_d_square:
