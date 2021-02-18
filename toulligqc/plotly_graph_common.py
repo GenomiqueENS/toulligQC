@@ -49,7 +49,8 @@ toulligqc_colors = {'all': '#fca311',  # Yellow
                     'speed_over_time': '#AE3F7B',
                     'nseq_over_time': '#edb773',
                     'pie_chart_palette': ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2",
-                                          "63cdda", "ea8685", "596275"]
+                                          "63cdda", "ea8685", "596275"],
+                    'green_zone_color': 'rgba(0,100,0,.1)'
                     }
 
 plotly_background_color = '#e5ecf6'
@@ -184,7 +185,20 @@ def _create_and_save_div(fig, result_directory, main):
     return div, output_file
 
 
-def _over_time_graph(data_series, time_series, result_directory, graph_name, color, yaxis_title, log=False, time_bins=1000):
+def _over_time_graph(data_series,
+                     time_series,
+                     result_directory,
+                     graph_name,
+                     color,
+                     yaxis_title,
+                     log=False,
+                     time_bins=1000,
+                     sigma=1,
+                     quartiles=True,
+                     min_max=False,
+                     yaxis_starts_zero=False,
+                     green_zone_starts_at=None,
+                     green_zone_color='rgba(0,100,0,.1)'):
 
     t = (time_series/3600).values
     x = np.linspace(t.min(), t.max(), num=time_bins)
@@ -192,53 +206,118 @@ def _over_time_graph(data_series, time_series, result_directory, graph_name, col
 
     bin_dict = defaultdict(list)
     for bin_idx, val in zip(t, data_series):
-        bin = x[bin_idx]
-        bin_dict[bin].append(val)
+        b = x[bin_idx]
+        bin_dict[b].append(val)
 
-    y = [[], [] , []]
-    for bin in x:
-        if bin in bin_dict:
-            y[0].append(np.percentile(bin_dict[bin], 25))
-            y[1].append(np.percentile(bin_dict[bin], 50))
-            y[2].append(np.percentile(bin_dict[bin], 75))
+    percentiles = (0, 25, 50, 75, 100)
+    y = []
+    for i in range(len(percentiles)):
+        y.append([])
+
+    for b in x:
+        if b in bin_dict:
+            for i, v in enumerate(percentiles):
+                y[i].append(np.percentile(bin_dict[b], v))
         else:
-            y[0].append(np.nan)
-            y[1].append(np.nan)
-            y[2].append(np.nan)
+            for i in range(len(percentiles)):
+                y[i].append(np.nan)
 
-    for i,v in enumerate(y):
-        y[i] = gaussian_filter1d(v, sigma=1)
+    for i, v in enumerate(y):
+        y[i] = gaussian_filter1d(v, sigma=sigma)
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y[0],
-        name="25% quartile",
-        mode='lines',
-        fill="none",
-        line=dict(color=color,
-                  width=line_width,
-                  shape="spline")))
+    # define the green zone if required
+    if green_zone_starts_at is not None:
+        min_x = min(time_series)/3600
+        max_x = max(time_series)/3600
+        if min_max:
+            max_y = max(y[4]) * 1.05
+        else:
+            max_y = max(y[3]) * 1.05
+        fig.add_trace(go.Scatter(
+            mode="lines",
+            x=[min_x, max_x],
+            y=[max_y, max_y],
+            line=dict(width=0),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+        fig.add_trace(go.Scatter(
+            mode="lines",
+            name="Median target",
+            x=[min_x, max_x],
+            y=[green_zone_starts_at, green_zone_starts_at],
+            fill='tonexty',
+            fillcolor=green_zone_color,
+            line=dict(width=0),
+            hoverinfo="skip",
+        ))
 
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y[2],
-        name="75% quartile",
-        mode='lines',
-        fill="tonexty",
-        line=dict(color=color,
-                  width=line_width,
-                  shape="spline")))
+    if quartiles:
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=y[1],
+            name="25% quartile",
+            mode='lines',
+            fill="none",
+            line=dict(color=color,
+                      width=line_width,
+                      shape="spline")))
 
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y[1],
-        name="Median",
-        mode='lines',
-        line=dict(color="black",
-                  width=line_width,
-                  shape="spline")))
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=y[3],
+            name="75% quartile",
+            mode='lines',
+            fill="tonexty",
+            line=dict(color=color,
+                      width=line_width,
+                      shape="spline")))
+
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=y[2],
+            name="Median",
+            mode='lines',
+            line=dict(color="black",
+                      width=line_width,
+                      shape="spline")))
+        if min_max:
+            fig.add_trace(go.Scatter(
+                x=x,
+                y=y[0],
+                name="Min, Max",
+                mode='lines',
+                line=dict(color="black",
+                          width=int(line_width/2),
+                          shape="spline")))
+            fig.add_trace(go.Scatter(
+                x=x,
+                y=y[4],
+                showlegend=False,
+                mode='lines',
+                line=dict(color="black",
+                          width=int(line_width/2),
+                          shape="spline")))
+
+    else:
+        # No quartile lines, only median
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=y[2],
+            name="Median",
+            mode='lines',
+            fill='tozeroy',
+            line=dict(color=color,
+                      width=line_width,
+                      shape="spline")))
+
+    # set minimal value of y axis to 0 is required
+    if yaxis_starts_zero:
+        range_mode = 'tozero'
+    else:
+        range_mode = 'normal'
 
     fig.update_layout(
         title={
@@ -258,6 +337,7 @@ def _over_time_graph(data_series, time_series, result_directory, graph_name, col
             title='<b>' + yaxis_title + '</b>',
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
+            rangemode=range_mode,
             fixedrange=True
         ),
         hovermode='x',

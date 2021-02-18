@@ -751,8 +751,7 @@ def sequence_length_over_time(time_df, dataframe_dict, result_directory):
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['sequence_length_over_time'],
-                            yaxis_title='Read length (bp)',
-                            log=False)
+                            yaxis_title='Read length (bp)')
 
 
 def phred_score_over_time(qscore_df, time_df, result_directory):
@@ -764,7 +763,10 @@ def phred_score_over_time(qscore_df, time_df, result_directory):
                             graph_name=graph_name,
                             color=toulligqc_colors['phred_score_over_time'],
                             yaxis_title='PHRED quality score',
-                            log=False)
+                            min_max=True,
+                            yaxis_starts_zero=True,
+                            green_zone_starts_at=7,
+                            green_zone_color=toulligqc_colors['green_zone_color'])
 
 
 def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
@@ -778,5 +780,6 @@ def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
                             graph_name=graph_name,
                             color=toulligqc_colors['speed_over_time'],
                             yaxis_title='Speed (bases per second)',
-                            log=True)
+                            green_zone_starts_at=300,
+                            green_zone_color=toulligqc_colors['green_zone_color'])
 
