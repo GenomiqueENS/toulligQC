@@ -42,7 +42,6 @@ from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import image_dpi
 from toulligqc.plotly_graph_common import int_format_str
 from toulligqc.plotly_graph_common import interpolation_threshold
-from toulligqc.plotly_graph_common import legend_font_size
 from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import percent_format_str
@@ -54,6 +53,7 @@ from toulligqc.plotly_graph_common import _barcode_boxplot_graph
 from toulligqc.plotly_graph_common import _pie_chart_graph
 from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _phred_score_density
+from toulligqc.plotly_graph_common import _legend
 
 #
 #  1D plots
@@ -313,15 +313,7 @@ def yield_plot(dataframe_dict, result_directory):
             tickfont_size=axis_font_size,
             rangemode="tozero"
         ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend(),
         hovermode='x',
         font=dict(family=graph_font),
         height=figure_image_height,
@@ -446,15 +438,7 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
             range=[min_yaxis, max_yaxis],
             fixedrange=True
         ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend(),
         hovermode='x',
         font=dict(family=graph_font),
         height=figure_image_height,
@@ -572,15 +556,7 @@ def all_scatterplot(dataframe_dict, result_directory):
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
         ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Read type</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend('Read type'),
         font=dict(family=graph_font),
         height=figure_image_height,
         width=figure_image_width

@@ -62,6 +62,18 @@ graph_font = 'Helvetica, Arial, sans-serif'
 image_dpi = 100
 
 
+def _legend(legend_title='Legend'):
+    return dict(legend=dict(
+        x=1.02,
+        #y=.5,
+        y=.95,
+        title_text="<b>" + legend_title + "</b>",
+        title=dict(font=dict(size=legend_font_size)),
+        bgcolor='white',
+        bordercolor='white',
+        font=dict(size=legend_font_size)
+    ))
+
 def _make_describe_dataframe(value):
     """
     Creation of a statistics table printed with the graph in report.html
@@ -329,6 +341,7 @@ def _over_time_graph(data_series,
             'font': dict(
                 size=title_size,
                 color="black")},
+        **_legend(),
         xaxis=dict(
             title="<b>Experiment time (hours)</b>",
             titlefont_size=axis_font_size
@@ -430,15 +443,7 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
             tickfont_size=axis_font_size,
             fixedrange=True
         ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>" + legend_title + "</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend(legend_title),
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
@@ -505,15 +510,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
             'font': dict(
                 size=title_size,
                 color="black")},
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Barcodes</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend('Barcodes'),
         font=dict(family=graph_font),
         height=figure_image_height,
         width=figure_image_width,
@@ -647,15 +644,7 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
             range=[0, max(count_y1) * 1.10],
             fixedrange=True
         ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend(),
         hovermode='x',
         font=dict(family=graph_font),
         height=figure_image_height,
@@ -765,15 +754,7 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
             rangemode="tozero",
             fixedrange=True
         ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=legend_font_size)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=legend_font_size)
-        ),
+        **_legend(),
         barmode='group',
         hovermode='x',
         font=dict(family=graph_font),
