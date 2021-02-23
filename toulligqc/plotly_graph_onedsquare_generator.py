@@ -42,7 +42,6 @@ from toulligqc.plotly_graph_common import interpolation_threshold
 from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import plotly_background_color
-from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import toulligqc_colors
 from toulligqc.plotly_graph_common import _over_time_graph
 from toulligqc.plotly_graph_common import _barcode_boxplot_graph
@@ -50,6 +49,7 @@ from toulligqc.plotly_graph_common import _pie_chart_graph
 from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _legend
+from toulligqc.plotly_graph_common import _title
 
 
 #
@@ -154,16 +154,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
 
     layout = go.Layout(
         hovermode="x",
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")
-        },
+        **_title(graph_name),
         xaxis=dict(title="<b>1D² Read type</b>",
                    fixedrange=True,
                    titlefont=dict(
@@ -270,15 +261,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
                                 visible=False))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>1D² Read type</b>",
             titlefont_size=axis_font_size,
@@ -390,15 +373,7 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
                              ))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>Sequence length (bp)</b>",
             titlefont_size=axis_font_size

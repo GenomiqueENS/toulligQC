@@ -46,7 +46,6 @@ from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import percent_format_str
 from toulligqc.plotly_graph_common import plotly_background_color
-from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import toulligqc_colors
 from toulligqc.plotly_graph_common import _over_time_graph
 from toulligqc.plotly_graph_common import _barcode_boxplot_graph
@@ -54,6 +53,7 @@ from toulligqc.plotly_graph_common import _pie_chart_graph
 from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _legend
+from toulligqc.plotly_graph_common import _title
 
 #
 #  1D plots
@@ -149,16 +149,7 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
 
     layout = go.Layout(
         hovermode="x",
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")
-        },
+        **_title(graph_name),
         xaxis=dict(title="<b>Read type</b>",
                    fixedrange=True,
                    titlefont=dict(
@@ -293,15 +284,7 @@ def yield_plot(dataframe_dict, result_directory):
                              ))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>Time (hours)</b>",
             titlefont_size=axis_font_size,
@@ -417,15 +400,7 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
                                 visible=False))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>Read type</b>",
             titlefont_size=axis_font_size,
@@ -538,15 +513,7 @@ def all_scatterplot(dataframe_dict, result_directory):
                              ))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>Sequence length (bp)</b>",
             titlefont_size=axis_font_size

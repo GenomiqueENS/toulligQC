@@ -62,6 +62,18 @@ graph_font = 'Helvetica, Arial, sans-serif'
 image_dpi = 100
 
 
+def _title(title):
+    return dict(title=dict(
+        text="<b>" + title + "</b>",
+        y=0.95,
+        x=0,
+        xanchor='left',
+        yanchor='top',
+        font=dict(
+        size=title_size,
+        color="black")))
+
+
 def _legend(legend_title='Legend'):
     return dict(legend=dict(
         x=1.02,
@@ -71,8 +83,8 @@ def _legend(legend_title='Legend'):
         title=dict(font=dict(size=legend_font_size)),
         bgcolor='white',
         bordercolor='white',
-        font=dict(size=legend_font_size)
-    ))
+        font=dict(size=legend_font_size)))
+
 
 def _make_describe_dataframe(value):
     """
@@ -332,15 +344,7 @@ def _over_time_graph(data_series,
         range_mode = 'normal'
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         **_legend(),
         xaxis=dict(
             title="<b>Experiment time (hours)</b>",
@@ -423,15 +427,7 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
             first = False
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>Barcodes</b>",
             titlefont_size=axis_font_size,
@@ -501,15 +497,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
 
     # Layout
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         **_legend('Barcodes'),
         font=dict(family=graph_font),
         height=figure_image_height,
@@ -623,15 +611,7 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
                      ))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title='<b>' + xaxis_title + '</b>',
             titlefont_size=axis_font_size,
@@ -733,15 +713,7 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
                                        smoothing=0.5)))
 
     fig.update_layout(
-        title={
-            'text': "<b>" + graph_name + "</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=title_size,
-                color="black")},
+        **_title(graph_name),
         xaxis=dict(
             title="<b>PHRED score</b>",
             titlefont_size=axis_font_size,
