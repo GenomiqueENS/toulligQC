@@ -32,7 +32,6 @@ from toulligqc.plotly_graph_common import _make_describe_dataframe
 from toulligqc.plotly_graph_common import _precompute_boxplot_values
 from toulligqc.plotly_graph_common import _smooth_data
 from toulligqc.plotly_graph_common import _transparent_colors
-from toulligqc.plotly_graph_common import axis_font_size
 from toulligqc.plotly_graph_common import figure_image_height
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import float_format_str
@@ -51,6 +50,8 @@ from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _legend
 from toulligqc.plotly_graph_common import _title
 from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import _xaxis
+from toulligqc.plotly_graph_common import _yaxis
 
 
 
@@ -158,20 +159,8 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
         hovermode="x",
         **_title(graph_name),
         **default_graph_layout,
-        xaxis=dict(title="<b>1D² Read type</b>",
-                   fixedrange=True,
-                   titlefont=dict(
-                       size=axis_font_size,
-                       color="black"
-                   ),
-                   categoryorder="trace"
-                   ),
-        yaxis=dict(title="<b>Counts</b>",
-                   fixedrange=True,
-                   titlefont=dict(
-                       size=axis_font_size,
-                       color="black"
-                   )))
+        **_xaxis('1D² Read type', dict(fixedrange=True, categoryorder="trace")),
+        **_yaxis('Counts'))
 
     fig = go.Figure(data=trace, layout=layout)
 
@@ -265,18 +254,8 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
         **default_graph_layout,
         **_legend(),
         hovermode='x',
-        xaxis=dict(
-            title="<b>1D² Read type</b>",
-            titlefont_size=axis_font_size,
-            fixedrange=True,
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            fixedrange=True,
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            range=[min_yaxis, max_yaxis]
-        ),
+        **_xaxis('1D² Read type', dict(fixedrange=True)),
+        **_yaxis('PHRED Score', dict(range=[min_yaxis, max_yaxis])),
     )
 
     # Add buttons
@@ -374,15 +353,8 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
         **_title(graph_name),
         **default_graph_layout,
         **_legend('1D² Read type'),
-        xaxis=dict(
-            title="<b>Sequence length (bp)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
+        **_xaxis('Sequence length (bp)'),
+        **_xaxis('PHRED score', dict(fixedrange=False)),
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):

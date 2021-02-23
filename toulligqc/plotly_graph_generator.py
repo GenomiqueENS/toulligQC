@@ -34,7 +34,6 @@ from toulligqc.plotly_graph_common import _make_describe_dataframe
 from toulligqc.plotly_graph_common import _precompute_boxplot_values
 from toulligqc.plotly_graph_common import _smooth_data
 from toulligqc.plotly_graph_common import _transparent_colors
-from toulligqc.plotly_graph_common import axis_font_size
 from toulligqc.plotly_graph_common import figure_image_height
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import float_format_str
@@ -55,6 +54,8 @@ from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _legend
 from toulligqc.plotly_graph_common import _title
 from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import _xaxis
+from toulligqc.plotly_graph_common import _yaxis
 
 #
 #  1D plots
@@ -152,20 +153,8 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
         **_title(graph_name),
         **default_graph_layout,
         hovermode="x",
-        xaxis=dict(title="<b>Read type</b>",
-                   fixedrange=True,
-                   titlefont=dict(
-                       size=axis_font_size,
-                       color="black",
-                   ),
-                   categoryorder="total descending"
-                   ),
-        yaxis=dict(title="<b>Counts</b>",
-                   fixedrange=True,
-                   titlefont=dict(
-                       size=axis_font_size,
-                       color="black",
-                   )))
+        **_xaxis('Read type', dict(fixedrange=True, categoryorder="total descending")),
+        **_yaxis('Counts'))
 
     fig = go.Figure(data=trace, layout=layout)
 
@@ -287,17 +276,8 @@ def yield_plot(dataframe_dict, result_directory):
         **default_graph_layout,
         **_legend(),
         hovermode='x',
-        xaxis=dict(
-            title="<b>Time (hours)</b>",
-            titlefont_size=axis_font_size,
-            rangemode = "tozero"
-        ),
-        yaxis=dict(
-            title='<b>Density</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            rangemode="tozero"
-        ),
+        **_xaxis('Time (hours)', dict(rangemode="tozero")),
+        **_yaxis('Density', dict(fixedrange=False, rangemode="tozero")),
     )
 
     # Add buttons
@@ -401,18 +381,8 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
         **default_graph_layout,
         **_legend(),
         hovermode='x',
-        xaxis=dict(
-            title="<b>Read type</b>",
-            titlefont_size=axis_font_size,
-            fixedrange=True
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            range=[min_yaxis, max_yaxis],
-            fixedrange=True
-        ),
+        **_xaxis('Read type', dict(fixedrange=True)),
+        **_yaxis('PHRED score', dict(range=[min_yaxis, max_yaxis])),
     )
 
     # Add buttons
@@ -511,15 +481,8 @@ def all_scatterplot(dataframe_dict, result_directory):
         **_title(graph_name),
         **default_graph_layout,
         **_legend('Read type'),
-        xaxis=dict(
-            title="<b>Sequence length (bp)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-        ),
+        **_xaxis('Sequence length (bp)'),
+        **_yaxis('PHRED score', dict(fixedrange=False)),
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):

@@ -55,7 +55,8 @@ toulligqc_colors = {'all': '#fca311',  # Yellow
 
 plotly_background_color = '#e5ecf6'
 legend_font_size = 16
-axis_font_size = 14
+axis_title_font_size = 14
+axis_font_size = 12
 on_chart_font_size = 15
 title_size = 24
 graph_font = 'Helvetica, Arial, sans-serif'
@@ -89,6 +90,33 @@ def _legend(legend_title='Legend'):
         bgcolor='white',
         bordercolor='white',
         font=dict(size=legend_font_size)))
+
+
+def _xaxis(title, args=None):
+
+    axis_dict = dict(
+        title='<b>' + title + '</b>',
+        titlefont_size=axis_title_font_size,
+        tickfont_size=axis_font_size)
+
+    if args is not None:
+        axis_dict.update(dict(**args))
+
+    return dict(xaxis=axis_dict)
+
+
+def _yaxis(title, args=None):
+
+    axis_dict = dict(
+        title='<b>' + title + '</b>',
+        titlefont_size=axis_title_font_size,
+        tickfont_size=axis_font_size,
+        fixedrange=True)
+
+    if args is not None:
+        axis_dict.update(dict(**args))
+
+    return dict(yaxis=axis_dict)
 
 
 def _make_describe_dataframe(value):
@@ -353,17 +381,8 @@ def _over_time_graph(data_series,
         **_legend(),
         **default_graph_layout,
         hovermode='x',
-        xaxis=dict(
-            title="<b>Experiment time (hours)</b>",
-            titlefont_size=axis_font_size
-        ),
-        yaxis=dict(
-            title='<b>' + yaxis_title + '</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            rangemode=range_mode,
-            fixedrange=True
-        ),
+        **_xaxis('Experiment time (hours)'),
+        **_yaxis(yaxis_title, dict(rangemode=range_mode)),
     )
 
     if log:
@@ -433,17 +452,8 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
         **_title(graph_name),
         **_legend(legend_title),
         **default_graph_layout,
-        xaxis=dict(
-            title="<b>Barcodes</b>",
-            titlefont_size=axis_font_size,
-            fixedrange=True
-        ),
-        yaxis=dict(
-            title='<b>' + yaxis_title + '</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            fixedrange=True
-        ),
+        **_xaxis('Barcodes', dict(fixedrange=True)),
+        **_yaxis(yaxis_title),
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
@@ -614,18 +624,8 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
         **default_graph_layout,
         **_legend(),
         hovermode='x',
-        xaxis=dict(
-            title='<b>' + xaxis_title + '</b>',
-            titlefont_size=axis_font_size,
-            range=[0, max_x_range]
-        ),
-        yaxis=dict(
-            title='<b>Density</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            range=[0, max(count_y1) * 1.10],
-            fixedrange=True
-        ),
+        **_xaxis(xaxis_title, dict(range=[0, max_x_range])),
+        **_yaxis('Density', dict(range=[0, max(count_y1) * 1.10])),
     )
 
     # Create data for HTML table
@@ -714,18 +714,8 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
         **_legend(),
         **default_graph_layout,
         hovermode='x',
-        xaxis=dict(
-            title="<b>PHRED score</b>",
-            titlefont_size=axis_font_size,
-            range=[0, x_max]
-        ),
-        yaxis=dict(
-            title='<b>Density probability</b>',
-            titlefont_size=axis_font_size,
-            tickfont_size=axis_font_size,
-            rangemode="tozero",
-            fixedrange=True
-        ),
+        **_xaxis('PHRED score', dict(range=[0, x_max])),
+        **_yaxis('Density probability', dict(rangemode="tozero")),
         barmode='group',
     )
 
