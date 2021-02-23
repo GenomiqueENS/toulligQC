@@ -54,6 +54,7 @@ from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _legend
 from toulligqc.plotly_graph_common import _title
+from toulligqc.plotly_graph_common import default_graph_layout
 
 #
 #  1D plots
@@ -148,8 +149,9 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
                                  columns=["All reads", "Pass reads", "Fail reads"])
 
     layout = go.Layout(
-        hovermode="x",
         **_title(graph_name),
+        **default_graph_layout,
+        hovermode="x",
         xaxis=dict(title="<b>Read type</b>",
                    fixedrange=True,
                    titlefont=dict(
@@ -163,10 +165,7 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
                    titlefont=dict(
                        size=axis_font_size,
                        color="black",
-                   )),
-        font=dict(family=graph_font),
-        width=figure_image_width,
-        height=figure_image_height)
+                   )))
 
     fig = go.Figure(data=trace, layout=layout)
 
@@ -285,6 +284,9 @@ def yield_plot(dataframe_dict, result_directory):
 
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
+        **_legend(),
+        hovermode='x',
         xaxis=dict(
             title="<b>Time (hours)</b>",
             titlefont_size=axis_font_size,
@@ -296,11 +298,6 @@ def yield_plot(dataframe_dict, result_directory):
             tickfont_size=axis_font_size,
             rangemode="tozero"
         ),
-        **_legend(),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     # Add buttons
@@ -401,6 +398,9 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
 
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
+        **_legend(),
+        hovermode='x',
         xaxis=dict(
             title="<b>Read type</b>",
             titlefont_size=axis_font_size,
@@ -413,11 +413,6 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
             range=[min_yaxis, max_yaxis],
             fixedrange=True
         ),
-        **_legend(),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     # Add buttons
@@ -514,6 +509,8 @@ def all_scatterplot(dataframe_dict, result_directory):
 
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
+        **_legend('Read type'),
         xaxis=dict(
             title="<b>Sequence length (bp)</b>",
             titlefont_size=axis_font_size
@@ -523,10 +520,6 @@ def all_scatterplot(dataframe_dict, result_directory):
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
         ),
-        **_legend('Read type'),
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):

@@ -50,6 +50,8 @@ from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _legend
 from toulligqc.plotly_graph_common import _title
+from toulligqc.plotly_graph_common import default_graph_layout
+
 
 
 #
@@ -155,6 +157,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
     layout = go.Layout(
         hovermode="x",
         **_title(graph_name),
+        **default_graph_layout,
         xaxis=dict(title="<b>1D² Read type</b>",
                    fixedrange=True,
                    titlefont=dict(
@@ -168,10 +171,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
                    titlefont=dict(
                        size=axis_font_size,
                        color="black"
-                   )),
-        font=dict(family=graph_font),
-        width=figure_image_width,
-        height=figure_image_height)
+                   )))
 
     fig = go.Figure(data=trace, layout=layout)
 
@@ -262,6 +262,9 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
 
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
+        **_legend(),
+        hovermode='x',
         xaxis=dict(
             title="<b>1D² Read type</b>",
             titlefont_size=axis_font_size,
@@ -274,11 +277,6 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
             tickfont_size=axis_font_size,
             range=[min_yaxis, max_yaxis]
         ),
-        **_legend(),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     # Add buttons
@@ -374,6 +372,8 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
 
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
+        **_legend('1D² Read type'),
         xaxis=dict(
             title="<b>Sequence length (bp)</b>",
             titlefont_size=axis_font_size
@@ -383,10 +383,6 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
             titlefont_size=axis_font_size,
             tickfont_size=axis_font_size,
         ),
-        **_legend('1D² Read type'),
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):

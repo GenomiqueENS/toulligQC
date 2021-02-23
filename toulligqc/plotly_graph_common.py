@@ -60,6 +60,11 @@ on_chart_font_size = 15
 title_size = 24
 graph_font = 'Helvetica, Arial, sans-serif'
 image_dpi = 100
+default_graph_layout = dict(
+    font=dict(family=graph_font),
+    height=figure_image_height,
+    width=figure_image_width
+)
 
 
 def _title(title):
@@ -346,6 +351,8 @@ def _over_time_graph(data_series,
     fig.update_layout(
         **_title(graph_name),
         **_legend(),
+        **default_graph_layout,
+        hovermode='x',
         xaxis=dict(
             title="<b>Experiment time (hours)</b>",
             titlefont_size=axis_font_size
@@ -357,10 +364,6 @@ def _over_time_graph(data_series,
             rangemode=range_mode,
             fixedrange=True
         ),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     if log:
@@ -428,6 +431,8 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
 
     fig.update_layout(
         **_title(graph_name),
+        **_legend(legend_title),
+        **default_graph_layout,
         xaxis=dict(
             title="<b>Barcodes</b>",
             titlefont_size=axis_font_size,
@@ -439,13 +444,9 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
             tickfont_size=axis_font_size,
             fixedrange=True
         ),
-        **_legend(legend_title),
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     # all_read = all_df.describe().T
@@ -498,10 +499,8 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
     # Layout
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
         **_legend('Barcodes'),
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width,
         uniformtext_minsize=12,
         uniformtext_mode='hide',
         xaxis={'visible': False},
@@ -612,6 +611,9 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
 
     fig.update_layout(
         **_title(graph_name),
+        **default_graph_layout,
+        **_legend(),
+        hovermode='x',
         xaxis=dict(
             title='<b>' + xaxis_title + '</b>',
             titlefont_size=axis_font_size,
@@ -624,11 +626,6 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
             range=[0, max(count_y1) * 1.10],
             fixedrange=True
         ),
-        **_legend(),
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     # Create data for HTML table
@@ -714,6 +711,9 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
 
     fig.update_layout(
         **_title(graph_name),
+        **_legend(),
+        **default_graph_layout,
+        hovermode='x',
         xaxis=dict(
             title="<b>PHRED score</b>",
             titlefont_size=axis_font_size,
@@ -726,12 +726,7 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
             rangemode="tozero",
             fixedrange=True
         ),
-        **_legend(),
         barmode='group',
-        hovermode='x',
-        font=dict(family=graph_font),
-        height=figure_image_height,
-        width=figure_image_width
     )
 
     # Add Button
