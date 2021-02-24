@@ -488,7 +488,7 @@ def phred_score_over_time_dsqr(result_dict, qscore_df, time_df, result_directory
 
 
 def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, result_directory):
-    graph_name = "1D² Speed over time"
+    graph_name = "1D² translocation speed"
 
     speed = pd.Series(sequence_length_df / duration_df)
 

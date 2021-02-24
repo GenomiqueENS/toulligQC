@@ -674,7 +674,7 @@ def phred_score_over_time(result_dict, qscore_df, time_df, result_directory):
 
 
 def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
-    graph_name = "Speed over time"
+    graph_name = "Translocation speed"
 
     speed = pd.Series(sequence_length_df / duration_df)
 
