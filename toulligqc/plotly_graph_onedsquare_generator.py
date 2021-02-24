@@ -354,7 +354,7 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
         **default_graph_layout,
         **_legend('1D² Read type'),
         **_xaxis('Sequence length (bp)'),
-        **_xaxis('PHRED score', dict(fixedrange=False)),
+        **_yaxis('PHRED score', dict(fixedrange=False)),
     )
     # Trim x axis to avoid negative values
     if max(read_pass_length) >= max(read_fail_length):
