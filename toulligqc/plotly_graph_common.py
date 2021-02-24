@@ -466,7 +466,7 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
         **_legend(legend_title),
         **default_graph_layout,
         **_xaxis('Barcodes', dict(fixedrange=True)),
-        **_yaxis(yaxis_title),
+        **_yaxis(yaxis_title, dict(rangemode="tozero")),
         boxmode='group',
         boxgap=0.4,
         boxgroupgap=0,
