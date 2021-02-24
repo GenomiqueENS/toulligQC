@@ -32,8 +32,6 @@ from collections import defaultdict
 
 figure_image_width = 1000
 figure_image_height = 562
-int_format_str = '{:,d}'
-float_format_str = '{:.2f}'
 percent_format_str = '{:.2f}%'
 line_width = 2
 interpolation_threshold = 10000
@@ -66,6 +64,20 @@ default_graph_layout = dict(
     height=figure_image_height,
     width=figure_image_width
 )
+
+def _format_int(i):
+    return '{:,d}'.format(i)
+
+def _format_float(f):
+
+    s = str(f)
+    i = int(s.split('.')[0])
+    f = float('0.' + s.split('.')[1])
+
+    return '{:,d}'.format(i) + '{:.2f}'.format(f)[1:]
+
+def _format_percent(f):
+    return percent_format_str.format(f)
 
 
 def _title(title):
@@ -126,8 +138,8 @@ def _make_describe_dataframe(value):
     """
 
     desc = value.describe()
-    desc.loc['count'] = desc.loc['count'].astype(int).apply(lambda x: int_format_str.format(x))
-    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: float_format_str.format(x))
+    desc.loc['count'] = desc.loc['count'].astype(int).apply(lambda x: _format_int(x))
+    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: _format_float(x))
     desc.rename({'50%': 'median'}, axis='index', inplace=True)
 
     return desc
@@ -574,7 +586,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
                                   count_col_name: count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
-    barcode_table[count_col_name] = barcode_table[count_col_name].astype(int).apply(lambda x: int_format_str.format(x))
+    barcode_table[count_col_name] = barcode_table[count_col_name].astype(int).apply(lambda x: _format_int(x))
     table_html = _dataFrame_to_html(barcode_table)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)

@@ -36,10 +36,8 @@ from toulligqc.plotly_graph_common import _smooth_data
 from toulligqc.plotly_graph_common import _transparent_colors
 from toulligqc.plotly_graph_common import figure_image_height
 from toulligqc.plotly_graph_common import figure_image_width
-from toulligqc.plotly_graph_common import float_format_str
 from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import image_dpi
-from toulligqc.plotly_graph_common import int_format_str
 from toulligqc.plotly_graph_common import interpolation_threshold
 from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import on_chart_font_size
@@ -56,6 +54,8 @@ from toulligqc.plotly_graph_common import _title
 from toulligqc.plotly_graph_common import default_graph_layout
 from toulligqc.plotly_graph_common import _xaxis
 from toulligqc.plotly_graph_common import _yaxis
+from toulligqc.plotly_graph_common import _format_int
+from toulligqc.plotly_graph_common import _format_float
 
 #
 #  1D plots
@@ -159,8 +159,8 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
     fig = go.Figure(data=trace, layout=layout)
 
     # HTML table
-    dataframe.iloc[0] = dataframe.iloc[0].astype(int).apply(lambda x: int_format_str.format(x))
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(float_format_str.format)
+    dataframe.iloc[0] = dataframe.iloc[0].astype(int).apply(lambda x: _format_int(x))
+    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(_format_float)
     table_html = _dataFrame_to_html(dataframe)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)

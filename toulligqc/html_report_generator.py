@@ -28,11 +28,10 @@ import base64
 import datetime
 import pkgutil
 
-int_format_str = '{:,d}'
-float_format_str = '{:.2f}'
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import graph_font
+from toulligqc.plotly_graph_common import _format_int
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -214,9 +213,9 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                flow_cell_product_code=flow_cell_product_code,
                flowcell_version=flowcell_version,
                kit_version=kit_version,
-               run_yield=int_format_str.format(int(run_yield)),
-               read_count=int_format_str.format(read_count),
-               n50=int_format_str.format(int(n50)))
+               run_yield=_format_int(int(run_yield)),
+               read_count=_format_int(read_count),
+               n50=_format_int(int(n50)))
 
     result += """
       <div class="module" id="Software-info">
