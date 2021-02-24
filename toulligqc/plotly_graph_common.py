@@ -172,7 +172,20 @@ def _smooth_data(npoints: int, sigma: int, data):
 def _precompute_boxplot_values(y):
     """
     Precompute values for boxplot to avoid data storage in boxplot.
+    https://github.com/plotly/plotly.js/blob/master/src/traces/box/calc.js
     """
+
+    y = y.dropna()
+
+    if len(y) == 0:
+        return dict(min=0,
+                    lowerfence=0,
+                    q1=0,
+                    median=0,
+                    q3=0,
+                    upperfence=0,
+                    max=0,
+                    notchspan=0)
 
     q1 = y.quantile(.25)
     q3 = y.quantile(.75)
