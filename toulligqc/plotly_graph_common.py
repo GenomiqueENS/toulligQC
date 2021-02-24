@@ -165,7 +165,7 @@ def _interpolate(x, npoints: int, y=None, interp_type=None, axis=-1):
         return pd.Series(x_int), pd.Series(y_int)
 
 
-def _smooth_data(npoints: int, sigma: int, data):
+def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None):
     """
     Function for smmothing data with numpy histogram function
     Returns a tuple of smooth data (ndarray)
@@ -173,7 +173,14 @@ def _smooth_data(npoints: int, sigma: int, data):
     :param npoints: number of desired points for smoothing
     :param sigma: sigma value of the gaussian filter
     """
-    bins = np.linspace(np.nanmin(data), np.nanmax(data), num=npoints)
+
+    if min_arg is None:
+        min_arg = np.nanmin(data)
+
+    if max_arg is None:
+        max_arg = np.nanmax(data)
+
+    bins = np.linspace(min_arg, max_arg, num=npoints)
     count_y, count_x = np.histogram(a=data, bins=bins, density=True)
     # Removes the first value of count_x1
     count_x = count_x[1:]
@@ -665,124 +672,66 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
 
 
 def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, fail_color, result_directory):
-    # If more than 10.000 reads, interpolate data
-    if len(dataframe[prefix]) > interpolation_threshold:
-        phred_score_all = _interpolate(dataframe[prefix], npoints=5000)
-        phred_score_pass = _interpolate(dataframe[prefix + " pass"], npoints=5000)
-        phred_score_fail = _interpolate(dataframe[prefix + " fail"], npoints=5000)
-    else:
-        phred_score_all = dataframe[prefix]
-        phred_score_pass = dataframe[prefix + " pass"]
-        phred_score_fail = dataframe[prefix + " fail"]
 
-    arr_1D_all = np.array(pd.Series(phred_score_all).dropna())
-    x1 = np.linspace(0, max(arr_1D_all), 200)
-    mu1, std1 = norm.fit(arr_1D_all)
-    pdf_1D_all = norm.pdf(x1, mu1, std1)
+    all_series = dataframe[prefix].dropna()
+    pass_series = dataframe[prefix + " pass"].dropna()
+    fail_series = dataframe[prefix + " fail"].dropna()
 
-    arr_1D_pass = np.array(pd.Series(phred_score_pass).dropna())
-    x2 = np.linspace(0, max(arr_1D_pass), 200)
-    mu2, std2 = norm.fit(arr_1D_pass)
-    pdf_1D_pass = norm.pdf(x2, mu2, std2)
+    count_x2, count_y2 = _smooth_data(10000, 5, pass_series, min_arg=np.nanmin(all_series), max_arg=np.nanmax(all_series))
+    count_x3, count_y3 = _smooth_data(10000, 5, fail_series, min_arg=np.nanmin(all_series), max_arg=np.nanmax(all_series))
 
-    arr_1D_fail = np.array(pd.Series(phred_score_fail).dropna())
-    x3 = np.linspace(0, max(arr_1D_fail), 200)
-    mu3, std3 = norm.fit(arr_1D_fail)
-    pdf_1D_fail = norm.pdf(x3, mu3, std3)
+    count_y2 = count_y2 / len(all_series)
+    count_y3 = count_y3 / len(all_series)
 
-    x_max = max(max(x1), max(x2), max(x3))
+    max_y = max(max(count_y2), max(count_y3))
 
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_all,
-                               name="All reads",
-                               marker_color=all_color,
-                               histnorm='probability density',
-                               visible=True))
-    fig.add_trace(go.Histogram(x=phred_score_pass,
-                               name="Pass reads",
-                               marker_color=pass_color,
-                               histnorm='probability density',
-                               visible=False))
-    fig.add_trace(go.Histogram(x=phred_score_fail,
-                               name="Fail reads",
-                               marker_color=fail_color,
-                               histnorm='probability density',
-                               visible=False))
-    fig.add_trace(go.Scatter(x=x1,
-                             y=pdf_1D_all,
-                             mode="lines",
-                             name='Density curve',
-                             visible=True,
-                             line=dict(color="gray",
-                                       width=3,
-                                       shape="spline",
-                                       smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2,
-                             y=pdf_1D_pass,
-                             mode="lines",
-                             name='Density curve',
-                             visible=False,
-                             line=dict(color="gray",
-                                       width=3,
-                                       shape="spline",
-                                       smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x3,
-                             y=pdf_1D_fail,
-                             mode="lines",
-                             name='Density curve',
-                             visible=False,
-                             line=dict(color="gray",
-                                       width=3,
-                                       shape="spline",
-                                       smoothing=0.5)))
+
+    fig.add_trace(go.Scatter(x=count_x2,
+                             y=count_y2,
+                             name='Pass reads',
+                             fill='tozeroy',
+                             marker_color=pass_color,
+                             visible=True
+                             ))
+    fig.add_trace(go.Scatter(x=count_x3,
+                             y=count_y3,
+                             name='Fail reads',
+                             fill='tozeroy',
+                             marker_color=fail_color,
+                             visible=True
+                             ))
+
+    # Threshold
+    for p in [25, 50, 75]:
+        x0 = np.percentile(pass_series, p)
+        if p == 50:
+            t = 'median'
+        else:
+            t = str(p) + "%"
+        fig.add_trace(go.Scatter(
+            mode="lines+text",
+            name='Pass read<br>percentiles',
+            x=[x0, x0],
+            y=[0, max_y],
+            line=dict(color="gray", width=1, dash="dot"),
+            text=["", t],
+            textposition="top center",
+            hoverinfo="skip",
+            showlegend=(True if p == 50 else False),
+            visible=True
+        ))
 
     fig.update_layout(
         **_title(graph_name),
         **_legend(),
         **default_graph_layout,
         hovermode='x',
-        **_xaxis('PHRED score', dict(range=[0, x_max])),
+        **_xaxis('PHRED score', dict(rangemode="tozero")),
         **_yaxis('Density probability', dict(rangemode="tozero")),
-        barmode='group',
     )
 
-    # Add Button
-    fig.update_layout(
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="left",
-                buttons=list([
-                    dict(
-                        args=[{'visible': [True, False, False, True, False, False]}],
-                        label="All reads",
-                        method="update"
-                    ),
-                    dict(
-                        args=[{'visible': [False, True, False, False, True, False]}],
-                        label="Pass reads",
-                        method="update"
-                    ),
-                    dict(
-                        args=[{'visible': [False, False, True, False, False, True]}],
-                        label="Fail reads",
-                        method="update"
-                    )
-                ]),
-                pad={"r": 20, "t": 20, "l": 20, "b": 20},
-                showactive=True,
-                x=1.0,
-                xanchor="left",
-                y=1.25,
-                yanchor="top"
-            ),
-        ]
-    )
-
-    dataframe = _make_describe_dataframe(dataframe).drop('count')
-    dataframe.columns = ['All reads', 'Pass reads', 'Fail reads']
-    table_html = _dataFrame_to_html(dataframe)
-
+    table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
