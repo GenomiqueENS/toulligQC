@@ -520,6 +520,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
                          textfont_size=14,
                          marker=pie_marker,
                          textposition='inside',
+                         hovertemplate='<b>%{label}</b><br>%{percent:.1%} (%{value:,})<extra></extra>',
                          visible=True
                          ))
     # Histogram
