@@ -87,12 +87,7 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
                   toulligqc_colors["barcode_pass"], toulligqc_colors["barcode_fail"]]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
-                       hovertext=["<b>All reads</b>",
-                                  "<b>Pass reads</b>",
-                                  "<b>Fail reads</b>",
-                                  "<b>Pass barcoded reads</b>",
-                                  "<b>Fail barcoded reads</b>"],
-                       name="Barcoded graph",
+                       hovertemplate='<b>%{x}</b><br>%{y:,}<extra></extra>',
                        marker_color=_transparent_colors(colors, plotly_background_color, .5),
                        marker_line_color=colors,
                        marker_line_width=line_width)
@@ -128,10 +123,7 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
         colors = [toulligqc_colors['all'], toulligqc_colors['pass'], toulligqc_colors['fail']]
 
         trace = go.Bar(x=[*data], y=list(data.values()),
-                       hovertext=["<b>All reads</b>",
-                                  "<b>Pass reads</b>",
-                                  "<b>Fail reads</b>"],
-                       name="Barcoded graph",
+                       hovertemplate='<b>%{x}</b><br>%{y:,}<extra></extra>',
                        marker_color=_transparent_colors(colors, plotly_background_color, .5),
                        marker_line_color=colors,
                        marker_line_width=line_width)

@@ -528,6 +528,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
                          marker_color=bar_colors,
                          marker_line_color='gray',
                          marker_line_width=line_width,
+                         hovertemplate='<b>%{x}</b><br>%{y:,}<extra></extra>',
                          visible=False
                          ))
 
