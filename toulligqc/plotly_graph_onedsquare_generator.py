@@ -160,7 +160,7 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
         **_title(graph_name),
         **default_graph_layout,
         **_xaxis('1D² Read type', dict(fixedrange=True, categoryorder="trace")),
-        **_yaxis('Counts'))
+        **_yaxis('Read count'))
 
     fig = go.Figure(data=trace, layout=layout)
 

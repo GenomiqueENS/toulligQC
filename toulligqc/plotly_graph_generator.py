@@ -154,7 +154,7 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
         **default_graph_layout,
         hovermode="x",
         **_xaxis('Read type', dict(fixedrange=True, categoryorder="total descending")),
-        **_yaxis('Counts'))
+        **_yaxis('Read count'))
 
     fig = go.Figure(data=trace, layout=layout)
 
