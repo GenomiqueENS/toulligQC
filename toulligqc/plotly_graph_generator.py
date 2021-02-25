@@ -62,7 +62,7 @@ from toulligqc.plotly_graph_common import _format_float
 #
 
 
-def read_count_histogram(result_dict, dataframe_dict, result_directory):
+def read_count_histogram(result_dict, result_directory):
     """
     Plots the histogram of count of the different types of reads:
     1D read return by Guppy
@@ -73,14 +73,14 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
     graph_name = 'Read count histogram'
 
     # Histogram with barcoded read counts
-    if 'read.pass.barcoded.count' in dataframe_dict:
+    if 'basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count' in result_dict:
 
         data = {
             'All reads': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
             'Pass reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
             'Fail reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
-            'Pass barcoded reads': dataframe_dict["read.pass.barcoded.count"],
-            'Fail barcoded reads': dataframe_dict["read.fail.barcoded.count"]
+            'Pass barcoded reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
+            'Fail barcoded reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]
         }
 
         colors = [toulligqc_colors["all"], toulligqc_colors["pass"], toulligqc_colors["fail"],
@@ -98,8 +98,8 @@ def read_count_histogram(result_dict, dataframe_dict, result_directory):
             [[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
-              dataframe_dict["read.pass.barcoded.count"],
-              dataframe_dict["read.fail.barcoded.count"]],
+              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"],
+              result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"]],
              # frequencies
              [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],

@@ -59,7 +59,7 @@ from toulligqc.plotly_graph_common import _format_float
 #  1D² plots
 #
 
-def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_directory):
+def dsqr_read_count_histogram(result_dict, result_directory):
     """
     Plots the histogram of 1D² count of the different types of reads:
     1D² read return by Guppy
@@ -70,15 +70,15 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
     graph_name = "1D² Read count histogram"
 
     # Histogram with barcoded read counts
-    if 'read.pass.barcoded.count' in dataframe_dict_1dsqr:
+    if 'basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count' in result_dict:
 
         data = {
             'All reads': result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
             '1D² reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
             '1D² pass reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
             '1D² fail reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
-            '1D² pass barcoded reads': dataframe_dict_1dsqr["read.pass.barcoded.count"],
-            '1D² fail barcoded reads': dataframe_dict_1dsqr["read.fail.barcoded.count"]
+            '1D² pass barcoded reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count"],
+            '1D² fail barcoded reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]
         }
 
         colors = [toulligqc_colors["all"], toulligqc_colors["all_1d2"], toulligqc_colors["pass"],
@@ -97,8 +97,8 @@ def dsqr_read_count_histogram(result_dict, dataframe_dict_1dsqr, result_director
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
-              dataframe_dict_1dsqr["read.pass.barcoded.count"],
-              dataframe_dict_1dsqr["read.fail.barcoded.count"]],
+              result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count"],
+              result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]],
              # frequencies
              [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count.frequency"],
