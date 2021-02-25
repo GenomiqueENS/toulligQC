@@ -433,52 +433,38 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
 
     fig = go.Figure()
 
-    first = True
-    for barcode in sorted(barcode_selection):
+    for read_type in ('Pass', 'Fail'):
 
-        if qscore:
-            final_df = pass_df.loc[pass_df['barcodes'] == barcode].dropna()
-            d = _precompute_boxplot_values(final_df['qscore'])
+        if read_type == 'Pass':
+            df = pass_df
+            color = pass_color
         else:
-            pass_df[barcode] = pass_df[barcode].loc[pass_df[barcode] > 0]
-            d = _precompute_boxplot_values(pass_df[barcode])
-        fig.add_trace(go.Box(
-            q1=[d['q1']],
-            median=[d['median']],
-            q3=[d['q3']],
-            lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name="Pass reads",
-            x0=barcode,
-            marker_color=pass_color,
-            offsetgroup="pass",
-            showlegend=first
-        ))
-        if first:
-            first = False
+            df = fail_df
+            color = fail_color
 
-    first = True
-    for barcode in barcode_selection:
-        if qscore:
-            final_df = fail_df.loc[fail_df['barcodes'] == barcode].dropna()
-            d = _precompute_boxplot_values(final_df['qscore'])
-        else:
-            fail_df[barcode] = fail_df[barcode].loc[fail_df[barcode] > 0]
-            d = _precompute_boxplot_values(fail_df[barcode])
-        fig.add_trace(go.Box(
-            q1=[d['q1']],
-            median=[d['median']],
-            q3=[d['q3']],
-            lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name="Fail reads",
-            x0=barcode,
-            marker_color=fail_color,
-            offsetgroup="fail",
-            showlegend=first
-        ))
-        if first:
-            first = False
+        first = True
+        for barcode in sorted(barcode_selection):
+
+            if qscore:
+                final_df = df.loc[df['barcodes'] == barcode].dropna()
+                d = _precompute_boxplot_values(final_df['qscore'])
+            else:
+                df[barcode] = df[barcode].loc[df[barcode] > 0]
+                d = _precompute_boxplot_values(df[barcode])
+            fig.add_trace(go.Box(
+                q1=[d['q1']],
+                median=[d['median']],
+                q3=[d['q3']],
+                lowerfence=[d['lowerfence']],
+                upperfence=[d['upperfence']],
+                name=read_type + " reads",
+                x0=barcode,
+                marker_color=color,
+                offsetgroup=read_type.lower(),
+                showlegend=first
+            ))
+            if first:
+                first = False
 
     fig.update_layout(
         **_title(graph_name),
