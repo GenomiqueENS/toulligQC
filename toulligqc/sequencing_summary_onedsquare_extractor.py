@@ -468,15 +468,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Add final dataframe to dataframe_dict_1dsqr
         self.dataframe_dict_1dsqr[df_key_name] = barcode_selection_dataframe
 
-        # Unpivot dataframe to have only one column of barcodes + passes filtering + melted column name (qscore/length)
-        melted_dataframe = pd.melt(
-            barcode_selection_dataframe,
-            id_vars=['passes_filtering'],
-            var_name="barcodes", value_name=melted_column_name)
-
-        # Add melted dataframe to dataframe_dict_1dsqr too
-        self.dataframe_dict_1dsqr[df_key_name.replace("_dataframe", "_melted_dataframe")] = melted_dataframe
-
     def _barcode_stats(self, result_dict, barcode_selected_dataframe, barcode_selected_read_pass_dataframe,
                        barcode_selected_read_fail_dataframe, barcode_name):
         """
@@ -541,8 +532,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             images.append(pgg2.barcode_length_boxplot_1dsqr(self.dataframe_dict_1dsqr,
                                                             images_directory))
 
-            images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.barcode_selection, self.dataframe_dict_1dsqr,
-                                                                    images_directory))
+            images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.dataframe_dict_1dsqr,
+                                                            images_directory))
         return images
 
     def clean(self, result_dict):

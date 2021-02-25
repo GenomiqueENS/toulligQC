@@ -448,15 +448,6 @@ class SequencingSummaryExtractor:
         # Add final dataframe to dataframe_dict
         self.dataframe_dict[df_key_name] = barcode_selection_dataframe
 
-        # Unpivot dataframe to have only one column of barcodes + passes filtering + melted column name (qscore/length)
-        melted_dataframe = pd.melt(
-            barcode_selection_dataframe,
-            id_vars=['passes_filtering'],
-            var_name="barcodes", value_name=melted_column_name)
-
-        # Add melted dataframe to dataframe_dict too
-        self.dataframe_dict[df_key_name.replace("_dataframe", "_melted_dataframe")] = melted_dataframe
-
     def _barcode_stats(self, result_dict, barcode_selected_dataframe, barcode_selected_read_pass_dataframe,
                        barcode_selected_read_fail_dataframe, barcode_name):
         """
@@ -513,8 +504,8 @@ class SequencingSummaryExtractor:
             images.append(pgg.barcode_length_boxplot(self.dataframe_dict,
                                                      images_directory))
 
-            images.append(pgg.barcoded_phred_score_frequency(self.barcode_selection, self.dataframe_dict,
-                                                             images_directory))
+            images.append(pgg.barcoded_phred_score_frequency(self.dataframe_dict,
+                                                     images_directory))
         return images
 
     def clean(self, result_dict):

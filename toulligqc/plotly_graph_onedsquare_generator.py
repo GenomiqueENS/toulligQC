@@ -427,19 +427,19 @@ def barcode_length_boxplot_1dsqr(dataframe_dict_1dsqr, result_directory):
                                   result_directory=result_directory)
 
 
-def barcoded_phred_score_frequency_1dsqr(barcode_selection, dataframe_dict_1dsqr, result_directory):
+def barcoded_phred_score_frequency_1dsqr(dataframe_dict_1dsqr, result_directory):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
 
     graph_name = "1D² PHRED score distribution for barcodes"
 
-    df = dataframe_dict_1dsqr['barcode_selection_sequence_phred_melted_dataframe']
+    df = dataframe_dict_1dsqr['barcode_selection_sequence_phred_dataframe']
 
     return _barcode_boxplot_graph(graph_name=graph_name,
                                   df=df,
-                                  qscore=True,
-                                  barcode_selection=barcode_selection,
+                                  qscore=False,
+                                  barcode_selection=df.columns.drop('passes_filtering'),
                                   pass_color=toulligqc_colors['pass'],
                                   fail_color=toulligqc_colors['fail'],
                                   yaxis_title='PHRED score',
