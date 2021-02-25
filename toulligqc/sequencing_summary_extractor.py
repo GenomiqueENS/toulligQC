@@ -197,17 +197,17 @@ class SequencingSummaryExtractor:
         return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
 
     @staticmethod
-    def _sorted_list_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
+    def _sorted_series_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
                                               denominator: int):
         """
-        Returns a sorted list of values of different columns filtered by a boolean and divided by the denominator
+        Returns a sorted series of values of different columns filtered by a boolean and divided by the denominator
         :param dataframe: dataframe_1d
         :param column_name1: 1st column to filter
         :param column_name2: 2nd column to filter
         :param boolean: access columns of dataframe by boolean array
         :param denominator: number to divide by
         """
-        return sorted(dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator)
+        return (dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator).sort_values()
 
     def _set_result_value(self, dict, key: str, value):
         """
@@ -263,7 +263,7 @@ class SequencingSummaryExtractor:
                                                                     'passes_filtering', True)
         self.dataframe_dict["read.pass.qscore"] = self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
                                                                     'passes_filtering', True)
-        self.dataframe_dict["read.pass.sorted"] = self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
+        self.dataframe_dict["pass.reads.start.time.sorted"] = self._sorted_series_boolean_elements_divided(self.dataframe_1d, 'start_time',
                                                                             'passes_filtering', True, 3600)
 
         # 1D fail information : count, length, qscore values and sorted Series
@@ -273,7 +273,7 @@ class SequencingSummaryExtractor:
                                                                     'passes_filtering', False)
         self.dataframe_dict["read.fail.qscore"] = self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
                                                                     'passes_filtering', False)
-        self.dataframe_dict["read.fail.sorted"] = self._sorted_list_boolean_elements_divided(self.dataframe_1d, 'start_time',
+        self.dataframe_dict["fail.reads.start.time.sorted"] = self._sorted_series_boolean_elements_divided(self.dataframe_1d, 'start_time',
                                                                             'passes_filtering', False, 3600)
 
         total_reads = self._get_result_value(result_dict, "read.count")
@@ -305,10 +305,10 @@ class SequencingSummaryExtractor:
 
         self._set_result_value(result_dict, "n50", self._compute_n50())
 
-        self.dataframe_dict["start.time.sorted"] = sorted(self.dataframe_1d['start_time'] / 3600)
+        self.dataframe_dict["all.reads.start.time.sorted"] = (self.dataframe_1d['start_time'] / 3600).sort_values()
 
         self._set_result_value(result_dict, "run.time", max(
-            self.dataframe_dict["start.time.sorted"]))
+            self.dataframe_dict["all.reads.start.time.sorted"]))
 
         # Retrieve Qscore column information and save it in mean.qscore entry
         self.dataframe_dict["mean.qscore"] = self.qscore_df

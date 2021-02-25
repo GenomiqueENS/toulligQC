@@ -184,9 +184,9 @@ def yield_plot(dataframe_dict, result_directory):
 
     graph_name = "Yield plot through time"
 
-    all_read = dataframe_dict['start.time.sorted']
-    read_pass = dataframe_dict['read.pass.sorted']
-    read_fail = dataframe_dict['read.fail.sorted']
+    all_read = dataframe_dict['all.reads.start.time.sorted']
+    read_pass = dataframe_dict['pass.reads.start.time.sorted']
+    read_fail = dataframe_dict['fail.reads.start.time.sorted']
 
     count_x1, count_y1 = _smooth_data(10000, 5, all_read)
     count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
