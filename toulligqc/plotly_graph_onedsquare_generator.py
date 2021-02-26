@@ -418,7 +418,6 @@ def barcode_length_boxplot_1dsqr(dataframe_dict_1dsqr, result_directory):
 
     return _barcode_boxplot_graph(graph_name=graph_name,
                                   df=df,
-                                  qscore=False,
                                   barcode_selection=df.columns.drop('passes_filtering'),
                                   pass_color=toulligqc_colors['pass'],
                                   fail_color=toulligqc_colors['fail'],
@@ -438,7 +437,6 @@ def barcoded_phred_score_frequency_1dsqr(dataframe_dict_1dsqr, result_directory)
 
     return _barcode_boxplot_graph(graph_name=graph_name,
                                   df=df,
-                                  qscore=False,
                                   barcode_selection=df.columns.drop('passes_filtering'),
                                   pass_color=toulligqc_colors['pass'],
                                   fail_color=toulligqc_colors['fail'],

@@ -425,7 +425,7 @@ def _over_time_graph(data_series,
     return graph_name, output_file, table_html, div
 
 
-def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color, fail_color, yaxis_title, legend_title, result_directory):
+def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_color, yaxis_title, legend_title, result_directory):
 
     # Sort reads by read type and drop read type column
     pass_df = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
@@ -445,12 +445,8 @@ def _barcode_boxplot_graph(graph_name, df, qscore, barcode_selection, pass_color
         first = True
         for barcode in sorted(barcode_selection):
 
-            if qscore:
-                final_df = df.loc[df['barcodes'] == barcode].dropna()
-                d = _precompute_boxplot_values(final_df['qscore'])
-            else:
-                df[barcode] = df[barcode].loc[df[barcode] > 0]
-                d = _precompute_boxplot_values(df[barcode])
+            df[barcode] = df[barcode].loc[df[barcode] > 0]
+            d = _precompute_boxplot_values(df[barcode])
             fig.add_trace(go.Box(
                 q1=[d['q1']],
                 median=[d['median']],
