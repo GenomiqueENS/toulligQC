@@ -98,8 +98,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         # Load dataframe_1d and remove duplicate columns that are also present in dataframe_1dsqr
         self.dataframe_1d = self.sse.dataframe_1d
-        self.sequence_length_1d = self.dataframe_1d['sequence_length']
-        self.channel_df = self.dataframe_1d['channel']
 
         # Copy dataframe to avoid changing original df when dropping columns
         dataframe_1d_copy = self.dataframe_1d.copy(deep=True)
@@ -501,7 +499,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         images = list([pgg.read_count_histogram(result_dict, images_directory)])
         images.append(pgg2.dsqr_read_count_histogram(result_dict, images_directory))
-        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.sequence_length_1d, images_directory))
+        images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
         images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, self.sequence_length_1dsqr, images_directory))
         images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory, ))
@@ -511,9 +509,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                          images_directory))
         images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
         images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, images_directory))
-        channel_count = self.channel_df
-        total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
+        images.append(pgg.plot_performance(self.dataframe_dict, images_directory))
         images.append(
             pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory))
         images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.qscore_1dsqr, self.time_1dsqr, images_directory))

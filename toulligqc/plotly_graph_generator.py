@@ -159,10 +159,10 @@ def read_count_histogram(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def read_length_scatterplot(dataframe_dict, sequence_length_df, result_directory):
+def read_length_scatterplot(dataframe_dict, result_directory):
     graph_name = "Distribution of read lengths"
 
-    all_read = sequence_length_df.loc[sequence_length_df >= 10].dropna().values
+    all_read = dataframe_dict['sequence.length'].loc[dataframe_dict['sequence.length'] >= 10].dropna().values
     read_pass = dataframe_dict['read.pass.length'].loc[dataframe_dict['read.pass.length'] >= 10]
     read_fail = dataframe_dict['read.fail.length'].loc[dataframe_dict['read.fail.length'] >= 10]
 
@@ -505,13 +505,15 @@ def _minion_flowcell_layout():
     return flowcell_layout
 
 
-def plot_performance(pore_measure, result_directory):
+def plot_performance(dataframe_dict, result_directory):
     """
     Plots the channels occupancy by the reads
     @:param pore_measure: reads number per pore
     """
 
     graph_name = "Channel occupancy of the flowcell"
+
+    pore_measure = pd.value_counts(dataframe_dict['channel'])
 
     output_file = result_directory + '/' + '_'.join(graph_name.split()) + '.png'
     flowcell_layout = _minion_flowcell_layout()
@@ -632,18 +634,18 @@ def barcoded_phred_score_frequency(dataframe_dict, result_directory):
                                   result_directory=result_directory)
 
 
-def sequence_length_over_time(time_df, dataframe_dict, result_directory):
+def sequence_length_over_time(dataframe_dict, result_directory):
     graph_name = "Read length over time"
 
-    return _over_time_graph(data_series=dataframe_dict.get('sequence.length'),
-                            time_series=time_df,
+    return _over_time_graph(data_series=dataframe_dict['sequence.length'],
+                            time_series=dataframe_dict['start.time'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['sequence_length_over_time'],
                             yaxis_title='Read length (bp)')
 
 
-def phred_score_over_time(result_dict, qscore_df, time_df, result_directory):
+def phred_score_over_time(dataframe_dict, result_dict, result_directory):
     graph_name = "PHRED score over time"
 
     pass_min_qscore = 7
@@ -651,8 +653,11 @@ def phred_score_over_time(result_dict, qscore_df, time_df, result_directory):
     if key in result_dict:
         pass_min_qscore=float(result_dict[key])
 
-    return _over_time_graph(data_series=qscore_df,
-                            time_series=time_df,
+    qscore_series = dataframe_dict["mean.qscore"]
+    time_series = dataframe_dict['start.time']
+
+    return _over_time_graph(data_series=qscore_series,
+                            time_series=time_series,
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['phred_score_over_time'],
@@ -663,13 +668,16 @@ def phred_score_over_time(result_dict, qscore_df, time_df, result_directory):
                             green_zone_color=toulligqc_colors['green_zone_color'])
 
 
-def speed_over_time(duration_df, sequence_length_df, time_df, result_directory):
+def speed_over_time(dataframe_dict, result_directory):
     graph_name = "Translocation speed"
 
-    speed = pd.Series(sequence_length_df / duration_df)
+    sequence_length_series = dataframe_dict['sequence.length']
+    duration_series = dataframe_dict['duration']
 
-    return _over_time_graph(data_series=speed,
-                            time_series=time_df,
+    speed_series = pd.Series(sequence_length_series / duration_series)
+
+    return _over_time_graph(data_series=speed_series,
+                            time_series=dataframe_dict['start.time'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['speed_over_time'],

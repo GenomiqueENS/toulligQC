@@ -95,12 +95,6 @@ class SequencingSummaryExtractor:
 
         # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
         self.dataframe_1d = self.dataframe_1d.fillna(0)
-        self.channel_df = self.dataframe_1d['channel']
-        self.passes_filtering_df = self.dataframe_1d['passes_filtering']
-        self.sequence_length_df = self.dataframe_1d['sequence_length']
-        self.qscore_df = self.dataframe_1d['mean_qscore']
-        self.time_df = self.dataframe_1d['start_time']
-        self.duration_df = self.dataframe_1d['duration']
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
         self.dataframe_dict = {}
@@ -297,11 +291,23 @@ class SequencingSummaryExtractor:
         self._set_result_value(
             result_dict, "read.fail.frequency", read_fail_frequency)
 
-        # Read length information
-        self.dataframe_dict["sequence.length"] = self.sequence_length_df
+        # Read length series
+        self.dataframe_dict["sequence.length"] = self.dataframe_1d['sequence_length']
+
+        # Mean QScore
+        self.dataframe_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
+
+        # Channel series
+        self.dataframe_dict["channel"] = self.dataframe_1d['channel']
+
+        # Time series
+        self.dataframe_dict["start.time"] = self.dataframe_1d['start_time']
+
+        # Duration series
+        self.dataframe_dict["duration"] = self.dataframe_1d['duration']
 
         # Yield, n50, run time
-        self._set_result_value(result_dict, "yield", sum(self.sequence_length_df))
+        self._set_result_value(result_dict, "yield", sum(self.dataframe_dict["sequence.length"]))
 
         self._set_result_value(result_dict, "n50", self._compute_n50())
 
@@ -311,7 +317,7 @@ class SequencingSummaryExtractor:
             self.dataframe_dict["all.reads.start.time.sorted"]))
 
         # Retrieve Qscore column information and save it in mean.qscore entry
-        self.dataframe_dict["mean.qscore"] = self.qscore_df
+        self.dataframe_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
 
         # Get channel occupancy statistics and store each value into result_dict
         for index, value in self._occupancy_channel().items():
@@ -319,7 +325,7 @@ class SequencingSummaryExtractor:
                 result_dict, "channel.occupancy.statistics." + index, value)
 
         # Get statistics about all reads length and store each value into result_dict
-        sequence_length_statistics = self.sequence_length_df.describe()
+        sequence_length_statistics = self.dataframe_dict["sequence.length"].describe()
 
         for index, value in sequence_length_statistics.items():
             self._set_result_value(
@@ -478,19 +484,18 @@ class SequencingSummaryExtractor:
         :return: images array containing the title and the path toward the images
         """
         images_directory = self.result_directory + '/images'
-        images = list([pgg.read_count_histogram(result_dict, images_directory)])
-        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.sequence_length_df, images_directory))
+        images = list()
+        images.append(pgg.read_count_histogram(result_dict, images_directory))
+        images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
         images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory))
         images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
-        channel_count = self.channel_df
-        total_number_reads_per_pore = pd.value_counts(channel_count)
-        images.append(pgg.plot_performance(total_number_reads_per_pore, images_directory))
+        images.append(pgg.plot_performance(self.dataframe_dict, images_directory))
 
         images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg.sequence_length_over_time(self.time_df, self.dataframe_dict, images_directory))
-        images.append(pgg.phred_score_over_time(result_dict, self.qscore_df, self.time_df, images_directory))
-        images.append(pgg.speed_over_time(self.duration_df, self.sequence_length_df, self.time_df, images_directory))
+        images.append(pgg.sequence_length_over_time(self.dataframe_dict, images_directory))
+        images.append(pgg.phred_score_over_time(self.dataframe_dict, result_dict, images_directory))
+        images.append(pgg.speed_over_time(self.dataframe_dict, images_directory))
 
         if self.is_barcode:
             images.append(pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
@@ -535,7 +540,7 @@ class SequencingSummaryExtractor:
         Statistics about the channels of the flowcell
         :return: pd.Series object containing statistics about the channel occupancy without count value
         """
-        total_reads_per_channel = pd.value_counts(self.channel_df)
+        total_reads_per_channel = pd.value_counts(self.dataframe_dict["channel"])
         return pd.DataFrame.describe(total_reads_per_channel)
 
     def _load_sequencing_summary_data(self):
@@ -631,7 +636,7 @@ class SequencingSummaryExtractor:
 
     def _compute_n50(self):
         """Compute N50 value of total sequence length"""
-        data = self.sequence_length_df.dropna().values
+        data = self.dataframe_dict["sequence.length"].dropna().values
         data.sort()
         half_sum = data.sum() / 2
         cum_sum = 0
