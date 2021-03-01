@@ -105,15 +105,11 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         # Load dataframe_1dsqr df from 1D² files
         self.dataframe_1dsqr = self._load_sequencing_summary_1dsqr_data()
-        self.sequence_length_1dsqr = self.dataframe_1dsqr['sequence_length']
-        self.time_1dsqr = self.dataframe_1dsqr['start_time1']
-        self.qscore_1dsqr = self.dataframe_1dsqr['mean_qscore']
-        self.duration_1dsqr = self.dataframe_1dsqr['trimmed_duration1'] + self.dataframe_1dsqr[
-            'trimmed_duration2']  # duration of the 2 strands sequenced
 
-        # Merge dataframe_1d with dataframe_1dsqr
-        self.df_merged = dataframe_1d_copy.merge(self.dataframe_1dsqr, left_on="duration", right_on="sequence_length",
-                                                 how="right")
+        # Create duration column in dataframe_1dsqr
+        self.dataframe_1dsqr['duration'] = self.dataframe_1dsqr['trimmed_duration1'] + self.dataframe_1dsqr[
+            'trimmed_duration2']  # duration of the 2 strands sequenced
+        self.dataframe_1dsqr.drop(columns=['trimmed_duration1', 'trimmed_duration2'], inplace=True)
 
         # dataframe_dicts
         self.dataframe_dict_1dsqr = {}
@@ -123,7 +119,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             self.barcode_selection = self.config_dictionary[
                 'barcode_selection']
 
-        if self.dataframe_1d.empty or self.dataframe_1dsqr.empty or self.df_merged.empty:
+        if self.dataframe_1d.empty or self.dataframe_1dsqr.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
@@ -301,18 +297,18 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         # 1D² pass information : count, length and qscore values
         self._set_result_to_dict(result_dict, "read.pass.count",
-                                 self._count_boolean_elements(self.df_merged, 'passes_filtering', True))
-        self.dataframe_dict_1dsqr["read.pass.length"] = self._series_cols_boolean_elements(self.df_merged, 'sequence_length',
+                                 self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', True))
+        self.dataframe_dict_1dsqr["read.pass.length"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'sequence_length',
                                                                     'passes_filtering', True)
-        self.dataframe_dict_1dsqr["read.pass.qscore"] = self._series_cols_boolean_elements(self.df_merged, 'mean_qscore',
+        self.dataframe_dict_1dsqr["read.pass.qscore"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'mean_qscore',
                                                                     'passes_filtering', True)
 
         # 1D² fail information : count, length and qscore values
         self._set_result_to_dict(result_dict, "read.fail.count",
-                                 self._count_boolean_elements(self.df_merged, 'passes_filtering', False))
-        self.dataframe_dict_1dsqr["read.fail.length"] = self._series_cols_boolean_elements(self.df_merged, 'sequence_length',
+                                 self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', False))
+        self.dataframe_dict_1dsqr["read.fail.length"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'sequence_length',
                                                                     'passes_filtering', False)
-        self.dataframe_dict_1dsqr["read.fail.qscore"] = self._series_cols_boolean_elements(self.df_merged, 'mean_qscore',
+        self.dataframe_dict_1dsqr["read.fail.qscore"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'mean_qscore',
                                                                     'passes_filtering', False)
 
         # Ratios & frequencies
@@ -330,9 +326,12 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self._set_result_value(result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Read length & passes_filtering & qscore information
-        self.dataframe_dict_1dsqr["sequence.length"] = self.df_merged["sequence_length"]
-        self.dataframe_dict_1dsqr["passes.filtering"] = self.df_merged["passes_filtering"]
-        self.dataframe_dict_1dsqr["mean.qscore"] = self.df_merged["mean_qscore"]
+        self.dataframe_dict_1dsqr["sequence.length"] = self.dataframe_1dsqr["sequence_length"]
+        self.dataframe_dict_1dsqr["passes.filtering"] = self.dataframe_1dsqr["passes_filtering"]
+        self.dataframe_dict_1dsqr["mean.qscore"] = self.dataframe_1dsqr["mean_qscore"]
+
+        self.dataframe_dict_1dsqr["start.time1"] = self.dataframe_1dsqr['start_time1']
+        self.dataframe_dict_1dsqr["duration"] = self.dataframe_1dsqr['duration']
 
         # Get statistics about all reads length and store each value into result_dict
         sequence_length_statistics = self.dataframe_1dsqr['sequence_length'].describe()
@@ -500,7 +499,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images = list([pgg.read_count_histogram(result_dict, images_directory)])
         images.append(pgg2.dsqr_read_count_histogram(result_dict, images_directory))
         images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, self.sequence_length_1dsqr, images_directory))
+        images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, images_directory))
         images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory, ))
         images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, images_directory))
@@ -511,10 +510,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, images_directory))
         images.append(pgg.plot_performance(self.dataframe_dict, images_directory))
         images.append(
-            pgg2.sequence_length_over_time_dsqr(self.time_1dsqr, self.sequence_length_1dsqr, images_directory))
-        images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.qscore_1dsqr, self.time_1dsqr, images_directory))
-        images.append(pgg2.speed_over_time_dsqr(self.duration_1dsqr, self.sequence_length_1dsqr, self.time_1dsqr,
-                                                images_directory))
+            pgg2.sequence_length_over_time_dsqr(self.dataframe_dict_1dsqr, images_directory))
+        images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.dataframe_dict_1dsqr, images_directory))
+        images.append(pgg2.speed_over_time_dsqr(self.dataframe_dict_1dsqr, images_directory))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(self.dataframe_dict_1dsqr,

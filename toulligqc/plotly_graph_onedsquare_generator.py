@@ -162,10 +162,10 @@ def dsqr_read_count_histogram(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, sequence_length_1dsqr, result_directory):
+def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, result_directory):
     graph_name = "1D² Distribution of read lengths"
 
-    all_read = sequence_length_1dsqr.loc[sequence_length_1dsqr >= 10].dropna().values
+    all_read = dataframe_dict_1dsqr['sequence.length'].loc[dataframe_dict_1dsqr['sequence.length'] >= 10]
     read_pass = dataframe_dict_1dsqr['read.pass.length'].loc[dataframe_dict_1dsqr['read.pass.length'] >= 10]
     read_fail = dataframe_dict_1dsqr['read.fail.length'].loc[dataframe_dict_1dsqr['read.fail.length'] >= 10]
 
@@ -445,27 +445,27 @@ def barcoded_phred_score_frequency_1dsqr(dataframe_dict_1dsqr, result_directory)
                                   result_directory=result_directory)
 
 
-def sequence_length_over_time_dsqr(time_df, sequence_length_df, result_directory):
+def sequence_length_over_time_dsqr(dataframe_dict_1dsqr, result_directory):
     graph_name = "1D² Read length over time"
 
-    return _over_time_graph(data_series=sequence_length_df,
-                            time_series=time_df,
+    return _over_time_graph(data_series=dataframe_dict_1dsqr['sequence.length'],
+                            time_series=dataframe_dict_1dsqr['start.time1'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['sequence_length_over_time'],
                             yaxis_title='Read length (bp)')
 
 
-def phred_score_over_time_dsqr(result_dict, qscore_df, time_df, result_directory):
+def phred_score_over_time_dsqr(result_dict, dataframe_dict_1dsqr, result_directory):
     graph_name = "1D² PHRED score over time"
 
     pass_min_qscore = 7
-    key= 'sequencing.telemetry.extractor.pass.threshold.qscore'
+    key = 'sequencing.telemetry.extractor.pass.threshold.qscore'
     if key in result_dict:
         pass_min_qscore=float(result_dict[key])
 
-    return _over_time_graph(data_series=qscore_df,
-                            time_series=time_df,
+    return _over_time_graph(data_series=dataframe_dict_1dsqr['mean.qscore'],
+                            time_series=dataframe_dict_1dsqr['start.time1'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['phred_score_over_time'],
@@ -475,13 +475,13 @@ def phred_score_over_time_dsqr(result_dict, qscore_df, time_df, result_directory
                             green_zone_color=toulligqc_colors['green_zone_color'])
 
 
-def speed_over_time_dsqr(duration_df, sequence_length_df, time_df, result_directory):
+def speed_over_time_dsqr(dataframe_dict_1dsqr, result_directory):
     graph_name = "1D² translocation speed"
 
-    speed = pd.Series(sequence_length_df / duration_df)
+    speed = pd.Series(dataframe_dict_1dsqr['sequence.length'] / dataframe_dict_1dsqr['duration'])
 
     return _over_time_graph(data_series=speed,
-                            time_series=time_df,
+                            time_series=dataframe_dict_1dsqr['start.time1'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['speed_over_time'],
