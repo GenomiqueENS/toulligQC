@@ -33,7 +33,6 @@ import pandas as pd
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc.sequencing_summary_common import set_result_value
 from toulligqc.sequencing_summary_common import get_result_value
-from toulligqc.sequencing_summary_common import set_result_to_dict
 from toulligqc.sequencing_summary_common import describe_dict
 
 
@@ -208,14 +207,14 @@ class SequencingSummaryExtractor:
         self._fill_series_dict(self.dataframe_dict, self.dataframe_1d)
 
         # Read count
-        set_result_to_dict(self, result_dict, "read.count", len(self.dataframe_1d))
+        set_result_value(self, result_dict, "read.count", len(self.dataframe_1d))
 
         # 1D pass information : count, length, qscore values and sorted Series
-        set_result_to_dict(self, result_dict, "read.pass.count",
+        set_result_value(self, result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
 
         # 1D fail information : count, length, qscore values and sorted Series
-        set_result_to_dict(self, result_dict, "read.fail.count",
+        set_result_value(self, result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
 
         total_reads = get_result_value(self, result_dict, "read.count")

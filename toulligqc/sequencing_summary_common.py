@@ -22,6 +22,7 @@
 
 import pandas as pd
 
+
 def set_result_value(extractor, dict, key: str, value):
     """
     Set a key, value pair to the result_dict
@@ -50,16 +51,6 @@ def get_result_value(extractor, result_dict, key: str):
     return result_dict.get(extractor.get_report_data_file_id() + '.' + key)
 
 
-def set_result_to_dict(extractor, result_dict, key: str, function):
-    """
-    Add a new item in result_dict with _set_result_value method
-    :param result_dict:
-    :param key: string entry to add to result_dict
-    :param function: function returning key's value
-    """
-    set_result_value(extractor, result_dict, key, function)
-
-
 def describe_dict(extractor, result_dict: dict, function, entry: str):
     """
     Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
@@ -69,4 +60,4 @@ def describe_dict(extractor, result_dict: dict, function, entry: str):
     """
     stats = pd.Series.describe(function).drop("count")
     for key, value in stats.iteritems():
-        set_result_to_dict(extractor, result_dict, entry + '.' + key, value)
+        set_result_value(extractor, result_dict, entry + '.' + key, value)

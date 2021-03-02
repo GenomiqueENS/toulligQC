@@ -35,7 +35,6 @@ from toulligqc import plotly_graph_onedsquare_generator as pgg2
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 from toulligqc.sequencing_summary_common import set_result_value
 from toulligqc.sequencing_summary_common import get_result_value
-from toulligqc.sequencing_summary_common import set_result_to_dict
 from toulligqc.sequencing_summary_common import describe_dict
 
 
@@ -247,14 +246,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self._fill_series_dict(self.dataframe_dict_1dsqr, self.dataframe_1dsqr)
 
         # Read count
-        set_result_to_dict(self, result_dict, "read.count", len(self.dataframe_1dsqr))
+        set_result_value(self, result_dict, "read.count", len(self.dataframe_1dsqr))
 
         # 1D² pass information : count, length and qscore values
-        set_result_to_dict(self, result_dict, "read.pass.count",
+        set_result_value(self, result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', True))
 
         # 1D² fail information : count, length and qscore values
-        set_result_to_dict(self, result_dict, "read.fail.count",
+        set_result_value(self, result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', False))
 
         # Ratios & frequencies
