@@ -34,6 +34,9 @@ from toulligqc import plotly_graph_generator as pgg
 from toulligqc.sequencing_summary_common import set_result_value
 from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import describe_dict
+from toulligqc.sequencing_summary_common import count_boolean_elements
+from toulligqc.sequencing_summary_common import series_cols_boolean_elements
+from toulligqc.sequencing_summary_common import sorted_series_boolean_elements_divided
 
 
 class SequencingSummaryExtractor:
@@ -162,39 +165,6 @@ class SequencingSummaryExtractor:
 
         return count_sorted
 
-    @staticmethod
-    def _count_boolean_elements(dataframe, column_name, boolean: bool) -> int:
-        """
-        Returns the number of values of a column filtered by a boolean
-        :param colum_name: name of the dafatrame column
-        :boolean: bool to filter
-        """
-        return len(dataframe.loc[dataframe[column_name] == bool(boolean)])
-
-    @staticmethod
-    def _series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str, boolean: bool) -> pd.Series:
-        """
-        Returns a Panda's Series object with the number of values of different columns filtered by a boolean
-        :param dataframe: dataframe_1d
-        :param column_name1: 1st column to filter
-        :param column_name2: 2nd column to filter
-        :param boolean: access columns of dataframe by boolean array
-        """
-        return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
-
-    @staticmethod
-    def _sorted_series_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
-                                              denominator: int):
-        """
-        Returns a sorted series of values of different columns filtered by a boolean and divided by the denominator
-        :param dataframe: dataframe_1d
-        :param column_name1: 1st column to filter
-        :param column_name2: 2nd column to filter
-        :param boolean: access columns of dataframe by boolean array
-        :param denominator: number to divide by
-        """
-        return (dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator).sort_values()
-
     def extract(self, result_dict):
         """
         Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
@@ -211,11 +181,11 @@ class SequencingSummaryExtractor:
 
         # 1D pass information : count, length, qscore values and sorted Series
         set_result_value(self, result_dict, "read.pass.count",
-                                 self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
+                                 count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
 
         # 1D fail information : count, length, qscore values and sorted Series
         set_result_value(self, result_dict, "read.fail.count",
-                                 self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
+                                 count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
 
         total_reads = get_result_value(self, result_dict, "read.count")
 
@@ -283,19 +253,19 @@ class SequencingSummaryExtractor:
             read_type_bool = True if read_type == 'pass' else False
 
             # Read length series
-            df_dict['read.' + read_type + '.length'] = self._series_cols_boolean_elements(df,
+            df_dict['read.' + read_type + '.length'] = series_cols_boolean_elements(df,
                                                                                           'sequence_length',
                                                                                           'passes_filtering',
                                                                                           read_type_bool)
 
             # Read qscore series
-            df_dict['read.' + read_type + '.qscore'] = self._series_cols_boolean_elements(df,
+            df_dict['read.' + read_type + '.qscore'] = series_cols_boolean_elements(df,
                                                                                           'mean_qscore',
                                                                                           'passes_filtering',
                                                                                           read_type_bool)
 
             # Start time series
-            df_dict[read_type + '.reads.start.time.sorted'] = self._sorted_series_boolean_elements_divided(df,
+            df_dict[read_type + '.reads.start.time.sorted'] = sorted_series_boolean_elements_divided(df,
                                                                                                            'start_time',
                                                                                                            'passes_filtering',
                                                                                                            read_type_bool,
@@ -335,13 +305,13 @@ class SequencingSummaryExtractor:
         self.dataframe_dict["barcode.arrangement"] = self.dataframe_1d["barcode_arrangement"]
 
         # Get barcodes frequency by read type
-        series_read_pass_barcode = self._series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement",
+        series_read_pass_barcode = series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement",
                                                                       "passes_filtering", True)
 
         self.dataframe_dict["read.pass.barcoded"] = self._barcode_frequency(result_dict, "read.pass.barcoded",
                                                                             series_read_pass_barcode)
 
-        series_read_fail_barcode = self._series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement",
+        series_read_fail_barcode = series_cols_boolean_elements(self.dataframe_1d, "barcode_arrangement",
                                                                       "passes_filtering", False)
 
         self.dataframe_dict["read.fail.barcoded"] = self._barcode_frequency(result_dict, "read.fail.barcoded",

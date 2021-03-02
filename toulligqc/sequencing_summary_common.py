@@ -61,3 +61,36 @@ def describe_dict(extractor, result_dict: dict, function, entry: str):
     stats = pd.Series.describe(function).drop("count")
     for key, value in stats.iteritems():
         set_result_value(extractor, result_dict, entry + '.' + key, value)
+
+
+def count_boolean_elements(dataframe, column_name, boolean: bool) -> int:
+    """
+    Returns the number of values of a column filtered by a boolean
+    :param colum_name: name of the dafatrame column
+    :boolean: bool to filter
+    """
+    return len(dataframe.loc[dataframe[column_name] == bool(boolean)])
+
+
+def series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str, boolean: bool) -> pd.Series:
+    """
+    Returns a Panda's Series object with the number of values of different columns filtered by a boolean
+    :param dataframe: dataframe_1d
+    :param column_name1: 1st column to filter
+    :param column_name2: 2nd column to filter
+    :param boolean: access columns of dataframe by boolean array
+    """
+    return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
+
+
+def sorted_series_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
+                                          denominator: int):
+    """
+    Returns a sorted series of values of different columns filtered by a boolean and divided by the denominator
+    :param dataframe: dataframe_1d
+    :param column_name1: 1st column to filter
+    :param column_name2: 2nd column to filter
+    :param boolean: access columns of dataframe by boolean array
+    :param denominator: number to divide by
+    """
+    return (dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator).sort_values()
