@@ -247,28 +247,18 @@ class SequencingSummaryExtractor:
         if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
             result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
 
+        self._fill_series_dict(self.dataframe_dict, self.dataframe_1d)
+
         # Read count
         self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1d))
 
         # 1D pass information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
-        self.dataframe_dict["read.pass.length"] = self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
-                                                                    'passes_filtering', True)
-        self.dataframe_dict["read.pass.qscore"] = self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
-                                                                    'passes_filtering', True)
-        self.dataframe_dict["pass.reads.start.time.sorted"] = self._sorted_series_boolean_elements_divided(self.dataframe_1d, 'start_time',
-                                                                            'passes_filtering', True, 3600)
 
         # 1D fail information : count, length, qscore values and sorted Series
         self._set_result_to_dict(result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
-        self.dataframe_dict["read.fail.length"] = self._series_cols_boolean_elements(self.dataframe_1d, 'sequence_length',
-                                                                    'passes_filtering', False)
-        self.dataframe_dict["read.fail.qscore"] = self._series_cols_boolean_elements(self.dataframe_1d, 'mean_qscore',
-                                                                    'passes_filtering', False)
-        self.dataframe_dict["fail.reads.start.time.sorted"] = self._sorted_series_boolean_elements_divided(self.dataframe_1d, 'start_time',
-                                                                            'passes_filtering', False, 3600)
 
         total_reads = self._get_result_value(result_dict, "read.count")
 
@@ -291,33 +281,13 @@ class SequencingSummaryExtractor:
         self._set_result_value(
             result_dict, "read.fail.frequency", read_fail_frequency)
 
-        # Read length series
-        self.dataframe_dict["sequence.length"] = self.dataframe_1d['sequence_length']
-
-        # Mean QScore
-        self.dataframe_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
-
-        # Channel series
-        self.dataframe_dict["channel"] = self.dataframe_1d['channel']
-
-        # Time series
-        self.dataframe_dict["start.time"] = self.dataframe_1d['start_time']
-
-        # Duration series
-        self.dataframe_dict["duration"] = self.dataframe_1d['duration']
-
         # Yield, n50, run time
         self._set_result_value(result_dict, "yield", sum(self.dataframe_dict["sequence.length"]))
 
         self._set_result_value(result_dict, "n50", self._compute_n50())
 
-        self.dataframe_dict["all.reads.start.time.sorted"] = (self.dataframe_1d['start_time'] / 3600).sort_values()
-
         self._set_result_value(result_dict, "run.time", max(
             self.dataframe_dict["all.reads.start.time.sorted"]))
-
-        # Retrieve Qscore column information and save it in mean.qscore entry
-        self.dataframe_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
 
         # Get channel occupancy statistics and store each value into result_dict
         for index, value in self._occupancy_channel().items():
@@ -349,6 +319,50 @@ class SequencingSummaryExtractor:
 
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
+
+    def _fill_series_dict(self, df_dict, df):
+
+        for read_type in ['pass', 'fail']:
+            read_type_bool = True if read_type == 'pass' else False
+
+            # Read length series
+            df_dict['read.' + read_type + '.length'] = self._series_cols_boolean_elements(df,
+                                                                                          'sequence_length',
+                                                                                          'passes_filtering',
+                                                                                          read_type_bool)
+
+            # Read qscore series
+            df_dict['read.' + read_type + '.qscore'] = self._series_cols_boolean_elements(df,
+                                                                                          'mean_qscore',
+                                                                                          'passes_filtering',
+                                                                                          read_type_bool)
+
+            # Start time series
+            df_dict[read_type + '.reads.start.time.sorted'] = self._sorted_series_boolean_elements_divided(df,
+                                                                                                           'start_time',
+                                                                                                           'passes_filtering',
+                                                                                                           read_type_bool,
+                                                                                                           3600)
+        # Read length series
+        df_dict["sequence.length"] = df['sequence_length']
+
+        # Mean QScore
+        df_dict["mean.qscore"] = df['mean_qscore']
+
+        # Channel series
+        df_dict["channel"] = df['channel']
+
+        # Time series
+        df_dict["start.time"] = df['start_time']
+
+        # Duration series
+        df_dict["duration"] = df['duration']
+
+        # Start time series
+        df_dict["all.reads.start.time.sorted"] = (df['start_time'] / 3600).sort_values()
+
+        # Retrieve Qscore column information and save it in mean.qscore entry
+        df_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
 
     def _extract_barcode_info(self, result_dict):
         """
