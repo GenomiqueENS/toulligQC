@@ -49,10 +49,6 @@ def statistics_generator(config_dictionary, result_dict):
 
     complete_name = os.path.join(result_directory, "report.data")
 
-    add_values_to_unwritten_key(result_dict, ["sequence_length_template", "passes_filtering",
-                                              "read_pass", "read_fail", "start_time_sorted",
-                                              "read_pass_sorted", "read_fail_sorted"])
-
     with open(complete_name, 'w') as file_data:
         for key, value in result_dict.items():
             if key not in result_dict['unwritten.keys']:

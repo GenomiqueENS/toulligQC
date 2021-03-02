@@ -38,6 +38,7 @@ from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import describe_dict
 from toulligqc.sequencing_summary_common import count_boolean_elements
 from toulligqc.sequencing_summary_common import series_cols_boolean_elements
+from toulligqc.sequencing_summary_common import check_result_values
 
 
 class OneDSquareSequencingSummaryExtractor(SSE):
@@ -468,21 +469,18 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :param result_dict:
         :return:
         """
-        keys = ["read.pass.length", "read.fail.length",
-                "read.pass.qscore", "read.fail.qscore"]
 
-        key_list = []
+        # Clean SSE
+        self.sse.clean(result_dict)
 
-        for key in keys:
-            if key in result_dict:
-                get_result_value(self, result_dict, key)
-                key_list.append(self.get_report_data_file_id() + '.' + str(key))
+        # Check values in result_dict (avoid Series and Dataframes)
+        check_result_values(self, result_dict)
 
-        if self.is_barcode:
-            key_list.extend([(k, v) for k, v in self.dataframe_dict.items()])
+        # Clear dictionary for Series and Dataframe
+        self.dataframe_dict_1dsqr.clear()
 
-        result_dict['unwritten.keys'].extend(key_list)
-        self.dataframe_dict = None
+        # Clear DataFrame
+        self.dataframe_1dsqr.iloc[0:0]
 
     def _occupancy_channel(self):
         """

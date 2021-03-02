@@ -23,7 +23,7 @@
 import pandas as pd
 
 
-def set_result_value(extractor, dict, key: str, value):
+def set_result_value(extractor, result_dict, key: str, value):
     """
     Set a key, value pair to the result_dict
     :param result_dict:
@@ -31,13 +31,8 @@ def set_result_value(extractor, dict, key: str, value):
     :param value: int, float, list, pd.Series or pd.Dataframe value of the corresponding key
     """
 
-    if not isinstance(key, str):
-        raise TypeError("Invalid type for key: {}".format(type(key)))
-
-    if not isinstance(value, int) and not isinstance(value, float) and not isinstance(value, str):
-        raise TypeError("Invalid type for the value of the key {}: {} ".format(key, type(value)))
-
-    dict[extractor.get_report_data_file_id() + '.' + key] = value
+    _check_result_key_value(key, value)
+    result_dict[extractor.get_report_data_file_id() + '.' + key] = value
 
 
 def get_result_value(extractor, result_dict, key: str):
@@ -49,6 +44,23 @@ def get_result_value(extractor, result_dict, key: str):
     if not (extractor.get_report_data_file_id() + '.' + key) in result_dict.keys():
         raise KeyError("Key {key} not found").__format__(key)
     return result_dict.get(extractor.get_report_data_file_id() + '.' + key)
+
+
+def check_result_values(extractor, result_dict):
+
+    prefix = extractor.get_report_data_file_id() + '.'
+    for key, value in result_dict.items():
+        if key.startswith(prefix):
+            _check_result_key_value(key, value)
+
+
+def _check_result_key_value(key, value):
+
+    if not isinstance(key, str):
+        raise TypeError("Invalid type for key: {}".format(type(key)))
+
+    if not isinstance(value, int) and not isinstance(value, float) and not isinstance(value, str):
+        raise TypeError("Invalid type for the value of the key {}: {} ".format(key, type(value)))
 
 
 def describe_dict(extractor, result_dict: dict, function, entry: str):
