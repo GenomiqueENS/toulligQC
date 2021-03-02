@@ -33,6 +33,10 @@ import pandas as pd
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc import plotly_graph_onedsquare_generator as pgg2
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
+from toulligqc.sequencing_summary_common import set_result_value
+from toulligqc.sequencing_summary_common import get_result_value
+from toulligqc.sequencing_summary_common import set_result_to_dict
+from toulligqc.sequencing_summary_common import describe_dict
 
 
 class OneDSquareSequencingSummaryExtractor(SSE):
@@ -145,24 +149,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         return 'basecaller.sequencing.summary.1dsqr.extractor'
 
-    def add_key_to_result_dict(self, key):
-        """
-        :param key:
-        :return:
-        """
-        return '{0}.{1}'.format(self.get_report_data_file_id(), key)
-
-    def _describe_dict(self, result_dict: dict, function, entry: str):
-        """
-        Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
-        :param result_dict:
-        :param function: function returning the values to describe
-        :param entry: entry to put in result_dict completed with the statistics
-        """
-        stats = pd.Series.describe(function).drop("count")
-        for key, value in stats.iteritems():
-            self._set_result_to_dict(result_dict, entry + '.' + key, value)
-
     def _barcode_frequency(self, result_dict: dict, entry: str, df_filtered) -> pd.Series:
         """
         Count reads by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
@@ -182,14 +168,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         count_sorted.fillna(0, downcast='int16', inplace=True)
 
         # Compute sum of all used barcodes without barcode 'unclassified'
-        self._set_result_value(result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+        set_result_value(self, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
 
         # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
         non_used_barcodes_count_key = entry.replace(".barcoded", ".non.used.barcodes.count")
 
         # Compute all reads of barcodes that are not in the barcode_selection list
         other_barcode_count = sum(all_barcode_count) - sum(count_sorted)
-        self._set_result_value(result_dict, non_used_barcodes_count_key, other_barcode_count)
+        set_result_value(self, result_dict, non_used_barcodes_count_key, other_barcode_count)
 
         # Create Series for all non-used barcode counts and rename index array with "other"
         other_all_barcode_count = pd.Series(other_barcode_count, index=['other barcodes'])
@@ -200,7 +186,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Compute frequency for all barcode counts and save into dataframe_dict_1dsqr
         for barcode in count_sorted.to_dict():
             frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
-            self._set_result_value(result_dict, entry.replace(".barcoded", ".") + barcode + ".frequency", frequency_value)
+            set_result_value(self, result_dict, entry.replace(".barcoded", ".") + barcode + ".frequency", frequency_value)
 
         return count_sorted
 
@@ -237,40 +223,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         """
         return sorted(dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator)
 
-    def _set_result_value(self, dict, key: str, value):
-        """
-        Set a key, value pair to the result_dict
-        :param result_dict:
-        :param key: string entry to add to result_dict
-        :param value: int, float, list, pd.Series or pd.Dataframe value of the corresponding key
-        """
-        if not isinstance(key, str):
-            raise TypeError("Invalid type for key: {}".format(type(key)))
-
-        if not isinstance(value, int) and not isinstance(value, float) and not isinstance(value, str):
-            raise TypeError("Invalid type for the value of the key {}: {} ".format(key, type(value)))
-
-        dict[self.get_report_data_file_id() + '.' + key] = value
-
-    def _get_result_value(self, result_dict, key: str):
-        """
-        :param result_dict:
-        :param key: string entry to add to result_dict
-        Returns the value associated with the result_dict key
-        """
-        if not (self.get_report_data_file_id() + '.' + key) in result_dict.keys():
-            raise KeyError("Key {key} not found").__format__(key)
-        return result_dict.get(self.get_report_data_file_id() + '.' + key)
-
-    def _set_result_to_dict(self, result_dict, key: str, function):
-        """
-        Add a new item in result_dict with _set_result_value method
-        :param result_dict:
-        :param key: string entry to add to result_dict
-        :param function: function returning key's value
-        """
-        self._set_result_value(result_dict, key, function)
-
     def extract(self, result_dict):
         """
         :param result_dict:
@@ -295,52 +247,52 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self._fill_series_dict(self.dataframe_dict_1dsqr, self.dataframe_1dsqr)
 
         # Read count
-        self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1dsqr))
+        set_result_to_dict(self, result_dict, "read.count", len(self.dataframe_1dsqr))
 
         # 1D² pass information : count, length and qscore values
-        self._set_result_to_dict(result_dict, "read.pass.count",
+        set_result_to_dict(self, result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', True))
 
         # 1D² fail information : count, length and qscore values
-        self._set_result_to_dict(result_dict, "read.fail.count",
+        set_result_to_dict(self, result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', False))
 
         # Ratios & frequencies
-        self._set_result_value(result_dict, "read.count.frequency", 100)
-        total_reads = self._get_result_value(result_dict, "read.count")
-        self._set_result_value(result_dict, "read.pass.ratio",
-                               (self._get_result_value(result_dict, "read.pass.count") / total_reads))
-        self._set_result_value(result_dict, "read.fail.ratio",
-                               (self._get_result_value(result_dict, "read.fail.count") / total_reads))
+        set_result_value(self, result_dict, "read.count.frequency", 100)
+        total_reads = get_result_value(self, result_dict, "read.count")
+        set_result_value(self, result_dict, "read.pass.ratio",
+                               (get_result_value(self, result_dict, "read.pass.count") / total_reads))
+        set_result_value(self, result_dict, "read.fail.ratio",
+                               (get_result_value(self, result_dict, "read.fail.count") / total_reads))
 
-        read_pass_frequency = (self._get_result_value(result_dict, "read.pass.count") / total_reads) * 100
-        self._set_result_value(result_dict, "read.pass.frequency", read_pass_frequency)
+        read_pass_frequency = (get_result_value(self, result_dict, "read.pass.count") / total_reads) * 100
+        set_result_value(self, result_dict, "read.pass.frequency", read_pass_frequency)
 
-        read_fail_frequency = (self._get_result_value(result_dict, "read.fail.count") / total_reads) * 100
-        self._set_result_value(result_dict, "read.fail.frequency", read_fail_frequency)
+        read_fail_frequency = (get_result_value(self, result_dict, "read.fail.count") / total_reads) * 100
+        set_result_value(self, result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Get statistics about all reads length and store each value into result_dict
         sequence_length_statistics = self.dataframe_1dsqr['sequence_length'].describe()
 
         for index, value in sequence_length_statistics.items():
-            self._set_result_value(
+            set_result_value(self,
                 result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict
-        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.pass.length"], "read.pass.length")
-        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.fail.length"], "read.fail.length")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.pass.length"], "read.pass.length")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.fail.length"], "read.fail.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1dsqr['mean_qscore'].describe().drop(
             "count")
 
         for index, value in qscore_statistics.items():
-            self._set_result_value(
+            set_result_value(self,
                 result_dict, "all.read.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict
-        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.pass.qscore"], "read.pass.qscore")
-        self._describe_dict(result_dict, self.dataframe_dict_1dsqr["read.fail.qscore"], "read.fail.qscore")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.pass.qscore"], "read.pass.qscore")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.fail.qscore"], "read.fail.qscore")
 
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
@@ -403,12 +355,12 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         read_fail_barcoded_count = result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]
 
         # Add key "read.pass.barcoded.frequency"
-        total_reads = self._get_result_value(result_dict, "read.count")
-        self._set_result_value(result_dict, "read.pass.barcoded.frequency",
+        total_reads = get_result_value(self, result_dict, "read.count")
+        set_result_value(self, result_dict, "read.pass.barcoded.frequency",
                                (read_pass_barcoded_count / total_reads) * 100)
 
         # Add key "read.fail.barcoded.frequency"
-        self._set_result_value(result_dict, "read.fail.barcoded.frequency",
+        set_result_value(self, result_dict, "read.fail.barcoded.frequency",
                                (read_fail_barcoded_count / total_reads) * 100)
 
         # Replaces all rows with unused barcodes (ie not in barcode_selection) in column barcode_arrangement with the 'other' value
@@ -493,12 +445,12 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         for df_name, df in df_dict.items():  # df_dict.items = all.read/read.pass/read.fail
             for stats_index, stats_value in df['sequence_length'].describe().items():
                 key_to_result_dict = df_name + barcode_name + '.length.' + stats_index
-                self._set_result_value(
+                set_result_value(self,
                     result_dict, key_to_result_dict, stats_value)
 
             for stats_index, stats_value in df['mean_qscore'].describe().drop('count').items():
                 key_to_result_dict = df_name + barcode_name + '.qscore.' + stats_index
-                self._set_result_value(
+                set_result_value(self,
                     result_dict, key_to_result_dict, stats_value)
 
     def graph_generation(self, result_dict):
@@ -555,7 +507,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         for key in keys:
             if key in result_dict:
-                self._get_result_value(result_dict, key)
+                get_result_value(self, result_dict, key)
                 key_list.append(self.get_report_data_file_id() + '.' + str(key))
 
         if self.is_barcode:
