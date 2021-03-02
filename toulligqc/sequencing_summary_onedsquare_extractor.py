@@ -292,24 +292,18 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Extract info from 1D²
         #
 
+        self._fill_series_dict(self.dataframe_dict_1dsqr, self.dataframe_1dsqr)
+
         # Read count
         self._set_result_to_dict(result_dict, "read.count", len(self.dataframe_1dsqr))
 
         # 1D² pass information : count, length and qscore values
         self._set_result_to_dict(result_dict, "read.pass.count",
                                  self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', True))
-        self.dataframe_dict_1dsqr["read.pass.length"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'sequence_length',
-                                                                    'passes_filtering', True)
-        self.dataframe_dict_1dsqr["read.pass.qscore"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'mean_qscore',
-                                                                    'passes_filtering', True)
 
         # 1D² fail information : count, length and qscore values
         self._set_result_to_dict(result_dict, "read.fail.count",
                                  self._count_boolean_elements(self.dataframe_1dsqr, 'passes_filtering', False))
-        self.dataframe_dict_1dsqr["read.fail.length"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'sequence_length',
-                                                                    'passes_filtering', False)
-        self.dataframe_dict_1dsqr["read.fail.qscore"] = self._series_cols_boolean_elements(self.dataframe_1dsqr, 'mean_qscore',
-                                                                    'passes_filtering', False)
 
         # Ratios & frequencies
         self._set_result_value(result_dict, "read.count.frequency", 100)
@@ -324,14 +318,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         read_fail_frequency = (self._get_result_value(result_dict, "read.fail.count") / total_reads) * 100
         self._set_result_value(result_dict, "read.fail.frequency", read_fail_frequency)
-
-        # Read length & passes_filtering & qscore information
-        self.dataframe_dict_1dsqr["sequence.length"] = self.dataframe_1dsqr["sequence_length"]
-        self.dataframe_dict_1dsqr["passes.filtering"] = self.dataframe_1dsqr["passes_filtering"]
-        self.dataframe_dict_1dsqr["mean.qscore"] = self.dataframe_1dsqr["mean_qscore"]
-
-        self.dataframe_dict_1dsqr["start.time1"] = self.dataframe_1dsqr['start_time1']
-        self.dataframe_dict_1dsqr["duration"] = self.dataframe_1dsqr['duration']
 
         # Get statistics about all reads length and store each value into result_dict
         sequence_length_statistics = self.dataframe_1dsqr['sequence_length'].describe()
@@ -358,6 +344,32 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         if self.is_barcode:
             self._extract_barcode_info(result_dict)
+
+    def _fill_series_dict(self, df_dict, df):
+
+        for read_type in ['pass', 'fail']:
+            read_type_bool = True if read_type == 'pass' else False
+
+            self.dataframe_dict_1dsqr['read.' + read_type + '.length'] = \
+                self._series_cols_boolean_elements(self.dataframe_1dsqr,
+                                                   'sequence_length',
+                                                   'passes_filtering',
+                                                   read_type_bool)
+
+            self.dataframe_dict_1dsqr['read.' + read_type + '.qscore'] =\
+                self._series_cols_boolean_elements(self.dataframe_1dsqr,
+                                                   'mean_qscore',
+                                                   'passes_filtering',
+                                                   read_type_bool)
+
+        # Read length & passes_filtering & qscore information
+        self.dataframe_dict_1dsqr["sequence.length"] = self.dataframe_1dsqr["sequence_length"]
+        self.dataframe_dict_1dsqr["passes.filtering"] = self.dataframe_1dsqr["passes_filtering"]
+        self.dataframe_dict_1dsqr["mean.qscore"] = self.dataframe_1dsqr["mean_qscore"]
+
+        self.dataframe_dict_1dsqr["start.time1"] = self.dataframe_1dsqr['start_time1']
+        self.dataframe_dict_1dsqr["duration"] = self.dataframe_1dsqr['duration']
+
 
     def _extract_barcode_info(self, result_dict):
         """
