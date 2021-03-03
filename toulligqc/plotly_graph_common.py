@@ -92,16 +92,21 @@ def _title(title):
         color="black")))
 
 
-def _legend(legend_title='Legend'):
-    return dict(legend=dict(
+def _legend(legend_title='Legend', args=None):
+
+    legend_dict = dict(
         x=1.02,
-        #y=.5,
         y=.95,
         title_text="<b>" + legend_title + "</b>",
         title=dict(font=dict(size=legend_font_size)),
         bgcolor='white',
         bordercolor='white',
-        font=dict(size=legend_font_size)))
+        font=dict(size=legend_font_size))
+
+    if args is not None:
+        legend_dict.update(dict(**args))
+
+    return dict(legend=legend_dict)
 
 
 def _xaxis(title, args=None):
