@@ -170,7 +170,7 @@ def _interpolate(x, npoints: int, y=None, interp_type=None, axis=-1):
         return pd.Series(x_int), pd.Series(y_int)
 
 
-def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None):
+def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, weights=None):
     """
     Function for smmothing data with numpy histogram function
     Returns a tuple of smooth data (ndarray)
@@ -185,11 +185,20 @@ def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None):
     if max_arg is None:
         max_arg = np.nanmax(data)
 
+    if weights is None:
+        density = True
+    else:
+        density = False
+
     bins = np.linspace(min_arg, max_arg, num=npoints)
-    count_y, count_x = np.histogram(a=data, bins=bins, density=True)
+    count_y, count_x = np.histogram(a=data, bins=bins, weights=weights, density=density)
     # Removes the first value of count_x1
     count_x = count_x[1:]
-    count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
+    if weights is None:
+        count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
+    else:
+        count_y = gaussian_filter1d(count_y, sigma=sigma)
+
     return count_x, count_y
 
 
@@ -592,9 +601,9 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
 def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_color, pass_color, fail_color,
                               xaxis_title, result_directory):
 
-    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
+    count_x1, count_y1 = _smooth_data(10000, 5, all_read, weights=[1] * len(all_read))
+    count_x2, count_y2 = _smooth_data(10000, 5, read_pass, weights=[1] * len(read_pass))
+    count_x3, count_y3 = _smooth_data(10000, 5, read_fail, weights=[1] * len(read_fail))
 
     # Find 50 percentile for zoomed range on x axis
     max_x_range = np.percentile(all_read, 99)
