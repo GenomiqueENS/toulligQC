@@ -188,88 +188,76 @@ def yield_plot(dataframe_dict, result_directory):
     read_pass = dataframe_dict['pass.reads.start.time.sorted']
     read_fail = dataframe_dict['fail.reads.start.time.sorted']
 
-    count_x1, count_y1 = _smooth_data(10000, 5, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5, read_fail)
+    data = [(all_read, 'All reads', toulligqc_colors['all']),
+            (read_pass, 'Pass reads', toulligqc_colors['pass']),
+            (read_fail, 'Fail reads', toulligqc_colors['fail'])]
+
+    npoints = 10000
+    coef = max(all_read) / npoints
 
     fig = go.Figure()
 
-    # Figures for cumulative yield plot
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=np.cumsum(count_y1),
-                             name='All reads',
-                             fill='tozeroy',
-                             marker_color=toulligqc_colors['all'],
-                             visible=True
-                             ))
+    # Figures for cumulative base yield plot
+    first = True
+    for reads in [True, False]:
+        smooth_data_dict = {}
+        for d in data:
 
-    fig.add_trace(go.Scatter(x=count_x2,
-                             y=np.cumsum(count_y2),
-                             name='Pass reads',
-                             fill='tozeroy',
-                             marker_color=toulligqc_colors['pass'],
-                             visible=True
-                             ))
+            if d[1] not in smooth_data_dict:
+                if reads:
+                    count_x, count_y = _smooth_data(npoints, 5, d[0], weights=[1] * len(d[0]))
+                else:
+                    count_x, count_y = _smooth_data(npoints, 5, d[0], weights=d[0].index)
+                smooth_data_dict[d[1]] = (count_x, count_y)
 
-    fig.add_trace(go.Scatter(x=count_x3,
-                             y=np.cumsum(count_y3),
-                             name='Fail reads',
-                             fill='tozeroy',
-                             marker_color=toulligqc_colors['fail'],
-                             visible=True
-                             ))
+            count_x, count_y = smooth_data_dict[d[1]]
 
-    # Threshold
-    for p in [50, 75, 90, 99]:
-        y = np.cumsum(count_y1)
-        ymax = max(y)
-        index = (np.abs(y-ymax*p/100)).argmin()
-        x0 = count_x1[index]
-        fig.add_trace(go.Scatter(
-                      mode="lines+text",
-                      name='All reads',
-                      x=[x0, x0],
-                      y=[0, ymax],
-                      line=dict(color="gray", width=1, dash="dot"),
-                      text=["", str(p) + "% all reads"],
-                      textposition="top center",
-                      hoverinfo="skip",
-                      showlegend=False,
-                      visible=True
-                     ))
+            fig.add_trace(go.Scatter(x=count_x,
+                                     y=np.cumsum(count_y),
+                                     name=d[1],
+                                     fill='tozeroy',
+                                     marker_color=d[2],
+                                     visible=first
+                                     ))
 
-    # Yield
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=count_y1,
-                             name='All reads',
-                             marker_color=toulligqc_colors['all'],
-                             fill='tozeroy',
-                             visible=False
-                             ))
+        count_x, count_y = smooth_data_dict[data[0][1]]
+        for p in [50, 75, 90, 99]:
+            y = np.cumsum(count_y)
+            ymax = max(y)
+            index = (np.abs(y - ymax * p / 100)).argmin()
+            x0 = count_x[index]
+            fig.add_trace(go.Scatter(
+                mode="lines+text",
+                name=d[1],
+                x=[x0, x0],
+                y=[0, ymax],
+                line=dict(color="gray", width=1, dash="dot"),
+                text=["", str(p) + "% all reads"],
+                textposition="top center",
+                hoverinfo="skip",
+                showlegend=False,
+                visible=first
+            ))
+        first = False
 
-    fig.add_trace(go.Scatter(x=count_x2,
-                             y=count_y2,
-                             name='Pass reads',
-                             marker_color=toulligqc_colors['pass'],
-                             fill='tozeroy',
-                             visible=False
-                             ))
+        for d in data:
+            count_x, count_y = smooth_data_dict[d[1]]
 
-    fig.add_trace(go.Scatter(x=count_x3,
-                             y=count_y3,
-                             name='Fail reads',
-                             marker_color=toulligqc_colors['fail'],
-                             fill='tozeroy',
-                             visible=False
-                             ))
+            fig.add_trace(go.Scatter(x=count_x,
+                                     y=count_y / coef,
+                                     name=d[1],
+                                     marker_color=d[2],
+                                     fill='tozeroy',
+                                     visible=False
+                                     ))
 
     fig.update_layout(
         **_title(graph_name),
         **default_graph_layout,
-        **_legend(),
+        **_legend(args=dict(y=0.75)),
         hovermode='x',
         **_xaxis('Time (hours)', dict(rangemode="tozero")),
-        **_yaxis('Density', dict(fixedrange=False, rangemode="tozero")),
+        **_yaxis('Read count', dict(fixedrange=False, rangemode="tozero")),
     )
 
     # Add buttons
@@ -278,20 +266,51 @@ def yield_plot(dataframe_dict, result_directory):
         updatemenus=[
             dict(
                 type="buttons",
-                direction="left",
+                direction="down",
                 buttons=list([
                     dict(
                         args=[{'visible': [True, True, True,
                                            True, True, True, True,
-                                           False, False, False]}],
-                        label="Cumulative yield plot",
+                                           False, False, False,
+                                           False, False, False,
+                                           False, False, False, False,
+                                           False, False, False]},
+                              {'yaxis': {'title': '<b>Read count</b>', 'rangemode': "tozero"}}],
+                        label="Cumulative reads",
                         method="update"
                     ),
                     dict(
                         args=[{'visible': [False, False, False,
                                            False, False, False, False,
-                                           True, True, True]}],
-                        label="Yield plot",
+                                           True, True, True,
+                                           False, False, False,
+                                           False, False, False, False,
+                                           False, False, False
+                                           ]},
+                               {'yaxis': {'title': '<b>Read count per hour</b>', 'rangemode': "tozero"}}],
+                        label="Yield reads",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, False,
+                                           False, False, False, False,
+                                           False, False, False,
+                                           True, True, True,
+                                           True, True, True, True,
+                                           False, False, False]},
+                               {'yaxis': {'title': '<b>Base count</b>', 'rangemode': "tozero"}}],
+                        label="Cumulative bases",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, False,
+                                           False, False, False, False,
+                                           False, False, False,
+                                           False, False, False,
+                                           False, False, False, False,
+                                           True, True, True]},
+                               {'yaxis': {'title': '<b>Base count per hour</b>', 'rangemode': "tozero"}}],
+                        label="Yield bases",
                         method="update"
                     )
                 ]),
