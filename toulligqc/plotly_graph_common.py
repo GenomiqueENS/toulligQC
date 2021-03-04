@@ -596,29 +596,34 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
 def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_color, pass_color, fail_color,
                               xaxis_title, result_directory):
 
-    count_x1, count_y1 = _smooth_data(10000, 5, all_read, weights=[1] * len(all_read))
-    count_x2, count_y2 = _smooth_data(10000, 5, read_pass, weights=[1] * len(read_pass))
-    count_x3, count_y3 = _smooth_data(10000, 5, read_fail, weights=[1] * len(read_fail))
+    npoints = 10000
+
+    count_x1, count_y1 = _smooth_data(npoints, 5, all_read)
+    count_x2, count_y2 = _smooth_data(npoints, 5, read_pass)
+    count_x3, count_y3 = _smooth_data(npoints, 5, read_fail)
 
     # Find 50 percentile for zoomed range on x axis
     max_x_range = np.percentile(all_read, 99)
-    max_y = max(max(count_y1), max(count_y2), max(count_y3))
+
+    coef = max(all_read) / npoints
+
+    max_y = max(max(count_y1), max(count_y2), max(count_y3)) / coef
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=count_x1,
-                             y=count_y1,
+                             y=count_y1 / coef,
                              name='All reads',
                              fill='tozeroy',
                              marker_color=all_color
                              ))
     fig.add_trace(go.Scatter(x=count_x2,
-                             y=count_y2,
+                             y=count_y2 / coef,
                              name='Pass reads',
                              fill='tozeroy',
                              marker_color=pass_color
                              ))
     fig.add_trace(go.Scatter(x=count_x3,
-                             y=count_y3,
+                             y=count_y3 / coef,
                              name='Fail reads',
                              fill='tozeroy',
                              marker_color=fail_color
@@ -650,7 +655,7 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
         **_legend(),
         hovermode='x',
         **_xaxis(xaxis_title, dict(range=[0, max_x_range])),
-        **_yaxis('Density', dict(range=[0, max(count_y1) * 1.10])),
+        **_yaxis('Reads per pb', dict(range=[0, max_y * 1.10])),
     )
 
     # Create data for HTML table
