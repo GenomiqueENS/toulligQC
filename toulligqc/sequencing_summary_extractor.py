@@ -172,7 +172,8 @@ class SequencingSummaryExtractor:
         # Yield, n50, run time
         set_result_value(self, result_dict, "yield", sum(self.dataframe_dict["sequence.length"]))
 
-        set_result_value(self, result_dict, "n50", self._compute_n50())
+        set_result_value(self, result_dict, "n50", self._compute_NXX(50))
+        set_result_value(self, result_dict, "l50", self._compute_LXX(50))
 
         set_result_value(self, result_dict, "run.time", max(
             self.dataframe_dict["all.reads.start.time.sorted"]))
@@ -404,16 +405,29 @@ class SequencingSummaryExtractor:
         except IOError:
             raise FileNotFoundError("Sequencing summary file not found")
 
-    def _compute_n50(self):
-        """Compute N50 value of total sequence length"""
+    def _compute_NXX(self, x):
+        """Compute NXX value of total sequence length"""
         data = self.dataframe_dict["sequence.length"].dropna().values
         data.sort()
-        half_sum = data.sum() / 2
+        half_sum = data.sum() * x / 100
         cum_sum = 0
         for v in data:
             cum_sum += v
             if cum_sum >= half_sum:
                 return int(v)
+
+    def _compute_LXX(self, x):
+        """Compute LXX value of total sequence length"""
+        data = self.dataframe_dict["sequence.length"].dropna().values
+        data.sort()
+        half_sum = data.sum() * x / 100
+        cum_sum = 0
+        count = 0
+        for v in data:
+            cum_sum += v
+            count += 1
+            if cum_sum >= half_sum:
+                return count
 
     @staticmethod
     def _is_barcode_file(filename):

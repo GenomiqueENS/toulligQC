@@ -158,6 +158,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"] / 1000000000, 2)
     n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
+    l50 = result_dict["basecaller.sequencing.summary.1d.extractor.l50"]
 
     # from telemetry file
     flow_cell_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.id', "Unknown")
@@ -200,6 +201,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               <tr><th>Yield (Gbp)</th><td>{run_yield}</td></tr>
               <tr><th>Read count</th><td>{read_count}</td></tr>
               <tr><th>N50 (bp)</th><td>{n50}</td></tr>
+              <tr><th>L50</th><td>{l50}</td></tr>
               </tbody>
             </table>
       </div> <!-- End of "Run-statistics" module -->
@@ -215,7 +217,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                kit_version=kit_version,
                run_yield=_format_int(int(run_yield)),
                read_count=_format_int(read_count),
-               n50=_format_int(int(n50)))
+               n50=_format_int(int(n50)),
+               l50=_format_int(int(l50)))
 
     result += """
       <div class="module" id="Software-info">
