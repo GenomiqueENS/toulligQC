@@ -205,7 +205,7 @@ def yield_plot(dataframe_dict, result_directory):
 
             if d[1] not in smooth_data_dict:
                 if reads:
-                    count_x, count_y = _smooth_data(npoints, 5, d[0], weights=[1] * len(d[0]))
+                    count_x, count_y = _smooth_data(npoints, 5, d[0])
                 else:
                     count_x, count_y = _smooth_data(npoints, 5, d[0], weights=d[0].index)
                 smooth_data_dict[d[1]] = (count_x, count_y)

@@ -170,7 +170,7 @@ def _interpolate(x, npoints: int, y=None, interp_type=None, axis=-1):
         return pd.Series(x_int), pd.Series(y_int)
 
 
-def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, weights=None):
+def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, weights=None, density=False):
     """
     Function for smmothing data with numpy histogram function
     Returns a tuple of smooth data (ndarray)
@@ -185,16 +185,11 @@ def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, wei
     if max_arg is None:
         max_arg = np.nanmax(data)
 
-    if weights is None:
-        density = True
-    else:
-        density = False
-
     bins = np.linspace(min_arg, max_arg, num=npoints)
     count_y, count_x = np.histogram(a=data, bins=bins, weights=weights, density=density)
     # Removes the first value of count_x1
     count_x = count_x[1:]
-    if weights is None:
+    if density:
         count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
     else:
         count_y = gaussian_filter1d(count_y, sigma=sigma)
@@ -673,8 +668,10 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
     pass_series = dataframe[prefix + " pass"].dropna()
     fail_series = dataframe[prefix + " fail"].dropna()
 
-    count_x2, count_y2 = _smooth_data(10000, 5, pass_series, min_arg=np.nanmin(all_series), max_arg=np.nanmax(all_series))
-    count_x3, count_y3 = _smooth_data(10000, 5, fail_series, min_arg=np.nanmin(all_series), max_arg=np.nanmax(all_series))
+    count_x2, count_y2 = _smooth_data(10000, 5, pass_series, min_arg=np.nanmin(all_series),
+                                      max_arg=np.nanmax(all_series), density=True)
+    count_x3, count_y3 = _smooth_data(10000, 5, fail_series, min_arg=np.nanmin(all_series),
+                                      max_arg=np.nanmax(all_series), density=True)
 
     count_y2 = count_y2 / len(all_series)
     count_y3 = count_y3 / len(all_series)
