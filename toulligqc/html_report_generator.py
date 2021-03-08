@@ -32,6 +32,7 @@ from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import _format_int
+from toulligqc.plotly_graph_common import _format_float
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -156,7 +157,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     run_time = '%dh%02dm%02ds' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-    run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"] / 1000000000, 2)
+    run_yield = _format_int_with_prefix(result_dict["basecaller.sequencing.summary.1d.extractor.yield"])
     n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
     l50 = result_dict["basecaller.sequencing.summary.1d.extractor.l50"]
 
@@ -198,7 +199,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               <tr><th>Flowcell product code</th><td>{flow_cell_product_code}</td></tr>
               <tr><th>Flowcell version</th><td>{flowcell_version}</td></tr>
               <tr><th>Kit</th><td>{kit_version}</td></tr>
-              <tr><th>Yield (Gbp)</th><td>{run_yield}</td></tr>
+              <tr><th>Yield</th><td>{run_yield}</td></tr>
               <tr><th>Read count</th><td>{read_count}</td></tr>
               <tr><th>N50 (bp)</th><td>{n50}</td></tr>
               <tr><th>L50</th><td>{l50}</td></tr>
@@ -215,7 +216,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                flow_cell_product_code=flow_cell_product_code,
                flowcell_version=flowcell_version,
                kit_version=kit_version,
-               run_yield=_format_int(int(run_yield)),
+               run_yield=run_yield,
                read_count=_format_int(read_count),
                n50=_format_int(int(n50)),
                l50=_format_int(int(l50)))
@@ -374,3 +375,12 @@ def _iso8601_to_formatted_date(date_string):
         return date_string
 
     return d.strftime("%a %b %d %H:%M:%S %Z %Y")
+
+
+def _format_int_with_prefix(i):
+
+    for x in ((12, 'T'), (9, 'G'), (6, 'M'), (3, 'K')):
+        if i / 10**x[0] > 1:
+            return _format_float(i / 10**x[0]) + x[1]
+
+    return i
