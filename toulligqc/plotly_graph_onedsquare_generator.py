@@ -165,14 +165,10 @@ def dsqr_read_count_histogram(result_dict, result_directory):
 def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, result_directory):
     graph_name = "1D² Distribution of read lengths"
 
-    all_read = dataframe_dict_1dsqr['all.reads.sequence.length'].loc[dataframe_dict_1dsqr['all.reads.sequence.length'] >= 10]
-    read_pass = dataframe_dict_1dsqr['pass.reads.sequence.length'].loc[dataframe_dict_1dsqr['pass.reads.sequence.length'] >= 10]
-    read_fail = dataframe_dict_1dsqr['fail.reads.sequence.length'].loc[dataframe_dict_1dsqr['fail.reads.sequence.length'] >= 10]
-
     return _read_length_distribution(graph_name=graph_name,
-                                     all_read=all_read,
-                                     read_pass=read_pass,
-                                     read_fail=read_fail,
+                                     all_read=dataframe_dict_1dsqr['all.reads.sequence.length'],
+                                     read_pass=dataframe_dict_1dsqr['pass.reads.sequence.length'],
+                                     read_fail=dataframe_dict_1dsqr['fail.reads.sequence.length'],
                                      all_color=toulligqc_colors['all'],
                                      pass_color=toulligqc_colors['pass'],
                                      fail_color=toulligqc_colors['fail'],

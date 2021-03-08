@@ -162,14 +162,10 @@ def read_count_histogram(result_dict, result_directory):
 def read_length_scatterplot(dataframe_dict, result_directory):
     graph_name = "Distribution of read lengths"
 
-    all_read = dataframe_dict['all.reads.sequence.length'].loc[dataframe_dict['all.reads.sequence.length'] >= 10].dropna().values
-    read_pass = dataframe_dict['pass.reads.sequence.length'].loc[dataframe_dict['pass.reads.sequence.length'] >= 10]
-    read_fail = dataframe_dict['fail.reads.sequence.length'].loc[dataframe_dict['fail.reads.sequence.length'] >= 10]
-
     return _read_length_distribution(graph_name=graph_name,
-                                     all_read=all_read,
-                                     read_pass=read_pass,
-                                     read_fail=read_fail,
+                                     all_read=dataframe_dict['all.reads.sequence.length'],
+                                     read_pass=dataframe_dict['pass.reads.sequence.length'],
+                                     read_fail=dataframe_dict['fail.reads.sequence.length'],
                                      all_color=toulligqc_colors['all'],
                                      pass_color=toulligqc_colors['pass'],
                                      fail_color=toulligqc_colors['fail'],
