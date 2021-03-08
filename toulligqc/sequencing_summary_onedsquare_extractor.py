@@ -209,8 +209,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict
-        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.pass.length"], "read.pass.length")
-        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.fail.length"], "read.fail.length")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["pass.reads.sequence.length"], "pass.reads.sequence.length")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["fail.reads.sequence.length"], "fail.reads.sequence.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1dsqr['mean_qscore'].describe().drop(
@@ -218,11 +218,11 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         for index, value in qscore_statistics.items():
             set_result_value(self,
-                result_dict, "all.read.qscore." + index, value)
+                result_dict, "all.reads.mean.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict
-        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.pass.qscore"], "read.pass.qscore")
-        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["read.fail.qscore"], "read.fail.qscore")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["pass.reads.mean.qscore"], "pass.reads.mean.qscore")
+        describe_dict(self, result_dict, self.dataframe_dict_1dsqr["fail.reads.mean.qscore"], "fail.reads.mean.qscore")
 
         if self.is_barcode:
             extract_barcode_info(self,
@@ -236,25 +236,25 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         for read_type in ['pass', 'fail']:
             read_type_bool = True if read_type == 'pass' else False
 
-            self.dataframe_dict_1dsqr['read.' + read_type + '.length'] = \
+            self.dataframe_dict_1dsqr[read_type + '.reads.sequence.length'] = \
                 series_cols_boolean_elements(self.dataframe_1dsqr,
                                                    'sequence_length',
                                                    'passes_filtering',
                                                    read_type_bool)
 
-            self.dataframe_dict_1dsqr['read.' + read_type + '.qscore'] =\
+            self.dataframe_dict_1dsqr[read_type + '.reads.mean.qscore'] =\
                 series_cols_boolean_elements(self.dataframe_1dsqr,
                                                    'mean_qscore',
                                                    'passes_filtering',
                                                    read_type_bool)
 
         # Read length & passes_filtering & qscore information
-        self.dataframe_dict_1dsqr["sequence.length"] = self.dataframe_1dsqr["sequence_length"]
+        self.dataframe_dict_1dsqr["all.reads.sequence.length"] = self.dataframe_1dsqr["sequence_length"]
         self.dataframe_dict_1dsqr["passes.filtering"] = self.dataframe_1dsqr["passes_filtering"]
-        self.dataframe_dict_1dsqr["mean.qscore"] = self.dataframe_1dsqr["mean_qscore"]
+        self.dataframe_dict_1dsqr["all.reads.mean.qscore"] = self.dataframe_1dsqr["mean_qscore"]
 
-        self.dataframe_dict_1dsqr["start.time1"] = self.dataframe_1dsqr['start_time1']
-        self.dataframe_dict_1dsqr["duration"] = self.dataframe_1dsqr['duration']
+        self.dataframe_dict_1dsqr["all.reads.start.time1"] = self.dataframe_1dsqr['start_time1']
+        self.dataframe_dict_1dsqr["all.reads.duration"] = self.dataframe_1dsqr['duration']
 
     def graph_generation(self, result_dict):
         """

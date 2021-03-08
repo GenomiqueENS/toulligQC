@@ -162,9 +162,9 @@ def read_count_histogram(result_dict, result_directory):
 def read_length_scatterplot(dataframe_dict, result_directory):
     graph_name = "Distribution of read lengths"
 
-    all_read = dataframe_dict['sequence.length'].loc[dataframe_dict['sequence.length'] >= 10].dropna().values
-    read_pass = dataframe_dict['read.pass.length'].loc[dataframe_dict['read.pass.length'] >= 10]
-    read_fail = dataframe_dict['read.fail.length'].loc[dataframe_dict['read.fail.length'] >= 10]
+    all_read = dataframe_dict['all.reads.sequence.length'].loc[dataframe_dict['all.reads.sequence.length'] >= 10].dropna().values
+    read_pass = dataframe_dict['pass.reads.sequence.length'].loc[dataframe_dict['pass.reads.sequence.length'] >= 10]
+    read_fail = dataframe_dict['fail.reads.sequence.length'].loc[dataframe_dict['fail.reads.sequence.length'] >= 10]
 
     return _read_length_distribution(graph_name=graph_name,
                                      all_read=all_read,
@@ -337,9 +337,9 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
     graph_name = "PHRED score distribution"
 
     df = pd.DataFrame(
-        {"1D": dataframe_dict['mean.qscore'],
-         "1D pass": dataframe_dict['read.pass.qscore'],
-         "1D fail": dataframe_dict['read.fail.qscore']
+        {"1D": dataframe_dict['all.reads.mean.qscore'],
+         "1D pass": dataframe_dict['pass.reads.mean.qscore'],
+         "1D fail": dataframe_dict['fail.reads.mean.qscore']
          })
 
     # If more than 10.000 reads, interpolate data
@@ -440,9 +440,9 @@ def allphred_score_frequency(dataframe_dict, result_directory):
     graph_name = "PHRED score density distribution"
 
     dataframe = \
-        pd.DataFrame({"1D": dataframe_dict['mean.qscore'],
-                      "1D pass": dataframe_dict['read.pass.qscore'],
-                      "1D fail": dataframe_dict['read.fail.qscore']})
+        pd.DataFrame({"1D": dataframe_dict['all.reads.mean.qscore'],
+                      "1D pass": dataframe_dict['pass.reads.mean.qscore'],
+                      "1D fail": dataframe_dict['fail.reads.mean.qscore']})
 
     return _phred_score_density(graph_name=graph_name,
                                 dataframe=dataframe,
@@ -460,10 +460,10 @@ def all_scatterplot(dataframe_dict, result_directory):
 
     graph_name = "Correlation between read length and PHRED score"
 
-    read_pass_length = dataframe_dict["read.pass.length"]
-    read_pass_qscore = dataframe_dict["read.pass.qscore"]
-    read_fail_length = dataframe_dict["read.fail.length"]
-    read_fail_qscore = dataframe_dict["read.fail.qscore"]
+    read_pass_length = dataframe_dict["pass.reads.sequence.length"]
+    read_pass_qscore = dataframe_dict["pass.reads.mean.qscore"]
+    read_fail_length = dataframe_dict["fail.reads.sequence.length"]
+    read_fail_qscore = dataframe_dict["fail.reads.mean.qscore"]
 
     # If more than 10.000 reads, interpolate data
     if len(read_pass_length) > interpolation_threshold:
@@ -532,7 +532,7 @@ def plot_performance(dataframe_dict, result_directory):
 
     graph_name = "Channel occupancy of the flowcell"
 
-    pore_measure = pd.value_counts(dataframe_dict['channel'])
+    pore_measure = pd.value_counts(dataframe_dict['all.reads.channel'])
 
     output_file = result_directory + '/' + '_'.join(graph_name.split()) + '.png'
     flowcell_layout = _minion_flowcell_layout()
@@ -656,8 +656,8 @@ def barcoded_phred_score_frequency(dataframe_dict, result_directory):
 def sequence_length_over_time(dataframe_dict, result_directory):
     graph_name = "Read length over time"
 
-    return _over_time_graph(data_series=dataframe_dict['sequence.length'],
-                            time_series=dataframe_dict['start.time'],
+    return _over_time_graph(data_series=dataframe_dict['all.reads.sequence.length'],
+                            time_series=dataframe_dict['all.reads.start.time'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['sequence_length_over_time'],
@@ -672,8 +672,8 @@ def phred_score_over_time(dataframe_dict, result_dict, result_directory):
     if key in result_dict:
         pass_min_qscore=float(result_dict[key])
 
-    qscore_series = dataframe_dict["mean.qscore"]
-    time_series = dataframe_dict['start.time']
+    qscore_series = dataframe_dict["all.reads.mean.qscore"]
+    time_series = dataframe_dict['all.reads.start.time']
 
     return _over_time_graph(data_series=qscore_series,
                             time_series=time_series,
@@ -690,13 +690,13 @@ def phred_score_over_time(dataframe_dict, result_dict, result_directory):
 def speed_over_time(dataframe_dict, result_directory):
     graph_name = "Translocation speed"
 
-    sequence_length_series = dataframe_dict['sequence.length']
-    duration_series = dataframe_dict['duration']
+    sequence_length_series = dataframe_dict['all.reads.sequence.length']
+    duration_series = dataframe_dict['all.reads.duration']
 
     speed_series = pd.Series(sequence_length_series / duration_series)
 
     return _over_time_graph(data_series=speed_series,
-                            time_series=dataframe_dict['start.time'],
+                            time_series=dataframe_dict['all.reads.start.time'],
                             result_directory=result_directory,
                             graph_name=graph_name,
                             color=toulligqc_colors['speed_over_time'],

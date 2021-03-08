@@ -170,7 +170,7 @@ class SequencingSummaryExtractor:
             result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Yield, n50, run time
-        set_result_value(self, result_dict, "yield", sum(self.dataframe_dict["sequence.length"]))
+        set_result_value(self, result_dict, "yield", sum(self.dataframe_dict["all.reads.sequence.length"]))
 
         set_result_value(self, result_dict, "n50", self._compute_NXX(50))
         set_result_value(self, result_dict, "l50", self._compute_LXX(50))
@@ -184,15 +184,15 @@ class SequencingSummaryExtractor:
                 result_dict, "channel.occupancy.statistics." + index, value)
 
         # Get statistics about all reads length and store each value into result_dict
-        sequence_length_statistics = self.dataframe_dict["sequence.length"].describe()
+        sequence_length_statistics = self.dataframe_dict["all.reads.sequence.length"].describe()
 
         for index, value in sequence_length_statistics.items():
             set_result_value(self,
                 result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict
-        describe_dict(self, result_dict, self.dataframe_dict["read.pass.length"], "read.pass.length")
-        describe_dict(self, result_dict, self.dataframe_dict["read.fail.length"], "read.fail.length")
+        describe_dict(self, result_dict, self.dataframe_dict["pass.reads.sequence.length"], "pass.reads.sequence.length")
+        describe_dict(self, result_dict, self.dataframe_dict["fail.reads.sequence.length"], "fail.reads.sequence.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1d['mean_qscore'].describe().drop(
@@ -203,8 +203,8 @@ class SequencingSummaryExtractor:
                 result_dict, "all.read.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict
-        describe_dict(self, result_dict, self.dataframe_dict["read.pass.qscore"], "read.pass.qscore")
-        describe_dict(self, result_dict, self.dataframe_dict["read.fail.qscore"], "read.fail.qscore")
+        describe_dict(self, result_dict, self.dataframe_dict["pass.reads.mean.qscore"], "pass.reads.mean.qscore")
+        describe_dict(self, result_dict, self.dataframe_dict["fail.reads.mean.qscore"], "fail.reads.mean.qscore")
 
         if self.is_barcode:
             extract_barcode_info(self, result_dict,
@@ -218,13 +218,13 @@ class SequencingSummaryExtractor:
             read_type_bool = True if read_type == 'pass' else False
 
             # Read length series
-            df_dict['read.' + read_type + '.length'] = series_cols_boolean_elements(df,
+            df_dict[read_type + '.reads.sequence.length'] = series_cols_boolean_elements(df,
                                                                                           'sequence_length',
                                                                                           'passes_filtering',
                                                                                           read_type_bool)
 
             # Read qscore series
-            df_dict['read.' + read_type + '.qscore'] = series_cols_boolean_elements(df,
+            df_dict[read_type + '.reads.mean.qscore'] = series_cols_boolean_elements(df,
                                                                                           'mean_qscore',
                                                                                           'passes_filtering',
                                                                                           read_type_bool)
@@ -236,25 +236,25 @@ class SequencingSummaryExtractor:
                                                                                                            read_type_bool,
                                                                                                            3600)
         # Read length series
-        df_dict["sequence.length"] = df['sequence_length']
+        df_dict["all.reads.sequence.length"] = df['sequence_length']
 
         # Mean QScore
-        df_dict["mean.qscore"] = df['mean_qscore']
+        df_dict["all.reads.mean.qscore"] = df['mean_qscore']
 
         # Channel series
-        df_dict["channel"] = df['channel']
+        df_dict["all.reads.channel"] = df['channel']
 
         # Time series
-        df_dict["start.time"] = df['start_time']
+        df_dict["all.reads.start.time"] = df['start_time']
 
         # Duration series
-        df_dict["duration"] = df['duration']
+        df_dict["all.reads.duration"] = df['duration']
 
         # Start time series
         df_dict["all.reads.start.time.sorted"] = (df['start_time'] / 3600).sort_values()
 
-        # Retrieve Qscore column information and save it in mean.qscore entry
-        df_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
+        # # Retrieve Qscore column information and save it in mean.qscore entry
+        # df_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
 
     def graph_generation(self, result_dict):
         """
@@ -311,7 +311,7 @@ class SequencingSummaryExtractor:
         Statistics about the channels of the flowcell
         :return: pd.Series object containing statistics about the channel occupancy without count value
         """
-        total_reads_per_channel = pd.value_counts(self.dataframe_dict["channel"])
+        total_reads_per_channel = pd.value_counts(self.dataframe_dict["all.reads.channel"])
         return pd.DataFrame.describe(total_reads_per_channel)
 
     def _load_sequencing_summary_data(self):
@@ -407,7 +407,7 @@ class SequencingSummaryExtractor:
 
     def _compute_NXX(self, x):
         """Compute NXX value of total sequence length"""
-        data = self.dataframe_dict["sequence.length"].dropna().values
+        data = self.dataframe_dict["all.reads.sequence.length"].dropna().values
         data.sort()
         half_sum = data.sum() * x / 100
         cum_sum = 0
@@ -418,7 +418,7 @@ class SequencingSummaryExtractor:
 
     def _compute_LXX(self, x):
         """Compute LXX value of total sequence length"""
-        data = self.dataframe_dict["sequence.length"].dropna().values
+        data = self.dataframe_dict["all.reads.sequence.length"].dropna().values
         data.sort()
         half_sum = data.sum() * x / 100
         cum_sum = 0
