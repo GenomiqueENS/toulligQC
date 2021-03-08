@@ -390,7 +390,7 @@ def barcode_percentage_pie_chart_1dsqr_fail(dataframe_dict_1dsqr, barcode_select
     Needs the samplesheet file describing the barcodes to run
     """
 
-    graph_name = "1D² read pass barcode distribution"
+    graph_name = "1D² read fail barcode distribution"
 
     for element in barcode_selection:
 
