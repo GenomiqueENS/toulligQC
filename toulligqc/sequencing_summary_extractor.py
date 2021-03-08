@@ -265,7 +265,7 @@ class SequencingSummaryExtractor:
         images = list()
         images.append(pgg.read_count_histogram(result_dict, images_directory))
         images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
+        images.append(pgg.yield_plot(self.dataframe_1d, self.dataframe_dict, images_directory))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory))
         images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
         images.append(pgg.plot_performance(self.dataframe_dict, images_directory))
@@ -335,7 +335,7 @@ class SequencingSummaryExtractor:
             'channel': np.int16,
             'start_time': np.float,
             'passes_filtering': np.bool,
-            'sequence_length_template': np.int16,
+            'sequence_length_template': np.uint32,
             'mean_qscore_template': np.float,
             'duration': np.float}
 

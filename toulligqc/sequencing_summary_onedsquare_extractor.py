@@ -346,7 +346,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         sequencing_summary_datatypes = {
             'passes_filtering': np.bool,
-            'sequence_length': np.int16,
+            'sequence_length': np.uint32,
             'mean_qscore': np.float,
             'start_time1': np.float,
             'trimmed_duration1': np.float,
