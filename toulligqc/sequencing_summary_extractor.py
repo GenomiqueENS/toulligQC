@@ -175,8 +175,7 @@ class SequencingSummaryExtractor:
         set_result_value(self, result_dict, "n50", self._compute_NXX(50))
         set_result_value(self, result_dict, "l50", self._compute_LXX(50))
 
-        set_result_value(self, result_dict, "run.time", max(
-            self.dataframe_dict["all.reads.start.time.sorted"]))
+        set_result_value(self, result_dict, "run.time", max(self.dataframe_1d['start_time']))
 
         # Get channel occupancy statistics and store each value into result_dict
         for index, value in self._occupancy_channel().items():
@@ -229,12 +228,6 @@ class SequencingSummaryExtractor:
                                                                                           'passes_filtering',
                                                                                           read_type_bool)
 
-            # Start time series
-            df_dict[read_type + '.reads.start.time.sorted'] = sorted_series_boolean_elements_divided(df,
-                                                                                                           'start_time',
-                                                                                                           'passes_filtering',
-                                                                                                           read_type_bool,
-                                                                                                           3600)
         # Read length series
         df_dict["all.reads.sequence.length"] = df['sequence_length']
 
@@ -250,12 +243,6 @@ class SequencingSummaryExtractor:
         # Duration series
         df_dict["all.reads.duration"] = df['duration']
 
-        # Start time series
-        df_dict["all.reads.start.time.sorted"] = (df['start_time'] / 3600).sort_values()
-
-        # # Retrieve Qscore column information and save it in mean.qscore entry
-        # df_dict["mean.qscore"] = self.dataframe_1d['mean_qscore']
-
     def graph_generation(self, result_dict):
         """
         Generation of the different graphs containing in the plotly_graph_generator module
@@ -265,7 +252,7 @@ class SequencingSummaryExtractor:
         images = list()
         images.append(pgg.read_count_histogram(result_dict, images_directory))
         images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg.yield_plot(self.dataframe_1d, self.dataframe_dict, images_directory))
+        images.append(pgg.yield_plot(self.dataframe_1d, images_directory))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory))
         images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
         images.append(pgg.plot_performance(self.dataframe_dict, images_directory))

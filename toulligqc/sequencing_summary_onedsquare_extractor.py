@@ -267,7 +267,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         images.append(pgg2.dsqr_read_count_histogram(result_dict, images_directory))
         images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
         images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg.yield_plot(self.dataframe_dict, images_directory))
+        images.append(pgg.yield_plot(self.dataframe_1dsqr, images_directory, oneDsquare=True))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory, ))
         images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, images_directory))
         images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))

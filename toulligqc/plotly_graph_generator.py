@@ -173,23 +173,31 @@ def read_length_scatterplot(dataframe_dict, result_directory):
                                      result_directory=result_directory)
 
 
-def yield_plot(dataframe_dict, result_directory):
+def yield_plot(df, result_directory, oneDsquare=False):
     """
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
 
     graph_name = "Yield plot through time"
 
-    all_read = dataframe_dict['all.reads.start.time.sorted']
-    read_pass = dataframe_dict['pass.reads.start.time.sorted']
-    read_fail = dataframe_dict['fail.reads.start.time.sorted']
+    if oneDsquare:
+        start_time_column = 'start_time1'
+    else:
+        start_time_column = 'start_time'
 
-    data = [(all_read, 'All reads', toulligqc_colors['all']),
-            (read_pass, 'Pass reads', toulligqc_colors['pass']),
-            (read_fail, 'Fail reads', toulligqc_colors['fail'])]
+    new_df = df.filter(['sequence_length', start_time_column, 'passes_filtering']).sort_values(by=start_time_column)
+    new_df['start_time'] = new_df[start_time_column] / 3600
+
+    all_reads_length_df = new_df.filter(['sequence_length', start_time_column])
+    pass_reads_length_df = new_df[new_df['passes_filtering'] == True].filter(['sequence_length', start_time_column])
+    fail_reads_length_df = new_df[new_df['passes_filtering'] == False].filter(['sequence_length', start_time_column])
+
+    data = [(all_reads_length_df, 'All reads', toulligqc_colors['all']),
+            (pass_reads_length_df, 'Pass reads', toulligqc_colors['pass']),
+            (fail_reads_length_df, 'Fail reads', toulligqc_colors['fail'])]
 
     npoints = 10000
-    coef = max(all_read) / npoints
+    coef = max(all_reads_length_df[start_time_column]) / npoints
 
     fig = go.Figure()
 
@@ -201,9 +209,10 @@ def yield_plot(dataframe_dict, result_directory):
 
             if d[1] not in smooth_data_dict:
                 if reads:
-                    count_x, count_y = _smooth_data(npoints, 5, d[0])
+                    count_x, count_y = _smooth_data(npoints, 5, d[0][start_time_column])
                 else:
-                    count_x, count_y = _smooth_data(npoints, 5, d[0], weights=d[0].index)
+                    count_x, count_y = _smooth_data(npoints, 5, d[0][start_time_column], weights=d[0]['sequence_length'])
+
                 smooth_data_dict[d[1]] = (count_x, count_y)
 
             count_x, count_y = smooth_data_dict[d[1]]
