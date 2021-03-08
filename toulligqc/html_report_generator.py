@@ -381,6 +381,6 @@ def _format_int_with_prefix(i):
 
     for x in ((12, 'T'), (9, 'G'), (6, 'M'), (3, 'K')):
         if i / 10**x[0] > 1:
-            return _format_float(i / 10**x[0]) + x[1]
+            return '{:.2f}{}'.format(float(i) / float(10**x[0]), x[1])
 
     return i
