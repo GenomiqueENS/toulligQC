@@ -187,14 +187,18 @@ def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, wei
 
     bins = np.linspace(min_arg, max_arg, num=npoints)
     count_y, count_x = np.histogram(a=data, bins=bins, weights=weights, density=density)
+    cum_count_y = np.cumsum(count_y)
+
     # Removes the first value of count_x1
     count_x = count_x[1:]
     if density:
         count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
+        cum_count_y = gaussian_filter1d(cum_count_y * len(data), sigma=sigma)
     else:
         count_y = gaussian_filter1d(count_y, sigma=sigma)
+        cum_count_y = gaussian_filter1d(cum_count_y, sigma=sigma)
 
-    return count_x, count_y
+    return count_x, count_y, cum_count_y
 
 
 def _precompute_boxplot_values(y):
@@ -598,9 +602,9 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
 
     npoints = 10000
 
-    count_x1, count_y1 = _smooth_data(npoints, 5, all_read)
-    count_x2, count_y2 = _smooth_data(npoints, 5, read_pass)
-    count_x3, count_y3 = _smooth_data(npoints, 5, read_fail)
+    count_x1, count_y1, cum_count_y1 = _smooth_data(npoints, 5, all_read)
+    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints, 5, read_pass)
+    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints, 5, read_fail)
 
     # Find 50 percentile for zoomed range on x axis
     max_x_range = np.percentile(all_read, 99)
@@ -673,9 +677,9 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
     pass_series = dataframe[prefix + " pass"].dropna()
     fail_series = dataframe[prefix + " fail"].dropna()
 
-    count_x2, count_y2 = _smooth_data(10000, 5, pass_series, min_arg=np.nanmin(all_series),
+    count_x2, count_y2, cum_count_y2 = _smooth_data(10000, 5, pass_series, min_arg=np.nanmin(all_series),
                                       max_arg=np.nanmax(all_series), density=True)
-    count_x3, count_y3 = _smooth_data(10000, 5, fail_series, min_arg=np.nanmin(all_series),
+    count_x3, count_y3, cum_count_y3 = _smooth_data(10000, 5, fail_series, min_arg=np.nanmin(all_series),
                                       max_arg=np.nanmax(all_series), density=True)
 
     count_y2 = count_y2 / len(all_series)

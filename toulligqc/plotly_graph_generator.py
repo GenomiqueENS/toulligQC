@@ -209,25 +209,25 @@ def yield_plot(df, result_directory, oneDsquare=False):
 
             if d[1] not in smooth_data_dict:
                 if reads:
-                    count_x, count_y = _smooth_data(npoints, 5, d[0][start_time_column])
+                    count_x, count_y, cum_count_y = _smooth_data(npoints, 5, d[0][start_time_column])
                 else:
-                    count_x, count_y = _smooth_data(npoints, 5, d[0][start_time_column], weights=d[0]['sequence_length'])
+                    count_x, count_y, cum_count_y = _smooth_data(npoints, 5, d[0][start_time_column], weights=d[0]['sequence_length'])
 
-                smooth_data_dict[d[1]] = (count_x, count_y)
+                smooth_data_dict[d[1]] = (count_x, count_y, cum_count_y)
 
-            count_x, count_y = smooth_data_dict[d[1]]
+            count_x, count_y, cum_count_y = smooth_data_dict[d[1]]
 
             fig.add_trace(go.Scatter(x=count_x,
-                                     y=np.cumsum(count_y),
+                                     y=cum_count_y,
                                      name=d[1],
                                      fill='tozeroy',
                                      marker_color=d[2],
                                      visible=first
                                      ))
 
-        count_x, count_y = smooth_data_dict[data[0][1]]
+        count_x, count_y, cum_count_y = smooth_data_dict[data[0][1]]
         for p in [50, 75, 90, 99]:
-            y = np.cumsum(count_y)
+            y = cum_count_y
             ymax = max(y)
             index = (np.abs(y - ymax * p / 100)).argmin()
             x0 = count_x[index]
@@ -246,7 +246,7 @@ def yield_plot(df, result_directory, oneDsquare=False):
         first = False
 
         for d in data:
-            count_x, count_y = smooth_data_dict[d[1]]
+            count_x, count_y, cum_count_y = smooth_data_dict[d[1]]
 
             fig.add_trace(go.Scatter(x=count_x,
                                      y=count_y / coef,
