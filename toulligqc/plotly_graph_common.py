@@ -185,20 +185,30 @@ def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, wei
     if max_arg is None:
         max_arg = np.nanmax(data)
 
+    # Compute the bin
     bins = np.linspace(min_arg, max_arg, num=npoints)
-    count_y, count_x = np.histogram(a=data, bins=bins, weights=weights, density=density)
-    cum_count_y = np.cumsum(count_y)
 
-    # Removes the first value of count_x1
-    count_x = count_x[1:]
+    # Compute the histogram
+    y, bin_edges = np.histogram(a=data, bins=bins, weights=weights, density=density)
+
+    # Cumulative Y
+    cum_y = np.cumsum(y)
+
+    # Center histogram
+    x = bin_edges[:-1] + np.diff(bin_edges) / 2
+
+    if min_arg == 0:
+        x = np.insert(x, 0, 0)
+        y = np.insert(y, 0, 0)
+
     if density:
-        count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
-        cum_count_y = gaussian_filter1d(cum_count_y * len(data), sigma=sigma)
+        y = gaussian_filter1d(y * len(data), sigma=sigma)
+        cum_y = gaussian_filter1d(cum_y * len(data), sigma=sigma)
     else:
-        count_y = gaussian_filter1d(count_y, sigma=sigma)
-        cum_count_y = gaussian_filter1d(cum_count_y, sigma=sigma)
+        y = gaussian_filter1d(y, sigma=sigma)
+        cum_y = gaussian_filter1d(cum_y, sigma=sigma)
 
-    return count_x, count_y, cum_count_y
+    return x, y, cum_y
 
 
 def _precompute_boxplot_values(y):
