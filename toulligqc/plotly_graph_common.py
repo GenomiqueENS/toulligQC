@@ -597,19 +597,25 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
     return graph_name, output_file, table_html, div
 
 
-def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_color, pass_color, fail_color,
+def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all_color, pass_color, fail_color,
                               xaxis_title, result_directory):
 
     npoints = 10000
+    min_all_reads = 0
+    max_all_reads = max(all_reads)
+    sigma = 5
 
-    count_x1, count_y1, cum_count_y1 = _smooth_data(npoints, 5, all_read)
-    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints, 5, read_pass)
-    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints, 5, read_fail)
+    count_x1, count_y1, cum_count_y1 = _smooth_data(npoints, sigma, all_reads,
+                                                    min_arg=min_all_reads, max_arg=max_all_reads)
+    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints, sigma, pass_reads,
+                                                    min_arg=min_all_reads, max_arg=max_all_reads)
+    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints, sigma, fail_reads, min_arg=min_all_reads,
+                                                    max_arg=max_all_reads)
 
     # Find 50 percentile for zoomed range on x axis
-    max_x_range = np.percentile(all_read, 99)
+    max_x_range = np.percentile(all_reads, 99)
 
-    coef = max(all_read) / npoints
+    coef = max_all_reads / npoints
 
     max_y = max(max(count_y1), max(count_y2), max(count_y3)) / coef
 
@@ -635,7 +641,7 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
 
     # Threshold
     for p in [25, 50, 75]:
-        x0 = np.percentile(all_read, p)
+        x0 = np.percentile(all_reads, p)
         if p == 50:
             t = 'median<br>all reads'
         else:
@@ -658,12 +664,12 @@ def _read_length_distribution(graph_name, all_read, read_pass, read_fail, all_co
         **default_graph_layout,
         **_legend(),
         hovermode='x',
-        **_xaxis(xaxis_title, dict(range=[0, max_x_range])),
+        **_xaxis(xaxis_title, dict(range=[min_all_reads, max_x_range])),
         **_yaxis('Reads per pb', dict(range=[0, max_y * 1.10])),
     )
 
     # Create data for HTML table
-    table_df = pd.concat([pd.Series(all_read), read_pass, read_fail], axis=1,
+    table_df = pd.concat([pd.Series(all_reads), pass_reads, fail_reads], axis=1,
                          keys=['All reads', 'Pass reads', 'Fail reads'])
     table_html = _dataFrame_to_html(_make_describe_dataframe(table_df))
 

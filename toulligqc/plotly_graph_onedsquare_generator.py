@@ -166,9 +166,9 @@ def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, result_directory):
     graph_name = "1D² Distribution of read lengths"
 
     return _read_length_distribution(graph_name=graph_name,
-                                     all_read=dataframe_dict_1dsqr['all.reads.sequence.length'],
-                                     read_pass=dataframe_dict_1dsqr['pass.reads.sequence.length'],
-                                     read_fail=dataframe_dict_1dsqr['fail.reads.sequence.length'],
+                                     all_reads=dataframe_dict_1dsqr['all.reads.sequence.length'],
+                                     pass_reads=dataframe_dict_1dsqr['pass.reads.sequence.length'],
+                                     fail_reads=dataframe_dict_1dsqr['fail.reads.sequence.length'],
                                      all_color=toulligqc_colors['all'],
                                      pass_color=toulligqc_colors['pass'],
                                      fail_color=toulligqc_colors['fail'],
