@@ -20,8 +20,6 @@
 
 # This module contains common methods for sequencing summary modules.
 
-import re
-
 import pandas as pd
 
 
@@ -154,28 +152,22 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     df.loc[~df['barcode_arrangement'].isin(
         barcode_selection), 'barcode_arrangement'] = 'other barcodes'
 
-    pattern = '(\\d{2})'
     if 'other barcodes' not in barcode_selection:
         barcode_selection.append('other barcodes')
 
     # Create dataframes filtered by barcodes and read quality
     for index_barcode, barcode in enumerate(barcode_selection):
-        barcode_selected_dataframe = df[
-            df['barcode_arrangement'] == barcode]
-        barcode_selected_read_pass_dataframe = barcode_selected_dataframe.loc[
-            df['passes_filtering'] == bool(True)]
-        barcode_selected_read_fail_dataframe = barcode_selected_dataframe.loc[
-            df['passes_filtering'] == bool(False)]
-        # search for number of barcode used
-        match = re.search(pattern, barcode)
-    if match:
-        barcode_name = match.group(0)
-    else:
-        barcode_name = barcode
+        barcode_all_reads_df = df[df['barcode_arrangement'] == barcode]
+        barcode_pass_reads_df = barcode_all_reads_df.loc[df['passes_filtering'] == bool(True)]
+        barcode_fail_reads_df = barcode_all_reads_df.loc[df['passes_filtering'] == bool(False)]
+
         # Add all barcode statistics to result_dict based on values of selected dataframes
-        _barcode_stats(extractor, result_dict, barcode_selected_dataframe,
-                       barcode_selected_read_pass_dataframe, barcode_selected_read_fail_dataframe,
-                       barcode_name)
+        _barcode_stats(extractor,
+                       result_dict,
+                       barcode_all_reads_df,
+                       barcode_pass_reads_df,
+                       barcode_fail_reads_df,
+                       barcode)
 
     # Add filtered dataframes (all info by barcode and by length or qscore) to dataframe_dict
     _barcode_selection_dataframe(dataframe_dict, df, "sequence_length",
@@ -236,7 +228,7 @@ def _barcode_stats(extractor, result_dict, barcode_selected_dataframe, barcode_s
 
     for df_name, df in df_dict.items():  # df_dict.items = all.read/read.pass/read.fail
         for stats_index, stats_value in df['sequence_length'].describe().items():
-            key_to_result_dict = df_name + barcode_name + '.length.' + stats_index
+            key_to_result_dict = df_name + barcode_name.replace(' ', '.') + '.length.' + stats_index
             set_result_value(extractor,
                              result_dict, key_to_result_dict, stats_value)
 
