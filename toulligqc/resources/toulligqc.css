@@ -26,20 +26,20 @@
 #leftCol {
   position: fixed;
   top: 5em;
-  margin: 1em 0 0 1em;
-  width: 24em;
+  margin: 0.5em 0 0 0.5em;
+  width: calc(366px - 0.5em);
 }
 
 #content {
   display: block;
   position: absolute;
   top: 4.5em;
-  left: 24em;
+  left: 366px;
   right: 0;
   bottom: 2.3em;
   height: auto;
-  width: calc(100% - 24em - 1em);
-  padding-left: 0.5em;
+  width: calc(100% - 366px - 0.5em);
+  padding-left: 0;
   padding-right: 0.5em;
   z-index: 1;
   overflow: auto;
@@ -92,7 +92,7 @@
 .menu-vertical {
   right: 1em;
   padding: 4px;
-  margin-right : 2em;
+  margin-right : 1em;
   list-style: none;
   text-align: left;
   background: #F2F2F2;
