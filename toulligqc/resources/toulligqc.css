@@ -68,9 +68,12 @@
   display:inline-block;
   float:left;
   clear:left;
-  font-size: 200%;
+  font-size: 175%;
   font-weight: bold;
   height: 100%;
+  white-space: nowrap;
+  width: 1%;
+  vertical-align:middle;
 }
 
 #header_filename {
@@ -80,6 +83,7 @@
   font-size: 90%;
   text-align: right;
   height: 100%;
+  background-color: white;
 }
 
 #header_logo {
