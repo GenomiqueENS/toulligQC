@@ -15,7 +15,7 @@
   left: 0;
   margin: 0;
   border: 0;
-  width: 100%;
+  width: calc(100% - 1em);
   padding: 0.5em;
   z-index: 2;
 
@@ -38,8 +38,9 @@
   right: 0;
   bottom: 2.3em;
   height: auto;
-  width: auto;
-  padding: 0 0 0 1em;
+  width: calc(100% - 24em - 1em);
+  padding-left: 0.5em;
+  padding-right: 0.5em;
   z-index: 1;
   overflow: auto;
 }
@@ -52,7 +53,7 @@
   margin: 0;
   border: 0;
   height: 1.3em;
-  width:100%;
+  width: calc(100% - 1em);
   padding: 0.5em;
   z-index:2;
   overflow:hidden;
@@ -69,6 +70,7 @@
   clear:left;
   font-size: 200%;
   font-weight: bold;
+  height: 100%;
 }
 
 #header_filename {
@@ -76,8 +78,8 @@
   float:right;
   clear:right;
   font-size: 90%;
-  margin-right:2em;
   text-align: right;
+  height: 100%;
 }
 
 #header_logo {
@@ -90,7 +92,7 @@
 .menu-vertical {
   right: 1em;
   padding: 4px;
-  margin: 1em 1em;
+  margin-right : 2em;
   list-style: none;
   text-align: left;
   background: #F2F2F2;
