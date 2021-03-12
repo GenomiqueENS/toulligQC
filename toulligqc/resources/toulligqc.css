@@ -164,3 +164,8 @@ table {
   margin-right: auto;
 }
 
+#help_link {
+  color: #3C6DC5;
+  text-decoration: none;
+}
+

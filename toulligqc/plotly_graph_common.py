@@ -65,6 +65,18 @@ default_graph_layout = dict(
     width=figure_image_width
 )
 
+help_url = 'https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/docs/help.html'
+
+
+def help_html_link(title):
+
+    print('<h2><a id="#{}" class="anchor">{}</a></h2>'.format(title.strip().replace(' ', '_').lower(), title))
+    print('<p>Blabla...</p>')
+
+    return '<a href="{}#{}" target="_blank" id="help_link">ⓘ</a>'\
+        .format(help_url, title.strip().replace(' ', '_').lower())
+
+
 def _format_int(i):
     return '{:,d}'.format(i)
 
@@ -82,7 +94,7 @@ def _format_percent(f):
 
 def _title(title):
     return dict(title=dict(
-        text="<b>" + title + "</b>",
+        text='<b>{}</b> <b>{}<b>'.format(title, help_html_link(title)),
         y=0.95,
         x=0,
         xanchor='left',

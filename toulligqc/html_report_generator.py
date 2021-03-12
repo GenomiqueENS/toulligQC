@@ -33,6 +33,7 @@ from toulligqc.plotly_graph_common import title_size
 from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import help_html_link
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -185,7 +186,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     # Compose the main of the page
     result = """
       <div class="module" id="Run-statistics">
-            <h2>Run Statistics</h2>
+            <h2>Run Statistics {help_link}</h2>
             <table class="dataframe" border="">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
@@ -206,7 +207,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               </tbody>
             </table>
       </div> <!-- End of "Run-statistics" module -->
-    """.format(run_id=run_id,
+    """.format(help_link=help_html_link("Run Statistics"),
+               run_id=run_id,
                experiment_group=experiment_group,
                sample_id=sample_id,
                report_name=report_name,
@@ -223,7 +225,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
 
     result += """
       <div class="module" id="Software-info">
-            <h2>Device and software information</h2>
+            <h2>Device and software information {help_link}</h2>
             <table class="dataframe" border="">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
@@ -242,7 +244,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                 </tbody>
             </table>
       </div> <!-- End of "Software-info" module -->
-    """.format(minknow_version=minknow_version,
+    """.format(help_link=help_html_link("Software info"),
+               minknow_version=minknow_version,
                basecaller_name=basecaller_name,
                basecaller_version=basecaller_version,
                basecaller_analysis=basecaller_analysis,
@@ -294,20 +297,20 @@ def _other_module_reports(graphs):
             if table is not None:
                 result += """
             <div class="module" id=M{i}>
-              <h2>{name}</h2>
+              <h2>{name} {help_link}</h2>
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
-            """.format(i=i, name=name, image=_embedded_image(path), table=table)
+            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path), table=table)
 
             # Image without table
             else:
                 result += """
             <div class="module" id=M{i}>
-              <h2>{name}</h2>
+              <h2>{name} {help_link}</h2>
               <div class="box"><img src="{image}"/></div>
             </div>
-            """.format(i=i, name=name, image=_embedded_image(path))
+            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path))
 
     return result
 
