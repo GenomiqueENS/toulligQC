@@ -1,7 +1,25 @@
 # Changelog
 
-## 2.0b2 (2020-11-20)
+## 2.0b3 (2021-03-22)
+* New CSS for HTML report
+* Add new plots (Read length and PHRED over time, translocation speed...)
+* Enhancement of existing graphs
+* Big refactoring code for sequencing summary file parsing
+* Big refactoring code for creating plots
+* Reduce memory usage and execution time with barcodes
+* Fix Plotly dependency version requirement
+* Add L50 computation
+* Sequence lengths of reads was stored into np.int16 that cannot handle >=32kb reads. Now use np.uint32
+* Add ToulligQC logo in HTML report
+* A telemetry file or Fast5 file is no more required
+* Add new fields in the two first tables of the report: Run ID, operating system and basecalling date
+* Barcode distribution pie charts can now be visualised as histograms
+* In table, float values have now comma separator for thousands
+* Update the yield number format in run statistocs table
+* Update colors in the graphs
+* Add an information link in all the graph titles
 
+## 2.0b2 (2020-11-20)
 * Fix import bug
 * Fix graph names partially hidden in HTML summary element
 * Rewrite help and rename arguments for clarity
