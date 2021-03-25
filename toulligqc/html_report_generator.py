@@ -153,9 +153,9 @@ def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligq
 def _basic_statistics_module_report(result_dict, sample_id, report_name, run_date, toulligqc_version):
     minknow_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.minknow.version', "Unknown")
 
-    td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
-    seconds = td.total_seconds()
-    run_time = '%dh%02dm%02ds' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
+    seconds = result_dict["basecaller.sequencing.summary.1d.extractor.run.time"]
+
+    run_time = '%dh%02dm%02ds' % (seconds // 3600, (seconds % 3600) // 60, seconds % 60)
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
     run_yield = _format_int_with_prefix(result_dict["basecaller.sequencing.summary.1d.extractor.yield"])
