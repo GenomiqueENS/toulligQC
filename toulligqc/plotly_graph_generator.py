@@ -341,21 +341,12 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
 
     graph_name = "PHRED score distribution"
 
-    df = pd.DataFrame(
+    dataframe = pd.DataFrame(
         {"1D": dataframe_dict['all.reads.mean.qscore'],
          "1D pass": dataframe_dict['pass.reads.mean.qscore'],
          "1D fail": dataframe_dict['fail.reads.mean.qscore']
          })
 
-    # If more than 10.000 reads, interpolate data
-    if len(df["1D"]) > interpolation_threshold:
-        dataframe = pd.DataFrame({
-            "1D": _interpolate(df["1D"], 1000),
-            "1D pass": _interpolate(df["1D pass"], 1000),
-            "1D fail": _interpolate(df["1D fail"], 1000)
-        })
-    else:
-        dataframe = df
     names = {"1D": "All reads",
              "1D pass": "Pass reads",
              "1D fail": "Fail reads"}
