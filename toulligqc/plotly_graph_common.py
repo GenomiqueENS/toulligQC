@@ -630,7 +630,7 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
                               xaxis_title, result_directory):
 
     npoints = interpolation_points(all_reads, 'read_length_distribution')
-    min_all_reads = 0
+    min_all_reads = min(all_reads)
     max_all_reads = max(all_reads)
     sigma = 5
 
@@ -695,6 +695,34 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
         hovermode='x',
         **_xaxis(xaxis_title, dict(range=[min_all_reads, max_x_range])),
         **_yaxis('Reads per pb', dict(range=[0, max_y * 1.10])),
+    )
+
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=list([
+                    dict(
+                        args=[{"xaxis.type": "linear"}, {"xaxis.range": [min_all_reads, max_x_range]}],
+                        label="Linear",
+                        method="relayout"
+                    ),
+                    dict(
+                        args=[{"xaxis.type": "log"}, {"xaxis.range": [min_all_reads, max_x_range]}],
+                        label="Log",
+                        method="relayout"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                #showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
     )
 
     # Create data for HTML table
