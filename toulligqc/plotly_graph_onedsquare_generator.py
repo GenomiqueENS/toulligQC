@@ -53,6 +53,7 @@ from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _format_float
 from toulligqc.plotly_graph_common import interpolation_points
 from toulligqc.plotly_graph_common import _quality_multiboxplot
+from toulligqc.plotly_graph_common import _scatterplot
 
 
 
@@ -222,53 +223,7 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
 
     graph_name = "Correlation between 1D² read length and PHRED score"
 
-    read_pass_length = dataframe_dict_1dsqr["pass.reads.sequence.length"]
-    read_pass_qscore = dataframe_dict_1dsqr["pass.reads.mean.qscore"]
-    read_fail_length = dataframe_dict_1dsqr["fail.reads.sequence.length"]
-    read_fail_qscore = dataframe_dict_1dsqr["fail.reads.mean.qscore"]
-
-    # If more than 10.000 reads, interpolate data
-    npoints = interpolation_points(read_pass_length, 'scatterplot')
-    if len(read_pass_length) != npoints:
-        pass_data = _interpolate(read_pass_length, npoints, y=read_pass_qscore, interp_type="nearest")
-        fail_data = _interpolate(read_fail_length, npoints, y=read_fail_qscore, interp_type="nearest")
-    else:
-        pass_data = [read_pass_length, read_pass_qscore]
-        fail_data = [read_fail_length, read_fail_qscore]
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(x=pass_data[0],
-                             y=pass_data[1],
-                             name="Pass reads",
-                             marker_color=toulligqc_colors['pass'],
-                             mode="markers"
-                             ))
-
-    fig.add_trace(go.Scatter(x=fail_data[0],
-                             y=fail_data[1],
-                             name='Fail reads',
-                             marker_color=toulligqc_colors['fail'],
-                             mode="markers"
-                             ))
-
-    fig.update_layout(
-        **_title(graph_name),
-        **default_graph_layout,
-        **_legend('1D² Read type'),
-        **_xaxis('Sequence length (bp)'),
-        **_yaxis('PHRED score', dict(fixedrange=False)),
-    )
-    # Trim x axis to avoid negative values
-    if max(read_pass_length) >= max(read_fail_length):
-        max_val = max(read_pass_length)
-    max_val = max(read_fail_length)
-
-    fig.update_xaxes(range=[0, max_val])
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
-
+    return _scatterplot(graph_name, dataframe_dict_1dsqr, result_directory, onedsquare=True)
 
 #
 # For each barcode 1D²
