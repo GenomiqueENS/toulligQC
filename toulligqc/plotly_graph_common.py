@@ -775,6 +775,106 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
     return graph_name, output_file, table_html, div
 
 
+def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
+
+    if onedsquare:
+        prefix = '1D²'
+    else:
+        prefix = '1D'
+
+    # If more than 10.000 reads, interpolate data
+    npoints = interpolation_points(df[prefix], 'phred_violin')
+    if len(df[prefix]) != npoints:
+        violin_df = pd.DataFrame({
+            prefix: _interpolate(df[prefix], npoints),
+            prefix + " pass": _interpolate(df[prefix + " pass"], npoints),
+            prefix + " fail": _interpolate(df[prefix + " fail"], npoints)
+        })
+    else:
+        violin_df = df
+    names = {prefix: "All reads",
+             prefix + " pass": "Pass reads",
+             prefix + " fail": "Fail reads"}
+
+    colors = {prefix: toulligqc_colors['all'],
+              prefix+ " pass": toulligqc_colors['pass'],
+              prefix + " fail": toulligqc_colors['fail']}
+
+    # Max yaxis value for displaying same scale between plots
+    max_yaxis = max(df.max(skipna=True, numeric_only=True).values.max(),
+                    violin_df.max(skipna=True, numeric_only=True).values.max()) + 2.0
+    min_yaxis = min(df.min(skipna=True, numeric_only=True).values.min(),
+                    violin_df.min(skipna=True, numeric_only=True).values.min()) - 2.0
+
+    fig = go.Figure()
+
+    for column in df.columns:
+        d = _precompute_boxplot_values(df[column])
+        fig.add_trace(go.Box(
+            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
+            upperfence=[d['upperfence']],
+            name=names[column],
+            x0=names[column],
+            marker=dict(
+                opacity=0.3,
+                color=colors[column]
+
+            ),
+            boxmean=False,
+            showlegend=True
+        ))
+
+        fig.add_trace(go.Violin(y=violin_df[column],
+                                name=names[column],
+                                meanline_visible=True,
+                                marker=dict(color=colors[column]),
+                                visible=False))
+
+    fig.update_layout(
+        **_title(graph_name),
+        **default_graph_layout,
+        **_legend(),
+        hovermode='x',
+        **_xaxis('Read type', dict(fixedrange=True)),
+        **_yaxis('PHRED score', dict(range=[min_yaxis, max_yaxis])),
+    )
+
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False]}, {'hovermode': 'x'}],
+                        label="Boxplot",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True]}, {'hovermode': False}],
+                        label="Violin plot",
+                        method="update"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
+    )
+
+    df = df[[prefix, prefix + " pass", prefix + " fail"]]
+    df.columns = ["All reads", "Pass reads", "Fail reads"]
+    table_html = _dataFrame_to_html(_make_describe_dataframe(df))
+
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
+
+
 def interpolation_points(series, graph_name):
 
     count = len(series)

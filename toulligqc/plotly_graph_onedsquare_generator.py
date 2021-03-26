@@ -52,6 +52,7 @@ from toulligqc.plotly_graph_common import _yaxis
 from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _format_float
 from toulligqc.plotly_graph_common import interpolation_points
+from toulligqc.plotly_graph_common import _quality_multiboxplot
 
 
 
@@ -190,93 +191,7 @@ def dsqr_read_quality_multiboxplot(result_dict, dataframe_dict_1dsqr, result_dir
          "1D² fail": dataframe_dict_1dsqr['fail.reads.mean.qscore']
          })
 
-    # If more than 10.000 reads, interpolate data
-    if len(df["1D²"]) > interpolation_threshold:
-        dataframe = pd.DataFrame({
-            "1D²": _interpolate(df["1D²"], 1000),
-            "1D² pass": _interpolate(df["1D² pass"], 1000),
-            "1D² fail": _interpolate(df["1D² fail"], 1000)
-        })
-    else:
-        dataframe = df
-    names = {"1D²": "All reads",
-             "1D² pass": "Read pass",
-             "1D² fail": "Read fail"}
-
-    colors = {"1D²": toulligqc_colors['all'],
-              "1D² pass": toulligqc_colors['pass'],
-              "1D² fail": toulligqc_colors['fail']}
-
-    # Max yaxis value for displaying same scale between plots
-    max_yaxis = (dataframe.max(skipna=True, numeric_only=True).values.max() + 2.0)
-    min_yaxis = (dataframe.min(skipna=True, numeric_only=True).values.min() - 2.0)
-
-    fig = go.Figure()
-
-    for column in dataframe.columns:
-        d = _precompute_boxplot_values(dataframe[column])
-        fig.add_trace(go.Box(
-            q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
-            upperfence=[d['upperfence']],
-            name=names[column],
-            x0=names[column],
-            marker=dict(
-                opacity=0.3,
-                color=colors[column]
-
-            ),
-            boxmean=False,
-            showlegend=True
-        ))
-
-        fig.add_trace(go.Violin(y=dataframe[column],
-                                name=names[column],
-                                meanline_visible=True,
-                                marker=dict(color=colors[column]),
-                                visible=False))
-
-    fig.update_layout(
-        **_title(graph_name),
-        **default_graph_layout,
-        **_legend(),
-        hovermode='x',
-        **_xaxis('1D² Read type', dict(fixedrange=True)),
-        **_yaxis('PHRED Score', dict(range=[min_yaxis, max_yaxis])),
-    )
-
-    # Add buttons
-    fig.update_layout(
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="left",
-                buttons=list([
-                    dict(
-                        args=[{'visible': [True, False]}],
-                        label="Boxplot",
-                        method="update"
-                    ),
-                    dict(
-                        args=[{'visible': [False, True]}],
-                        label="Violin plot",
-                        method="update"
-                    )
-                ]),
-                pad={"r": 20, "t": 20, "l": 20, "b": 20},
-                showactive=True,
-                x=1.0,
-                xanchor="left",
-                y=1.25,
-                yanchor="top"
-            ),
-        ]
-    )
-
-    df = df[["1D²", "1D² pass", "1D² fail"]]
-    dataframe.columns = ['All reads', 'Pass reads', 'Fail reads']
-    table_html = _dataFrame_to_html(_make_describe_dataframe(df))
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
+    return _quality_multiboxplot(graph_name, result_directory, df, onedsquare=True)
 
 
 def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_directory):
