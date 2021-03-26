@@ -341,12 +341,21 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
 
     graph_name = "PHRED score distribution"
 
-    dataframe = pd.DataFrame(
+    df = pd.DataFrame(
         {"1D": dataframe_dict['all.reads.mean.qscore'],
          "1D pass": dataframe_dict['pass.reads.mean.qscore'],
          "1D fail": dataframe_dict['fail.reads.mean.qscore']
          })
 
+    # If more than 10.000 reads, interpolate data
+    if len(df["1D"]) > 10000:
+        violin_df = pd.DataFrame({
+            "1D": _interpolate(df["1D"], 1000),
+            "1D pass": _interpolate(df["1D pass"], 1000),
+            "1D fail": _interpolate(df["1D fail"], 1000)
+        })
+    else:
+        violin_df = df
     names = {"1D": "All reads",
              "1D pass": "Pass reads",
              "1D fail": "Fail reads"}
@@ -356,13 +365,15 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
               "1D fail": toulligqc_colors['fail']}
 
     # Max yaxis value for displaying same scale between plots
-    max_yaxis = (dataframe.max(skipna=True, numeric_only=True).values.max() + 2.0)
-    min_yaxis = (dataframe.min(skipna=True, numeric_only=True).values.min() - 2.0)
+    max_yaxis = max(df.max(skipna=True, numeric_only=True).values.max(),
+                    violin_df.max(skipna=True, numeric_only=True).values.max()) + 2.0
+    min_yaxis = min(df.min(skipna=True, numeric_only=True).values.min(),
+                    violin_df.min(skipna=True, numeric_only=True).values.min()) - 2.0
 
     fig = go.Figure()
 
-    for column in dataframe.columns:
-        d = _precompute_boxplot_values(dataframe[column])
+    for column in df.columns:
+        d = _precompute_boxplot_values(df[column])
         fig.add_trace(go.Box(
             q1=[d['q1']], median=[d['median']], q3=[d['q3']], lowerfence=[d['lowerfence']],
             upperfence=[d['upperfence']],
@@ -377,7 +388,7 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
             showlegend=True
         ))
 
-        fig.add_trace(go.Violin(y=dataframe[column],
+        fig.add_trace(go.Violin(y=violin_df[column],
                                 name=names[column],
                                 meanline_visible=True,
                                 marker=dict(color=colors[column]),
@@ -400,12 +411,12 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
                 direction="left",
                 buttons=list([
                     dict(
-                        args=[{'visible': [True, False]}],
+                        args=[{'visible': [True, False]}, {'hovermode': 'x'}],
                         label="Boxplot",
                         method="update"
                     ),
                     dict(
-                        args=[{'visible': [False, True]}],
+                        args=[{'visible': [False, True]}, {'hovermode': False}],
                         label="Violin plot",
                         method="update"
                     )
