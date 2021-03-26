@@ -38,7 +38,6 @@ from toulligqc.plotly_graph_common import figure_image_height
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import image_dpi
-from toulligqc.plotly_graph_common import interpolation_threshold
 from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import percent_format_str
@@ -56,6 +55,7 @@ from toulligqc.plotly_graph_common import _xaxis
 from toulligqc.plotly_graph_common import _yaxis
 from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import interpolation_points
 
 #
 #  1D plots
@@ -196,7 +196,7 @@ def yield_plot(df, result_directory, oneDsquare=False):
             (pass_reads_length_df, 'Pass reads', toulligqc_colors['pass']),
             (fail_reads_length_df, 'Fail reads', toulligqc_colors['fail'])]
 
-    npoints = 10000
+    npoints = interpolation_points(new_df['start_time'], 'yield_plot')
     coef = max(all_reads_length_df[start_time_column]) / npoints
 
     fig = go.Figure()
@@ -348,11 +348,12 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
          })
 
     # If more than 10.000 reads, interpolate data
-    if len(df["1D"]) > 10000:
+    npoints = interpolation_points(df["1D"], 'phred_violin')
+    if len(df["1D"]) != npoints:
         violin_df = pd.DataFrame({
-            "1D": _interpolate(df["1D"], 1000),
-            "1D pass": _interpolate(df["1D pass"], 1000),
-            "1D fail": _interpolate(df["1D fail"], 1000)
+            "1D": _interpolate(df["1D"], npoints),
+            "1D pass": _interpolate(df["1D pass"], npoints),
+            "1D fail": _interpolate(df["1D fail"], npoints)
         })
     else:
         violin_df = df
@@ -432,7 +433,7 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
     )
 
     df = df[["1D", "1D pass", "1D fail"]]
-    df.columns=["All reads", "Pass reads", "Fail reads"]
+    df.columns = ["All reads", "Pass reads", "Fail reads"]
     table_html = _dataFrame_to_html(_make_describe_dataframe(df))
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
@@ -473,9 +474,10 @@ def all_scatterplot(dataframe_dict, result_directory):
     read_fail_qscore = dataframe_dict["fail.reads.mean.qscore"]
 
     # If more than 10.000 reads, interpolate data
-    if len(read_pass_length) > interpolation_threshold:
-        pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
-        fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
+    npoints = interpolation_points(read_pass_length, 'scatterplot')
+    if len(read_pass_length) != npoints:
+        pass_data = _interpolate(read_pass_length, npoints, y=read_pass_qscore, interp_type="nearest")
+        fail_data = _interpolate(read_fail_length, npoints, y=read_fail_qscore, interp_type="nearest")
     else:
         pass_data = [read_pass_length, read_pass_qscore]
         fail_data = [read_fail_length, read_fail_qscore]

@@ -35,7 +35,6 @@ from toulligqc.plotly_graph_common import _transparent_colors
 from toulligqc.plotly_graph_common import figure_image_height
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import graph_font
-from toulligqc.plotly_graph_common import interpolation_threshold
 from toulligqc.plotly_graph_common import line_width
 from toulligqc.plotly_graph_common import on_chart_font_size
 from toulligqc.plotly_graph_common import plotly_background_color
@@ -52,6 +51,7 @@ from toulligqc.plotly_graph_common import _xaxis
 from toulligqc.plotly_graph_common import _yaxis
 from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import interpolation_points
 
 
 
@@ -313,9 +313,10 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
     read_fail_qscore = dataframe_dict_1dsqr["fail.reads.mean.qscore"]
 
     # If more than 10.000 reads, interpolate data
-    if len(read_pass_length) > interpolation_threshold:
-        pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
-        fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
+    npoints = interpolation_points(read_pass_length, 'scatterplot')
+    if len(read_pass_length) != npoints:
+        pass_data = _interpolate(read_pass_length, npoints, y=read_pass_qscore, interp_type="nearest")
+        fail_data = _interpolate(read_fail_length, npoints, y=read_fail_qscore, interp_type="nearest")
     else:
         pass_data = [read_pass_length, read_pass_qscore]
         fail_data = [read_fail_length, read_fail_qscore]

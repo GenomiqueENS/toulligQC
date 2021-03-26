@@ -34,7 +34,6 @@ figure_image_width = 1000
 figure_image_height = 562
 percent_format_str = '{:.2f}%'
 line_width = 2
-interpolation_threshold = 10000
 
 toulligqc_colors = {'all': '#fca311',  # Yellow
                     'all_1d2': '#fca311',  # Yellow
@@ -64,6 +63,16 @@ default_graph_layout = dict(
     height=figure_image_height,
     width=figure_image_width
 )
+
+interpolation_point_count_dict = {
+    'read_length_distribution': (None, 10000),
+    'yield_plot': (None, 10000),
+    'phred_score_density': (None, 10000),
+    'over_time_graph': (None, 1000),
+    'scatterplot': (10000, 4000),
+    'phred_violin': (10000, 4000),
+}
+
 
 help_url = 'https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/master/docs/help.html'
 
@@ -313,13 +322,14 @@ def _over_time_graph(data_series,
                      color,
                      yaxis_title,
                      log=False,
-                     time_bins=1000,
                      sigma=1,
                      quartiles=True,
                      min_max=False,
                      yaxis_starts_zero=False,
                      green_zone_starts_at=None,
                      green_zone_color='rgba(0,100,0,.1)'):
+
+    time_bins = interpolation_points(time_series, 'over_time_graph')
 
     t = (time_series/3600).values
     x = np.linspace(t.min(), t.max(), num=time_bins)
@@ -619,7 +629,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
 def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all_color, pass_color, fail_color,
                               xaxis_title, result_directory):
 
-    npoints = 10000
+    npoints = interpolation_points(all_reads, 'read_length_distribution')
     min_all_reads = 0
     max_all_reads = max(all_reads)
     sigma = 5
@@ -702,9 +712,11 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
     pass_series = dataframe[prefix + " pass"].dropna()
     fail_series = dataframe[prefix + " fail"].dropna()
 
-    count_x2, count_y2, cum_count_y2 = _smooth_data(10000, 5, pass_series, min_arg=np.nanmin(all_series),
+    npoints = interpolation_points(all_series, 'phred_score_density')
+
+    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints, 5, pass_series, min_arg=np.nanmin(all_series),
                                       max_arg=np.nanmax(all_series), density=True)
-    count_x3, count_y3, cum_count_y3 = _smooth_data(10000, 5, fail_series, min_arg=np.nanmin(all_series),
+    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints, 5, fail_series, min_arg=np.nanmin(all_series),
                                       max_arg=np.nanmax(all_series), density=True)
 
     count_y2 = count_y2 / len(all_series)
@@ -761,4 +773,20 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
+
+
+def interpolation_points(series, graph_name):
+
+    count = len(series)
+    threshold, npoints = interpolation_point_count_dict[graph_name]
+
+    if threshold is not None:
+        if count > threshold:
+            result = npoints
+        else:
+            result = count
+    else:
+        result = npoints
+
+    return result
 
