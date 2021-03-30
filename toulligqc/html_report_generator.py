@@ -175,6 +175,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     device_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.id', "Unknown")
     device_type = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.type', "Unknown")
     model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
+    min_qscore_threshold = _get_result_value(result_dict, 'sequencing.telemetry.extractor.pass.threshold.qscore',
+                                             value_type='float', default_value="Unknown")
 
     distribution_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.distribution.version',
                                              "Unknown")
@@ -240,6 +242,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                 <tr><th>Basecaller analysis</th><td>{basecaller_analysis}</td></tr>
                 <tr><th>Basecalling date</th><td>{basecalling_date}</td></tr>
                 <tr><th>Model file</th><td>{model_file}</td></tr>
+                <tr><th>Min qscore threshold</th><td>{min_qscore_threshold}</td></tr>
                 <tr><th>ToulligQC version</th><td>{toulligqc_version}</td></tr>
                 </tbody>
             </table>
@@ -256,7 +259,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                distribution_version=distribution_version,
                device_type=device_type,
                device_id=device_id,
-               model_file=model_file)
+               model_file=model_file,
+               min_qscore_threshold=min_qscore_threshold)
 
     return result
 
@@ -333,7 +337,7 @@ def _embedded_image(image_path, resource=False):
     return result
 
 
-def _get_result_value(result_dict, key, default_value=""):
+def _get_result_value(result_dict, key, value_type='str', default_value=""):
     """
     Get the value of the result dictionary or a default value if the key does not exists.
     :param result_dict: result dictionary
@@ -344,6 +348,10 @@ def _get_result_value(result_dict, key, default_value=""):
     if key in result_dict:
         result = result_dict[key]
         if len(result) > 0:
+
+            if value_type == 'float':
+                result = '{:.2f}'.format(float(result))
+
             return result
 
     return default_value
