@@ -337,7 +337,7 @@ def _embedded_image(image_path, resource=False):
     return result
 
 
-def _get_result_value(result_dict, key, value_type='str', default_value=""):
+def _get_result_value(result_dict, key, default_value="", value_type='str'):
     """
     Get the value of the result dictionary or a default value if the key does not exists.
     :param result_dict: result dictionary
