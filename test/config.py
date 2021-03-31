@@ -10,7 +10,8 @@ Listing of all configurations required for unit tests
 
 whole_config = {
     "barcoding": "True",
-    "barcode_selection": ["BC01, BC02, BC03, BC04, BC05, BC06, BC07"],
+    "barcode_selection": ["BC01", "BC02", "BC03", "BC04", "BC05", "BC06", "BC07"],
+    "barcode_selection": ["barcode07", "barcode08", "barcode10", "barcode12"],
     "result_directory": path,
     "dpi": "100",
     "sequencing_summary_source": path + "/sequencing_summary_small.txt\t"\
@@ -35,7 +36,7 @@ directory_config= {
 
 only_seq_summary_config= {
 "barcoding": "False",
-"barcode_selection" : set(["BC01, BC02, BC03, BC04, BC05, BC06, BC07"]),
+"barcode_selection" : set(["BC01", "BC02", "BC03", "BC04", "BC05", "BC06", "BC07"]),
 "result_directory": path,
 "dpi": "100",
 "sequencing_summary_source": path + "/Albacore-2.3.1_basecall-1D-RNA_sequencing_summary.txt"
@@ -43,7 +44,7 @@ only_seq_summary_config= {
 
 seq_summary_with_barcodes_config= {
 "barcoding": "True",
-"barcode_selection" : ["BC01, BC02, BC03, BC04, BC05, BC06, BC07"],
+"barcode_selection" : ["BC01", "BC02", "BC03", "BC04", "BC05", "BC06", "BC07"],
 "result_directory": path,
 "dpi": "100",
 "sequencing_summary_source": path + "/Guppy-2.2.4-basecall-1D-DNA_sequencing_summary+barcode.txt"
@@ -51,7 +52,7 @@ seq_summary_with_barcodes_config= {
 
 only_barcoding_config= {
 "barcoding": "True",
-"barcode_selection" : set(["BC01, BC02, BC03, BC04, BC05, BC06, BC07"]),
+"barcode_selection" : set(["BC01", "BC02", "BC03", "BC04", "BC05", "BC06", "BC07"]),
 "result_directory": path,
 "dpi": "100",
 "sequencing_summary_source": path + "/barcoding_summ_pass_small.txt\t"\

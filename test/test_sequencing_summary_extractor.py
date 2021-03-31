@@ -39,22 +39,23 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         cols = [
             'channel',
             'start_time',
+            'duration',
             'passes_filtering',
-            'sequence_length_template',
+            'sequence_length',
             'mean_qscore_template',
             'barcode_arrangement']
         
-        data_test = np.array([[20, 8.92175, True, 257, 14.379014999999999, "barcode12"],
-                              [61, 9.2585, False, 388, 4.8182160000000005, "unclassified"],
-                              [382, 9.2825, True, 414, 12.683063, "barcode12"],
-                              [149, 8.76625, True, 850, 11.174918, "barcode12"],
-                              [277, 9.00525, True, 632, 7.292675, "barcode12"],
-                              [131, 9.17225, True, 852, 12.534144, "barcode08"],
-                              [430, 10.3745, True, 381, 10.167657, "unclassified"],
-                              [90, 8.7955, True, 1114, 12.7405, "barcode07"],
-                              [123, 11.04125, True, 402, 11.276638, "unclassified"],
-                              [313, 10.12025, True, 761, 13.403101000000001, "barcode12"],
-                              [204, 10.84925, True, 583, 11.399572000000001, "barcode10"]])
+        data_test = np.array([[20, 8.92175, 1.220750, True, 257, 14.379014999999999, "barcode12"],
+                              [61, 9.2585, 1.313250, False, 388, 4.8182160000000005, "unclassified"],
+                              [382, 9.2825, 1.155250, True, 414, 12.683063, "barcode12"],
+                              [149, 8.76625, 2.058500, True, 850, 11.174918, "barcode12"],
+                              [277, 9.00525, 1.851000, True, 632, 7.292675, "barcode12"],
+                              [131, 9.17225, 2.435250, True, 852, 12.534144, "barcode08"],
+                              [430, 10.3745, 1.033250, True, 381, 10.167657, "unclassified"],
+                              [90, 8.7955, 2.918750, True, 1114, 12.7405, "barcode07"],
+                              [123, 11.04125, 1.283250, True, 402, 11.276638, "unclassified"],
+                              [313, 10.12025, 1.989000, True, 761, 13.403101000000001, "barcode12"],
+                              [204, 10.84925, 1.636250, True, 583, 11.399572000000001, "barcode10"]])
 
         cls.expected_df = pd.DataFrame(data=data_test, columns=cols, index=pd.Int64Index(data=pd.RangeIndex(0, 11)))
         
@@ -65,8 +66,9 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
             'channel': np.int16,
             'start_time': np.float,
             'passes_filtering': np.bool,
-            'sequence_length_template': np.int16,
+            'sequence_length': np.uint32,
             'mean_qscore_template': np.float,
+            'duration': np.float,
             'barcode_arrangement': object
         })
 
@@ -87,7 +89,9 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         the expected number and names of columns 
         """
 
-        actual_df_col = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data().columns
+        instance = sse.SequencingSummaryExtractor(self.config)
+        instance.init()
+        actual_df_col = instance.dataframe_1d.columns
 
         assert self.expected_df.columns.equals(actual_df_col)
         assert len(self.expected_df.columns) == len(actual_df_col)
@@ -97,9 +101,12 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         """
         Test correct merging of dataframes in _load_sequencing_summary_data
         """
+        print(self.config["sequencing_summary_source"])
+        #actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data().head(11)
+        instance = sse.SequencingSummaryExtractor(self.config)
+        instance.init()
+        actual_df = instance.dataframe_1d.head(11)
 
-        actual_df = sse.SequencingSummaryExtractor(self.config)._load_sequencing_summary_data().head(11)
-        
         testing.assert_frame_equal(self.expected_df, actual_df, check_exact=True)
 
 
@@ -139,52 +146,39 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         # Rename expected_df columns 
         self.expected_df.rename(columns={'sequence_length_template': 'sequence_length',
                                            'mean_qscore_template': 'mean_qscore'}, inplace=True)
-        
+        print(self.config)
         # Create instance of SequencingSummaryExtractor class
         instance = sse.SequencingSummaryExtractor(self.config)
         # Launch init method
         instance.init()
+        fake_dict = {}
+        instance.extract(fake_dict)
+
         # Get instances variables of the dataframe_1d
-        actual_df_channel = instance.channel_df.head(11)
-        actual_df_passes_filtering = instance.passes_filtering_df.head(11)
-        actual_df_sequence_length = instance.sequence_length_df.head(11)
+        #actual_df_channel = instance.channel_df.head(11)
+        actual_df_channel = instance.dataframe_dict["all.reads.channel"].head(11)
+
+        #actual_df_passes_filtering = instance.passes_filtering_df.head(11)
+        actual_df_passes_filtering = instance.dataframe_1d['passes_filtering'].head(11)
+
+
+        #actual_df_sequence_length = instance.sequence_length_df.head(11)
+        actual_df_sequence_length = instance.dataframe_dict["all.reads.sequence.length"].head(11)
+
+
         actual_df = instance.dataframe_1d.head(11)
         
         # Test all instances variables VS expected
         testing.assert_series_equal(self.expected_df['channel'], actual_df_channel)
         testing.assert_series_equal(self.expected_df['passes_filtering'], actual_df_passes_filtering)
         testing.assert_series_equal(self.expected_df['sequence_length'], actual_df_sequence_length)
+
+        print(self.expected_df)
+        print("---")
+        print(actual_df)
+
         testing.assert_frame_equal(self.expected_df, actual_df)
 
-
-    #Test for extract method
-    def test_extract_whole_config(self):
-        """Test if correct values are put in result_dict in extract method"""
-        
-        # Rename expected_df columns 
-        self.expected_df.rename(columns={'sequence_length_template': 'sequence_length',
-                                           'mean_qscore_template': 'mean_qscore'}, inplace=True)
-        instance = sse.SequencingSummaryExtractor(self.config)
-        instance.init()
-
-        actual_dict = {}
-        expected_dict = {}
-        # create patched dict for assertions
-        with patch.dict(expected_dict, {'basecaller.sequencing.summary.1d.extractor.read.fail.sorted':
-            sorted(instance.dataframe_1d['start_time'].loc[instance.passes_filtering_df == bool(False)] / 3600)}):
-            
-            instance.extract(actual_dict)
-            # compare fastq_entries value
-            read_fail_sorted = 'basecaller.sequencing.summary.1d.extractor.read.fail.sorted'
-            self.assertEqual(actual_dict[read_fail_sorted], expected_dict[read_fail_sorted])
-            
-            # compare read_pass_length_mean value
-            read_pass_length_mean = 'basecaller.sequencing.summary.1d.extractor.read.pass.length.mean'
-            expected_dict.update({read_pass_length_mean: pd.DataFrame.mean(
-                instance.sequence_length_df[instance.passes_filtering_df == True])})
-            
-            assert actual_dict[read_pass_length_mean] == expected_dict[read_pass_length_mean]
-            
 
 class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
 
@@ -224,13 +218,17 @@ class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
         read_pass_ratio = read_pass_count/read_count
         read_fail_ratio = read_fail_count/read_count
         read_pass_frequency = read_pass_ratio * 100
-        yield_count = sum(instance.sequence_length_df)
+        #yield_count = sum(instance.sequence_length_df)
+        yield_count = actual_dict['basecaller.sequencing.summary.1d.extractor.yield']
         channel_max = pd.DataFrame.max(pd.value_counts(instance.dataframe_1d['channel']))
-        mean_length = pd.DataFrame.mean(instance.sequence_length_df)
-        read_pass_length_min = pd.DataFrame.min(instance.sequence_length_df[instance.dataframe_1d['passes_filtering'] == True])
-        read_fail_qscore = instance.qscore_df.loc[instance.dataframe_1d['passes_filtering'] == False]
+        #mean_length = pd.DataFrame.mean(instance.sequence_length_df)
+        mean_length = pd.DataFrame.mean(instance.dataframe_dict['all.reads.sequence.length'])
+        #read_pass_length_min = pd.DataFrame.min(instance.sequence_length_df[instance.dataframe_1d['passes_filtering'] == True])
+        read_pass_length_min = pd.DataFrame.min(instance.dataframe_dict['all.reads.sequence.length'][instance.dataframe_1d['passes_filtering'] == True])
+        #read_fail_qscore = instance.qscore_df.loc[instance.dataframe_1d['passes_filtering'] == False]
+        read_fail_qscore = instance.dataframe_dict['all.reads.mean.qscore'][instance.dataframe_1d['passes_filtering'] == False]
         read_fail_qscore_50 = pd.Series.quantile(read_fail_qscore, q=0.5)
-        
+
         self.assertEqual(read_count, actual_dict['basecaller.sequencing.summary.1d.extractor.read.count'])
         self.assertEqual(read_pass_count, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.count'])
         self.assertEqual(read_fail_count, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.count'])
@@ -240,9 +238,11 @@ class TestSequencingSummaryExtractorOnlySequencingSummary (unittest.TestCase):
         self.assertEqual(yield_count, actual_dict['basecaller.sequencing.summary.1d.extractor.yield'])
         self.assertEqual(channel_max, actual_dict['basecaller.sequencing.summary.1d.extractor.channel.occupancy.statistics.max'])
         self.assertEqual(mean_length, actual_dict['basecaller.sequencing.summary.1d.extractor.all.read.length.mean'])
-        self.assertEqual(read_pass_length_min, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length.min'])
-        testing.assert_series_equal(read_fail_qscore, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'])
-        self.assertEqual(read_fail_qscore_50, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore.50%'])
+        #self.assertEqual(read_pass_length_min, actual_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length.min'])
+        self.assertEqual(read_pass_length_min, actual_dict['basecaller.sequencing.summary.1d.extractor.pass.reads.sequence.length.min'])
+        #testing.assert_series_equal(read_fail_qscore, actual_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore'])
+        testing.assert_series_equal(read_fail_qscore, instance.dataframe_dict['fail.reads.mean.qscore'])
+        self.assertEqual(read_fail_qscore_50, actual_dict['basecaller.sequencing.summary.1d.extractor.fail.reads.mean.qscore.50%'])
 
        
     def test_extract_barcode_info_not_called(self) :
