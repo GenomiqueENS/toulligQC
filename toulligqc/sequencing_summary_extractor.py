@@ -26,6 +26,7 @@
 # Extraction of statistics from sequencing_summary.txt file (1D chemistry)
 
 import re
+import sys
 
 import numpy as np
 import pandas as pd
@@ -384,6 +385,15 @@ class SequencingSummaryExtractor:
             else:
                 dataframes_merged = pd.merge(
                     summary_dataframe, barcode_dataframe, on='read_id', how='left')
+
+                missing_barcodes_count = dataframes_merged['barcode_arrangement'].isna().sum()
+                if missing_barcodes_count > 0:
+                    sys.stderr.write('Warning: {} barcodes values are missing in sequencing summary file(s)\n'
+                                  .format(missing_barcodes_count))
+
+                # Replace missing barcodes values by 'unclassified'
+                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna('unclassified')
+
                 # delete column read_id after merging
                 del dataframes_merged['read_id']
 
