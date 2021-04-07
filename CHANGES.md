@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0 (2021-XX-XX)
+* Fix duration computation
+* For PHRED score distribution boxplots, remove unnecessary interpolation before creating boxplot
+* Remove duplicated code for 1D and 1D2 in PHRED score distribution graphs
+* Remove duplicated code for 1D and 1D2 in Correlation between read length and PHRED score graphs
+* In read length distribution graphs, add buttons to switch between linear and log scale for xaxis
+* Add minimal qscore threshold in the "Device and software information" report table
+* In 1D/1D2 sequencing summary extractors, now replace NA values for barcode assignment by "unclassified". Print a warning message on console
+* Update unit tests
+* For read count histogram tables, replace "frequency" by "percent"
+* Rename y-axis for "Distribution of read lengths" graphs to "Read count"
+
 ## 2.0b3 (2021-03-22)
 * New CSS for HTML report
 * Add new plots (Read length and PHRED over time, translocation speed...)
