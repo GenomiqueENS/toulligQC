@@ -432,8 +432,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
                 missing_barcodes_count = dataframes_merged['barcode_arrangement'].isna().sum()
                 if missing_barcodes_count > 0:
-                    sys.stderr.write('Warning: {} barcodes values are missing in sequencing summary file(s)\n'
-                                  .format(missing_barcodes_count))
+                    sys.stderr.write('Warning: {} barcodes values are missing in sequencing summary file(s).'
+                                     ' They will be marked as "unclassified".\n'.format(missing_barcodes_count))
 
                 # Replace missing barcodes values by 'unclassified'
                 dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna('unclassified')
