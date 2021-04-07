@@ -109,7 +109,7 @@ def read_count_histogram(result_dict, result_directory):
               result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"],
               result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"]]])
 
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+        dataframe = pd.DataFrame(array, index=['count', 'percent'],
                                  columns=["All reads", "Pass reads", "Fail reads", "Pass barcoded reads",
                                           "Fail barcoded reads"])
 
@@ -140,7 +140,7 @@ def read_count_histogram(result_dict, result_directory):
                            result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
 
         # Create dataframe with array data
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+        dataframe = pd.DataFrame(array, index=['count', 'percent'],
                                  columns=["All reads", "Pass reads", "Fail reads"])
 
     layout = go.Layout(

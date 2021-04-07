@@ -109,7 +109,7 @@ def dsqr_read_count_histogram(result_dict, result_directory):
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.frequency"],
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.frequency"]]])
 
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+        dataframe = pd.DataFrame(array, index=['count', 'percent'],
                                  columns=["All reads", "1D² reads", "1D² pass reads", "1D² fail reads", "1D² pass barcoded",
                                           "1D² fail barcoded"])
 
@@ -144,7 +144,7 @@ def dsqr_read_count_histogram(result_dict, result_directory):
                            result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.frequency"]]])
 
         # Create dataframe with array data
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
+        dataframe = pd.DataFrame(array, index=['count', 'percent'],
                                  columns=["All reads", "1D² reads", "1D² pass reads", "1D² fail reads"])
 
     layout = go.Layout(
