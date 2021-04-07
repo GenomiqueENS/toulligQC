@@ -694,7 +694,7 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
         **_legend(),
         hovermode='x',
         **_xaxis(xaxis_title, dict(range=[min_all_reads, max_x_range])),
-        **_yaxis('Reads per pb', dict(range=[0, max_y * 1.10])),
+        **_yaxis('Read count', dict(range=[0, max_y * 1.10])),
     )
 
     # Add buttons
