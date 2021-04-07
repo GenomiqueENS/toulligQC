@@ -179,14 +179,14 @@ def _check_conf(config_dictionary):
     else:
         os.makedirs(config_dictionary['result_directory'])
 
+    config_dictionary['images_directory'] = config_dictionary['result_directory'] + 'images/'
+    config_dictionary['html_report_path'] = config_dictionary['result_directory'] + 'report.html'
+    config_dictionary['data_report_path'] = config_dictionary['result_directory'] + 'report.data'
+    del config_dictionary['result_directory']
 
-def _create_output_directories(config_dictionary):
-    """
-    Create output directories
-    :param config_dictionary: configuration dictionary
-    """
-    image_directory = config_dictionary['result_directory'] + 'images/'
-    os.makedirs(image_directory)
+    # Create images directory
+    if config_dictionary['images_directory'] is not None:
+        os.makedirs(config_dictionary['images_directory'])
 
 
 def _welcome(config_dictionary):
@@ -257,7 +257,6 @@ def main():
     config_dictionary = configuration.ToulligqcConf()
     _parse_args(config_dictionary)
     _check_conf(config_dictionary)
-    _create_output_directories(config_dictionary)
 
     warnings.simplefilter('ignore')
 

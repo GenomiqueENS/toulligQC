@@ -299,18 +299,22 @@ def _transparent_component(c, b, a):
 
 
 def _create_and_save_div(fig, result_directory, main):
-    output_file = result_directory + '/' + '_'.join(main.split())
 
     div = py.plot(fig,
                   include_plotlyjs=False,
                   output_type='div',
                   auto_open=False,
                   show_link=False)
-    py.plot(fig,
-            filename=output_file,
-            output_type="file",
-            include_plotlyjs="directory",
-            auto_open=False)
+
+    if result_directory is not None:
+        output_file = result_directory + '/' + '_'.join(main.split())
+        py.plot(fig,
+                filename=output_file,
+                output_type="file",
+                include_plotlyjs="directory",
+                auto_open=False)
+    else:
+        output_file = None
 
     return div, output_file
 

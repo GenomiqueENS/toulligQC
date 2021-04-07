@@ -157,7 +157,9 @@ class ToulligqcInfoExtractor:
 
     def _qc_info(self, result_dict):
 
-        result_dict['toulligqc.info.output.dir'] = self._config_dictionary['result_directory']
+        result_dict['toulligqc.info.html.report.path'] = self._config_dictionary.get('html_report_path', 'Undefined')
+        result_dict['toulligqc.info.data.report.path'] = self._config_dictionary.get('data_report_path', 'Undefined')
+        result_dict['toulligqc.info.image.directory'] = self._config_dictionary.get('images_directory', 'Undefined')
         result_dict['toulligqc.info.barcode.option'] = "False"
 
         if self._config_dictionary['barcoding'].lower() == 'true':

@@ -27,6 +27,7 @@
 import base64
 import datetime
 import pkgutil
+import os
 
 from toulligqc.plotly_graph_common import figure_image_width
 from toulligqc.plotly_graph_common import title_size
@@ -44,8 +45,8 @@ def html_report(config_dictionary, result_dict, graphs):
     :param graphs:
     """
 
-    result_directory = config_dictionary['result_directory']
     report_name = config_dictionary['report_name']
+    remove_image_files = True if config_dictionary['images_directory'] is None else False
 
     # Get report date
     report_date = _get_result_date_value(result_dict, 'toulligqc.info.start.time', "Unknown")
@@ -66,7 +67,7 @@ def html_report(config_dictionary, result_dict, graphs):
     # Read Plotly JavaScript code
     plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')
 
-    f = open(result_directory + 'report.html', 'w')
+    f = open(config_dictionary['html_report_path'], 'w')
 
     # Create the report
     report = """<!doctype html>
@@ -119,7 +120,7 @@ def html_report(config_dictionary, result_dict, graphs):
                   report_date=report_date,
                   summary_list=_summary(graphs),
                   modules_report=_modules_report(graphs, result_dict, sample_id, report_name, run_date,
-                                                 config_dictionary['app.version']),
+                                                 config_dictionary['app.version'], remove_image_files),
                   app_url=config_dictionary['app.url'],
                   app_name=config_dictionary['app.name'],
                   app_version=config_dictionary['app.version'])
@@ -144,9 +145,9 @@ def _summary(graphs):
     return result
 
 
-def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligqc_version):
+def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligqc_version, remove_image_files):
     result = _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version)
-    result += _other_module_reports(graphs)
+    result += _other_module_reports(graphs, remove_image_files)
     return result
 
 
@@ -265,7 +266,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     return result
 
 
-def _other_module_reports(graphs):
+def _other_module_reports(graphs, remove_image_files):
     result = ""
 
     for i, t in enumerate(graphs):
@@ -305,7 +306,7 @@ def _other_module_reports(graphs):
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
-            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path), table=table)
+            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path, remove=remove_image_files), table=table)
 
             # Image without table
             else:
@@ -314,12 +315,12 @@ def _other_module_reports(graphs):
               <h2>{name} {help_link}</h2>
               <div class="box"><img src="{image}"/></div>
             </div>
-            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path))
+            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path, remove=remove_image_files))
 
     return result
 
 
-def _embedded_image(image_path, resource=False):
+def _embedded_image(image_path, resource=False, remove=False):
     """
     Embedded an image
     :param image_path: path of the image
@@ -333,6 +334,9 @@ def _embedded_image(image_path, resource=False):
             data = image_file.read()
 
     result = "data:image/png;base64," + base64.b64encode(data).decode('ascii')
+
+    if remove:
+        os.unlink(image_path)
 
     return result
 

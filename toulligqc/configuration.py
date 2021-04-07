@@ -48,6 +48,9 @@ class ToulligqcConf:
     def __getitem__(self, item):
         return self._config_dictionary[item]
 
+    def get(self, item, default):
+        return self._config_dictionary.get(item, default)
+
     def __setitem__(self, key, value):
         self._config_dictionary.__setitem__(key, value)
 

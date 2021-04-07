@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 import seaborn as sns
+import tempfile
 from scipy.stats import norm
 
 from toulligqc.plotly_graph_common import _create_and_save_div
@@ -410,7 +411,13 @@ def plot_performance(dataframe_dict, result_directory):
 
     pore_measure = pd.value_counts(dataframe_dict['all.reads.channel'])
 
-    output_file = result_directory + '/' + '_'.join(graph_name.split()) + '.png'
+    if result_directory is not None:
+        output_file = result_directory + '/' + '_'.join(graph_name.split()) + '.png'
+    else:
+        temp = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+        output_file = temp.name
+        temp.close()
+
     flowcell_layout = _minion_flowcell_layout()
 
     pore_values = []

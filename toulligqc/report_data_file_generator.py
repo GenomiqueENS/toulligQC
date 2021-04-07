@@ -45,11 +45,8 @@ def statistics_generator(config_dictionary, result_dict):
     :param result_dict:
     :param config_dictionary:
     """
-    result_directory = config_dictionary['result_directory']
 
-    complete_name = os.path.join(result_directory, "report.data")
-
-    with open(complete_name, 'w') as file_data:
+    with open(config_dictionary['data_report_path'], 'w') as file_data:
         for key, value in result_dict.items():
             if key not in result_dict['unwritten.keys']:
                 file_data.write("{0}={1}\n".format(key, value))

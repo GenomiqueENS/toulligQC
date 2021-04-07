@@ -262,40 +262,39 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         Generation of the differents graphs containing in the plotly_graph_generator modules
         :return: images array containing the title and the path toward the images
         """
-        images_directory = self.result_directory + '/images/'
 
-        images = list([pgg.read_count_histogram(result_dict, images_directory)])
-        images.append(pgg2.dsqr_read_count_histogram(result_dict, images_directory))
-        images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg.yield_plot(self.dataframe_1dsqr, images_directory, oneDsquare=True))
-        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory, ))
-        images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
+        images = list([pgg.read_count_histogram(result_dict, self.images_directory)])
+        images.append(pgg2.dsqr_read_count_histogram(result_dict, self.images_directory))
+        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
+        images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, self.images_directory))
+        images.append(pgg.yield_plot(self.dataframe_1dsqr, self.images_directory, oneDsquare=True))
+        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory, ))
+        images.append(pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
+        images.append(pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
         images.append(pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr,
-                                                         images_directory))
-        images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg.plot_performance(self.dataframe_dict, images_directory))
+                                                         self.images_directory))
+        images.append(pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
+        images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, self.images_directory))
+        images.append(pgg.plot_performance(self.dataframe_dict, self.images_directory))
         images.append(
-            pgg2.sequence_length_over_time_dsqr(self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.dataframe_dict_1dsqr, images_directory))
-        images.append(pgg2.speed_over_time_dsqr(self.dataframe_dict_1dsqr, images_directory))
+            pgg2.sequence_length_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
+        images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
+        images.append(pgg2.speed_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
 
         if self.is_barcode:
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(self.dataframe_dict_1dsqr,
                                                                        self.barcode_selection,
-                                                                       images_directory))
+                                                                       self.images_directory))
 
             images.append(pgg2.barcode_percentage_pie_chart_1dsqr_fail(self.dataframe_dict_1dsqr,
                                                                        self.barcode_selection,
-                                                                       images_directory))
+                                                                       self.images_directory))
 
             images.append(pgg2.barcode_length_boxplot_1dsqr(self.dataframe_dict_1dsqr,
-                                                            images_directory))
+                                                            self.images_directory))
 
             images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.dataframe_dict_1dsqr,
-                                                            images_directory))
+                                                                    self.images_directory))
         return images
 
     def clean(self, result_dict):

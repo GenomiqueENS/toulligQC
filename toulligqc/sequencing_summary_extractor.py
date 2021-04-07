@@ -56,8 +56,8 @@ class SequencingSummaryExtractor:
         :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary.txt and barcoding files
         """
         self.config_dictionary = config_dictionary
-        self.sequencing_summary_source = self.config_dictionary['sequencing_summary_source']
-        self.result_directory = config_dictionary['result_directory']
+        self.sequencing_summary_source = config_dictionary['sequencing_summary_source']
+        self.images_directory = config_dictionary['images_directory']
         self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
 
         self.is_barcode = False
@@ -249,34 +249,33 @@ class SequencingSummaryExtractor:
         Generation of the different graphs containing in the plotly_graph_generator module
         :return: images array containing the title and the path toward the images
         """
-        images_directory = self.result_directory + '/images'
         images = list()
-        images.append(pgg.read_count_histogram(result_dict, images_directory))
-        images.append(pgg.read_length_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg.yield_plot(self.dataframe_1d, images_directory))
-        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, images_directory))
-        images.append(pgg.allphred_score_frequency(self.dataframe_dict, images_directory))
-        images.append(pgg.plot_performance(self.dataframe_dict, images_directory))
+        images.append(pgg.read_count_histogram(result_dict, self.images_directory))
+        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
+        images.append(pgg.yield_plot(self.dataframe_1d, self.images_directory))
+        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
+        images.append(pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
+        images.append(pgg.plot_performance(self.dataframe_dict, self.images_directory))
 
-        images.append(pgg.all_scatterplot(self.dataframe_dict, images_directory))
-        images.append(pgg.sequence_length_over_time(self.dataframe_dict, images_directory))
-        images.append(pgg.phred_score_over_time(self.dataframe_dict, result_dict, images_directory))
-        images.append(pgg.speed_over_time(self.dataframe_dict, images_directory))
+        images.append(pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
+        images.append(pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
+        images.append(pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
+        images.append(pgg.speed_over_time(self.dataframe_dict, self.images_directory))
 
         if self.is_barcode:
             images.append(pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
                                                                 self.barcode_selection,
-                                                                images_directory))
+                                                                self.images_directory))
 
             images.append(pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
                                                                 self.barcode_selection,
-                                                                images_directory))
+                                                                self.images_directory))
 
             images.append(pgg.barcode_length_boxplot(self.dataframe_dict,
-                                                     images_directory))
+                                                     self.images_directory))
 
             images.append(pgg.barcoded_phred_score_frequency(self.dataframe_dict,
-                                                     images_directory))
+                                                             self.images_directory))
         return images
 
     def clean(self, result_dict):
