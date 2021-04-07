@@ -148,8 +148,13 @@ RUN_ID
 
 General Options:
 ```
-usage: ToulligQC -a SEQUENCING_SUMMARY_SOURCE -t TELEMETRY_SOURCE [-f FAST5_SOURCE] [-n REPORT_NAME] [-o OUTPUT] [-d SEQUENCING_SUMMARY_1DSQR_SOURCE] [-b] [-l BARCODES] [--quiet] [--report-only]
-                          [-h] [--version]
+usage: ToulligQC V2.0b3 -a SEQUENCING_SUMMARY_SOURCE [-t TELEMETRY_SOURCE]
+                        [-f FAST5_SOURCE] [-n REPORT_NAME]
+                        [--output-directory OUTPUT] [-o HTML_REPORT_PATH]
+                        [--data-report-path DATA_REPORT_PATH]
+                        [--images-directory IMAGES_DIRECTORY]
+                        [-d SEQUENCING_SUMMARY_1DSQR_SOURCE] [-b]
+                        [-l BARCODES] [--quiet] [--force] [-h] [--version]
 
 required arguments:
   -a SEQUENCING_SUMMARY_SOURCE, --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE
@@ -162,15 +167,21 @@ required arguments:
 optional arguments:
   -n REPORT_NAME, --report-name REPORT_NAME
                         Report name
-  -o OUTPUT, --output OUTPUT
+  --output-directory OUTPUT
                         Output directory
+  -o HTML_REPORT_PATH, --html-report-path HTML_REPORT_PATH
+                        Output HTML report
+  --data-report-path DATA_REPORT_PATH
+                        Output data report
+  --images-directory IMAGES_DIRECTORY
+                        Images directory
   -d SEQUENCING_SUMMARY_1DSQR_SOURCE, --sequencing-summary-1dsqr-source SEQUENCING_SUMMARY_1DSQR_SOURCE
                         Basecaller 1dsq summary source
   -b, --barcoding       Option for barcode usage
   -l BARCODES, --barcodes BARCODES
                         Coma separated barcode list
   --quiet               Quiet mode
-  --report-only         No report.data file, only HTML report
+  --force               Force overwriting of existing files
   -h, --help            Show this help message and exit
   --version             show program's version number and exit
 ```
@@ -185,8 +196,8 @@ Example with optional arguments:
 $ toulligqc --report-name FAF0256 \
             --telemetry-source /path/to/basecaller/output/sequencing_telemetry.js \
             --sequencing-summary-source /path/to/basecaller/output/sequencing_summary.txt \
-            --sequencing-summary-1dsqr-source /path/to/basecaller/output/sequencing_1dsqr_summary.txt \ (optional)
-            --output /path/to/output/directory \
+            --sequencing-summary-1dsqr-source /path/to/basecaller/output/sequencing_1dsqr_summary.txt \ # (optional)
+            --html-report-path /path/to/output/report.html
 ```
 
 Example with optional arguments to deal with barcoded samples:
@@ -196,12 +207,13 @@ $ toulligqc --report-name FAF0256 \
             --barcoding \
             --telemetry-source /path/to/basecaller/output/sequencing_telemetry.js \
             --sequencing-summary-source /path/to/basecaller/output/sequencing_summary.txt \
-            --sequencing-summary-source /path/to/basecaller/output/barcoding_summary_pass.txt \         (optional)
-            --sequencing-summary-source /path/to/basecaller/output/barcoding_summary_fail.txt \         (optional)
-            --sequencing-summary-1dsqr-source /path/to/basecaller/output/sequencing_1dsqr_summary.txt \ (optional)
-            --sequencing-summary-1dsqr-source /path/to/basecaller/output/barcoding_summary_pass.txt \   (optional)
-            --sequencing-summary-1dsqr-source /path/to/basecaller/output/barcoding_summary_fail.txt \   (optional)
-            --output /path/to/output/directory \
+            --sequencing-summary-source /path/to/basecaller/output/barcoding_summary_pass.txt \         # (optional)
+            --sequencing-summary-source /path/to/basecaller/output/barcoding_summary_fail.txt \         # (optional)
+            --sequencing-summary-1dsqr-source /path/to/basecaller/output/sequencing_1dsqr_summary.txt \ # (optional)
+            --sequencing-summary-1dsqr-source /path/to/basecaller/output/barcoding_summary_pass.txt \   # (optional)
+            --sequencing-summary-1dsqr-source /path/to/basecaller/output/barcoding_summary_fail.txt \   # (optional)
+            --html-report-path /path/to/output/report.html \
+            --data-report-path /path/to/output/report.data \                                            # (optional)
             --barcodes BC01,BC02,BC03
 ```
 
@@ -230,14 +242,14 @@ $ ./run-toulligqc.sh
 * Of course, you can also launch manually ToulligQC on the sample data with the following command line:
 ```bash
 $ toulligqc \
-    --report-name               ToulligQC_Demo_Data \
+    --report-name               'ToulligQC Demo Data' \
     --barcoding \
     --telemetry-source          sequencing_telemetry.js \
     --sequencing-summary-source sequencing_summary.txt \
     --sequencing-summary-source barcoding_summary_pass.txt \
     --sequencing-summary-source barcoding_summary_fail.txt \
     --barcodes                  BC01,BC02,BC03,BC04,BC05,BC07 \
-    --output                    output
+    --output-directory          output
 ```
 
 With this scripts or command line, ToulligQC will create an `output` directory with output HTML report.
@@ -245,10 +257,10 @@ More information about this sample data and scripts can be found in the `README`
 
 ## 3.Output
 
-If the option --output is not provided, ToulligQC generates all below files and images in the current directory.
+If the options `--output-directory` or `--html-report-path` are not provided, ToulligQC generates all below files and images in the current directory.
 If no report-name is given, ToulligQC creates a default report name.
 
-* A HTML report with :
+* A HTML report with (the path of this file can be defined using `--html-report-path` command line option ):
 
   * useful information about the sequencing run given as input
   * a read count and a read length histograms about different read types
@@ -259,7 +271,7 @@ If no report-name is given, ToulligQC creates a default report name.
   * a set of graphs providing quality, length information and read counts for each barcode
 <br>
 
-* A report.data log file containing :
+* A report.data log file containing (the path of this file can be defined using `--data-report-path` command line option ):
 
   * information about ToulligQC execution
   * environment variables
@@ -267,13 +279,12 @@ If no report-name is given, ToulligQC creates a default report name.
   * the nucleotide rate per read
 
 <br>
-The output is organised in a output directory  like this :
+If you choose to use a directory output (default choice), the output will be organised like this :
 
 ```
 RUN_ID
 ├── report.html
-├── statistics
-│   └── report.data
+├── report.data
 └── images
     └── plots.html
     └── plot.png

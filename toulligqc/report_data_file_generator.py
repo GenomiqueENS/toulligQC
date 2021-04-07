@@ -46,6 +46,9 @@ def statistics_generator(config_dictionary, result_dict):
     :param config_dictionary:
     """
 
+    if config_dictionary['data_report_path'] is None:
+        return
+
     with open(config_dictionary['data_report_path'], 'w') as file_data:
         for key, value in result_dict.items():
             if key not in result_dict['unwritten.keys']:

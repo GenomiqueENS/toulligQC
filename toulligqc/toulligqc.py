@@ -77,7 +77,10 @@ def _parse_args(config_dictionary):
 
     # Add all optional arguments
     optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
-    optional.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
+    optional.add_argument('--output-directory', action='store', dest='output', help='Output directory')
+    optional.add_argument('-o', '--html-report-path', action='store', dest='html_report_path', help='Output HTML report')
+    optional.add_argument('--data-report-path', action='store', dest='data_report_path', help='Output data report')
+    optional.add_argument('--images-directory', action='store', dest='images_directory', help='Images directory')
     optional.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append',
                           dest='sequencing_summary_1dsqr_source',
                           help='Basecaller 1dsq summary source')
@@ -88,7 +91,9 @@ def _parse_args(config_dictionary):
     optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                           default=False)
     optional.add_argument("--report-only", action='store_true', dest='report_only',
-                          help="No report.data file, only HTML report",
+                          help=argparse.SUPPRESS,
+                          default=False)
+    optional.add_argument("--force", action='store_true', dest='force', help="Force overwriting of existing files",
                           default=False)
     optional.add_argument("--debug", action='store_true', dest='debug', help=argparse.SUPPRESS,
                           default=False)
@@ -113,21 +118,25 @@ def _parse_args(config_dictionary):
         config_dictionary['report_name'] = report_name
 
     # Rewrite the configuration file value if argument option is present
-    source_file = {
+    args_dict = {
         ('fast5_source', args.fast5_source),
         ('sequencing_summary_source', _join_parameter_arguments(args.sequencing_summary_source)),
         ('sequencing_summary_1dsqr_source', _join_parameter_arguments(args.sequencing_summary_1dsqr_source)),
         ('sequencing_telemetry_source', args.telemetry_source),
         ('result_directory', args.output),
+        ('html_report_path', args.html_report_path),
+        ('data_report_path', args.data_report_path),
+        ('images_directory', args.images_directory),
         ('barcoding', is_barcode),
         ('barcodes', barcodes),
         ('quiet', args.is_quiet),
         ('report_only', args.report_only),
+        ('force', args.force),
         ('debug', args.debug)
     }
 
     # Put arguments values in configuration object
-    for key, value in source_file:
+    for key, value in args_dict:
         if value:
             config_dictionary[key] = value
 
@@ -149,6 +158,9 @@ def _check_conf(config_dictionary):
     Check the configuration
     :param config_dictionary: configuration dictionary containing the file or directory paths
     """
+
+    force = True if config_dictionary.get('force', 'False').lower() == 'true' else False
+
     if ('sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']) and \
             ('sequencing_telemetry_source' not in config_dictionary or not config_dictionary[
                 'sequencing_telemetry_source']):
@@ -157,36 +169,65 @@ def _check_conf(config_dictionary):
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
         sys.exit('ERROR: The sequencing summary file argument is empty')
 
-    # If no --output argument provided, create output folder in current directory
-    if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
-        current_directory = os.getcwd()
-        final_directory = os.path.join(current_directory, r'toulligqc_output')
-        if not os.path.exists(final_directory):
-            os.makedirs(final_directory)
-        config_dictionary['result_directory'] = final_directory
+    if 'html_report_path' not in config_dictionary or not config_dictionary['html_report_path']:
 
-    # Create the root output directory if not exists
-    if not os.path.isdir(config_dictionary['result_directory']):
-        os.makedirs(config_dictionary['result_directory'])
+        # If no --output argument provided, create output folder in current directory
+        if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
+            current_directory = os.getcwd()
+            config_dictionary['result_directory'] = current_directory + '/'
 
-    # Define the output directory
-    config_dictionary['result_directory'] = \
-        config_dictionary['result_directory'] + ('/' + config_dictionary['report_name'] + '/')
+        # Create the root output directory if not exists
+        if not os.path.isdir(config_dictionary['result_directory']):
+            os.makedirs(config_dictionary['result_directory'])
 
-    if os.path.isdir(config_dictionary['result_directory']):
-        shutil.rmtree(config_dictionary['result_directory'], ignore_errors=True)
-        os.makedirs(config_dictionary['result_directory'])
-    else:
-        os.makedirs(config_dictionary['result_directory'])
+        # Define the output directory
+        config_dictionary['result_directory'] = \
+            config_dictionary['result_directory'] + config_dictionary['report_name'] + '/'
 
-    config_dictionary['images_directory'] = config_dictionary['result_directory'] + 'images/'
-    config_dictionary['html_report_path'] = config_dictionary['result_directory'] + 'report.html'
-    config_dictionary['data_report_path'] = config_dictionary['result_directory'] + 'report.data'
-    del config_dictionary['result_directory']
+        _check_if_dir_exists(config_dictionary['result_directory'], force)
 
-    # Create images directory
-    if config_dictionary['images_directory'] is not None:
-        os.makedirs(config_dictionary['images_directory'])
+        # Define the output paths
+        config_dictionary['images_directory'] = config_dictionary['result_directory'] + 'images/'
+        config_dictionary['html_report_path'] = config_dictionary['result_directory'] + 'report.html'
+        config_dictionary['data_report_path'] = config_dictionary['result_directory'] + 'report.data'
+        del config_dictionary['result_directory']
+
+    if 'images_directory' not in config_dictionary:
+        config_dictionary['images_directory'] = None
+
+    if 'data_report_path' not in config_dictionary:
+        config_dictionary['data_report_path'] = None
+
+    _check_if_dir_exists(config_dictionary['images_directory'], force)
+    _check_if_file_exists(config_dictionary['html_report_path'], force)
+    _check_if_file_exists(config_dictionary['data_report_path'], force)
+
+    print(config_dictionary['html_report_path'])
+
+
+def _check_if_dir_exists(dir, force):
+
+    if dir is None:
+        return
+
+    if os.path.isdir(dir):
+        if not force:
+            sys.exit("Error directory already exists: " + dir)
+        else:
+            shutil.rmtree(dir, ignore_errors=True)
+    os.makedirs(dir)
+
+def _check_if_file_exists(path, force):
+
+    if path is None:
+        return
+
+    if os.path.isfile(path):
+
+        if not force:
+            sys.exit("Error file already exists: " + path)
+        else:
+            os.remove(path)
 
 
 def _welcome(config_dictionary):

@@ -11,6 +11,7 @@
 * Update unit tests
 * For read count histogram tables, replace "frequency" by "percent"
 * Rename y-axis for "Distribution of read lengths" graphs to "Read count"
+* Add new command line options to finely define output file paths 
 
 ## 2.0b3 (2021-03-22)
 * New CSS for HTML report
