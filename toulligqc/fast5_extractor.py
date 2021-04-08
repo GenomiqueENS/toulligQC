@@ -48,7 +48,6 @@ class Fast5Extractor:
     def __init__(self, config_dictionary):
         self.config_file_dictionary = config_dictionary
         self.fast5_source = config_dictionary['fast5_source']
-        self.result_directory = config_dictionary['result_directory']
         self.report_name = config_dictionary['report_name']
         self.fast5_file_extension = ''
         self.fast5_file = ''
@@ -150,11 +149,11 @@ class Fast5Extractor:
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
 
-    def _fast5_tar_bz2_extraction(self, tar_bz2_file, result_directory):
+    def _fast5_tar_bz2_extraction(self, tar_bz2_file, output_directory):
         """
         Extraction of the FAST5 file stored in tar_bz2 format
         :param tar_bz2_file: tar bz2 file containing the set of the raw FAST5 files
-        :param result_directory:dictionary which gathers all the extracted
+        :param output_directory:dictionary which gathers all the extracted
         information that will be reported in the report.data file
         :return: a FAST5 file
         """
@@ -162,15 +161,15 @@ class Fast5Extractor:
         while True:
             member = tar_bz2.next()
             if member.name.endswith('.fast5'):
-                tar_bz2.extract(member, path=result_directory)
+                tar_bz2.extract(member, path=output_directory)
                 break
-        return member.name
+        return output_directory + '/' + member.name
 
-    def _fast5_tar_gz_extraction(self, tar_gz_file, result_directory):
+    def _fast5_tar_gz_extraction(self, tar_gz_file, output_directory):
         """
         Extraction of a FAST5 file stored in tar_gz format
         :param tar_gz_file: tar gz file containing the set of the raw FAST5 files
-        :param result_directory: dictionary which gathers all the extracted
+        :param output_directory: dictionary which gathers all the extracted
         information that will be reported in the report.data file
         :return: a FAST5 file
         """
@@ -178,9 +177,9 @@ class Fast5Extractor:
         while True:
             member = tar_gz.next()
             if member.name.endswith('.fast5'):
-                tar_gz.extract(member, path=result_directory)
+                tar_gz.extract(member, path=output_directory)
                 break
-        return member.name
+        return output_directory + '/' + member.name
 
     def _read_fast5(self):
         """
@@ -188,16 +187,14 @@ class Fast5Extractor:
         it in a h5py object for next retrieving information
         :return: h5py_file: h5py file
         """
-        self.temporary_directory = tempfile.mkdtemp(dir=self.result_directory)
+        self.temporary_directory = tempfile.mkdtemp()
         if self.fast5_file_extension == 'tar.bz2':
             tar_bz2_file = self.fast5_source
-            self.fast5_file = \
-                self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
+            self.fast5_file = self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
 
         elif self.fast5_file_extension == 'tar.gz':
             tar_gz_file = self.fast5_source
-            self.fast5_file = \
-                self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
+            self.fast5_file = self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
 
         elif self.fast5_file_extension == 'fast5' or self.fast5_file_extension == '.fast5':
             self.fast5_file = self.fast5_source
@@ -209,13 +206,10 @@ class Fast5Extractor:
 
             elif glob.glob(self.fast5_source + '/*.tar.bz2'):
                 tar_bz2_file = self.fast5_source + self.report_name + '.tar.bz2'
-                self.fast5_file = \
-                    self.temporary_directory + '/' + self._fast5_tar_bz2_extraction(tar_bz2_file,
-                                                                                    self.temporary_directory)
+                self.fast5_file = self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
             elif glob.glob(self.fast5_source + '/*.tar.gz'):
                 tar_gz_file = self.fast5_source + self.report_name + '.tar.gz'
-                self.fast5_file = self.temporary_directory + '/' + self._fast5_tar_gz_extraction(tar_gz_file,
-                                                                                                 self.result_directory)
+                self.fast5_file = self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
         else:
             err_msg = 'There is a problem with the fast5 file or the tar file'
             sys.exit(err_msg)
