@@ -20,15 +20,15 @@
 
 # This module contains common methods for plotly modules.
 
+from collections import defaultdict
+
 import numpy as np
 import pandas as pd
+import plotly.graph_objs as go
 import plotly.offline as py
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter1d
 from sklearn.utils import resample
-import plotly.graph_objs as go
-from scipy.stats import norm
-from collections import defaultdict
 
 figure_image_width = 1000
 figure_image_height = 562
@@ -73,26 +73,25 @@ interpolation_point_count_dict = {
     'phred_violin': (10000, 4000, 3),
 }
 
-
 help_url = 'https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/master/docs/help.html'
 
 
 def help_html_link(title):
-
-    return '<a href="{}#{}" target="_blank" id="help_link">ⓘ</a>'\
+    return '<a href="{}#{}" target="_blank" id="help_link">ⓘ</a>' \
         .format(help_url, title.strip().replace(' ', '_').lower())
 
 
 def _format_int(i):
     return '{:,d}'.format(i)
 
-def _format_float(f):
 
+def _format_float(f):
     s = str(f)
     i = int(s.split('.')[0])
     f = float('0.' + s.split('.')[1])
 
     return '{:,d}'.format(i) + '{:.2f}'.format(f)[1:]
+
 
 def _format_percent(f):
     return percent_format_str.format(f)
@@ -106,12 +105,11 @@ def _title(title):
         xanchor='left',
         yanchor='top',
         font=dict(
-        size=title_size,
-        color="black")))
+            size=title_size,
+            color="black")))
 
 
 def _legend(legend_title='Legend', args=None):
-
     legend_dict = dict(
         x=1.02,
         y=.95,
@@ -128,7 +126,6 @@ def _legend(legend_title='Legend', args=None):
 
 
 def _xaxis(title, args=None):
-
     axis_dict = dict(
         title='<b>' + title + '</b>',
         titlefont_size=axis_title_font_size,
@@ -141,7 +138,6 @@ def _xaxis(title, args=None):
 
 
 def _yaxis(title, args=None):
-
     axis_dict = dict(
         title='<b>' + title + '</b>',
         titlefont_size=axis_title_font_size,
@@ -299,7 +295,6 @@ def _transparent_component(c, b, a):
 
 
 def _create_and_save_div(fig, result_directory, main):
-
     div = py.plot(fig,
                   include_plotlyjs=False,
                   output_type='div',
@@ -332,10 +327,9 @@ def _over_time_graph(data_series,
                      yaxis_starts_zero=False,
                      green_zone_starts_at=None,
                      green_zone_color='rgba(0,100,0,.1)'):
-
     time_bins, sigma = interpolation_points(time_series, 'over_time_graph')
 
-    t = (time_series/3600).values
+    t = (time_series / 3600).values
     x = np.linspace(t.min(), t.max(), num=time_bins)
     t = np.digitize(t, bins=x, right=True)
 
@@ -364,8 +358,8 @@ def _over_time_graph(data_series,
 
     # define the green zone if required
     if green_zone_starts_at is not None:
-        min_x = min(time_series)/3600
-        max_x = max(time_series)/3600
+        min_x = min(time_series) / 3600
+        max_x = max(time_series) / 3600
         if min_max:
             max_y = max(y[4]) * 1.05
         else:
@@ -425,7 +419,7 @@ def _over_time_graph(data_series,
                 name="Min",
                 mode='lines',
                 line=dict(color="black",
-                          width=int(line_width/2),
+                          width=int(line_width / 2),
                           shape="spline")))
             fig.add_trace(go.Scatter(
                 x=x,
@@ -433,7 +427,7 @@ def _over_time_graph(data_series,
                 name="Max",
                 mode='lines',
                 line=dict(color="black",
-                          width=int(line_width/2),
+                          width=int(line_width / 2),
                           shape="spline")))
 
     else:
@@ -471,8 +465,8 @@ def _over_time_graph(data_series,
     return graph_name, output_file, table_html, div
 
 
-def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_color, yaxis_title, legend_title, result_directory):
-
+def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_color, yaxis_title, legend_title,
+                           result_directory):
     # Sort reads by read type and drop read type column
     pass_df = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
     fail_df = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
@@ -632,7 +626,6 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
 
 def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all_color, pass_color, fail_color,
                               xaxis_title, result_directory):
-
     npoints, sigma = interpolation_points(all_reads, 'read_length_distribution')
     min_all_reads = min(all_reads)
     max_all_reads = max(all_reads)
@@ -682,17 +675,17 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
         else:
             t = str(p) + "%<br>all reads"
         fig.add_trace(go.Scatter(
-                      mode="lines+text",
-                      name='All reads',
-                      x=[x0, x0],
-                      y=[0, max_y],
-                      line=dict(color="gray", width=1, dash="dot"),
-                      text=["", t],
-                      textposition="top center",
-                      hoverinfo="skip",
-                      showlegend=False,
-                      visible=True
-                     ))
+            mode="lines+text",
+            name='All reads',
+            x=[x0, x0],
+            y=[0, max_y],
+            line=dict(color="gray", width=1, dash="dot"),
+            text=["", t],
+            textposition="top center",
+            hoverinfo="skip",
+            showlegend=False,
+            visible=True
+        ))
 
     fig.update_layout(
         **_title(graph_name),
@@ -722,7 +715,7 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
                     )
                 ]),
                 pad={"r": 20, "t": 20, "l": 20, "b": 20},
-                #showactive=True,
+                # showactive=True,
                 x=1.0,
                 xanchor="left",
                 y=1.25,
@@ -740,8 +733,7 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
     return graph_name, output_file, table_html, div
 
 
-def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, fail_color, result_directory):
-
+def _phred_score_density(graph_name, dataframe, prefix, all_color, pass_color, fail_color, result_directory):
     all_series = dataframe[prefix].dropna()
     pass_series = dataframe[prefix + " pass"].dropna()
     fail_series = dataframe[prefix + " fail"].dropna()
@@ -814,7 +806,6 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
 
 
 def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
-
     if onedsquare:
         prefix = '1D²'
     else:
@@ -835,7 +826,7 @@ def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
              prefix + " fail": "Fail reads"}
 
     colors = {prefix: toulligqc_colors['all'],
-              prefix+ " pass": toulligqc_colors['pass'],
+              prefix + " pass": toulligqc_colors['pass'],
               prefix + " fail": toulligqc_colors['fail']}
 
     # Max yaxis value for displaying same scale between plots
@@ -914,7 +905,6 @@ def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
 
 
 def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False):
-
     read_pass_length = dataframe_dict["pass.reads.sequence.length"]
     read_pass_qscore = dataframe_dict["pass.reads.mean.qscore"]
     read_fail_length = dataframe_dict["fail.reads.sequence.length"]
@@ -963,8 +953,8 @@ def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False)
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
     return graph_name, output_file, table_html, div
 
-def interpolation_points(series, graph_name):
 
+def interpolation_points(series, graph_name):
     count = len(series)
     threshold, npoints, sigma = interpolation_point_count_dict[graph_name]
 
@@ -977,4 +967,3 @@ def interpolation_points(series, graph_name):
         result = npoints
 
     return result, sigma
-

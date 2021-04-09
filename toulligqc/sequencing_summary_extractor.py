@@ -25,7 +25,6 @@
 
 # Extraction of statistics from sequencing_summary.txt file (1D chemistry)
 
-import re
 import sys
 
 import numpy as np
@@ -35,11 +34,10 @@ from toulligqc import plotly_graph_generator as pgg
 from toulligqc.sequencing_summary_common import check_result_values
 from toulligqc.sequencing_summary_common import count_boolean_elements
 from toulligqc.sequencing_summary_common import describe_dict
+from toulligqc.sequencing_summary_common import extract_barcode_info
 from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import series_cols_boolean_elements
 from toulligqc.sequencing_summary_common import set_result_value
-from toulligqc.sequencing_summary_common import sorted_series_boolean_elements_divided
-from toulligqc.sequencing_summary_common import extract_barcode_info
 
 
 class SequencingSummaryExtractor:
@@ -143,32 +141,32 @@ class SequencingSummaryExtractor:
 
         # 1D pass information : count, length, qscore values and sorted Series
         set_result_value(self, result_dict, "read.pass.count",
-                                 count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
+                         count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
 
         # 1D fail information : count, length, qscore values and sorted Series
         set_result_value(self, result_dict, "read.fail.count",
-                                 count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
+                         count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
 
         total_reads = get_result_value(self, result_dict, "read.count")
 
         # Ratios
         set_result_value(self, result_dict, "read.pass.ratio",
-                               (get_result_value(self, result_dict, "read.pass.count") / total_reads))
+                         (get_result_value(self, result_dict, "read.pass.count") / total_reads))
         set_result_value(self, result_dict, "read.fail.ratio",
-                               (get_result_value(self, result_dict, "read.fail.count") / total_reads))
+                         (get_result_value(self, result_dict, "read.fail.count") / total_reads))
 
         # Frequencies
         set_result_value(self, result_dict, "read.count.frequency", 100)
 
         read_pass_frequency = (get_result_value(self,
-            result_dict, "read.pass.count") / total_reads) * 100
+                                                result_dict, "read.pass.count") / total_reads) * 100
         set_result_value(self,
-            result_dict, "read.pass.frequency", read_pass_frequency)
+                         result_dict, "read.pass.frequency", read_pass_frequency)
 
         read_fail_frequency = (get_result_value(self,
-            result_dict, "read.fail.count") / total_reads) * 100
+                                                result_dict, "read.fail.count") / total_reads) * 100
         set_result_value(self,
-            result_dict, "read.fail.frequency", read_fail_frequency)
+                         result_dict, "read.fail.frequency", read_fail_frequency)
 
         # Yield, n50, run time
         set_result_value(self, result_dict, "yield", sum(self.dataframe_dict["all.reads.sequence.length"]))
@@ -181,18 +179,20 @@ class SequencingSummaryExtractor:
         # Get channel occupancy statistics and store each value into result_dict
         for index, value in self._occupancy_channel().items():
             set_result_value(self,
-                result_dict, "channel.occupancy.statistics." + index, value)
+                             result_dict, "channel.occupancy.statistics." + index, value)
 
         # Get statistics about all reads length and store each value into result_dict
         sequence_length_statistics = self.dataframe_dict["all.reads.sequence.length"].describe()
 
         for index, value in sequence_length_statistics.items():
             set_result_value(self,
-                result_dict, "all.read.length." + index, value)
+                             result_dict, "all.read.length." + index, value)
 
         # Add statistics (without count) about read pass/fail length in the result_dict
-        describe_dict(self, result_dict, self.dataframe_dict["pass.reads.sequence.length"], "pass.reads.sequence.length")
-        describe_dict(self, result_dict, self.dataframe_dict["fail.reads.sequence.length"], "fail.reads.sequence.length")
+        describe_dict(self, result_dict, self.dataframe_dict["pass.reads.sequence.length"],
+                      "pass.reads.sequence.length")
+        describe_dict(self, result_dict, self.dataframe_dict["fail.reads.sequence.length"],
+                      "fail.reads.sequence.length")
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1d['mean_qscore'].describe().drop(
@@ -200,7 +200,7 @@ class SequencingSummaryExtractor:
 
         for index, value in qscore_statistics.items():
             set_result_value(self,
-                result_dict, "all.read.qscore." + index, value)
+                             result_dict, "all.read.qscore." + index, value)
 
         # Add statistics (without count) about read pass/fail qscore in the result_dict
         describe_dict(self, result_dict, self.dataframe_dict["pass.reads.mean.qscore"], "pass.reads.mean.qscore")
@@ -219,15 +219,15 @@ class SequencingSummaryExtractor:
 
             # Read length series
             df_dict[read_type + '.reads.sequence.length'] = series_cols_boolean_elements(df,
-                                                                                          'sequence_length',
-                                                                                          'passes_filtering',
-                                                                                          read_type_bool)
+                                                                                         'sequence_length',
+                                                                                         'passes_filtering',
+                                                                                         read_type_bool)
 
             # Read qscore series
             df_dict[read_type + '.reads.mean.qscore'] = series_cols_boolean_elements(df,
-                                                                                          'mean_qscore',
-                                                                                          'passes_filtering',
-                                                                                          read_type_bool)
+                                                                                     'mean_qscore',
+                                                                                     'passes_filtering',
+                                                                                     read_type_bool)
 
         # Read length series
         df_dict["all.reads.sequence.length"] = df['sequence_length']
@@ -391,7 +391,8 @@ class SequencingSummaryExtractor:
                                      ' They will be marked as "unclassified".\n'.format(missing_barcodes_count))
 
                 # Replace missing barcodes values by 'unclassified'
-                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna('unclassified')
+                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna(
+                    'unclassified')
 
                 # delete column read_id after merging
                 del dataframes_merged['read_id']

@@ -20,45 +20,40 @@
 
 # Class for generating Plotly and MPL graphs and statistics tables in HTML format, they use the result_dict or dataframe_dict dictionnaries.
 
+import tempfile
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 import seaborn as sns
-import tempfile
-from scipy.stats import norm
 
+from toulligqc.plotly_graph_common import _barcode_boxplot_graph
 from toulligqc.plotly_graph_common import _create_and_save_div
 from toulligqc.plotly_graph_common import _dataFrame_to_html
-from toulligqc.plotly_graph_common import _interpolate
-from toulligqc.plotly_graph_common import _make_describe_dataframe
-from toulligqc.plotly_graph_common import _precompute_boxplot_values
-from toulligqc.plotly_graph_common import _smooth_data
-from toulligqc.plotly_graph_common import _transparent_colors
-from toulligqc.plotly_graph_common import figure_image_height
-from toulligqc.plotly_graph_common import figure_image_width
-from toulligqc.plotly_graph_common import graph_font
-from toulligqc.plotly_graph_common import image_dpi
-from toulligqc.plotly_graph_common import line_width
-from toulligqc.plotly_graph_common import on_chart_font_size
-from toulligqc.plotly_graph_common import percent_format_str
-from toulligqc.plotly_graph_common import plotly_background_color
-from toulligqc.plotly_graph_common import toulligqc_colors
-from toulligqc.plotly_graph_common import _over_time_graph
-from toulligqc.plotly_graph_common import _barcode_boxplot_graph
-from toulligqc.plotly_graph_common import _pie_chart_graph
-from toulligqc.plotly_graph_common import _read_length_distribution
-from toulligqc.plotly_graph_common import _phred_score_density
+from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _legend
+from toulligqc.plotly_graph_common import _over_time_graph
+from toulligqc.plotly_graph_common import _phred_score_density
+from toulligqc.plotly_graph_common import _pie_chart_graph
+from toulligqc.plotly_graph_common import _quality_multiboxplot
+from toulligqc.plotly_graph_common import _read_length_distribution
+from toulligqc.plotly_graph_common import _scatterplot
+from toulligqc.plotly_graph_common import _smooth_data
 from toulligqc.plotly_graph_common import _title
-from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import _transparent_colors
 from toulligqc.plotly_graph_common import _xaxis
 from toulligqc.plotly_graph_common import _yaxis
-from toulligqc.plotly_graph_common import _format_int
-from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import figure_image_height
+from toulligqc.plotly_graph_common import figure_image_width
+from toulligqc.plotly_graph_common import image_dpi
 from toulligqc.plotly_graph_common import interpolation_points
-from toulligqc.plotly_graph_common import _quality_multiboxplot
-from toulligqc.plotly_graph_common import _scatterplot
+from toulligqc.plotly_graph_common import line_width
+from toulligqc.plotly_graph_common import plotly_background_color
+from toulligqc.plotly_graph_common import toulligqc_colors
+
 
 #
 #  1D plots
@@ -212,9 +207,12 @@ def yield_plot(df, result_directory, oneDsquare=False):
 
             if d[1] not in smooth_data_dict:
                 if reads:
-                    count_x, count_y, cum_count_y = _smooth_data(npoints=npoints, sigma=sigma, data=d[0][start_time_column])
+                    count_x, count_y, cum_count_y = _smooth_data(npoints=npoints, sigma=sigma,
+                                                                 data=d[0][start_time_column])
                 else:
-                    count_x, count_y, cum_count_y = _smooth_data(npoints=npoints, sigma=sigma, data=d[0][start_time_column], weights=d[0]['sequence_length'])
+                    count_x, count_y, cum_count_y = _smooth_data(npoints=npoints, sigma=sigma,
+                                                                 data=d[0][start_time_column],
+                                                                 weights=d[0]['sequence_length'])
 
                 smooth_data_dict[d[1]] = (count_x, count_y, cum_count_y)
 
@@ -295,7 +293,7 @@ def yield_plot(df, result_directory, oneDsquare=False):
                                            False, False, False, False,
                                            False, False, False
                                            ]},
-                               {'yaxis': {'title': '<b>Read count per hour</b>', 'rangemode': "tozero"}}],
+                              {'yaxis': {'title': '<b>Read count per hour</b>', 'rangemode': "tozero"}}],
                         label="Yield reads",
                         method="update"
                     ),
@@ -306,7 +304,7 @@ def yield_plot(df, result_directory, oneDsquare=False):
                                            True, True, True,
                                            True, True, True, True,
                                            False, False, False]},
-                               {'yaxis': {'title': '<b>Base count</b>', 'rangemode': "tozero"}}],
+                              {'yaxis': {'title': '<b>Base count</b>', 'rangemode': "tozero"}}],
                         label="Cumulative bases",
                         method="update"
                     ),
@@ -317,7 +315,7 @@ def yield_plot(df, result_directory, oneDsquare=False):
                                            False, False, False,
                                            False, False, False, False,
                                            True, True, True]},
-                               {'yaxis': {'title': '<b>Base count per hour</b>', 'rangemode': "tozero"}}],
+                              {'yaxis': {'title': '<b>Base count per hour</b>', 'rangemode': "tozero"}}],
                         label="Yield bases",
                         method="update"
                     )
@@ -551,9 +549,9 @@ def phred_score_over_time(dataframe_dict, result_dict, result_directory):
     graph_name = "PHRED score over time"
 
     pass_min_qscore = 7
-    key= 'sequencing.telemetry.extractor.pass.threshold.qscore'
+    key = 'sequencing.telemetry.extractor.pass.threshold.qscore'
     if key in result_dict:
-        pass_min_qscore=float(result_dict[key])
+        pass_min_qscore = float(result_dict[key])
 
     qscore_series = dataframe_dict["all.reads.mean.qscore"]
     time_series = dataframe_dict['all.reads.start.time']
@@ -586,4 +584,3 @@ def speed_over_time(dataframe_dict, result_directory):
                             yaxis_title='Speed (bases per second)',
                             green_zone_starts_at=300,
                             green_zone_color=toulligqc_colors['green_zone_color'])
-

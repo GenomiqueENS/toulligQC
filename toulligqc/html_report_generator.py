@@ -26,15 +26,14 @@
 # Generates a quality control report in HTML format including graphs and statistical tables
 import base64
 import datetime
-import pkgutil
 import os
+import pkgutil
 
-from toulligqc.plotly_graph_common import figure_image_width
-from toulligqc.plotly_graph_common import title_size
-from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import _format_int
-from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import figure_image_width
+from toulligqc.plotly_graph_common import graph_font
 from toulligqc.plotly_graph_common import help_html_link
+from toulligqc.plotly_graph_common import title_size
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -306,7 +305,8 @@ def _other_module_reports(graphs, remove_image_files):
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
-            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path, remove=remove_image_files), table=table)
+            """.format(i=i, name=name, help_link=help_html_link(name),
+                       image=_embedded_image(path, remove=remove_image_files), table=table)
 
             # Image without table
             else:
@@ -315,7 +315,8 @@ def _other_module_reports(graphs, remove_image_files):
               <h2>{name} {help_link}</h2>
               <div class="box"><img src="{image}"/></div>
             </div>
-            """.format(i=i, name=name, help_link=help_html_link(name), image=_embedded_image(path, remove=remove_image_files))
+            """.format(i=i, name=name, help_link=help_html_link(name),
+                       image=_embedded_image(path, remove=remove_image_files))
 
     return result
 
@@ -393,9 +394,8 @@ def _iso8601_to_formatted_date(date_string):
 
 
 def _format_int_with_prefix(i):
-
     for x in ((12, 'T'), (9, 'G'), (6, 'M'), (3, 'K')):
-        if i / 10**x[0] > 1:
-            return '{:.2f}{}'.format(float(i) / float(10**x[0]), x[1])
+        if i / 10 ** x[0] > 1:
+            return '{:.2f}{}'.format(float(i) / float(10 ** x[0]), x[1])
 
     return i

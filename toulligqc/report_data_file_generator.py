@@ -27,8 +27,6 @@
 #  The information by modules is retained in a key-value form.
 # The prefix of a key being the report data file id of the module.
 
-import os
-
 
 def add_values_to_unwritten_key(result_dict, values):
     """

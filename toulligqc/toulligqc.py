@@ -78,7 +78,8 @@ def _parse_args(config_dictionary):
     # Add all optional arguments
     optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     optional.add_argument('--output-directory', action='store', dest='output', help='Output directory')
-    optional.add_argument('-o', '--html-report-path', action='store', dest='html_report_path', help='Output HTML report')
+    optional.add_argument('-o', '--html-report-path', action='store', dest='html_report_path',
+                          help='Output HTML report')
     optional.add_argument('--data-report-path', action='store', dest='data_report_path', help='Output data report')
     optional.add_argument('--images-directory', action='store', dest='images_directory', help='Images directory')
     optional.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append',
@@ -206,7 +207,6 @@ def _check_conf(config_dictionary):
 
 
 def _check_if_dir_exists(dir, force):
-
     if dir is None:
         return
 
@@ -217,8 +217,8 @@ def _check_if_dir_exists(dir, force):
             shutil.rmtree(dir, ignore_errors=True)
     os.makedirs(dir)
 
-def _check_if_file_exists(path, force):
 
+def _check_if_file_exists(path, force):
     if path is None:
         return
 

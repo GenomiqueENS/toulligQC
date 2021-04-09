@@ -23,38 +23,26 @@
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-from scipy.stats import norm
 
+from toulligqc.plotly_graph_common import _barcode_boxplot_graph
 from toulligqc.plotly_graph_common import _create_and_save_div
 from toulligqc.plotly_graph_common import _dataFrame_to_html
-from toulligqc.plotly_graph_common import _interpolate
-from toulligqc.plotly_graph_common import _make_describe_dataframe
-from toulligqc.plotly_graph_common import _precompute_boxplot_values
-from toulligqc.plotly_graph_common import _smooth_data
-from toulligqc.plotly_graph_common import _transparent_colors
-from toulligqc.plotly_graph_common import figure_image_height
-from toulligqc.plotly_graph_common import figure_image_width
-from toulligqc.plotly_graph_common import graph_font
-from toulligqc.plotly_graph_common import line_width
-from toulligqc.plotly_graph_common import on_chart_font_size
-from toulligqc.plotly_graph_common import plotly_background_color
-from toulligqc.plotly_graph_common import toulligqc_colors
+from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import _format_int
 from toulligqc.plotly_graph_common import _over_time_graph
-from toulligqc.plotly_graph_common import _barcode_boxplot_graph
-from toulligqc.plotly_graph_common import _pie_chart_graph
-from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _phred_score_density
-from toulligqc.plotly_graph_common import _legend
+from toulligqc.plotly_graph_common import _pie_chart_graph
+from toulligqc.plotly_graph_common import _quality_multiboxplot
+from toulligqc.plotly_graph_common import _read_length_distribution
+from toulligqc.plotly_graph_common import _scatterplot
 from toulligqc.plotly_graph_common import _title
-from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import _transparent_colors
 from toulligqc.plotly_graph_common import _xaxis
 from toulligqc.plotly_graph_common import _yaxis
-from toulligqc.plotly_graph_common import _format_int
-from toulligqc.plotly_graph_common import _format_float
-from toulligqc.plotly_graph_common import interpolation_points
-from toulligqc.plotly_graph_common import _quality_multiboxplot
-from toulligqc.plotly_graph_common import _scatterplot
-
+from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import line_width
+from toulligqc.plotly_graph_common import plotly_background_color
+from toulligqc.plotly_graph_common import toulligqc_colors
 
 
 #
@@ -79,8 +67,10 @@ def dsqr_read_count_histogram(result_dict, result_directory):
             '1D² reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.count"],
             '1D² pass reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.count"],
             '1D² fail reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.count"],
-            '1D² pass barcoded reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count"],
-            '1D² fail barcoded reads': result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]
+            '1D² pass barcoded reads': result_dict[
+                "basecaller.sequencing.summary.1dsqr.extractor.read.pass.barcoded.count"],
+            '1D² fail barcoded reads': result_dict[
+                "basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.count"]
         }
 
         colors = [toulligqc_colors["all"], toulligqc_colors["all_1d2"], toulligqc_colors["pass"],
@@ -110,7 +100,8 @@ def dsqr_read_count_histogram(result_dict, result_directory):
               result_dict["basecaller.sequencing.summary.1dsqr.extractor.read.fail.barcoded.frequency"]]])
 
         dataframe = pd.DataFrame(array, index=['count', 'percent'],
-                                 columns=["All reads", "1D² reads", "1D² pass reads", "1D² fail reads", "1D² pass barcoded",
+                                 columns=["All reads", "1D² reads", "1D² pass reads", "1D² fail reads",
+                                          "1D² pass barcoded",
                                           "1D² fail barcoded"])
 
     # Histogram without barcodes
@@ -225,6 +216,7 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
 
     return _scatterplot(graph_name, dataframe_dict_1dsqr, result_directory, onedsquare=True)
 
+
 #
 # For each barcode 1D²
 #
@@ -329,7 +321,7 @@ def phred_score_over_time_dsqr(result_dict, dataframe_dict_1dsqr, result_directo
     pass_min_qscore = 7
     key = 'sequencing.telemetry.extractor.pass.threshold.qscore'
     if key in result_dict:
-        pass_min_qscore=float(result_dict[key])
+        pass_min_qscore = float(result_dict[key])
 
     return _over_time_graph(data_series=dataframe_dict_1dsqr['all.reads.mean.qscore'],
                             time_series=dataframe_dict_1dsqr['all.reads.start.time1'],

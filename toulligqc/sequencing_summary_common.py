@@ -47,7 +47,6 @@ def get_result_value(extractor, result_dict, key: str):
 
 
 def check_result_values(extractor, result_dict):
-
     prefix = extractor.get_report_data_file_id() + '.'
     for key, value in result_dict.items():
         if key.startswith(prefix):
@@ -55,7 +54,6 @@ def check_result_values(extractor, result_dict):
 
 
 def _check_result_key_value(key, value):
-
     if not isinstance(key, str):
         raise TypeError("Invalid type for key: {}".format(type(key)))
 
@@ -96,7 +94,7 @@ def series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str
 
 
 def sorted_series_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
-                                          denominator: int):
+                                           denominator: int):
     """
     Returns a sorted series of values of different columns filtered by a boolean and divided by the denominator
     :param dataframe: dataframe_1d
