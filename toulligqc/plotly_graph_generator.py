@@ -199,7 +199,7 @@ def yield_plot(df, result_directory, oneDsquare=False):
             (pass_reads_length_df, 'Pass reads', toulligqc_colors['pass']),
             (fail_reads_length_df, 'Fail reads', toulligqc_colors['fail'])]
 
-    npoints = interpolation_points(new_df['start_time'], 'yield_plot')
+    npoints, sigma = interpolation_points(new_df['start_time'], 'yield_plot')
     coef = max(all_reads_length_df[start_time_column]) / npoints
 
     fig = go.Figure()
@@ -212,9 +212,9 @@ def yield_plot(df, result_directory, oneDsquare=False):
 
             if d[1] not in smooth_data_dict:
                 if reads:
-                    count_x, count_y, cum_count_y = _smooth_data(npoints, 5, d[0][start_time_column])
+                    count_x, count_y, cum_count_y = _smooth_data(npoints=npoints, sigma=sigma, data=d[0][start_time_column])
                 else:
-                    count_x, count_y, cum_count_y = _smooth_data(npoints, 5, d[0][start_time_column], weights=d[0]['sequence_length'])
+                    count_x, count_y, cum_count_y = _smooth_data(npoints=npoints, sigma=sigma, data=d[0][start_time_column], weights=d[0]['sequence_length'])
 
                 smooth_data_dict[d[1]] = (count_x, count_y, cum_count_y)
 

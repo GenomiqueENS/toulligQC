@@ -65,12 +65,12 @@ default_graph_layout = dict(
 )
 
 interpolation_point_count_dict = {
-    'read_length_distribution': (None, 10000),
-    'yield_plot': (None, 10000),
-    'phred_score_density': (None, 10000),
-    'over_time_graph': (None, 1000),
-    'scatterplot': (10000, 4000),
-    'phred_violin': (10000, 4000),
+    'read_length_distribution': (None, 10000, 3),
+    'yield_plot': (None, 10000, 3),
+    'phred_score_density': (None, 1000, 3),
+    'over_time_graph': (None, 1000, 3),
+    'scatterplot': (10000, 4000, 3),
+    'phred_violin': (10000, 4000, 3),
 }
 
 
@@ -333,7 +333,7 @@ def _over_time_graph(data_series,
                      green_zone_starts_at=None,
                      green_zone_color='rgba(0,100,0,.1)'):
 
-    time_bins = interpolation_points(time_series, 'over_time_graph')
+    time_bins, sigma = interpolation_points(time_series, 'over_time_graph')
 
     t = (time_series/3600).values
     x = np.linspace(t.min(), t.max(), num=time_bins)
@@ -633,17 +633,19 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
 def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all_color, pass_color, fail_color,
                               xaxis_title, result_directory):
 
-    npoints = interpolation_points(all_reads, 'read_length_distribution')
+    npoints, sigma = interpolation_points(all_reads, 'read_length_distribution')
     min_all_reads = min(all_reads)
     max_all_reads = max(all_reads)
-    sigma = 5
 
-    count_x1, count_y1, cum_count_y1 = _smooth_data(npoints, sigma, all_reads,
+    count_x1, count_y1, cum_count_y1 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=all_reads,
                                                     min_arg=min_all_reads, max_arg=max_all_reads)
-    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints, sigma, pass_reads,
+    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=pass_reads,
                                                     min_arg=min_all_reads, max_arg=max_all_reads)
-    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints, sigma, fail_reads, min_arg=min_all_reads,
-                                                    max_arg=max_all_reads)
+    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=fail_reads,
+                                                    min_arg=min_all_reads, max_arg=max_all_reads)
 
     # Find 50 percentile for zoomed range on x axis
     max_x_range = np.percentile(all_reads, 99)
@@ -744,12 +746,16 @@ def _phred_score_density(graph_name, dataframe, prefix,  all_color, pass_color, 
     pass_series = dataframe[prefix + " pass"].dropna()
     fail_series = dataframe[prefix + " fail"].dropna()
 
-    npoints = interpolation_points(all_series, 'phred_score_density')
+    npoints, sigma = interpolation_points(all_series, 'phred_score_density')
 
-    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints, 5, pass_series, min_arg=np.nanmin(all_series),
-                                      max_arg=np.nanmax(all_series), density=True)
-    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints, 5, fail_series, min_arg=np.nanmin(all_series),
-                                      max_arg=np.nanmax(all_series), density=True)
+    count_x2, count_y2, cum_count_y2 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=pass_series,
+                                                    min_arg=np.nanmin(all_series), max_arg=np.nanmax(all_series),
+                                                    density=True)
+    count_x3, count_y3, cum_count_y3 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=fail_series,
+                                                    min_arg=np.nanmin(all_series), max_arg=np.nanmax(all_series),
+                                                    density=True)
 
     count_y2 = count_y2 / len(all_series)
     count_y3 = count_y3 / len(all_series)
@@ -815,7 +821,7 @@ def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
         prefix = '1D'
 
     # If more than 10.000 reads, interpolate data
-    npoints = interpolation_points(df[prefix], 'phred_violin')
+    npoints = interpolation_points(df[prefix], 'phred_violin')[0]
     if len(df[prefix]) != npoints:
         violin_df = pd.DataFrame({
             prefix: _interpolate(df[prefix], npoints),
@@ -915,7 +921,7 @@ def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False)
     read_fail_qscore = dataframe_dict["fail.reads.mean.qscore"]
 
     # If more than 10.000 reads, interpolate data
-    npoints = interpolation_points(read_pass_length, 'scatterplot')
+    npoints, sigma = interpolation_points(read_pass_length, 'scatterplot')
     if len(read_pass_length) != npoints:
         pass_data = _interpolate(read_pass_length, npoints, y=read_pass_qscore, interp_type="nearest")
         fail_data = _interpolate(read_fail_length, npoints, y=read_fail_qscore, interp_type="nearest")
@@ -960,7 +966,7 @@ def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False)
 def interpolation_points(series, graph_name):
 
     count = len(series)
-    threshold, npoints = interpolation_point_count_dict[graph_name]
+    threshold, npoints, sigma = interpolation_point_count_dict[graph_name]
 
     if threshold is not None:
         if count > threshold:
@@ -970,5 +976,5 @@ def interpolation_points(series, graph_name):
     else:
         result = npoints
 
-    return result
+    return result, sigma
 
