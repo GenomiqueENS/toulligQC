@@ -912,9 +912,11 @@ def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False)
 
     # If more than 10.000 reads, interpolate data
     npoints, sigma = interpolation_points(read_pass_length, 'scatterplot')
-    if len(read_pass_length) != npoints:
-        pass_data = _interpolate(read_pass_length, npoints, y=read_pass_qscore, interp_type="nearest")
-        fail_data = _interpolate(read_fail_length, npoints, y=read_fail_qscore, interp_type="nearest")
+    if (len(read_pass_length) + len(read_fail_length)) > npoints:
+        pass_ratio = len(read_pass_length) / (len(read_pass_length) + len(read_fail_length))
+        pass_data = _interpolate(read_pass_length, npoints * pass_ratio, y=read_pass_qscore, interp_type="nearest")
+        fail_data = _interpolate(read_fail_length, npoints * (1 - pass_ratio), y=read_fail_qscore,
+                                 interp_type="nearest")
     else:
         pass_data = [read_pass_length, read_pass_qscore]
         fail_data = [read_fail_length, read_fail_qscore]
