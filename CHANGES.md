@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0 (2021-XX-XX)
+## 2.0 (2021-04-09)
 * Fix duration computation
 * For PHRED score distribution boxplots, remove unnecessary interpolation before creating boxplot
 * Remove duplicated code for 1D and 1D2 in PHRED score distribution graphs
@@ -12,6 +12,8 @@
 * For read count histogram tables, replace "frequency" by "percent"
 * Rename y-axis for "Distribution of read lengths" graphs to "Read count"
 * Add new command line options to finely define output file paths 
+* Update the sigma value for gaussian filters when smoothing plots
+* In correlation scatterplots, now ponderate the number of pass/fail spots by the pass/fail ratio when using interpolation
 
 ## 2.0b3 (2021-03-22)
 * New CSS for HTML report
