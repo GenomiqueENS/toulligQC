@@ -23,7 +23,7 @@ setup(
     license='GPL V3',
     platforms='ALL',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         'Environment :: Console',
         'Operating System :: POSIX',
