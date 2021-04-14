@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1 (2021-04-14)
+* In setup.py, set the developement status for ToulligQC as Production/Stable instead of Beta
+* Add MANIFEST.in file to add resources files in PyPi package
+* Fix error with latest versions of NumPy by add a missing int casting
+
 ## 2.0 (2021-04-09)
 * Fix duration computation
 * For PHRED score distribution boxplots, remove unnecessary interpolation before creating boxplot
