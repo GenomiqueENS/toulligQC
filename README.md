@@ -148,7 +148,7 @@ RUN_ID
 
 General Options:
 ```
-usage: ToulligQC V2.0b3 -a SEQUENCING_SUMMARY_SOURCE [-t TELEMETRY_SOURCE]
+usage: ToulligQC V2.0.1 -a SEQUENCING_SUMMARY_SOURCE [-t TELEMETRY_SOURCE]
                         [-f FAST5_SOURCE] [-n REPORT_NAME]
                         [--output-directory OUTPUT] [-o HTML_REPORT_PATH]
                         [--data-report-path DATA_REPORT_PATH]
