@@ -945,9 +945,7 @@ def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False)
         **_yaxis('PHRED score', dict(fixedrange=False)),
     )
     # Trim x axis to avoid negative values
-    if max(read_pass_length) >= max(read_fail_length):
-        max_val = max(read_pass_length)
-    max_val = max(read_fail_length)
+    max_val = max(max(read_fail_length), max(read_pass_length))
 
     fig.update_xaxes(range=[0, max_val])
 
