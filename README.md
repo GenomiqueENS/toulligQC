@@ -14,9 +14,9 @@ ToulligQC can take barcoding samples by adding the barcode list as a command lin
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2 and .fast5 to retrieve a FAST5 information.
 This tool will produce a set of graphs, statistic files in txt format and a HTML report.
 
-<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/docs/images.png)</a>
+<a href="https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/docs/images.png)</a>
 
-Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html) to see an report example!
+Click on the [image](https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html) to see an report example!
 
 ## Authors / Support
 
