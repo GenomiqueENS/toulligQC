@@ -1,3 +1,4 @@
+ <!DOCTYPE html>
 <html>
   <head>
 
@@ -5,178 +6,7 @@
     <meta charset='UTF-8'>
 
     <!-- CSS stylesheet -->
-    <style type="text/css">
-body {
-  border: 0;
-  margin: 0;
-  padding: 0;
-
-  font-family: Helvetica, Arial, sans-serif;
-  font-weight: lighter;
-  font-size: 16px;
-  color: #444;
-}
-#banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  margin: 0;
-  border: 0;
-  width: calc(100% - 1em);
-  padding: 0.5em;
-  z-index: 2;
-
-  background-color: white;
-  border-bottom: 1px solid #CCC;
-}
-
-#leftCol {
-  position: fixed;
-  top: 5em;
-  margin: 0.5em 0 0 0.5em;
-  width: calc(366px - 0.5em);
-}
-
-#content {
-  display: block;
-  position: absolute;
-  top: 4.5em;
-  left: 366px;
-  right: 0;
-  bottom: 2.3em;
-  height: auto;
-  width: calc(100% - 366px - 0.5em);
-  padding-left: 0;
-  padding-right: 0.5em;
-  z-index: 1;
-  overflow: auto;
-}
-
-
-
-#footer {
-  position: fixed;
-  bottom:0;
-  margin: 0;
-  border: 0;
-  height: 1.3em;
-  width: calc(100% - 1em);
-  padding: 0.5em;
-  z-index:2;
-  overflow:hidden;
-  background-color: white;
-
-  border-top: 1px solid #CCC;
-}
-
-/* Header */
-
-#header_title {
-  display:inline-block;
-  float:left;
-  clear:left;
-  font-size: 175%;
-  font-weight: bold;
-  height: 100%;
-  white-space: nowrap;
-  width: 1%;
-  vertical-align:middle;
-}
-
-#header_filename {
-  display:inline-block;
-  float:right;
-  clear:right;
-  font-size: 90%;
-  text-align: right;
-  height: 100%;
-  background-color: white;
-}
-
-#header_logo {
-  margin-right: 0.25em;
-  vertical-align:middle;
-}
-
-/* Menu */
-
-.menu-vertical {
-  right: 1em;
-  padding: 4px;
-  margin-right : 1em;
-  list-style: none;
-  text-align: left;
-  background: #F2F2F2;
-}
-
-.mv-item, .mv-item a {
-  display: block;
-}
-
-.mv-item a {
-  margin: 1px 0;
-  padding: 8px 20px;
-  color: #666;
-  background: #FFF;
-  text-decoration: none;
-  transition: all .3s;
-}
-
-.mv-item a:hover, .mv-item a:focus {
-  background: #79BF90;
-  color: #FFF;
-  padding-left: 30px;
-}
-
-.mv-item a:enabled {
-  font-weight: bold;
-}
-
-/* Content */
-
-.module {
-  margin-top : 0;
-  width: {figure_image_width};
-  margin-bottom: 3em;
-}
-
-h2 {
-  margin-top: 0;
-  padding-top: 1em;
-  font-size: {title_size};
-  color: black;
-}
-
-td, th {
-  border: 1px solid #BEBEBE;
-  padding: 10px;
-}
-
-td {
-  text-align: right;
-}
-
-tr:nth-child(even) {
-  background-color: #eee;
-}
-
-thead {
-  background-color: #d7d9f2;
-}
-
-table {
-  border-collapse: collapse;
-  border: 2px solid #C8C8C8;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#help_link {
-  color: #3C6DC5;
-  text-decoration: none;
-}
-    </style>
-
+    <link rel="stylesheet" href="help.css">
 
   </head>
   <body>
@@ -196,7 +26,7 @@ table {
       <!--h2>Summary</h2-->
         <ul class="menu-vertical">
           <li class="mv-item"><a href="#run_statistics">Run Statistics</a></li>
-          <li class="mv-item"><a href="#software-info">Device and software</a></li>
+          <li class="mv-item"><a href="#software_info">Device and software</a></li>
           <li class="mv-item"><a href="#read_count_histogram">Read count histogram</a></li>
           <li class="mv-item"><a href="#distribution_of_read_lengths">Distribution of read lengths</a></li>
           <li class="mv-item"><a href="#yield_plot_through_time">Yield plot through time</a></li>
@@ -219,57 +49,220 @@ table {
 
 
     <h2><a id="run_statistics" class="anchor">Run Statistics</a></h2>
-    <p>Coming soon...</p>
+    <div class="explanation">
+        <p>The table in this section gathers informations and statistics about the run.</p>
+        <ul>
+            <li><b>Report name</b>:           Name of the report.
+                                              It is defined using the <tt>--report-name</tt> argument in command line of ToulligQC.
+                                              If not set the rapport name will contains the report generation date.</li>
+
+            <li><b>Experiment group</b>:      The experiment name defined when launching a run.
+                                              This value is not defined for runs generated with old versions of MinKNOW.</li>
+
+            <li><b>Sample ID</b>:             The name of the sample loaded on the flowcell.</li>
+
+            <li><b>Run ID</b>:                Unique identifier of the run (a 40 hexadecimal character string).</li>
+
+            <li><b>Run date</b>:              The run date.</li>
+
+            <li><b>Run duration</b>:          The duration of the run.</li>
+
+            <li><b>Flowcell ID</b>:           The serial number of the flowcell.</li>
+
+            <li><b>Flowcell product code</b>: The flowcell product code.
+                                              This value is not defined for runs generated with old versions of MinKNOW.</li>
+
+            <li><b>Flowcell version</b>:      This information comes from the <tt>--flowcell</tt> argument of guppy.
+                                              No value will be displayed if this argument is not used or no telemetry file provided in ToulligQC input.
+                                              This value should be the same as the flowcell product code.   </li>
+
+            <li><b>Kit</b>:                   The sequencing kit.
+                                              This information comes from the <tt>--kit</tt> argument of guppy.
+                                              No value will be displayed if this argument is not used or no telemetry file provided in ToulligQC input. </li>
+
+            <li><b>Yield</b>:                 The yield of the run in bases.</li>
+
+            <li><b>Read count</b>:            The number of reads generated by the run.</li>
+
+            <li><b>N50 (bp)</b>:              The N50 value is the length of the shortest read in the set of the longest reads that capture 50% of the run reads.</li>
+
+	    <li><b>L50</b>:                   The L50 value is the number of reads in the set of the longest reads that capture 50% of the run reads. </li>
+        </ul>
+
+        <p><b>Note</b>: For yield, read count, N50 and L50 computation, reads discarded by Guppy (e.g. calibration strands, zero length reads) are not used for computation but both pass and fails reads are used.</p>
+    </div>
 
     <h2><a id="software_info" class="anchor">Software info</a></h2>
-    <p>Coming soon...</p>
+    <div class="explanation">
+        <p>The table in this section gathers informations and parameters about the software used to produce run data.</p>
+        <ul>
+            <li><b>Device type</b>:          The sequencer model (e.g. minion, minion_mk1c).</li>
+            <li><b>Device ID</b>:            The serial number of the sequencer.</li>
+            <li><b>Device hostname</b>:      The name of the computer driving the sequencer.</li>
+            <li><b>Device OS</b>:            The operating system of the computer.</li>
+            <li><b>Distribution version</b>: The MinKNOW distribution version used for data acquisition.</li>
+            <li><b>MinKNOW version</b>:      The MinKNOW application version used for data acquisition.</li>
+            <li><b>Basecaller name</b>:      The name of the basecaller (e.g. guppy).</li>
+            <li><b>Basecaller version</b>:   The version of the basecaller.</li>
+            <li><b>Basecaller analysis</b>:  Type of analysis performed by the basecaller (e.g. 1d_basecalling, 1dsqr_basecalling).</li>
+            <li><b>Basecalling date</b>:     Date of the basecalling.</li>
+            <li><b>Model file</b>:           Model file used by the basecaller to perform the analysis.</li>
+            <li><b>Min qscore threshold</b>: The mean qscore read threshold for pass reads.
+                                             Used to be 7 by default but can be defined usign the <tt>--min_qscore</tt> argument of guppy.
+                                             In the latest versions of Guppy the default threshold if not the same in fast or high accuracy mode.</li>
+            <li><b>ToulligQC version</b>:    The ToulligQC version.</li>
+        </ul>
+    </div>
 
     <h2><a id="read_count_histogram" class="anchor">Read count histogram</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_read_count_histogram" class="anchor"></a>
+    <img src="help01.png" width="1000px" />
+    <div class="explanation">
+        <p>This histogram show the counts of reads categories:</p>
+        <ul>
+        <li><b>All reads</b>:           The number of sequenced reads.
+                                        Empty and calibration reads may not be taken in account (it depends of Guppy version and Guppy parameters).
+					Fast5 files may contains more read entries than the read count output of Guppy.
+	                                This value must be equals to the number of line in the sequencing summary file (minus 1 for the header line).</li>
+        <li><b>Pass reads</b>:          The number of reads that pass Guppy tests (mean Qscore threshold and/or read size).</li>
+        <li><b>Fail reads</b>:          The number of reads that do not pass Guppy tests.</li>
+        <li><b>Pass barcoded reads</b>: The number of pass reads which barcode is not marked as "unclassified".</li>
+        <li><b>Fail barcoded reads</b>: The number of fail reads which barcode is not marked as "unclassified".</li>
+        </ul>
+
+        <p>The table displays this graph data in counts or in percent.</p>
+
+        <p><b>Warning</b>: Note that if barcoding information is missing for a read, it will be marked as "unclassified" by ToulligQC.</p>
+    </div>
 
     <h2><a id="distribution_of_read_lengths" class="anchor">Distribution of read lengths</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_distribution_of_read_lengths" class="anchor"></a>
+    <img src="help02.png" width="500px" />
+    <img src="help03.png" width="500px" />
+    <div class="explanation">
+        <p>This graph shows the number of reads against the read length.
+        There are two visualisation modes for this distribution: linear (default) or log scale.
+	This graph is centred on the first 99% reads to avoid compression of lower size reads by long artefact reads.
+	You can show the full distribution by clicking the autoscale button.
+        Three vertical line show median, first and third quartiles of read lengths (pass + fail).</p>
+    </div>
 
     <h2><a id="yield_plot_through_time" class="anchor">Yield plot through time</a></h2>
-    <p>Coming soon...</p>
+    <img src="help04.png" width="500px" />
+    <img src="help05.png" width="500px" />
+    <img src="help06.png" width="500px" />
+    <img src="help07.png" width="500px" />
+    <div class="explanation">
+        <p>This graph shows the yield of the sequencer from the beginning to the end of the run.
+        It can display read (default) or base curves in a cumulative (default) or yield way.</p>
+    </div>
 
     <h2><a id="phred_score_distribution" class="anchor">PHRED score distribution</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_phred_score_distribution" class="anchor"></a>
+    <img src="help08.png" width="500px" />
+    <img src="help09.png" width="500px" />
+    <div class="explanation">
+        <p>This graph shows the qscore distribution for all, pass and fail reads.
+	A button allows to toggle visualisation from boxplot (default) to violin plots.</p>
+        <p>The table displays min, max, mean, median, first and third quartile statistics for the three read categories.</p>
+    </div>
 
     <h2><a id="phred_score_density_distribution" class="anchor">PHRED score density distribution</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_phred_score_density_distribution" class="anchor"></a>
+    <img src="help10.png" width="1000px" />
+    <div class="explanation">
+        <p>This graph shows the distribution of the pass and fails reads against their mean qscore.
+        The two populations must not be overlapping, and the boundary between the two curves is at the qscore threshold defined when launching the basecalling.
+        The slight overlapping between fail and pass distributions is an artefact of curve smoothing.
+        Three additional vertical lines display median, first and third quartiles for pass read distribution.</p>
+    </div>
 
     <h2><a id="channel_occupancy_of_the_flowcell" class="anchor">Channel occupancy of the flowcell</a></h2>
-    <p>Coming soon...</p>
+    <img src="help11.png" width="1000px" />
+    <div class="explanation">
+        <p>This plot shows a grid with the read yield of each channel of the flowcell. 
+	This graph allow to detect if low throughput of a flowcell is due to a lower number of working channels.
+	The position of a channel in the grid may not reflect the position of the channel on the flowcell, so spacial bias cannot be detected using this graph.</p>
+    </div>
 
     <h2><a id="correlation_between_read_length_and_phred_score" class="anchor">Correlation between read length and PHRED score</a></h2>
-    <p>Coming soon...</p>
+    <a id="correlation_between_1d²_read_length_and_phred_score" class="anchor"></a>
+    <img src="help12.png" width="1000px" />
+    <div class="explanation">
+        <p>This scatter plot shows the mean qscore and length for the run reads. 
+	To avoid memory overconsumption in web browsers, an interpolation is performed to show a maximum of 10,000 points.</p>
+    </div>
 
     <h2><a id="read_length_over_time" class="anchor">Read length over time</a></h2>
-    <p>Coming soon...</p>
+    <img src="help13.png" width="1000px" />
+    <div class="explanation">
+        <p>This graph show the median, first and third quartile distribution of read lengths over the time.</p>
+    </div>
 
     <h2><a id="phred_score_over_time" class="anchor">PHRED score over time</a></h2>
-    <p>Coming soon...</p>
+    <img src="help14.png" width="1000px" />
+    <div class="explanation">
+        <p>This graph shows the min, max, median, first and third quartile distribution of the mean qscore reads over the time.
+	The green area, include all the pass reads as the lower threshold is the mean qscore threshold used by Guppy.
+	If this threshold is not available (missing telemetry file), 7.0 will be using as lower threshold.
+	</p>
+    </div>
 
     <h2><a id="translocation_speed" class="anchor">Translocation speed</a></h2>
-    <p>Coming soon...</p>
+    <img src="help15.png" width="1000px" />
+    <div class="explanation">
+        <p>This graph shows the median, first and third quartile distribution of translocation speed over the time.
+	The translocation speed is the number of bases that pass through a pore per second.
+	The green zone, indicate that translocation speed of a read is nominal.
+	The lower threshold is <b>always</b> set to 300 b/s, the expected value for DNA in 1D with a R9.4.1 flowcell.</p>
+    </div>
 
     <h2><a id="pass_barcoded_reads_distribution" class="anchor">Pass barcoded reads distribution</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_read_pass_barcode_distribution" class="anchor"></a>
+    <img src="help16.png" width="500px" />
+    <img src="help17.png" width="500px" />
+    <div class="explanation">
+        <p>This graph shows the distribution of the pass reads against their barcodes.
+	This graph allow two visualisation mode: pie chart or histogram.
+	Unclassified reads are reads with a barcode that cannot be assigned.
+	The "other barcode" category gathering all reads that are not unclassified but with a barcode that has not been specified using the <tt>--barcodes</tt> argument of ToulligQC.</p>
+
+	<p>The table displays data used to generate the graphs.</p>
+    </div>
 
     <h2><a id="fail_barcoded_reads_distribution" class="anchor">Fail barcoded reads distribution</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_read_fail_barcode_distribution" class="anchor"></a>
+    <img src="help18.png" width="500px" />
+    <img src="help19.png" width="500px" />
+    <div class="explanation">
+        <p>This graph shows the distribution of the fail reads against their barcodes.
+	As this graph is like the previous one, see <a href="#pass_barcoded_reads_distribution">Pass barcoded reads distribution help</a> for more informations.
+	</p>
+    </div>
 
     <h2><a id="read_size_distribution_for_barcodes" class="anchor">Read size distribution for barcodes</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_read_size_distribution_for_barcodes" class="anchor"></a>
+    <img src="help20.png" width="1000px" />
+    <div class="explanation">
+        <p>This graph shows for each barcode, two boxplots (one for pass read, the other for fail reads) for the distribution of read lengths.
+	Unclassified reads are reads with a barcode that cannot be assigned.
+	The "other barcode" category gathering all reads that are not unclassified but with a barcode that has not been specified using the <tt>--barcodes</tt> argument of ToulligQC.</p>
+    </div>
 
     <h2><a id="phred_score_distribution_for_barcodes" class="anchor">PHRED score distribution for barcodes</a></h2>
-    <p>Coming soon...</p>
+    <a id="1d²_phred_score_distribution_for_barcodes" class="anchor"></a>
+    <img src="help21.png" width="1000px" />
+    <div class="explanation">
+        <p>This graph shows for each barcode, two boxplots (one for pass read, the other for fail reads) for the distribution of mean qscore reads.
+	Unclassified reads are reads with a barcode that cannot be assigned.
+	The "other barcode" category gathering all reads that are not unclassified but with a barcode that has not been specified using the <tt>--barcodes</tt> argument of ToulligQC.
+	</p>
+    </div>
 
 
     </div> <!-- End of Content -->
     <!-- Footer -->
-    <div id="footer"> Produced by <a href="{app_url}">{app_name}</a> (version {app_version})</div>
+    <div id="footer"> <a href="https://github.com/GenomicParisCentre/toulligQC">ToulligQC Website</a></div>
 
   </body>
 </html>
