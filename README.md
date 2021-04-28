@@ -5,22 +5,16 @@
 ToulligQC is a program written in Python and developped by the [genomics core facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.bio.ens.psl.eu/).
 
 This program is dedicated to the QC analyses of Oxford Nanopore runs.
-Moreover it is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1D² runs.
-ToulligQC supports only Guppy basecalling ouput files.
-It also needs a single FAST5 file (to catch the flowcell ID and the run date) if a telemetry file is not provided.
-Flow cells and kits version are retrieved using the telemetry file.
-ToulligQC can take barcoding samples by adding the barcode list as a command line option.
 
-To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2 and .fast5 to retrieve a FAST5 information.
-This tool will produce a set of graphs, statistic files in txt format and a HTML report.
+Click on [following image](https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html) to see an report example! An [online help](https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/help.html) is available to better understand graphics generated with ToulligQC when clicking on the [ⓘ](https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/help.html) icon.
 
 <a href="https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/docs/images.png)</a>
 
-Click on the [image](https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/report.html) to see an report example!
+
 
 ## Authors / Support
 
-Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Laurent Jourdren, Sophie Lemoine and Stéphane Le Crom.
+Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, , Sophie Lemoine, Morgane Thomas-Chollier, Stéphane Le Crom and Laurent Jourdren.
 
 Support is availlable on [GitHub issue page](https://github.com/GenomicParisCentre/toulligQC/issues) and at **toulligqc** **at** **bio.ens.psl.eu**.
 
@@ -106,6 +100,16 @@ $ docker run -ti \
 <a name="usage"></a>
 ## 2. Usage
 <a name="command-line"></a>
+
+ToulligQC is adapted to RNA-Seq along with DNA-Seq and it is compatible with 1D² runs.
+This QC tool supports only Guppy basecalling ouput files.
+It also needs a single FAST5 file (to catch the flowcell ID and the run date) if a telemetry file is not provided.
+Flow cells and kits version are retrieved using the telemetry file.
+ToulligQC can take barcoding samples by adding the barcode list as a command line option.
+
+To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2 and .fast5 to retrieve a FAST5 information.
+This tool will produce a set of graphs, statistic file in plain text format and a HTML report.
+
 
 To run ToulligQC you need the Guppy basecaller output files : ```sequencing_summary.txt``` and ```sequencing_telemetry.js```
 You can use your initial Fast5 ONT file too.
