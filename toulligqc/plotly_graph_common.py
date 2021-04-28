@@ -76,7 +76,12 @@ interpolation_point_count_dict = {
 help_url = 'https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/master/docs/help.html'
 
 
-def help_html_link(title):
+def help_html_link(title, javascript=True):
+
+    if javascript:
+        return '<a onclick="window.open(\'{}#{}\');" style="cursor: pointer;" id="help_link">ⓘ</a>' \
+            .format(help_url, title.strip().replace(' ', '_').lower())
+
     return '<a href="{}#{}" target="_blank" id="help_link">ⓘ</a>' \
         .format(help_url, title.strip().replace(' ', '_').lower())
 
@@ -99,7 +104,7 @@ def _format_percent(f):
 
 def _title(title):
     return dict(title=dict(
-        text='<b>{}</b> <b>{}<b>'.format(title, help_html_link(title)),
+        text='<b>{}</b> <b>{}<b>'.format(title, help_html_link(title, False)),
         y=0.95,
         x=0,
         xanchor='left',
