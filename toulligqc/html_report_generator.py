@@ -136,8 +136,8 @@ def _summary(graphs):
     :return: a string with HTML code for the module list
     """
     result = "        <ul class=\"menu-vertical\">\n"
-    result += "          <li class=\"mv-item\"><a href=\"#Run-statistics" "\">Run Statistics</a></li>\n"
-    result += "          <li class=\"mv-item\"><a href=\"#Software-info" "\">Device and software</a></li>\n"
+    result += "          <li class=\"mv-item\"><a href=\"#run_statistics" "\">Run statistics</a></li>\n"
+    result += "          <li class=\"mv-item\"><a href=\"#software_info" "\">Device and software</a></li>\n"
     for i, t in enumerate(graphs):
         result += "          <li class=\"mv-item\"><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
     result += "        </ul>\n"
@@ -187,8 +187,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
 
     # Compose the main of the page
     result = """
-      <div class="module" id="Run-statistics">
-            <h2>Run Statistics {help_link}</h2>
+      <div class="module" id="run_statistics">
+            <h2>Run statistics {help_link}</h2>
             <table class="dataframe" border="">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
@@ -226,8 +226,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                l50=_format_int(int(l50)))
 
     result += """
-      <div class="module" id="Software-info">
-            <h2>Device and software information {help_link}</h2>
+      <div class="module" id="software_info">
+            <h2>Device and software {help_link}</h2>
             <table class="dataframe" border="">
                 <thead><tr><th>Measure</th><th>Value</th></tr></thead>
                 <tbody>
