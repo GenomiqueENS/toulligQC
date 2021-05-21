@@ -46,7 +46,7 @@ setup(
     include_package_data=True,
 
     python_requires='>=3.8.0',
-    install_requires=['matplotlib>=3.1.2', 'plotly>=4.5.0', 'seaborn>=0.10', 'h5py>=2.10',
+    install_requires=['matplotlib>=3.1.2', 'plotly>=4.5.0', 'h5py>=2.10',
                       'pandas>=0.25.3', 'numpy>=1.17.4', 'scipy>=1.3.3', 'scikit-learn>=0.22'],
 
     entry_points={

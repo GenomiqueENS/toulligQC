@@ -255,7 +255,7 @@ class SequencingSummaryExtractor:
         images.append(pgg.yield_plot(self.dataframe_1d, self.images_directory))
         images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
         images.append(pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
-        images.append(pgg.plot_performance(self.dataframe_dict, self.images_directory))
+        images.append(pgg.plot_performance(self.dataframe_1d, self.images_directory))
 
         images.append(pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
         images.append(pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))

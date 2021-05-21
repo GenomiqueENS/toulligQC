@@ -62,7 +62,6 @@ To run ToulligQC without Docker, you need to install the following Python module
 
 * matplotlib
 * plotly
-* seaborn
 * h5py
 * pandas
 * numpy
