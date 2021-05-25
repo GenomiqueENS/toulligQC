@@ -276,7 +276,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                                          self.images_directory))
         images.append(pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
         images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, self.images_directory))
-        images.append(pgg.plot_performance(self.dataframe_dict, self.images_directory))
+        images.append(pgg.plot_performance(self.sse.dataframe_1d, self.images_directory))
         images.append(
             pgg2.sequence_length_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
         images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
