@@ -317,16 +317,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Clear DataFrame
         self.dataframe_1dsqr.iloc[0:0]
 
-    def _occupancy_channel(self):
-        """
-        Statistics about the channels
-        :return: channel_count_statistics containing statistics description about the channel occupancy
-        """
-        channel_count = self.channel_df
-        total_number_reads_per_channel = pd.value_counts(channel_count)
-        channel_count_statistics = pd.DataFrame.describe(total_number_reads_per_channel)
-        return channel_count_statistics
-
     def _load_sequencing_summary_1dsqr_data(self):
         """
         Load sequencing summary dataframe with or without barcodes

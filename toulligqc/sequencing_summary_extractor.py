@@ -235,9 +235,6 @@ class SequencingSummaryExtractor:
         # Mean QScore
         df_dict["all.reads.mean.qscore"] = df['mean_qscore']
 
-        # Channel series
-        df_dict["all.reads.channel"] = df['channel']
-
         # Time series
         df_dict["all.reads.start.time"] = df['start_time']
 
@@ -298,7 +295,7 @@ class SequencingSummaryExtractor:
         Statistics about the channels of the flowcell
         :return: pd.Series object containing statistics about the channel occupancy without count value
         """
-        total_reads_per_channel = pd.value_counts(self.dataframe_dict["all.reads.channel"])
+        total_reads_per_channel = pd.value_counts(self.dataframe_1d["channel"])
         return pd.DataFrame.describe(total_reads_per_channel)
 
     def _load_sequencing_summary_data(self):
