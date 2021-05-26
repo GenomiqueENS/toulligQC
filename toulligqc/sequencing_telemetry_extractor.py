@@ -127,6 +127,8 @@ class SequencingTelemetryExtractor:
 
             if 'opts' in array[0]:
                 self._set_result_dict_value(result_dict, '.kit.version', array, 'opts', 'kit')
+                self._set_result_dict_value(result_dict, '.sequencing.kit.version', array, 'context_tags', 'sequencing_kit')
+                self._set_result_dict_value(result_dict, '.barcode.kits.version', array, 'opts', 'barcode_kits')
                 self._set_result_dict_value(result_dict, '.flowcell.version', array, 'opts', 'flowcell')
                 self._set_result_dict_value(result_dict, '.model.file', array, 'opts', 'model_file')
                 self._set_result_dict_value(result_dict, '.pass.threshold.qscore', array, 'opts', 'min_qscore')

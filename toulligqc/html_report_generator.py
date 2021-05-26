@@ -168,6 +168,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.run.id', "Unknown")
     flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
     kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
+    sequencing_kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sequencing.kit.version', "Unknown")
+    barcode_kits_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.barcode.kits.version', "Unknown")
     basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
     basecaller_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.version', "Unknown")
     basecaller_analysis = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.analysis', "Unknown")
@@ -202,6 +204,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               <tr><th>Flowcell product code</th><td>{flow_cell_product_code}</td></tr>
               <tr><th>Flowcell version</th><td>{flowcell_version}</td></tr>
               <tr><th>Kit</th><td>{kit_version}</td></tr>
+              <tr><th>Sequencing kit</th><td>{sequencing_kit_version}</td></tr>
+              <tr><th>Barcode kits</th><td>{barcode_kits_version}</td></tr>
               <tr><th>Yield</th><td>{run_yield}</td></tr>
               <tr><th>Read count</th><td>{read_count}</td></tr>
               <tr><th>N50 (bp)</th><td>{n50}</td></tr>
@@ -220,6 +224,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                flow_cell_product_code=flow_cell_product_code,
                flowcell_version=flowcell_version,
                kit_version=kit_version,
+               sequencing_kit_version=sequencing_kit_version,
+               barcode_kits_version=barcode_kits_version,
                run_yield=run_yield,
                read_count=_format_int(read_count),
                n50=_format_int(int(n50)),
