@@ -645,31 +645,47 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
                                                     data=fail_reads,
                                                     min_arg=min_all_reads, max_arg=max_all_reads)
 
+    sum_x1, sum_y1, cum_sum_y1 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=all_reads, weights=all_reads,
+                                                    min_arg=min_all_reads, max_arg=max_all_reads)
+    sum_x2, sum_y2, cum_sum_y2 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=pass_reads,weights=pass_reads,
+                                                    min_arg=min_all_reads, max_arg=max_all_reads)
+    sum_x3, sum_y3, cum_sum_y3 = _smooth_data(npoints=npoints, sigma=sigma,
+                                                    data=fail_reads, weights=fail_reads,
+                                                    min_arg=min_all_reads, max_arg=max_all_reads)
+
     # Find 50 percentile for zoomed range on x axis
     max_x_range = np.percentile(all_reads, 99)
 
     coef = max_all_reads / npoints
 
     max_y = max(max(count_y1), max(count_y2), max(count_y3)) / coef
+    max_sum_y = max(max(sum_y1), max(sum_y2), max(sum_y3)) / coef
 
     fig = go.Figure()
+
+    # Read graphs
     fig.add_trace(go.Scatter(x=count_x1,
                              y=count_y1 / coef,
                              name='All reads',
                              fill='tozeroy',
-                             marker_color=all_color
+                             marker_color=all_color,
+                             visible=True
                              ))
     fig.add_trace(go.Scatter(x=count_x2,
                              y=count_y2 / coef,
                              name='Pass reads',
                              fill='tozeroy',
-                             marker_color=pass_color
+                             marker_color=pass_color,
+                             visible=True
                              ))
     fig.add_trace(go.Scatter(x=count_x3,
                              y=count_y3 / coef,
                              name='Fail reads',
                              fill='tozeroy',
-                             marker_color=fail_color
+                             marker_color=fail_color,
+                             visible=True
                              ))
 
     # Threshold
@@ -692,12 +708,56 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
             visible=True
         ))
 
+    # Base plots
+    # Read graphs
+    fig.add_trace(go.Scatter(x=sum_x1,
+                             y=sum_y1 / coef,
+                             name='All reads',
+                             fill='tozeroy',
+                             marker_color=all_color,
+                             visible=False
+                             ))
+    fig.add_trace(go.Scatter(x=sum_x2,
+                             y=sum_y2 / coef,
+                             name='Pass reads',
+                             fill='tozeroy',
+                             marker_color=pass_color,
+                             visible=False
+                             ))
+    fig.add_trace(go.Scatter(x=sum_x3,
+                             y=sum_y3 / coef,
+                             name='Fail reads',
+                             fill='tozeroy',
+                             marker_color=fail_color,
+                             visible=False
+                             ))
+
+    # Threshold
+    for p in [25, 50, 75]:
+        x0 = np.percentile(all_reads, p)
+        if p == 50:
+            t = 'median<br>all reads'
+        else:
+            t = str(p) + "%<br>all reads"
+        fig.add_trace(go.Scatter(
+            mode="lines+text",
+            name='All reads',
+            x=[x0, x0],
+            y=[0, max_y],
+            line=dict(color="gray", width=1, dash="dot"),
+            text=["", t],
+            textposition="top center",
+            hoverinfo="skip",
+            showlegend=False,
+            visible=False
+        ))
+
     fig.update_layout(
         **_title(graph_name),
         **default_graph_layout,
-        **_legend(),
+        **_legend(args=dict(y=0.75)),
         hovermode='x',
-        **_xaxis(xaxis_title, dict(range=[min_all_reads, max_x_range])),
+        **_xaxis(xaxis_title, dict(range=[min_all_reads, max_x_range], type="linear")),
         **_yaxis('Read count', dict(range=[0, max_y * 1.10])),
     )
 
@@ -706,21 +766,39 @@ def _read_length_distribution(graph_name, all_reads, pass_reads, fail_reads, all
         updatemenus=[
             dict(
                 type="buttons",
-                direction="left",
+                direction="down",
                 buttons=list([
                     dict(
-                        args=[{"xaxis.type": "linear"}, {"xaxis.range": [min_all_reads, max_x_range]}],
-                        label="Linear",
-                        method="relayout"
+                        args=[{'visible': [True, True, True, True, True, True, False, False, False]},
+                              {"xaxis": {"type": "linear", "range": [min_all_reads, max_x_range]},
+                               "yaxis": {"title": "<b>Read count</b>", "range": [0, max_y * 1.10]}}],
+                        label="Reads linear",
+                        method="update"
                     ),
                     dict(
-                        args=[{"xaxis.type": "log"}, {"xaxis.range": [min_all_reads, max_x_range]}],
-                        label="Log",
-                        method="relayout"
-                    )
+                        args=[{'visible': [True, True, True, True, True, True, False, False, False]},
+                              {"xaxis": {"type": "log"},
+                               "yaxis": {"title": "<b>Read count</b>", "range": [0, max_y * 1.10]}}],
+                        label="Reads log",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, False, False, False, False, True, True, True]},
+                              {"xaxis": {"type": "linear", "range": [min_all_reads, max_x_range]},
+                               "yaxis": {"title": "<b>Base count</b>", "range": [0, max_sum_y * 1.10]}}],
+                        label="Bases linear",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, False, False, False, False, True, True, True]},
+                              {"xaxis": {"type": "log"},
+                               "yaxis": {"title": "<b>Base count</b>", "range": [0, max_sum_y * 1.10]}}],
+                        label="Bases log",
+                        method="update"
+                    ),
                 ]),
                 pad={"r": 20, "t": 20, "l": 20, "b": 20},
-                # showactive=True,
+                showactive=True,
                 x=1.0,
                 xanchor="left",
                 y=1.25,
