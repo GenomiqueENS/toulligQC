@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1 (TBD)
+* The channel occupancy of the flowcell graph code has been rewritten to use Plotly. Add all/pass/fail/fail ratio views. The flowcell graph can now also handle Flongle and PromethION flowcels in addition of standard MinION flowcell
+* Add "Sequencing kit" and "Barcode kits" entries in the run statistics table in html report
+* In the distribution of read lengths graph, add buttons to show base count distribution in linear/log modes.
+* Fix scatterplot graph where the default max x-axis value was always the max value for fail reads
+* Fix help links in demo report
+* Fix the name of the "Device and software" and "Run statistics" sections
+
 ## 2.0.1 (2021-04-14)
 * In setup.py, set the developement status for ToulligQC as Production/Stable instead of Beta
 * Add MANIFEST.in file to add resources files in PyPi package
