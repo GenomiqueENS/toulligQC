@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.1 (2021-08-18)
+* Fix issue when barcode list argument contains non existing barcode(s) in input data or when all existing barcodes are used.
+
 ## 2.1 (2021-06-28)
 * The channel occupancy of the flowcell graph code has been rewritten to use Plotly. Add all/pass/fail/fail ratio views. The flowcell graph can now also handle Flongle and PromethION flowcels in addition of standard MinION flowcell
 * Add "Sequencing kit" and "Barcode kits" entries in the run statistics table in html report
