@@ -228,12 +228,6 @@ def barcode_percentage_pie_chart_1dsqr_pass(dataframe_dict_1dsqr, barcode_select
 
     graph_name = "1D² read pass barcode distribution"
 
-    for element in barcode_selection:
-
-        if all(dataframe_dict_1dsqr['barcode.arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
-
     count_sorted = dataframe_dict_1dsqr["read.pass.barcoded"]
 
     return _pie_chart_graph(graph_name=graph_name,
@@ -250,12 +244,6 @@ def barcode_percentage_pie_chart_1dsqr_fail(dataframe_dict_1dsqr, barcode_select
     """
 
     graph_name = "1D² read fail barcode distribution"
-
-    for element in barcode_selection:
-
-        if all(dataframe_dict_1dsqr['barcode.arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
 
     count_sorted = dataframe_dict_1dsqr["read.fail.barcoded"]
 

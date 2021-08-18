@@ -20,6 +20,7 @@
 
 # This module contains common methods for sequencing summary modules.
 
+import sys
 import pandas as pd
 
 
@@ -118,6 +119,12 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     # Create keys barcode.arrangement, and read.pass/fail.barcode in dataframe_dict with all values of
     # column barcode_arrangement when reads are passed/failed
     dataframe_dict["barcode.arrangement"] = df["barcode_arrangement"]
+
+    # Print warning message if a barcode is unknown
+    barcodes_found = set(dataframe_dict["barcode.arrangement"].unique())
+    for element in barcode_selection:
+        if element not in barcodes_found and element != 'other barcodes':
+            sys.stderr.write("Warning: The barcode {} doesn't exist in input data\n".format(element))
 
     # Get barcodes frequency by read type
     series_read_pass_barcode = series_cols_boolean_elements(df, "barcode_arrangement",
@@ -249,8 +256,12 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
     # Regroup all barcoded read in Series
     all_barcode_count = df_filtered.value_counts()
 
+    # Retain only existing barcodes from barcode_selection list
+    barcodes_found = set(df_filtered.unique())
+    barcode_selection_existing = [x for x in barcode_selection if x in barcodes_found]
+
     # Sort by list of barcode_selection
-    count_sorted = all_barcode_count.sort_index()[barcode_selection]
+    count_sorted = all_barcode_count.sort_index()[barcode_selection_existing]
     # Replace all NaN values to zero
     count_sorted.fillna(0, downcast='int16', inplace=True)
 

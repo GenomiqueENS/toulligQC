@@ -20,8 +20,6 @@
 
 # Class for generating Plotly and MPL graphs and statistics tables in HTML format, they use the result_dict or dataframe_dict dictionnaries.
 
-import tempfile
-
 import copy
 import numpy as np
 import pandas as pd
@@ -606,12 +604,6 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
 
     graph_name = "Pass barcoded reads distribution"
 
-    for element in barcode_selection:
-
-        if all(dataframe_dict['barcode.arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
-
     count_sorted = dataframe_dict["read.pass.barcoded"]
 
     return _pie_chart_graph(graph_name=graph_name,
@@ -628,12 +620,6 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
     """
 
     graph_name = "Fail barcoded reads distribution"
-
-    for element in barcode_selection:
-
-        if all(dataframe_dict['barcode.arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
 
     count_sorted = dataframe_dict["read.fail.barcoded"]
 
