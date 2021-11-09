@@ -26,6 +26,8 @@
 # Extraction of statistics from sequencing_summary.txt file (1D chemistry)
 
 import sys
+import gzip
+import bz2
 
 import numpy as np
 import pandas as pd
@@ -430,12 +432,8 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         :return: True if the filename is a barcoding summary file
         """
-        try:
-            with open(filename, 'r') as f:
-                header = f.readline()
-            return header.startswith('read_id') and 'barcode_arrangement' in header
-        except FileNotFoundError:
-            "No barcoding file was found"
+        header = _first_line_file(filename)
+        return header.startswith('read_id') and 'barcode_arrangement' in header
 
     @staticmethod
     def _is_sequencing_summary_file(filename):
@@ -444,12 +442,8 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         :return: True if the file is indeed a sequencing summary file
         """
-        try:
-            with open(filename, 'r') as f:
-                header = f.readline()
-            return header.startswith('filename') and not 'barcode_arrangement' in header
-        except IOError:
-            raise FileNotFoundError
+        header = _first_line_file(filename)
+        return header.startswith('filename') and not 'barcode_arrangement' in header
 
     @staticmethod
     def _is_sequencing_summary_with_barcodes(filename):
@@ -459,9 +453,25 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         :return: True if the filename is a sequencing summary file with barcodes
         """
-        try:
+        header = _first_line_file(filename)
+        return header.startswith('filename') and 'barcode_arrangement' in header
+
+
+def _first_line_file(filename):
+    """
+    Load the first line of a file.
+    :param filename: name of the file to load.
+    :return: the first line of the file
+    """
+    try:
+        if filename.endswith('.gz'):
+            with gzip.open(filename, 'rt') as f:
+                return f.readline()
+        elif filename.endswith('.bz2'):
+            with gzip.open(filename, 'rt') as f:
+                return f.readline()
+        else:
             with open(filename, 'r') as f:
-                header = f.readline()
-                return header.startswith('filename') and 'barcode_arrangement' in header
-        except IOError:
-            raise FileNotFoundError
+                return f.readline()
+    except IOError:
+        raise FileNotFoundError
