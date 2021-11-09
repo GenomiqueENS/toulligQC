@@ -26,6 +26,8 @@
 # Extraction of run information from the sequencing_telemetry.js file
 
 import json
+import gzip
+import bz2
 import os.path
 
 
@@ -94,44 +96,43 @@ class SequencingTelemetryExtractor:
         :return: result_dict filled
         """
 
-        with open(self.telemetry_file, 'r') as f:
-            array = json.load(f)
+        array = _load_json(self.telemetry_file)
 
-            result_dict[self.get_report_data_file_id() + '.source'] = self.telemetry_file
+        result_dict[self.get_report_data_file_id() + '.source'] = self.telemetry_file
 
-            self._set_result_dict_value(result_dict, '.flowcell.id', array, 'tracking_id', 'flow_cell_id')
-            self._set_result_dict_value(result_dict, '.minknow.version', array, 'tracking_id', 'version')
-            self._set_result_dict_value(result_dict, '.hostname', array, 'tracking_id', 'hostname')
-            self._set_result_dict_value(result_dict, '.operating.system', array, 'tracking_id', 'operating_system')
-            self._set_result_dict_value(result_dict, '.run.id', array, 'tracking_id', 'run_id')
-            self._set_result_dict_value(result_dict, '.protocol.run.id', array, 'tracking_id', 'protocol_run_id')
-            self._set_result_dict_value(result_dict, '.protocol.group.id', array, 'tracking_id', 'protocol_group_id')
-            self._set_result_dict_value(result_dict, '.sample.id', array, 'tracking_id', 'sample_id')
-            self._set_result_dict_value(result_dict, '.exp.start.time', array, 'tracking_id', 'exp_start_time')
-            self._set_result_dict_value(result_dict, '.device.id', array, 'tracking_id', 'device_id')
-            self._set_result_dict_value(result_dict, '.device.type', array, 'tracking_id', 'device_type')
-            self._set_result_dict_value(result_dict, '.distribution.version', array, 'tracking_id',
-                                        'distribution_version')
-            self._set_result_dict_value(result_dict, '.flow.cell.product.code', array, 'tracking_id',
-                                        'flow_cell_product_code')
-            self._set_result_dict_value(result_dict, '.basecalling.date', array, 'tracking_id', 'time_stamp')
+        self._set_result_dict_value(result_dict, '.flowcell.id', array, 'tracking_id', 'flow_cell_id')
+        self._set_result_dict_value(result_dict, '.minknow.version', array, 'tracking_id', 'version')
+        self._set_result_dict_value(result_dict, '.hostname', array, 'tracking_id', 'hostname')
+        self._set_result_dict_value(result_dict, '.operating.system', array, 'tracking_id', 'operating_system')
+        self._set_result_dict_value(result_dict, '.run.id', array, 'tracking_id', 'run_id')
+        self._set_result_dict_value(result_dict, '.protocol.run.id', array, 'tracking_id', 'protocol_run_id')
+        self._set_result_dict_value(result_dict, '.protocol.group.id', array, 'tracking_id', 'protocol_group_id')
+        self._set_result_dict_value(result_dict, '.sample.id', array, 'tracking_id', 'sample_id')
+        self._set_result_dict_value(result_dict, '.exp.start.time', array, 'tracking_id', 'exp_start_time')
+        self._set_result_dict_value(result_dict, '.device.id', array, 'tracking_id', 'device_id')
+        self._set_result_dict_value(result_dict, '.device.type', array, 'tracking_id', 'device_type')
+        self._set_result_dict_value(result_dict, '.distribution.version', array, 'tracking_id',
+                                    'distribution_version')
+        self._set_result_dict_value(result_dict, '.flow.cell.product.code', array, 'tracking_id',
+                                    'flow_cell_product_code')
+        self._set_result_dict_value(result_dict, '.basecalling.date', array, 'tracking_id', 'time_stamp')
 
-            self._set_result_dict_value(result_dict, '.software.name', array, 'software', 'name')
-            self._set_result_dict_value(result_dict, '.software.version', array, 'software', 'version')
-            self._set_result_dict_value(result_dict, '.software.analysis', array, 'software', 'analysis')
+        self._set_result_dict_value(result_dict, '.software.name', array, 'software', 'name')
+        self._set_result_dict_value(result_dict, '.software.version', array, 'software', 'version')
+        self._set_result_dict_value(result_dict, '.software.analysis', array, 'software', 'analysis')
 
-            if 'albacore_opts' in array[0]:
-                self._set_result_dict_value(result_dict, '.kit.version', array, 'albacore_opts', 'kit')
-                self._set_result_dict_value(result_dict, '.flowcell.version', array, 'albacore_opts', 'flowcell')
-                self._set_result_dict_value(result_dict, '.model.file', array, 'albacore_opts', 'local_bc_temp_model')
+        if 'albacore_opts' in array[0]:
+            self._set_result_dict_value(result_dict, '.kit.version', array, 'albacore_opts', 'kit')
+            self._set_result_dict_value(result_dict, '.flowcell.version', array, 'albacore_opts', 'flowcell')
+            self._set_result_dict_value(result_dict, '.model.file', array, 'albacore_opts', 'local_bc_temp_model')
 
-            if 'opts' in array[0]:
-                self._set_result_dict_value(result_dict, '.kit.version', array, 'opts', 'kit')
-                self._set_result_dict_value(result_dict, '.sequencing.kit.version', array, 'context_tags', 'sequencing_kit')
-                self._set_result_dict_value(result_dict, '.barcode.kits.version', array, 'opts', 'barcode_kits')
-                self._set_result_dict_value(result_dict, '.flowcell.version', array, 'opts', 'flowcell')
-                self._set_result_dict_value(result_dict, '.model.file', array, 'opts', 'model_file')
-                self._set_result_dict_value(result_dict, '.pass.threshold.qscore', array, 'opts', 'min_qscore')
+        if 'opts' in array[0]:
+            self._set_result_dict_value(result_dict, '.kit.version', array, 'opts', 'kit')
+            self._set_result_dict_value(result_dict, '.sequencing.kit.version', array, 'context_tags', 'sequencing_kit')
+            self._set_result_dict_value(result_dict, '.barcode.kits.version', array, 'opts', 'barcode_kits')
+            self._set_result_dict_value(result_dict, '.flowcell.version', array, 'opts', 'flowcell')
+            self._set_result_dict_value(result_dict, '.model.file', array, 'opts', 'model_file')
+            self._set_result_dict_value(result_dict, '.pass.threshold.qscore', array, 'opts', 'min_qscore')
 
     def _set_result_dict_value(self, result_dict, key, array, dict_name, dict_key):
 
@@ -154,3 +155,23 @@ class SequencingTelemetryExtractor:
             new_value = ''
 
         result_dict[final_key] = new_value
+
+
+def _load_json(filename):
+    """
+    Load a JSON file. Can handle compressed file.
+    :param filename: name of the file to load
+    :return: a JSON object
+    """
+    if filename.endswith('.gz'):
+        print("Load json gzip")
+        with gzip.open(filename, 'rb') as f:
+            return json.loads(f.read(), encoding='utf-8')
+    elif filename.endswith('.bz2'):
+        print("Load json bzip2")
+        with bz2.open(filename, 'rb') as f:
+            return json.loads(f.read(), encoding='utf-8')
+    else:
+        with open(filename, 'r') as f:
+            return json.load(f)
+
