@@ -492,10 +492,11 @@ def _first_line_file(filename):
             with gzip.open(filename, 'rt') as f:
                 return f.readline()
         elif filename.endswith('.bz2'):
-            with gzip.open(filename, 'rt') as f:
+            with bz2.open(filename, 'rt') as f:
                 return f.readline()
         else:
             with open(filename, 'r') as f:
                 return f.readline()
     except IOError:
         raise FileNotFoundError
+
