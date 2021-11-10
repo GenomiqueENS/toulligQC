@@ -311,9 +311,9 @@ def main():
         if 'barcodes' in config_dictionary:
             barcode_set = set()
             for b in config_dictionary['barcodes'].strip().split(','):
-                pattern = re.search(r'BC(\d{2})', b.strip().upper())
+                pattern = re.search(r'(BC|RB|NB|BARCODE)(\d{2})', b.strip().upper())
                 if pattern:
-                    barcode = 'barcode{}'.format(pattern.group(1))
+                    barcode = 'barcode{}'.format(pattern.group(2))
                     barcode_set.add(barcode)
             barcode_selection = sorted(barcode_set)
 
