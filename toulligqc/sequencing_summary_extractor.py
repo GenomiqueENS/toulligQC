@@ -120,7 +120,10 @@ class SequencingSummaryExtractor:
         if self.is_barcode:
             self.barcode_selection = self.config_dictionary['barcode_selection']
 
-        log_task(self.quiet, 'Load sequencing summary file', start_time, time.time())
+        log_task(self.quiet,
+                 'Load sequencing summary file ({:,.2f} MB used)'.format(self.dataframe_1d.memory_usage(deep=True).sum()/1024/1024),
+                 start_time,
+                 time.time())
 
     @staticmethod
     def get_name() -> str:
