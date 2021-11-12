@@ -26,8 +26,6 @@
 # Extraction of statistics from sequencing_summary.txt file (1D chemistry)
 
 import sys
-import gzip
-import bz2
 import time
 
 import numpy as np
@@ -41,6 +39,9 @@ from toulligqc.sequencing_summary_common import extract_barcode_info
 from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import series_cols_boolean_elements
 from toulligqc.sequencing_summary_common import set_result_value
+from toulligqc.sequencing_summary_common import log_task
+from toulligqc.sequencing_summary_common import add_image_to_result
+from toulligqc.sequencing_summary_common import read_first_line_file
 
 
 class SequencingSummaryExtractor:
@@ -119,7 +120,7 @@ class SequencingSummaryExtractor:
         if self.is_barcode:
             self.barcode_selection = self.config_dictionary['barcode_selection']
 
-        self._log('Load sequencing summary file', start_time, time.time())
+        log_task(self.quiet, 'Load sequencing summary file', start_time, time.time())
 
     @staticmethod
     def get_name() -> str:
@@ -227,7 +228,7 @@ class SequencingSummaryExtractor:
                                  self.dataframe_dict,
                                  self.dataframe_1d)
 
-        self._log('Extract info from sequencing summary file', start_time, time.time())
+        log_task(self.quiet, 'Extract info from sequencing summary file', start_time, time.time())
 
     def _fill_series_dict(self, df_dict, df):
 
@@ -265,32 +266,32 @@ class SequencingSummaryExtractor:
         """
         images = list()
 
-        self._add_image(images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
-        self._add_image(images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
 
-        self._add_image(images, time.time(), pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
-        self._add_image(images, time.time(), pgg.speed_over_time(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.speed_over_time(self.dataframe_dict, self.images_directory))
 
         if self.is_barcode:
-            self._add_image(images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
-                                                                                       self.barcode_selection,
-                                                                                       self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
+                                                                                                       self.barcode_selection,
+                                                                                                       self.images_directory))
 
-            self._add_image(images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
-                                                                                       self.barcode_selection,
-                                                                                       self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
+                                                                                                       self.barcode_selection,
+                                                                                                       self.images_directory))
 
-            self._add_image(images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
-                                                                            self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
+                                                                                            self.images_directory))
 
-            self._add_image(images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
-                                                                                    self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
+                                                                                                    self.images_directory))
         return images
 
     def clean(self, result_dict):
@@ -448,7 +449,7 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         :return: True if the filename is a barcoding summary file
         """
-        header = _first_line_file(filename)
+        header = read_first_line_file(filename)
         return header.startswith('read_id') and 'barcode_arrangement' in header
 
     @staticmethod
@@ -458,7 +459,7 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         :return: True if the file is indeed a sequencing summary file
         """
-        header = _first_line_file(filename)
+        header = read_first_line_file(filename)
         return header.startswith('filename') and not 'barcode_arrangement' in header
 
     @staticmethod
@@ -469,34 +470,8 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         :return: True if the filename is a sequencing summary file with barcodes
         """
-        header = _first_line_file(filename)
+        header = read_first_line_file(filename)
         return header.startswith('filename') and 'barcode_arrangement' in header
 
-    def _log(self, msg, start_time, end_time):
-        if not self.quiet:
-            print('  - {0} in {1}'.format(msg, time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))))
 
-    def _add_image(self, image_list, start_time, image):
-        end_time = time.time()
-        self._log('Creation of image "{0}"'.format(image[0]), start_time, end_time)
-
-
-def _first_line_file(filename):
-    """
-    Load the first line of a file.
-    :param filename: name of the file to load.
-    :return: the first line of the file
-    """
-    try:
-        if filename.endswith('.gz'):
-            with gzip.open(filename, 'rt') as f:
-                return f.readline()
-        elif filename.endswith('.bz2'):
-            with bz2.open(filename, 'rt') as f:
-                return f.readline()
-        else:
-            with open(filename, 'r') as f:
-                return f.readline()
-    except IOError:
-        raise FileNotFoundError
 

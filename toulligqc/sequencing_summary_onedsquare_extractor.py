@@ -26,6 +26,7 @@
 # Extraction of statistics from 1dsqr_sequencing_summary.txt file (1Dsquare chemistry)
 
 import sys
+import time
 
 import numpy as np
 import pandas as pd
@@ -39,6 +40,9 @@ from toulligqc.sequencing_summary_common import extract_barcode_info
 from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import series_cols_boolean_elements
 from toulligqc.sequencing_summary_common import set_result_value
+from toulligqc.sequencing_summary_common import log_task
+from toulligqc.sequencing_summary_common import add_image_to_result
+from toulligqc.sequencing_summary_common import read_first_line_file
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 
 
@@ -101,6 +105,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         Initialisation
         :return:
         """
+        start_time = time.time()
+
         self.sse.init()
 
         # Load dataframe_1d and remove duplicate columns that are also present in dataframe_1dsqr
@@ -135,6 +141,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         if self.is_barcode:
             self.barcode_selection = self.config_dictionary[
                 'barcode_selection']
+
+        log_task(self.quiet, 'Load 1D2 sequencing summary file', start_time, time.time())
 
     @staticmethod
     def get_name():
@@ -263,39 +271,38 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :return: images array containing the title and the path toward the images
         """
 
-        images = list([pgg.read_count_histogram(result_dict, self.images_directory)])
-        images.append(pgg2.dsqr_read_count_histogram(result_dict, self.images_directory))
-        images.append(pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
-        images.append(pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, self.images_directory))
-        images.append(pgg.yield_plot(self.dataframe_1dsqr, self.images_directory, oneDsquare=True))
-        images.append(pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory, ))
-        images.append(
-            pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
-        images.append(pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
-        images.append(pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr,
-                                                         self.images_directory))
-        images.append(pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
-        images.append(pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, self.images_directory))
-        images.append(pgg.plot_performance(self.sse.dataframe_1d, self.images_directory))
-        images.append(
-            pgg2.sequence_length_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
-        images.append(pgg2.phred_score_over_time_dsqr(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
-        images.append(pgg2.speed_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
+        images = list()
+
+        add_image_to_result(self.quiet, images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.dsqr_read_count_histogram(result_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.dsqr_read_length_scatterplot(self.dataframe_dict_1dsqr, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1dsqr, self.images_directory, oneDsquare=True))
+        add_image_to_result(self.quiet, images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory, ))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.sse.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.sequence_length_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.phred_score_over_time_dsqr(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg2.speed_over_time_dsqr(self.dataframe_dict_1dsqr, self.images_directory))
 
         if self.is_barcode:
-            images.append(pgg2.barcode_percentage_pie_chart_1dsqr_pass(self.dataframe_dict_1dsqr,
-                                                                       self.barcode_selection,
-                                                                       self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg2.barcode_percentage_pie_chart_1dsqr_pass(self.dataframe_dict_1dsqr,
+                                                                 self.barcode_selection,
+                                                                 self.images_directory))
 
-            images.append(pgg2.barcode_percentage_pie_chart_1dsqr_fail(self.dataframe_dict_1dsqr,
-                                                                       self.barcode_selection,
-                                                                       self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg2.barcode_percentage_pie_chart_1dsqr_fail(self.dataframe_dict_1dsqr,
+                                                                 self.barcode_selection,
+                                                                 self.images_directory))
 
-            images.append(pgg2.barcode_length_boxplot_1dsqr(self.dataframe_dict_1dsqr,
-                                                            self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg2.barcode_length_boxplot_1dsqr(self.dataframe_dict_1dsqr,
+                                                                 self.images_directory))
 
-            images.append(pgg2.barcoded_phred_score_frequency_1dsqr(self.dataframe_dict_1dsqr,
-                                                                    self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg2.barcoded_phred_score_frequency_1dsqr(self.dataframe_dict_1dsqr,
+                                                                 self.images_directory))
         return images
 
     def clean(self, result_dict):
@@ -444,15 +451,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :param filename: path of the file to test
         :return: True if the filename is a barcoding summary file
         """
-        try:
-            with open(filename, 'r') as f:
-                header = f.readline()
-            return header.startswith(
-                'read_id') and 'barcode_arrangement' in header
-        except FileNotFoundError:
-            "No barcoding file was found"
-
-    # Static methods for checking 1dsqr files
+        header = read_first_line_file(filename)
+        return header.startswith('read_id') and 'barcode_arrangement' in header
 
     @staticmethod
     def _is_sequencing_summary_1dsqr_file(filename):
@@ -461,13 +461,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :param filename: path of the file to test
         :return: True if the file is indeed a sequencing summary file
         """
-        try:
-            with open(filename, 'r') as f:
-                header = f.readline()
-            return header.startswith(
-                'filename1') and not 'barcode_arrangement' in header
-        except IOError:
-            raise FileNotFoundError
+        header = read_first_line_file(filename)
+        return header.startswith('filename1') and not 'barcode_arrangement' in header
 
     @staticmethod
     def _is_sequencing_summary_1dsqr_with_barcodes(filename):

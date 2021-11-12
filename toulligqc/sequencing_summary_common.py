@@ -21,6 +21,9 @@
 # This module contains common methods for sequencing summary modules.
 
 import sys
+import gzip
+import bz2
+import time
 import pandas as pd
 
 
@@ -288,3 +291,33 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
                          frequency_value)
 
     return count_sorted
+
+
+def log_task(quiet, msg, start_time, end_time):
+    if not quiet:
+        print('  - {0} in {1}'.format(msg, time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))))
+
+
+def add_image_to_result(quiet, image_list, start_time, image):
+    end_time = time.time()
+    log_task(quiet, 'Creation of image "{0}"'.format(image[0]), start_time, end_time)
+
+
+def read_first_line_file(filename):
+    """
+    Load the first line of a file.
+    :param filename: name of the file to load.
+    :return: the first line of the file
+    """
+    try:
+        if filename.endswith('.gz'):
+            with gzip.open(filename, 'rt') as f:
+                return f.readline()
+        elif filename.endswith('.bz2'):
+            with bz2.open(filename, 'rt') as f:
+                return f.readline()
+        else:
+            with open(filename, 'r') as f:
+                return f.readline()
+    except IOError:
+        raise FileNotFoundError
