@@ -359,7 +359,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         barcoding_summary_datatypes = {
             'read_id': object,
-            'barcode_arrangement': object
+            'barcode_arrangement': 'category'
         }
 
         try:
@@ -378,7 +378,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 files[0]):
                 sequencing_summary_columns.append('barcode_arrangement')
                 sequencing_summary_datatypes.update(
-                    {'barcode_arrangement': object})
+                    {'barcode_arrangement': 'category'})
 
                 return pd.read_csv(files[0],
                                    sep="\t",

@@ -112,6 +112,8 @@ class SequencingSummaryExtractor:
                                           'mean_qscore_template': 'mean_qscore'}, inplace=True)
 
         # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+        if 'barcode_arrangement' in self.dataframe_1d.columns:
+            self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'], inplace=True)
         self.dataframe_1d = self.dataframe_1d.fillna(0)
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
@@ -350,7 +352,7 @@ class SequencingSummaryExtractor:
 
         barcoding_summary_datatypes = {
             'read_id': object,
-            'barcode_arrangement': object
+            'barcode_arrangement': 'category'
         }
 
         try:
@@ -363,7 +365,7 @@ class SequencingSummaryExtractor:
             elif len(files) == 1 and self._is_sequencing_summary_with_barcodes(files[0]):
                 sequencing_summary_columns.append('barcode_arrangement')
                 sequencing_summary_datatypes.update(
-                    {'barcode_arrangement': object})
+                    {'barcode_arrangement': 'category'})
 
                 return pd.read_csv(files[0], sep="\t", usecols=sequencing_summary_columns,
                                    dtype=sequencing_summary_datatypes)
