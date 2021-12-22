@@ -53,6 +53,7 @@ from toulligqc import fast5_extractor
 from toulligqc import sequencing_summary_extractor
 from toulligqc import sequencing_summary_onedsquare_extractor
 from toulligqc import sequencing_telemetry_extractor
+from toulligqc import common
 
 
 def _parse_args(config_dictionary):
@@ -247,16 +248,6 @@ def _show(config_dictionary, msg):
         print(msg)
 
 
-def _format_time(t):
-    """
-    Format a time duration
-    :param t: time in milliseconds
-    :return: the duration in string
-    """
-
-    return time.strftime("%H:%M:%S", time.gmtime(t))
-
-
 def _join_parameter_arguments(arg):
     """
     Join parameter arguments
@@ -358,7 +349,7 @@ def main():
         result_dict['{}.duration'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)
 
         _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(),
-                                                                               _format_time(extract_time)))
+                                                                               common.format_duration(extract_time)))
 
     # HTML report and report.data file generation
     _show(config_dictionary, "* Write HTML report")
@@ -370,7 +361,7 @@ def main():
     if config_dictionary['report_only'].lower() != 'true':
         _show(config_dictionary, "* Write statistics files")
         report_data_file_generator.statistics_generator(config_dictionary, result_dict)
-    _show(config_dictionary, "* End of the QC extractor (done in {})".format(_format_time(qc_end - qc_start)))
+    _show(config_dictionary, "* End of the QC extractor (done in {})".format(common.format_duration(qc_end - qc_start)))
 
 
 if __name__ == "__main__":

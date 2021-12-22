@@ -25,6 +25,7 @@ import gzip
 import bz2
 import time
 import pandas as pd
+from toulligqc import common
 
 
 def set_result_value(extractor, result_dict, key: str, value):
@@ -295,7 +296,8 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
 
 def log_task(quiet, msg, start_time, end_time):
     if not quiet:
-        print('  - {0} in {1}'.format(msg, time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))))
+        delta = end_time - start_time
+        print('  - {:} in {:}'.format(msg, common.format_duration(delta)))
 
 
 def add_image_to_result(quiet, image_list, start_time, image):
