@@ -339,11 +339,11 @@ class SequencingSummaryExtractor:
 
         sequencing_summary_datatypes = {
             'channel': np.int16,
-            'start_time': np.float,
+            'start_time': np.float64,
             'passes_filtering': np.bool,
             'sequence_length_template': np.uint32,
-            'mean_qscore_template': np.float,
-            'duration': np.float}
+            'mean_qscore_template': np.float32,
+            'duration': np.float32}
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
         barcoding_summary_columns = ['read_id', 'barcode_arrangement']

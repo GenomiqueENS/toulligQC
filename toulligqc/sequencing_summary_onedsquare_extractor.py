@@ -348,10 +348,10 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         sequencing_summary_datatypes = {
             'passes_filtering': np.bool,
             'sequence_length': np.uint32,
-            'mean_qscore': np.float,
-            'start_time1': np.float,
-            'trimmed_duration1': np.float,
-            'trimmed_duration2': np.float,
+            'mean_qscore': np.float32,
+            'start_time1': np.float64,
+            'trimmed_duration1': np.float32,
+            'trimmed_duration2': np.float32,
         }
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
