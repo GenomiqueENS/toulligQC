@@ -14,7 +14,6 @@ RUN apt update && \
                     python3-pandas\
                     python3-numpy\
                     python3-sklearn && \
-    pip3 install --upgrade setuptools && \
     pip3 install "plotly>=4.5.0,<4.6.0" && \
     cd /tmp && \
     git clone https://github.com/GenomicParisCentre/toulligQC && \
@@ -22,6 +21,8 @@ RUN apt update && \
     git checkout v$VERSION && \
     python3 setup.py build install && \
     apt remove --yes git && \
-    apt clean
+    apt autoremove --yes && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["toulligqc"]
 CMD ["--help"]
