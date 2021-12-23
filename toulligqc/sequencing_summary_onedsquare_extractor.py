@@ -387,7 +387,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
             # If multiple files, check if there's a barcoding one and a sequencing one :
             for f in files:
-
                 # check for presence of barcoding files
                 if self._is_barcode_file(f):
                     dataframe = pd.read_csv(f,
@@ -429,15 +428,17 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                                              barcode_dataframe,
                                              on='read_id',
                                              how='left')
+                dataframes_merged = dataframes_merged.astype({'barcode_arrangement': 'category'})
 
                 missing_barcodes_count = dataframes_merged['barcode_arrangement'].isna().sum()
                 if missing_barcodes_count > 0:
                     sys.stderr.write('Warning: {} barcodes values are missing in sequencing summary file(s).'
                                      ' They will be marked as "unclassified".\n'.format(missing_barcodes_count))
-
                 # Add missing categories
-                dataframes_merged['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering',
-                                                                             'unclassified'], inplace=True)
+                dataframes_merged['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
+                                                                            inplace=True)
+                if 'unclassified' not in dataframes_merged['barcode_arrangement'].cat.categories:
+                    dataframes_merged['barcode_arrangement'].cat.add_categories(['unclassified'], inplace=True)
 
                 # Replace missing barcodes values by 'unclassified'
                 dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna(
