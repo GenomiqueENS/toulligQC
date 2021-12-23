@@ -111,9 +111,12 @@ class SequencingSummaryExtractor:
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                           'mean_qscore_template': 'mean_qscore'}, inplace=True)
 
-        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+        # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
-            self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'], inplace=True)
+            self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
+                                                                        inplace=True)
+
+        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
         self.dataframe_1d = self.dataframe_1d.fillna(0)
 
         # Dictionary for storing all pd.Series and pd.Dataframe entries
