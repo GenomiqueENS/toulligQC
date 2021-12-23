@@ -1,5 +1,15 @@
 # Changelog
 
+# 2.2 (TBD)
+* Add some flexibility to barcode specification (Thanks to  Hunter Cameron).
+* The sequencing_summary.txt ans sequencing_telemetry.js files can now be read compressed in gzip or bzip2.
+* Add some log information on stdout for duration of the sequencing summary extractors.
+* Change the format of the duration in log.
+* Now logs memory used by dataframes.
+* Fix Docker image build issue when updating setuptools.
+* QScores and durations are now stored in 32 bits floats instead of 64 bits to reduce memory consumption (≈25% for 1D data).
+* Barcode arrangements are now stored as categories instead of strings.
+
 ## 2.1.1 (2021-08-18)
 * Fix issue when barcode list argument contains non existing barcode(s) in input data or when all existing barcodes are used.
 
