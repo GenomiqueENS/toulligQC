@@ -1,8 +1,8 @@
 # Changelog
 
-# 2.2 (TBD)
+## 2.2 (2022-01-03)
 * Add some flexibility to barcode specification (Thanks to  Hunter Cameron).
-* The sequencing_summary.txt ans sequencing_telemetry.js files can now be read compressed in gzip or bzip2.
+* The sequencing_summary.txt and sequencing_telemetry.js files can now be read compressed in gzip or bzip2.
 * Add some log information on stdout for duration of the sequencing summary extractors.
 * Change the format of the duration in log.
 * Now logs memory used by dataframes.
