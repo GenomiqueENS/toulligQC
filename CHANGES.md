@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.2.1 (2022-01-05)
+* Generated images were not included in the main HTML report file.
+
 ## 2.2 (2022-01-03)
 * Add some flexibility to barcode specification (Thanks to  Hunter Cameron).
 * The sequencing_summary.txt and sequencing_telemetry.js files can now be read compressed in gzip or bzip2.
