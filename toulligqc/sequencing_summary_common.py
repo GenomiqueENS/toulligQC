@@ -303,6 +303,7 @@ def log_task(quiet, msg, start_time, end_time):
 def add_image_to_result(quiet, image_list, start_time, image):
     end_time = time.time()
     log_task(quiet, 'Creation of image "{0}"'.format(image[0]), start_time, end_time)
+    image_list.append(image)
 
 
 def read_first_line_file(filename):
