@@ -68,13 +68,18 @@ def _parse_args(config_dictionary):
 
     # Add all required arguments
     required.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
-                          help='Basecaller sequencing summary source', metavar='SEQUENCING_SUMMARY_SOURCE',
+                          help='Basecaller sequencing summary source, ' +
+                               'can be compressed with gzip (.gz) or bzip2 (.bz2)',
+                          metavar='SEQUENCING_SUMMARY_SOURCE',
                           required=True)
     required.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
-                          help='Basecaller telemetry file source', default=False)
+                          help='Basecaller telemetry file source, ' +
+                               'can be compressed with gzip (.gz) or bzip2 (.bz2)',
+                          default=False)
 
     required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source',
-                          help='Fast5 file source (necessary if no telemetry file)')
+                          help='Fast5 file source (necessary if no telemetry file), ' +
+                               'can also be in a tar.gz/tar.bz2 archive or a directory')
 
     # Add all optional arguments
     optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
@@ -89,7 +94,7 @@ def _parse_args(config_dictionary):
     optional.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Option for barcode usage",
                           default=False)
     optional.add_argument('-l', '--barcodes', action='store', default='', dest='barcodes',
-                          help='Coma separated barcode list')
+                          help='Coma separated barcode list (e.g. BC05,RB09,NB01,barcode10)')
     optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                           default=False)
     optional.add_argument("--report-only", action='store_true', dest='report_only',
@@ -302,7 +307,7 @@ def main():
         if 'barcodes' in config_dictionary:
             barcode_set = set()
             for b in config_dictionary['barcodes'].strip().split(','):
-                pattern = re.search(r'(BC|RB|NB|BARCODE)(\d{2})', b.strip().upper())
+                pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', b.strip().upper())
                 if pattern:
                     barcode = 'barcode{}'.format(pattern.group(2))
                     barcode_set.add(barcode)
