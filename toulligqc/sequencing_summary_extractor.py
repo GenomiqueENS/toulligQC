@@ -418,8 +418,11 @@ class SequencingSummaryExtractor:
                 dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna(
                     'unclassified')
 
-                # delete column read_id after merging
+                # Delete column read_id after merging
                 del dataframes_merged['read_id']
+
+                # Set 'barcode_arrangement' column type as category
+                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].astype('category')
 
                 return dataframes_merged
 
