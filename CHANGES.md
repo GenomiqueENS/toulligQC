@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.2.2 (2022-08-31)
+* Fix when multiple sequencing summary barcode files were available, the type of the 'barcode_arrangement' column in the dataframe was not correct.
+
 ## 2.2.1 (2022-01-05)
 * Generated images were not included in the main HTML report file.
 
