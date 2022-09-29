@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.2.3 (2022-09-29)
+* Fix error when no Fast5 file is found in a directory provided as argument. Now throw an understandable error message.
+
 ## 2.2.2 (2022-08-31)
 * Fix when multiple sequencing summary barcode files were available, the type of the 'barcode_arrangement' column in the dataframe was not correct.
 
