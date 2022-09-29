@@ -48,6 +48,7 @@ class Fast5Extractor:
     def __init__(self, config_dictionary):
         self.config_file_dictionary = config_dictionary
         self.fast5_source = config_dictionary['fast5_source']
+        self.file_to_process = None
         self.report_name = config_dictionary['report_name']
         self.fast5_file_extension = ''
         self.fast5_file = ''
@@ -59,25 +60,33 @@ class Fast5Extractor:
         :return:
         """
 
-        if os.path.isdir(self.fast5_source):
-            self.fast5_file_extension = 'fast5_directory'
+        if not os.path.exists(self.fast5_source):
+            return False, 'The input file or directory for Fast5 file does not exists: ' + self.fast5_source
 
-        elif self.fast5_source.endswith('.tar.gz'):
+        if os.path.isdir(self.fast5_source):
+            file_found = self._find_file_in_directory()
+            if file_found is None:
+                return False, 'No Fast5 file found in directory: ' + self.fast5_source
+            self.file_to_process = file_found
+        else:
+            self.file_to_process = self.fast5_source
+
+        if self.file_to_process.endswith('.tar.gz'):
             self.fast5_file_extension = 'tar.gz'
 
-        elif self.fast5_source.endswith('.fast5'):
+        elif self.file_to_process.endswith('.fast5'):
             self.fast5_file_extension = 'fast5'
 
-        elif self.fast5_source.endswith('.tar.bz2'):
+        elif self.file_to_process.endswith('.tar.bz2'):
             self.fast5_file_extension = 'tar.bz2'
 
         else:
-            return False, 'The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format)'
-
-        if self.fast5_file_extension != 'fast5_directory' and not os.path.isfile(self.fast5_source):
-            return False, "The Fast5 source does not exists: " + self.fast5_source
+            return False, 'The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format): ' + self.fast5_source
 
         return True, ""
+
+
+
 
     def init(self):
         """
@@ -189,27 +198,15 @@ class Fast5Extractor:
         """
         self.temporary_directory = tempfile.mkdtemp()
         if self.fast5_file_extension == 'tar.bz2':
-            tar_bz2_file = self.fast5_source
+            tar_bz2_file = self.file_to_process
             self.fast5_file = self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
 
         elif self.fast5_file_extension == 'tar.gz':
-            tar_gz_file = self.fast5_source
+            tar_gz_file = self.file_to_process
             self.fast5_file = self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
 
         elif self.fast5_file_extension == 'fast5' or self.fast5_file_extension == '.fast5':
-            self.fast5_file = self.fast5_source
-
-        elif self.fast5_file_extension == 'fast5_directory':
-
-            if glob.glob(self.fast5_source + '/*.fast5'):
-                self.fast5_file = self.fast5_source + os.listdir(self.fast5_source)[0]
-
-            elif glob.glob(self.fast5_source + '/*.tar.bz2'):
-                tar_bz2_file = self.fast5_source + self.report_name + '.tar.bz2'
-                self.fast5_file = self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
-            elif glob.glob(self.fast5_source + '/*.tar.gz'):
-                tar_gz_file = self.fast5_source + self.report_name + '.tar.gz'
-                self.fast5_file = self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
+            self.fast5_file = self.file_to_process
         else:
             err_msg = 'There is a problem with the fast5 file or the tar file'
             sys.exit(err_msg)
@@ -233,6 +230,20 @@ class Fast5Extractor:
                 return tracking_id_dict
 
         return {}
+
+    def _find_file_in_directory(self):
+        """
+        Method that looking for a suitable Fast5 file in the source directory.
+        :return: The path to the first suitable file in the source directory
+        """
+
+        for ext in ('fast5', 'tar.bz2', 'tar.gz'):
+            if glob.glob(self.fast5_source + '/*.' + ext):
+                files_found = os.listdir(self.fast5_source)
+                if len(files_found) > 0:
+                    return self.fast5_source + files_found[0]
+
+        return None
 
 
 def _set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
