@@ -18,6 +18,14 @@
 # Maintainer: Laurent Jourdren
 # Since version 2.2
 
+import numpy as np
+from packaging import version
+
+def is_numpy_1_24():
+    """
+    This function checks if Numpy version is later then 1.20
+    """
+    return version.parse(np.__version__) >= version.parse("1.20")
 
 def format_duration(t):
     """

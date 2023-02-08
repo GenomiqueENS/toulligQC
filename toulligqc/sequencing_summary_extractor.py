@@ -42,7 +42,7 @@ from toulligqc.sequencing_summary_common import set_result_value
 from toulligqc.sequencing_summary_common import log_task
 from toulligqc.sequencing_summary_common import add_image_to_result
 from toulligqc.sequencing_summary_common import read_first_line_file
-
+from toulligqc.common import is_numpy_1_24
 
 class SequencingSummaryExtractor:
     """
@@ -345,7 +345,7 @@ class SequencingSummaryExtractor:
         sequencing_summary_datatypes = {
             'channel': np.int16,
             'start_time': np.float64,
-            'passes_filtering': np.bool,
+            'passes_filtering': np.bool_ if is_numpy_1_24 else np.bool,
             'sequence_length_template': np.uint32,
             'mean_qscore_template': np.float32,
             'duration': np.float32}
