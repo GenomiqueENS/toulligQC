@@ -35,6 +35,7 @@ from toulligqc.plotly_graph_common import _pie_chart_graph
 from toulligqc.plotly_graph_common import _quality_multiboxplot
 from toulligqc.plotly_graph_common import _read_length_distribution
 from toulligqc.plotly_graph_common import _scatterplot
+from toulligqc.plotly_graph_common import _twod_density_char
 from toulligqc.plotly_graph_common import _title
 from toulligqc.plotly_graph_common import _transparent_colors
 from toulligqc.plotly_graph_common import _xaxis
@@ -217,6 +218,16 @@ def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
     return _scatterplot(graph_name, dataframe_dict_1dsqr, result_directory, onedsquare=True)
 
 
+def twod_density(dataframe_dict, result_directory):
+    """
+    Plot the scatter plot representing the relation between the phred score and the sequence length in log
+    """
+
+    graph_name = "Mean PHRED score per read length"
+
+    return _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare = True)
+
+
 #
 # For each barcode 1D²
 #
@@ -228,10 +239,11 @@ def barcode_percentage_pie_chart_1dsqr_pass(dataframe_dict_1dsqr, barcode_select
 
     graph_name = "1D² read pass barcode distribution"
 
-    count_sorted = dataframe_dict_1dsqr["read.pass.barcoded"]
+    read_count_sorted = dataframe_dict_1dsqr["read.pass.barcoded"]
+    base_count_sorted = dataframe_dict_1dsqr["base.pass.barcoded"]
 
     return _pie_chart_graph(graph_name=graph_name,
-                            count_sorted=count_sorted,
+                            count_sorted=[read_count_sorted, base_count_sorted],
                             color_palette=toulligqc_colors['pie_chart_palette'],
                             one_d_square=True,
                             result_directory=result_directory)
@@ -245,10 +257,11 @@ def barcode_percentage_pie_chart_1dsqr_fail(dataframe_dict_1dsqr, barcode_select
 
     graph_name = "1D² read fail barcode distribution"
 
-    count_sorted = dataframe_dict_1dsqr["read.fail.barcoded"]
+    read_count_sorted = dataframe_dict_1dsqr["read.fail.barcoded"]
+    base_count_sorted = dataframe_dict_1dsqr["base.fail.barcoded"]
 
     return _pie_chart_graph(graph_name=graph_name,
-                            count_sorted=count_sorted,
+                            count_sorted=[read_count_sorted, base_count_sorted],
                             color_palette=toulligqc_colors['pie_chart_palette'],
                             one_d_square=True,
                             result_directory=result_directory)

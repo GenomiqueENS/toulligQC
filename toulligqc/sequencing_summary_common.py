@@ -98,6 +98,17 @@ def series_cols_boolean_elements(dataframe, column_name1: str, column_name2: str
     return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
 
 
+def df_cols_boolean_elements(dataframe, column_name1: list, column_name2: str, boolean: bool) -> pd.Series:
+    """
+    Returns a Panda's Series object with the number of values of different columns filtered by a boolean
+    :param dataframe: dataframe_1d
+    :param column_name1: 1st column to filter
+    :param column_name2: 2nd column to filter
+    :param boolean: access columns of dataframe by boolean array
+    """
+    return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
+
+
 def sorted_series_boolean_elements_divided(dataframe, column_name1: str, column_name2: str, boolean: bool,
                                            denominator: int):
     """
@@ -129,6 +140,22 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     for element in barcode_selection:
         if element not in barcodes_found and element != 'other barcodes':
             sys.stderr.write("Warning: The barcode {} doesn't exist in input data\n".format(element))
+
+
+    # Get barcodes frequency by Bases
+    df_base_pass_barcode = series_cols_boolean_elements(df, ["barcode_arrangement",  "sequence_length"],
+                                                                "passes_filtering", True)
+
+    dataframe_dict["base.pass.barcoded"] = _barcode_bases(extractor, barcode_selection, result_dict,
+                                                             "base.pass.barcoded",
+                                                              df_base_pass_barcode)
+
+    df_base_fail_barcode = series_cols_boolean_elements(df, ["barcode_arrangement",  "sequence_length"],
+                                                                "passes_filtering", False)
+
+    dataframe_dict["base.fail.barcoded"] = _barcode_bases(extractor, barcode_selection, result_dict,
+                                                             "base.fail.barcoded",
+                                                              df_base_fail_barcode) 
 
     # Get barcodes frequency by read type
     series_read_pass_barcode = series_cols_boolean_elements(df, "barcode_arrangement",
@@ -290,6 +317,53 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
         frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
         set_result_value(extractor, result_dict, entry.replace(".barcoded", ".") + barcode + ".frequency",
                          frequency_value)
+
+    return count_sorted
+
+
+def _barcode_bases(extractor, barcode_selection, result_dict, entry: str, df_filtered) -> pd.Series:
+    """
+    Count bases by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
+    Regroup all non used barcodes in index "other"
+    Compute all frequency values for each number of barcoded bases
+    :param result_dict: result dictionary with statistics
+    :param entry: entry about barcoded counts
+    :param prefix: key prefix
+    :return: Series with all barcodes (used, non used, and unclassified) frequencies
+    """
+    # Regroup all barcoded and sum all read lengths in df
+    all_barcode_count = df_filtered.groupby('barcode_arrangement')['sequence_length'].sum()
+
+    # Retain only existing barcodes from barcode_selection list
+    barcodes_found = set(df_filtered['barcode_arrangement'].unique())
+    barcode_selection_existing = [x for x in barcode_selection if x in barcodes_found]
+
+    # Sort by list of barcode_selection
+    count_sorted = all_barcode_count.sort_index()[barcode_selection_existing]
+    # Replace all NaN values to zero
+    count_sorted.fillna(0, downcast='int16', inplace=True)
+
+    # Compute sum of all used barcodes without barcode 'unclassified'
+    set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+
+    # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
+    non_used_barcodes_count_key = entry.replace(".barcoded", ".non.used.barcodes.count")
+
+    # Compute all reads of barcodes that are not in the barcode_selection list
+    other_barcode_count = sum(all_barcode_count) - sum(count_sorted)
+    set_result_value(extractor, result_dict, non_used_barcodes_count_key, other_barcode_count)
+
+    # Create Series for all non-used barcode counts and rename index array with "other"
+    other_all_barcode_count = pd.Series(other_barcode_count, index=['other barcodes'])
+
+    # Append Series of non-used barcode counts to the Series of barcode_selection counts
+    count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
+
+    # Compute frequency for all barcode counts and save into dataframe_dict
+    for barcode in count_sorted.to_dict():
+         frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
+         set_result_value(extractor, result_dict, entry.replace(".barcoded", ".") + barcode + ".frequency",
+                          frequency_value)
 
     return count_sorted
 
