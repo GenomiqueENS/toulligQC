@@ -535,7 +535,9 @@ def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_c
 
 
 def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, result_directory):
-    labels = count_sorted.index.values.tolist()
+    read_count_sorted = count_sorted[0]
+    base_count_sorted = count_sorted[1]
+    labels = read_count_sorted.index.values.tolist()
 
     fig = go.Figure()
 
@@ -546,9 +548,9 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
         pie_marker = dict(line=dict(width=line_width, color='#808080'))
         bar_colors = color_palette[0]
 
-    # Pie chart
+    # reads Pie chart
     fig.add_trace(go.Pie(labels=labels,
-                         values=count_sorted,
+                         values=read_count_sorted,
                          hoverinfo='label+percent',
                          textinfo='percent',
                          textfont_size=14,
@@ -557,9 +559,29 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
                          hovertemplate='<b>%{label}</b><br>%{percent:.1%} (%{value:,})<extra></extra>',
                          visible=True
                          ))
-    # Histogram
+    # Bases Pie chart
+    fig.add_trace(go.Pie(labels=labels,
+                         values=base_count_sorted,
+                         hoverinfo='label+percent',
+                         textinfo='percent',
+                         textfont_size=14,
+                         marker=pie_marker,
+                         textposition='inside',
+                         hovertemplate='<b>%{label}</b><br>%{percent:.1%} (%{value:,})<extra></extra>',
+                         visible=True
+                         ))
+    # Reads Histogram
     fig.add_trace(go.Bar(x=labels,
-                         y=count_sorted,
+                         y=read_count_sorted,
+                         marker_color=bar_colors,
+                         marker_line_color='gray',
+                         marker_line_width=line_width,
+                         hovertemplate='<b>%{x}</b><br>%{y:,}<extra></extra>',
+                         visible=False
+                         ))
+    # Bases Histogram
+    fig.add_trace(go.Bar(x=labels,
+                         y=base_count_sorted,
                          marker_color=bar_colors,
                          marker_line_color='gray',
                          marker_line_width=line_width,
@@ -571,7 +593,7 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
     fig.update_layout(
         **_title(graph_name),
         **default_graph_layout,
-        **_legend('Barcodes'),
+        **_legend('Barcodes',args=dict(y=0.75)),
         uniformtext_minsize=12,
         uniformtext_mode='hide',
         xaxis={'visible': False},
@@ -584,32 +606,48 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
         updatemenus=[
             dict(
                 type="buttons",
-                direction="left",
+                direction="down",
                 buttons=list([
                     dict(
-                        args=[{'visible': [True, False]},
+                        args=[{'visible': [False, True, False, False]},
                               {'xaxis': {'visible': False},
                                'yaxis': {'visible': False},
                                'plot_bgcolor': 'white'}],
-                        label="Pie chart",
+                        label="Reads Pie chart",
                         method="update"
                     ),
                     dict(
-                        args=[{'visible': [False, True]},
+                        args=[{'visible': [False, False, False, True]},
+                              {**_xaxis('Barcodes', dict(visible=True)),
+                               **_yaxis('Base count', dict(visible=True)),
+                               'plot_bgcolor': plotly_background_color}],
+                        label="Reads Histogram",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [True, False, False, False]},
+                              {'xaxis': {'visible': False},
+                               'yaxis': {'visible': False},
+                               'plot_bgcolor': 'white'}],
+                        label="Bases Pie chart",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, True, False]},
                               {**_xaxis('Barcodes', dict(visible=True)),
                                **_yaxis('Read count', dict(visible=True)),
                                'plot_bgcolor': plotly_background_color}],
-                        label="Histogram",
+                        label="Bases Histogram",
                         method="update"
                     )
                 ]),
-                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                pad={"r": 20, "t": 20, "l": 40, "b": 20},
                 showactive=True,
                 x=1.0,
                 xanchor="left",
                 y=1.25,
                 yanchor="top"
-            ),
+            )
         ]
     )
 
@@ -618,11 +656,13 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
     else:
         count_col_name = 'Read count'
 
-    barcode_table = pd.DataFrame({"Barcode arrangement (%)": count_sorted / sum(count_sorted) * 100,
-                                  count_col_name: count_sorted})
+    barcode_table = pd.DataFrame({"Barcode arrangement (%)": read_count_sorted / sum(read_count_sorted) * 100,
+                                  count_col_name: read_count_sorted,
+                                 "Base count": base_count_sorted})
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
     barcode_table[count_col_name] = barcode_table[count_col_name].astype(int).apply(lambda x: _format_int(x))
+    barcode_table["Base count"] = barcode_table["Base count"].astype(int).apply(lambda x: _format_int(x))
     table_html = _dataFrame_to_html(barcode_table)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
@@ -1034,6 +1074,94 @@ def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False)
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
+
+
+def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=False):
+    read_pass_length = dataframe_dict["pass.reads.sequence.length"]
+    read_pass_qscore = dataframe_dict["pass.reads.mean.qscore"]
+    #read_fail_length = dataframe_dict["fail.reads.sequence.length"]
+    #read_fail_qscore = dataframe_dict["fail.reads.mean.qscore"]
+
+    prefix = '1D² ' if onedsquare else ''
+    graph_name = prefix + graph_name
+    npoint = 50000
+
+    fig = go.Figure()
+    
+    idx = np.random.choice(read_pass_length.index, min(npoint, len(read_pass_length)), replace=False)
+    
+    fig.add_trace(go.Histogram2dContour(
+            x = read_pass_length[idx],
+            y = read_pass_qscore[idx],
+            colorscale = 'Blues',
+            reversescale = False,
+            xaxis = 'x',
+            yaxis = 'y',
+            colorbar = dict(
+            title = '<b>Legend</b>',
+            len = 0.4
+        )
+        ))
+
+    fig.add_trace(go.Histogram(
+            y = read_pass_qscore[idx],
+            xaxis = 'x2',
+            marker = dict(
+                color = '#00688B'
+            )
+        ))
+    fig.add_trace(go.Histogram(
+            x = read_pass_length[idx],
+            yaxis = 'y2',
+            marker = dict(
+                color = '#00688B'
+            )
+        ))
+
+    fig.update_layout(
+        autosize = False,
+        xaxis = dict(
+            zeroline = False,
+            domain = [0,0.85],
+            showgrid = False,
+            title = '<b>Sequence length</b>'
+        ),
+        yaxis = dict(
+            zeroline = False,
+            domain = [0,0.85],
+            showgrid = False,
+            title = '<b>PHRED score</b>'
+        ),
+        xaxis2 = dict(
+            zeroline = False,
+            domain = [0.85,1],
+            showgrid = False,
+            visible = False
+        ),
+        yaxis2 = dict(
+            zeroline = False,
+            domain = [0.85,1],
+            showgrid = False,
+            visible = False
+        ),
+        height = 600,
+        width = 1000,
+        bargap = 0,
+        paper_bgcolor="#FFFFFF", 
+        plot_bgcolor="#FFFFFF",
+        hovermode = 'closest',
+        showlegend = False,
+        **_title(graph_name),
+
+    )
+
+    max_x_range = np.percentile(read_pass_length, 99)
+    fig.update_xaxes(range=[0, max_x_range])
+
+    table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+
     return graph_name, output_file, table_html, div
 
 
