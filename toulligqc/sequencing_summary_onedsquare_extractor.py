@@ -286,8 +286,6 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         add_image_to_result(self.quiet, images, time.time(), pgg2.dsqr_read_quality_multiboxplot(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg2.dsqr_allphred_score_frequency(result_dict, self.dataframe_dict_1dsqr, self.images_directory))
-        add_image_to_result(self.quiet, images, time.time(), pgg.all_scatterplot(self.dataframe_dict, self.images_directory))
-        add_image_to_result(self.quiet, images, time.time(), pgg2.scatterplot_1dsqr(self.dataframe_dict_1dsqr, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.twod_density(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg2.twod_density(self.dataframe_dict_1dsqr, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.sse.dataframe_1d, self.images_directory))
