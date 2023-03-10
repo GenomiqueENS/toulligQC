@@ -1027,61 +1027,14 @@ def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
     return graph_name, output_file, table_html, div
 
 
-def _scatterplot(graph_name, dataframe_dict, result_directory, onedsquare=False):
+def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=False):
     read_pass_length = dataframe_dict["pass.reads.sequence.length"]
     read_pass_qscore = dataframe_dict["pass.reads.mean.qscore"]
     read_fail_length = dataframe_dict["fail.reads.sequence.length"]
     read_fail_qscore = dataframe_dict["fail.reads.mean.qscore"]
 
-    # If more than 10.000 reads, interpolate data
-    npoints, sigma = interpolation_points(read_pass_length, 'scatterplot')
-    if (len(read_pass_length) + len(read_fail_length)) > npoints:
-        pass_ratio = len(read_pass_length) / (len(read_pass_length) + len(read_fail_length))
-        pass_data = _interpolate(read_pass_length, int(npoints * pass_ratio), y=read_pass_qscore, interp_type="nearest")
-        fail_data = _interpolate(read_fail_length, int(npoints * (1 - pass_ratio)), y=read_fail_qscore,
-                                 interp_type="nearest")
-    else:
-        pass_data = [read_pass_length, read_pass_qscore]
-        fail_data = [read_fail_length, read_fail_qscore]
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(x=pass_data[0],
-                             y=pass_data[1],
-                             name="Pass reads",
-                             marker_color=toulligqc_colors['pass'],
-                             mode="markers"
-                             ))
-
-    fig.add_trace(go.Scatter(x=fail_data[0],
-                             y=fail_data[1],
-                             name="Fail reads",
-                             marker_color=toulligqc_colors['fail'],
-                             mode="markers"
-                             ))
-
-    prefix = '1D² ' if onedsquare else ''
-    fig.update_layout(
-        **_title(graph_name),
-        **default_graph_layout,
-        **_legend(prefix + 'Read type'),
-        **_xaxis('Sequence length (bp)'),
-        **_yaxis('PHRED score', dict(fixedrange=False)),
-    )
-    # Trim x axis to avoid negative values
-    max_val = max(max(read_fail_length), max(read_pass_length))
-
-    fig.update_xaxes(range=[0, max_val])
-
-    table_html = None
-    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
-    return graph_name, output_file, table_html, div
-
-
-def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=False):
-    read_pass_length = dataframe_dict["pass.reads.sequence.length"]
-    read_pass_qscore = dataframe_dict["pass.reads.mean.qscore"]
-    #read_fail_length = dataframe_dict["fail.reads.sequence.length"]
-    #read_fail_qscore = dataframe_dict["fail.reads.mean.qscore"]
+    all_length = dataframe_dict['all.reads.sequence.length']
+    all_qscore = dataframe_dict['all.reads.mean.qscore']
 
     prefix = '1D² ' if onedsquare else ''
     graph_name = prefix + graph_name
@@ -1089,12 +1042,19 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
 
     fig = go.Figure()
     
-    idx = np.random.choice(read_pass_length.index, min(npoint, len(read_pass_length)), replace=False)
-    
+    idx_pass = np.random.choice(read_pass_length.index, min(npoint, len(read_pass_length)), replace=False)
+    idx_fail = np.random.choice(read_fail_length.index, min(npoint, len(read_fail_length)), replace=False)
+    idx_all = np.random.choice(all_length.index, min(npoint, len(all_length)), replace=False)
+
+    pass_color = toulligqc_colors['pass']
+    fail_color = toulligqc_colors['fail']
+    all_color = toulligqc_colors['all']
+
+
     fig.add_trace(go.Histogram2dContour(
-            x = read_pass_length[idx],
-            y = read_pass_qscore[idx],
-            colorscale = 'Blues',
+            x = all_length[idx_all],
+            y = all_qscore[idx_all],
+            colorscale = [[0, 'white'], [0.5, 'khaki'], [1.0, all_color]], #'Blues',
             reversescale = False,
             xaxis = 'x',
             yaxis = 'y',
@@ -1104,19 +1064,90 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
         )
         ))
 
+    fig.add_trace(go.Histogram2dContour(
+            x = read_pass_length[idx_pass],
+            y = read_pass_qscore[idx_pass],
+            colorscale = [[0, 'white'], [0.5, 'honeydew'], [1.0, pass_color]], #'Blues',
+            reversescale = False,
+            xaxis = 'x',
+            yaxis = 'y',
+            colorbar = dict(
+            title = '<b>Legend</b>',
+            len = 0.4
+        ),
+        visible=False
+        ))
+
+    fig.add_trace(go.Histogram2dContour(
+            x = read_fail_length[idx_fail],
+            y = read_fail_qscore[idx_fail],
+            colorscale = [[0, 'white'], [0.5, 'coral'], [1.0, fail_color]],
+            reversescale = False,
+            xaxis = 'x',
+            yaxis = 'y',
+            colorbar = dict(
+            title = '<b>Legend</b>',
+            len = 0.4,
+        ),
+        visible=False
+        ))
+    
+    max_x_range = max(np.percentile(read_pass_length, 99), np.percentile(read_fail_length, 99))
+    max_y_range = max(np.percentile(read_pass_qscore, 99), np.percentile(read_fail_qscore, 99))
+    fig.update_xaxes(range=[0, max_x_range])
+    fig.update_yaxes(range=[0, max_y_range])
+
     fig.add_trace(go.Histogram(
-            y = read_pass_qscore[idx],
+            y = all_qscore[idx_all],
             xaxis = 'x2',
+            opacity = 0.5,
             marker = dict(
-                color = '#00688B'
+                color = all_color
             )
         ))
+
     fig.add_trace(go.Histogram(
-            x = read_pass_length[idx],
+            x = all_length[idx_all],
+            yaxis = 'y2',
+            opacity = 0.5,
+            marker = dict(
+                color = all_color
+            )
+            ))
+
+    fig.add_trace(go.Histogram(
+            y = read_pass_qscore[idx_pass],
+            xaxis = 'x2',
+            marker = dict(
+                color = pass_color
+            ),
+            visible=False
+        ))
+
+    fig.add_trace(go.Histogram(
+            x = read_pass_length[idx_pass],
             yaxis = 'y2',
             marker = dict(
-                color = '#00688B'
-            )
+                color = pass_color
+            ),
+            visible=False
+            ))
+    
+    fig.add_trace(go.Histogram(
+            y = read_fail_qscore[idx_fail],
+            xaxis = 'x2',
+            marker = dict(
+                color = fail_color
+            ),
+            visible=False
+        ))
+    fig.add_trace(go.Histogram(
+            x = read_fail_length[idx_fail],
+            yaxis = 'y2',
+            marker = dict(
+                color = fail_color
+            ),
+            visible=False
         ))
 
     fig.update_layout(
@@ -1156,8 +1187,38 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
 
     )
 
-    max_x_range = np.percentile(read_pass_length, 99)
-    fig.update_xaxes(range=[0, max_x_range])
+    # Add buttons
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="down",
+                buttons=list([
+                    dict(
+                        args=[{'visible': [True, False, False, True, True, False, False, False, False]}, {'hovermode': False}],
+                        label="all reads",
+                        method="restyle"
+                    ),
+                    dict(
+                        args=[{'visible': [False, True, False, False, False, True, True, False, False]}, {'hovermode': 'x'}],
+                        label="Pass reads",
+                        method="restyle"
+                    ),
+                    dict(
+                        args=[{'visible': [False, False, True, False, False, False, False, True, True]}, {'hovermode': False}],
+                        label="Fail reads",
+                        method="restyle"
+                    )
+                ]),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
+                showactive=True,
+                x=1.0,
+                xanchor="left",
+                y=1.25,
+                yanchor="top"
+            ),
+        ]
+    )
 
     table_html = None
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)

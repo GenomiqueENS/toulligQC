@@ -34,7 +34,6 @@ from toulligqc.plotly_graph_common import _phred_score_density
 from toulligqc.plotly_graph_common import _pie_chart_graph
 from toulligqc.plotly_graph_common import _quality_multiboxplot
 from toulligqc.plotly_graph_common import _read_length_distribution
-from toulligqc.plotly_graph_common import _scatterplot
 from toulligqc.plotly_graph_common import _twod_density_char
 from toulligqc.plotly_graph_common import _title
 from toulligqc.plotly_graph_common import _transparent_colors
@@ -208,22 +207,12 @@ def dsqr_allphred_score_frequency(result_dict, dataframe_dict_1dsqr, result_dire
                                 result_directory=result_directory)
 
 
-def scatterplot_1dsqr(dataframe_dict_1dsqr, result_directory):
-    """
-    Plot the scatter plot representing the relation between the phred score and the sequence length in log
-    """
-
-    graph_name = "Correlation between 1D² read length and PHRED score"
-
-    return _scatterplot(graph_name, dataframe_dict_1dsqr, result_directory, onedsquare=True)
-
-
 def twod_density(dataframe_dict, result_directory):
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
 
-    graph_name = "Mean PHRED score per read length"
+    graph_name = "Correlation between 1D² read length and PHRED score"
 
     return _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare = True)
 
