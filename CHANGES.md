@@ -1,4 +1,8 @@
 # Changelog
+## 2.3 (2023-03-22)
+* Numpy 1.24 is now supported (thanks to Sean Black).
+* Scatter plot of read length vs PHRED score has been remplaced by a 2D density plot.
+* Add bases per barcode distribution graphs.
 
 ## 2.2.3 (2022-09-29)
 * Fix error when no Fast5 file is found in a directory provided as argument. Now throw an understandable error message.
