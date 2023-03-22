@@ -1054,7 +1054,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
     fig.add_trace(go.Histogram2dContour(
             x = all_length[idx_all],
             y = all_qscore[idx_all],
-            colorscale = [[0, 'white'], [0.5, 'khaki'], [1.0, all_color]], #'Blues',
+            colorscale = [[0, 'white'], [0.5, 'khaki'], [1.0, all_color]], 
             reversescale = False,
             xaxis = 'x',
             yaxis = 'y',
@@ -1067,7 +1067,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
     fig.add_trace(go.Histogram2dContour(
             x = read_pass_length[idx_pass],
             y = read_pass_qscore[idx_pass],
-            colorscale = [[0, 'white'], [0.5, 'honeydew'], [1.0, pass_color]], #'Blues',
+            colorscale = [[0, 'white'], [0.5, 'honeydew'], [1.0, pass_color]], 
             reversescale = False,
             xaxis = 'x',
             yaxis = 'y',
@@ -1093,7 +1093,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
         ))
     
     max_x_range = max(np.percentile(read_pass_length, 99), np.percentile(read_fail_length, 99))
-    max_y_range = max(np.percentile(read_pass_qscore, 99), np.percentile(read_fail_qscore, 99))
+    max_y_range = max(np.percentile(read_pass_qscore, 99.8), np.percentile(read_fail_qscore, 99.8))
     fig.update_xaxes(range=[0, max_x_range])
     fig.update_yaxes(range=[0, max_y_range])
 
