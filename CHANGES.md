@@ -1,4 +1,8 @@
 # Changelog
+
+## 2.3.1 (TBD)
+* In over time graphs (read length, PHRED score and translocation speed), now fill the gaps for the 75% and 25% to avoid filling glitch.
+
 ## 2.3 (2023-03-22)
 * Numpy 1.24 is now supported (thanks to Sean Black).
 * Scatter plot of read length vs PHRED score has been replaced by a 2D density plot.
