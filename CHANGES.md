@@ -2,6 +2,8 @@
 
 ## 2.3.1 (TBD)
 * In over time graphs (read length, PHRED score and translocation speed), now fill the gaps for the 75% and 25% to avoid filling glitch.
+* fix 2D density plot title style.
+* Fix error of when summary file with barcodes info was provided in addition of barcoding files (Issue #17), now the barcoding files will be skipped with warnning message in case summary file with barcode information is provided.
 
 ## 2.3 (2023-03-22)
 * Numpy 1.24 is now supported (thanks to Sean Black).
