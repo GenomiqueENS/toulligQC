@@ -1059,9 +1059,8 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
             xaxis = 'x',
             yaxis = 'y',
             colorbar = dict(
-            title = '<b>Legend</b>',
-            len = 0.4
-        )
+                title = '<b>Legend</b>',
+                len = 0.5)
         ))
 
     fig.add_trace(go.Histogram2dContour(
@@ -1072,8 +1071,13 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
             xaxis = 'x',
             yaxis = 'y',
             colorbar = dict(
-            title = '<b>Legend</b>',
-            len = 0.4
+            #title = '<b>Legend</b>',
+            len = 0.4,
+            title = dict(
+                font= dict(
+                    size = 9
+                )
+            )
         ),
         visible=False
         ))
@@ -1182,9 +1186,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
         paper_bgcolor="#FFFFFF", 
         plot_bgcolor="#FFFFFF",
         hovermode = 'closest',
-        showlegend = False,
-        **_title(graph_name),
-
+        showlegend = False
     )
 
     # Add buttons
@@ -1196,7 +1198,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
                 buttons=list([
                     dict(
                         args=[{'visible': [True, False, False, True, True, False, False, False, False]}, {'hovermode': False}],
-                        label="all reads",
+                        label="All reads",
                         method="restyle"
                     ),
                     dict(
@@ -1218,6 +1220,15 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
                 yanchor="top"
             ),
         ]
+    )
+
+    fig.update_layout(
+        **_title(graph_name),
+        **_legend(),
+        **default_graph_layout,
+        #hovermode='x',
+        #**_xaxis('PHRED score', dict(rangemode="tozero")),
+        #**_yaxis('Density probability', dict(rangemode="tozero")),
     )
 
     table_html = None
