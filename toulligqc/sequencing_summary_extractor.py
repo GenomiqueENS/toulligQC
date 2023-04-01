@@ -387,11 +387,11 @@ class SequencingSummaryExtractor:
 
                 # check for presence of sequencing_summary file with barcode info, if true load column barcode_arrangement and ignore barcoding files.
                 elif self._is_sequencing_summary_with_barcodes(f):
-
                     sequencing_summary_columns.append('barcode_arrangement')
                     sequencing_summary_datatypes.update(
                         {'barcode_arrangement': 'category'})
-
+                    sys.stderr.write('Warning: The sequencing summary file {} contains barcode information.'
+                                     ' The barcoding summary files will be skipped.\n'.format(f))
                     return pd.read_csv(f, sep="\t", usecols=sequencing_summary_columns,
                                     dtype=sequencing_summary_datatypes)
 
