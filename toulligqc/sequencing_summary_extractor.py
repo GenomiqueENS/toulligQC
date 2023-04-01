@@ -374,7 +374,6 @@ class SequencingSummaryExtractor:
 
             # If multiple files, check if there's a barcoding one and a sequencing one :
             for f in files:
-
                 # check for presence of barcoding files
                 if self._is_barcode_file(f):
                     dataframe = pd.read_csv(
@@ -385,6 +384,16 @@ class SequencingSummaryExtractor:
                     else:
                         barcode_dataframe = barcode_dataframe.append(
                             dataframe, ignore_index=True)
+
+                # check for presence of sequencing_summary file with barcode info, if true load column barcode_arrangement and ignore barcoding files.
+                elif self._is_sequencing_summary_with_barcodes(f):
+
+                    sequencing_summary_columns.append('barcode_arrangement')
+                    sequencing_summary_datatypes.update(
+                        {'barcode_arrangement': 'category'})
+
+                    return pd.read_csv(f, sep="\t", usecols=sequencing_summary_columns,
+                                    dtype=sequencing_summary_datatypes)
 
                 # check for presence of sequencing_summary file, if True add column read_id for merging with barcode dataframe
                 else:
