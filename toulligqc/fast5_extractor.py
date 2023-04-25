@@ -140,6 +140,13 @@ class Fast5Extractor:
         _set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict,
                                'flow_cell_product_code')
 
+        context_tags_dict = self._get_fast5_items(h5py_file, 'context_tags')
+        if len(context_tags_dict) != 0:
+            _set_result_dict_value(result_dict, prefix + '.selected.speed.bases.per.second', context_tags_dict, 'selected_speed_bases_per_second')
+            _set_result_dict_value(result_dict, prefix + '.sample.frequency', context_tags_dict, 'sample_frequency')
+            _set_result_dict_value(result_dict, prefix + '.sequencing.kit.version', context_tags_dict, 'sequencing_kit')
+
+
     def graph_generation(self, result_dict):
         """
         Graph generation

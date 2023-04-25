@@ -133,6 +133,8 @@ class SequencingTelemetryExtractor:
             self._set_result_dict_value(result_dict, '.flowcell.version', array, 'opts', 'flowcell')
             self._set_result_dict_value(result_dict, '.model.file', array, 'opts', 'model_file')
             self._set_result_dict_value(result_dict, '.pass.threshold.qscore', array, 'opts', 'min_qscore')
+            self._set_result_dict_value(result_dict, '.selected.speed.bases.per.second', array, 'context_tags', 'selected_speed_bases_per_second')
+            self._set_result_dict_value(result_dict, '.sample.frequency', array, 'context_tags', 'sample_frequency')
 
     def _set_result_dict_value(self, result_dict, key, array, dict_name, dict_key):
 

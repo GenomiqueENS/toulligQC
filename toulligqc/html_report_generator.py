@@ -170,6 +170,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
     sequencing_kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sequencing.kit.version', "Unknown")
     barcode_kits_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.barcode.kits.version', "Unknown")
+    selected_speed_bases_per_second = _get_result_value(result_dict, 'sequencing.telemetry.extractor.selected.speed.bases.per.second', "Unknown")
+    sample_frequency = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.frequency', "Unknown")
     basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
     basecaller_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.version', "Unknown")
     basecaller_analysis = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.analysis', "Unknown")
@@ -206,6 +208,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               <tr><th>Kit</th><td>{kit_version}</td></tr>
               <tr><th>Sequencing kit</th><td>{sequencing_kit_version}</td></tr>
               <tr><th>Barcode kits</th><td>{barcode_kits_version}</td></tr>
+              <tr><th>Selected speed (bps)</th><td>{selected_speed_bases_per_second}</td></tr>
+              <tr><th>Sample frequency (Hz)</th><td>{sample_frequency}</td></tr>
               <tr><th>Yield</th><td>{run_yield}</td></tr>
               <tr><th>Read count</th><td>{read_count}</td></tr>
               <tr><th>N50 (bp)</th><td>{n50}</td></tr>
@@ -226,6 +230,8 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                kit_version=kit_version,
                sequencing_kit_version=sequencing_kit_version,
                barcode_kits_version=barcode_kits_version,
+               selected_speed_bases_per_second=selected_speed_bases_per_second,
+               sample_frequency=sample_frequency,
                run_yield=run_yield,
                read_count=_format_int(read_count),
                n50=_format_int(int(n50)),
