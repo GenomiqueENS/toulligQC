@@ -1,9 +1,10 @@
 # Changelog
 
-## 2.3.1 (TBD)
+## 2.4 (2023-04-26)
 * In over time graphs (read length, PHRED score and translocation speed), now fill the gaps for the 75% and 25% to avoid filling glitch.
 * fix 2D density plot title style.
 * Fix error when summary file with barcodes information was provided in addition of barcoding files (Issue #17), now the barcoding files will be skipped with warnning message in case summary file with barcode information is provided.
+* Add the selected speed and sample frequency of the run in the "Run statistics" table of the ToulligQC report
 
 ## 2.3 (2023-03-22)
 * Numpy 1.24 is now supported (thanks to Sean Black).
