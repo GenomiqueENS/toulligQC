@@ -342,12 +342,10 @@ def _over_time_graph(data_series,
     for bin_idx, val in zip(t, data_series):
         b = x[bin_idx]
         bin_dict[b].append(val)
-
     percentiles = (0, 25, 50, 75, 100)
     y = []
     for i in range(len(percentiles)):
         y.append([])
-
     for b in x:
         if b in bin_dict:
             for i, v in enumerate(percentiles):
@@ -360,7 +358,6 @@ def _over_time_graph(data_series,
         y[i] = gaussian_filter1d(v, sigma=sigma)
 
     fig = go.Figure()
-
     # define the green zone if required
     if green_zone_starts_at is not None:
         min_x = min(time_series) / 3600

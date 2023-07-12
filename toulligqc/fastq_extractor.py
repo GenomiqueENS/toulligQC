@@ -1,10 +1,12 @@
 import multiprocessing as mp
 from math import log
 import os
+import numpy as np
 from tqdm import tqdm
 import pandas as pd
 import gzip
 import time
+from datetime import datetime
 from toulligqc.sequencing_summary_common import log_task
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from toulligqc.sequencing_summary_common import describe_dict
@@ -15,17 +17,20 @@ from toulligqc.sequencing_summary_common import count_boolean_elements
 from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import series_cols_boolean_elements
 from toulligqc import plotly_graph_generator as pgg
+from toulligqc.common import is_numpy_1_24
 
 
 class fastqExtractor:
 
     def __init__(self, config_dictionary):
         self.config_file_dictionary = config_dictionary
-        self.fastq = config_dictionary['fastq']
+        self.fastq = config_dictionary['fastq'].split('\t')
         self.images_directory = config_dictionary['images_directory']
-        self.threshold_Qscore = 9
-        self.batch_size = 500
-        self.thread = 30
+        self.threshold_Qscore = int(config_dictionary['threshold'])
+        self.batch_size = int(config_dictionary['batch_size'])
+        self.thread = int(config_dictionary['thread'])
+        self.rich = False
+        self.runid, self.sampleid, self.model_version_id = ['Unknow']*3
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
         else:
@@ -36,9 +41,10 @@ class fastqExtractor:
         Configuration checking
         :return: nothing
         """
-        if not os.path.isfile(self.fastq):
-            return False, "FASTQ file does not exists: " + self.fastq
-        return True, ""
+        for fastq in self.fastq:
+            if not os.path.isfile(fastq):
+                return False, "FASTQ file does not exists: " + fastq
+            return True, ""
 
 
     def init(self):
@@ -84,10 +90,16 @@ class fastqExtractor:
 
         add_image_to_result(self.quiet, images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
+        if self.rich:
+            add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
+        if self.rich:
+            add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.twod_density(self.dataframe_dict, self.images_directory))
-
+        if self.rich:
+            add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
+            add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
         return images
 
 
@@ -106,34 +118,57 @@ class fastqExtractor:
         parse each line of FASTQ quality line:
         return: [read length, mean Qscore, type of read (pass or fail)]
         """
+        #rich = False if isinstance(read_batch[0], str) else True
         fastq_lines = []
-        for read in read_batch:
-            qscore = self._avg_qual(read)
-            passes_filtering = True if qscore > self.threshold_Qscore else False
-            fastq_lines.append((len(read), qscore, passes_filtering))
+        if self.rich:
+            for read in read_batch:
+                name = read[0]
+                qscore = self._avg_qual(read[1])
+                passes_filtering = True if qscore > self.threshold_Qscore else False
+                start_time, ch = self._extract_info_from_name(name)
+                fastq_lines.append((len(read[1]), qscore, passes_filtering, start_time, ch))
+        else:
+            for read in read_batch:
+                qscore = self._avg_qual(read)
+                passes_filtering = True if qscore > self.threshold_Qscore else False
+                fastq_lines.append((len(read), qscore, passes_filtering))
         return fastq_lines
 
 
-    def _fastq_batch_generator(self, batch_size):
+    def _fastq_batch_generator(self):
         """
         read FASTQ file in small batch
         yeald : list of lines (quality line): batch of n size
         """
-        open_fn = gzip.open if self.fastq.endswith('.gz') else open
-
-        with open_fn(self.fastq, 'rt') as fastq:
-            batch = []
-            line_num = 0
-            for line in fastq:
-                line_num += 1
-                if line_num % 4 == 0:
-                    batch.append(line.rstrip())
-                    if len(batch) == batch_size:
-                        yield batch
-                        batch = []
-
-            if len(batch) > 0:
-                yield batch
+        #if len(self.fastq) == 1:
+            #open_fn = gzip.open if self.fastq.endswith('.gz') else open
+        #else:
+        #open_fn = gzip.open if self.fastq[0].endswith('.gz') else open
+        for fastq in self.fastq:
+            open_fn = gzip.open if fastq.endswith('.gz') else open
+            with open_fn(fastq, 'rt') as fastq:
+                batch = []
+                line_num = 0
+                if self.rich:
+                    for line in fastq:
+                        line_num += 1
+                        if line_num % 4 == 1:
+                            name = line.rstrip()
+                        elif line_num % 4 == 0:
+                            batch.append((name, line.rstrip()))
+                        if len(batch) == self.batch_size:
+                            yield batch
+                            batch = []
+                else:       
+                    for line in fastq:
+                        line_num += 1
+                        if line_num % 4 == 0:
+                            batch.append(line.rstrip())
+                            if len(batch) == self.batch_size:
+                                yield batch
+                                batch = []
+                if len(batch) > 0:
+                    yield batch
 
 
     def extract(self, result_dict):
@@ -143,6 +178,11 @@ class fastqExtractor:
         """
         start_time = time.time()
         self._fill_series_dict(self.dataframe_dict, self.dataframe_1d)
+
+        self._set_result_dict_telemetry_value(result_dict, "run.id", self.runid)
+        self._set_result_dict_telemetry_value(result_dict, "sample.id", self.sampleid)
+        self._set_result_dict_telemetry_value(result_dict, "model.file", self.model_version_id)
+
         set_result_value(self, result_dict, "read.count", len(self.dataframe_1d))
         set_result_value(self, result_dict, "read.pass.count",
                          count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
@@ -175,6 +215,13 @@ class fastqExtractor:
         set_result_value(self, result_dict, "n50", self._compute_NXX(50))
         set_result_value(self, result_dict, "l50", self._compute_LXX(50))
 
+        if self.rich:
+            set_result_value(self, result_dict, "run.time", max(self.dataframe_1d['start_time']))
+            # Get channel occupancy statistics and store each value into result_dict
+            for index, value in self._occupancy_channel().items():
+                set_result_value(self,
+                                result_dict, "channel.occupancy.statistics." + index, value)
+        
         # Get statistics about all reads length and store each value into result_dict
         sequence_length_statistics = self.dataframe_dict["all.reads.sequence.length"].describe()
 
@@ -208,8 +255,15 @@ class fastqExtractor:
         Load FASTQ dataframe
         :return: a Pandas Dataframe object
         """
-        read_batchs = self._fastq_batch_generator(self.batch_size)
-        
+        run_info = self.check_fastq()
+
+        if run_info:
+            self.rich = True
+            self.runid, self.sampleid, self.model_version_id = run_info   
+        else:
+            self.rich = False
+
+        read_batchs = self._fastq_batch_generator()
         rst_futures = multiprocessing_submit(self._fastq_read_batch,
                                                         read_batchs, 
                                                         n_process=self.thread, 
@@ -219,8 +273,21 @@ class fastqExtractor:
         for _, f in enumerate(rst_futures):
             fq_data.extend(f.result())
 
-        columns =['sequence_length', 'mean_qscore', 'passes_filtering']
-        return pd.DataFrame(fq_data, columns =columns)   
+        columns = ['sequence_length', 'mean_qscore', 'passes_filtering', 'start_time', 'channel'] if self.rich \
+                else ['sequence_length', 'mean_qscore', 'passes_filtering']
+
+        fq_data = pd.DataFrame(fq_data, columns=columns)
+
+        fq_data['sequence_length'] = fq_data['sequence_length'].astype(np.uint32)
+        fq_data['mean_qscore'] = fq_data['mean_qscore'].astype(np.float32)
+        fq_data['passes_filtering'] = fq_data['passes_filtering'].astype(np.bool)
+
+        if self.rich:
+            fq_data["start_time"] = fq_data["start_time"] - fq_data["start_time"].min()
+            fq_data['channel'] = fq_data['channel'].astype(np.int16)
+            fq_data['start_time'] = fq_data['start_time'].astype(np.float64)
+
+        return fq_data 
 
 
     def _fill_series_dict(self, df_dict, df):
@@ -239,6 +306,8 @@ class fastqExtractor:
                                                                                      read_type_bool)
         df_dict["all.reads.sequence.length"] = df['sequence_length']
         df_dict["all.reads.mean.qscore"] = df['mean_qscore']
+        if self.rich:
+            df_dict["all.reads.start.time"] = df['start_time']
 
 
     def _compute_LXX(self, x):
@@ -265,7 +334,35 @@ class fastqExtractor:
             cum_sum += v
             if cum_sum >= half_sum:
                 return int(v)
-            
+
+
+    def _occupancy_channel(self):
+        """
+        Statistics about the channels of the flowcell
+        :return: pd.Series object containing statistics about the channel occupancy without count value
+        """
+        total_reads_per_channel = pd.value_counts(self.dataframe_1d["channel"])
+        return pd.DataFrame.describe(total_reads_per_channel)
+
+
+    def _extract_info_from_name(self, name):
+        """
+        
+        """
+        metadata = dict(x.split("=") for x in name.split(" ")[1:])
+        start_time = self._timeISO_to_float(metadata['start_time'])
+
+        return  start_time, metadata['ch']
+
+
+    def _timeISO_to_float(self, iso_datetime):
+        """
+        
+        """
+        dt = datetime.strptime(iso_datetime, '%Y-%m-%dT%H:%M:%SZ')
+        unix_timestamp = dt.timestamp()
+        return unix_timestamp
+
 
     def _avg_qual(self, quals):
         """
@@ -273,10 +370,43 @@ class fastqExtractor:
         return: float
         """
         if quals:
-            return -10 * log(sum([10**((ord(q)-33) / -10) for q in quals]) / len(quals), 10)
+            qscore =  -10 * log(sum([10**((ord(q)-33) / -10) for q in quals]) / len(quals), 10)
+            return round(qscore, 2)
         else:
-            return None
+            return None 
 
+
+    def check_fastq(self):
+        """
+        """
+        #fastq = self.fastq if len(self.fastq) == 1 else self.fastq[0]
+        open_fn = gzip.open if self.fastq[0].endswith('.gz') else open
+
+        with open_fn(self.fastq[0], 'rt') as fq:
+            first_line = fq.readline().strip('\n')
+        try:
+            metadata = dict(x.split("=") for x in first_line.split(" ")[1:])
+            if 'model_version_id' not in metadata:
+                metadata['model_version_id'] = 'Unknow'
+            return metadata['runid'] , metadata['sampleid'] , metadata['model_version_id'] 
+        except:
+            return None
+        
+    def _set_result_dict_telemetry_value(self, result_dict, key, new_value):
+        """
+        """
+        final_key = "sequencing.telemetry.extractor." + key
+        current_value = None
+
+        if final_key in result_dict:
+            current_value = result_dict[final_key]
+            if len(current_value) == 0:
+                current_value = None
+
+        if new_value is None:
+            new_value = current_value
+
+        result_dict[final_key] = new_value
 
 
 def multiprocessing_submit(func, iterator, n_process=mp.cpu_count()-1 ,pbar = True, pbar_update = 500,  *arg, **kwargs):
