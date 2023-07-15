@@ -4,8 +4,8 @@ import os
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
-import gzip
 import time
+import pysam
 from datetime import datetime
 from toulligqc.sequencing_summary_common import log_task
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -20,16 +20,14 @@ from toulligqc import plotly_graph_generator as pgg
 from toulligqc.common import is_numpy_1_24
 
 
-class fastqExtractor:
-
+class uBAM_Extractor:
     def __init__(self, config_dictionary):
         self.config_file_dictionary = config_dictionary
-        self.fastq = config_dictionary['fastq'].split('\t')
+        self.ubam = config_dictionary['bam'].split('\t')
         self.images_directory = config_dictionary['images_directory']
         self.threshold_Qscore = int(config_dictionary['threshold'])
         self.batch_size = int(config_dictionary['batch_size'])
         self.thread = int(config_dictionary['thread'])
-        self.rich = False
         self.runid, self.sampleid, self.model_version_id = ['Unknow']*3
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
@@ -41,24 +39,24 @@ class fastqExtractor:
         Configuration checking
         :return: nothing
         """
-        for fastq in self.fastq:
-            if not os.path.isfile(fastq):
-                return False, "FASTQ file does not exists: " + fastq
+        for uBAM in self.ubam:
+            if not os.path.isfile(uBAM):
+                return False, "BAM file does not exists: " + uBAM
             return True, ""
 
 
     def init(self):
         """
-        Creation of the dataframe containing all info from fastq
+        Creation of the dataframe containing all info from uBAM
         :return: Panda's Dataframe object
         """
         start_time = time.time()
-        self.dataframe_1d = self._load_fastq_data()
+        self.dataframe_1d = self._load_uBAM_data()
         if self.dataframe_1d.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
         self.dataframe_dict = {}
         log_task(self.quiet,
-                 'Load FASTQ file ({:,.2f} MB used)'.format(self.dataframe_1d.memory_usage(deep=True).sum()/1024/1024),
+                 'Load BAM file ({:,.2f} MB used)'.format(self.dataframe_1d.memory_usage(deep=True).sum()/1024/1024),
                  start_time,
                  time.time())
 
@@ -69,7 +67,7 @@ class fastqExtractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'fastq'
+        return 'ubam'
 
 
     @staticmethod
@@ -90,16 +88,14 @@ class fastqExtractor:
 
         add_image_to_result(self.quiet, images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
-        if self.rich:
-            add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
-        if self.rich:
-            add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.twod_density(self.dataframe_dict, self.images_directory))
-        if self.rich:
-            add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
-            add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.speed_over_time(self.dataframe_dict, self.images_directory))
         return images
 
 
@@ -113,62 +109,29 @@ class fastqExtractor:
         self.dataframe_1d.iloc[0:0]
 
 
-    def _fastq_read_batch(self, read_batch):
+    def _uBAM_extractor(self, uBAM_chunk):
         """
-        parse each line of FASTQ quality line:
+        parse each line of uBAM quality line:
         return: [read length, mean Qscore, type of read (pass or fail)]
         """
-        #rich = False if isinstance(read_batch[0], str) else True
-        fastq_lines = []
-        if self.rich:
-            for read in read_batch:
-                name = read[0]
-                qscore = self._avg_qual(read[1])
-                passes_filtering = True if qscore > self.threshold_Qscore else False
-                start_time, ch = self._extract_info_from_name(name)
-                fastq_lines.append((len(read[1]), qscore, passes_filtering, start_time, ch))
-        else:
-            for read in read_batch:
-                qscore = self._avg_qual(read)
-                passes_filtering = True if qscore > self.threshold_Qscore else False
-                fastq_lines.append((len(read), qscore, passes_filtering))
-        return fastq_lines
+        #def process_bam_chunk(bam_chunk):
+        rec_data = []
+        for rec in uBAM_chunk:
+            rec_dict = self._process_rec(rec)
+            rec_data.append(rec_dict)
+        return rec_data
 
 
-    def _fastq_batch_generator(self):
+    def batch_generator(self):
         """
-        read FASTQ file in small batch
+        read uBAM file in small chunk
         yield : list of lines (quality line): batch of n size
         """
-        #if len(self.fastq) == 1:
-            #open_fn = gzip.open if self.fastq.endswith('.gz') else open
-        #else:
-        #open_fn = gzip.open if self.fastq[0].endswith('.gz') else open
-        for fastq in self.fastq:
-            open_fn = gzip.open if fastq.endswith('.gz') else open
-            with open_fn(fastq, 'rt') as fastq:
-                batch = []
-                line_num = 0
-                if self.rich:
-                    for line in fastq:
-                        line_num += 1
-                        if line_num % 4 == 1:
-                            name = line.rstrip()
-                        elif line_num % 4 == 0:
-                            batch.append((name, line.rstrip()))
-                        if len(batch) == self.batch_size:
-                            yield batch
-                            batch = []
-                else:       
-                    for line in fastq:
-                        line_num += 1
-                        if line_num % 4 == 0:
-                            batch.append(line.rstrip())
-                            if len(batch) == self.batch_size:
-                                yield batch
-                                batch = []
-                if len(batch) > 0:
-                    yield batch
+        for ubam in self.ubam:
+            samfile = pysam.AlignmentFile(ubam, "rb", check_sq=False)
+            bam_batch = batch_iterator(samfile, batch_size=self.batch_size)
+            for batch in bam_batch:
+                yield batch
 
 
     def extract(self, result_dict):
@@ -215,12 +178,11 @@ class fastqExtractor:
         set_result_value(self, result_dict, "n50", self._compute_NXX(50))
         set_result_value(self, result_dict, "l50", self._compute_LXX(50))
 
-        if self.rich:
-            set_result_value(self, result_dict, "run.time", max(self.dataframe_1d['start_time']))
-            # Get channel occupancy statistics and store each value into result_dict
-            for index, value in self._occupancy_channel().items():
-                set_result_value(self,
-                                result_dict, "channel.occupancy.statistics." + index, value)
+        set_result_value(self, result_dict, "run.time", max(self.dataframe_1d['start_time']))
+        # Get channel occupancy statistics and store each value into result_dict
+        for index, value in self._occupancy_channel().items():
+            set_result_value(self,
+                            result_dict, "channel.occupancy.statistics." + index, value)
         
         # Get statistics about all reads length and store each value into result_dict
         sequence_length_statistics = self.dataframe_dict["all.reads.sequence.length"].describe()
@@ -247,47 +209,37 @@ class fastqExtractor:
         describe_dict(self, result_dict, self.dataframe_dict["pass.reads.mean.qscore"], "pass.reads.mean.qscore")
         describe_dict(self, result_dict, self.dataframe_dict["fail.reads.mean.qscore"], "fail.reads.mean.qscore")
 
-        log_task(self.quiet, 'Extract info from FASTQ file', start_time, time.time())       
+        log_task(self.quiet, 'Extract info from uBAM file', start_time, time.time())       
 
 
-    def _load_fastq_data(self):
+    def _load_uBAM_data(self):
         """
-        Load FASTQ dataframe
+        Load uBAM dataframe
         :return: a Pandas Dataframe object
-        """
-        run_info = self.check_fastq()
+        """  
 
-        if run_info:
-            self.rich = True
-            self.runid, self.sampleid, self.model_version_id = run_info   
-        else:
-            self.rich = False
-
-        read_batchs = self._fastq_batch_generator()
-        rst_futures = multiprocessing_submit(self._fastq_read_batch,
-                                                        read_batchs, 
+        uBAM_chunks = self.batch_generator()
+        rst_futures = multiprocessing_submit(self._uBAM_extractor,
+                                                        uBAM_chunks, 
                                                         n_process=self.thread, 
                                                         pbar_update=self.batch_size)
-        fq_data = []
+        uBAM_data = []
         
         for _, f in enumerate(rst_futures):
-            fq_data.extend(f.result())
+            uBAM_data.extend(f.result())
 
-        columns = ['sequence_length', 'mean_qscore', 'passes_filtering', 'start_time', 'channel'] if self.rich \
-                else ['sequence_length', 'mean_qscore', 'passes_filtering']
+        columns = ['sequence_length', 'mean_qscore', 'passes_filtering', 'start_time', 'channel', 'duration']
+        
+        uBAM_data = pd.DataFrame(uBAM_data, columns=columns)
 
-        fq_data = pd.DataFrame(fq_data, columns=columns)
-
-        fq_data['sequence_length'] = fq_data['sequence_length'].astype(np.uint32)
-        fq_data['mean_qscore'] = fq_data['mean_qscore'].astype(np.float32)
-        fq_data['passes_filtering'] = fq_data['passes_filtering'].astype(np.bool)
-
-        if self.rich:
-            fq_data["start_time"] = fq_data["start_time"] - fq_data["start_time"].min()
-            fq_data['channel'] = fq_data['channel'].astype(np.int16)
-            fq_data['start_time'] = fq_data['start_time'].astype(np.float64)
-
-        return fq_data 
+        uBAM_data['sequence_length'] = uBAM_data['sequence_length'].astype(np.uint32)
+        uBAM_data['mean_qscore'] = uBAM_data['mean_qscore'].astype(np.float32)
+        uBAM_data['passes_filtering'] = uBAM_data['passes_filtering'].astype(np.bool)
+        uBAM_data["start_time"] = uBAM_data["start_time"] - uBAM_data["start_time"].min()
+        uBAM_data['channel'] = uBAM_data['channel'].astype(np.int16)
+        uBAM_data['start_time'] = uBAM_data['start_time'].astype(np.float64)
+        uBAM_data['duration'] = uBAM_data['duration'].astype(np.float32)
+        return uBAM_data 
 
 
     def _fill_series_dict(self, df_dict, df):
@@ -306,8 +258,8 @@ class fastqExtractor:
                                                                                      read_type_bool)
         df_dict["all.reads.sequence.length"] = df['sequence_length']
         df_dict["all.reads.mean.qscore"] = df['mean_qscore']
-        if self.rich:
-            df_dict["all.reads.start.time"] = df['start_time']
+        df_dict["all.reads.start.time"] = df['start_time']
+        df_dict["all.reads.duration"] = df['duration']
 
 
     def _compute_LXX(self, x):
@@ -354,10 +306,10 @@ class fastqExtractor:
         return  start_time, metadata['ch']
 
 
-    def _timeISO_to_float(self, iso_datetime):
+    def _timeISO_to_float(self, iso_datetime, format):
         """
         """
-        dt = datetime.strptime(iso_datetime, '%Y-%m-%dT%H:%M:%SZ')
+        dt = datetime.strptime(iso_datetime, format)
         unix_timestamp = dt.timestamp()
         return unix_timestamp
 
@@ -373,22 +325,6 @@ class fastqExtractor:
         else:
             return None 
 
-
-    def check_fastq(self):
-        """
-        """
-        #fastq = self.fastq if len(self.fastq) == 1 else self.fastq[0]
-        open_fn = gzip.open if self.fastq[0].endswith('.gz') else open
-
-        with open_fn(self.fastq[0], 'rt') as fq:
-            first_line = fq.readline().strip('\n')
-        try:
-            metadata = dict(x.split("=") for x in first_line.split(" ")[1:])
-            if 'model_version_id' not in metadata:
-                metadata['model_version_id'] = 'Unknow'
-            return metadata['runid'] , metadata['sampleid'] , metadata['model_version_id'] 
-        except:
-            return None
         
     def _set_result_dict_telemetry_value(self, result_dict, key, new_value):
         """
@@ -405,6 +341,26 @@ class fastqExtractor:
             new_value = current_value
 
         result_dict[final_key] = new_value
+
+
+    def _process_rec(self, rec):
+        """
+        extract QC info from BAM record
+        return : dict of QC info
+        """
+        tags = rec.split("\t")
+        iso_start_time = tags[17].split(':',2)[2]
+        qual = self._avg_qual(tags[10])
+        passes_filtering = True if qual > self.threshold_Qscore else False
+        data = [
+            len(tags[9]), # read length
+            qual, # AVG Qscore
+            passes_filtering, # Passing filter
+            self._timeISO_to_float(iso_start_time, '%Y-%m-%dT%H:%M:%S.%f%z'), # start time
+            tags[16].split(':',2)[2], # Channel
+            tags[12].split(':',2)[2] # Duration
+        ]
+        return data
 
 
 def multiprocessing_submit(func, iterator, n_process=mp.cpu_count()-1 ,pbar = True, pbar_update = 500,  *arg, **kwargs):
@@ -438,14 +394,16 @@ def multiprocessing_submit(func, iterator, n_process=mp.cpu_count()-1 ,pbar = Tr
             del futures[job]
 
 
+def pysam_toString(pysamObj):
+    return pysamObj.to_string()
+
+
 def batch_iterator(iterator, batch_size):
-    """
-    """
     batch = []
     i=0
     for entry in iterator:
         i += 1
-        batch.append(entry)
+        batch.append(entry.to_string())
         if i == batch_size:
             yield batch
             batch = []

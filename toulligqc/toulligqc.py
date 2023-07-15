@@ -54,6 +54,8 @@ from toulligqc import sequencing_summary_extractor
 from toulligqc import sequencing_summary_onedsquare_extractor
 from toulligqc import sequencing_telemetry_extractor
 from toulligqc import common
+from toulligqc import fastq_extractor
+from toulligqc import ubam_extractor
 
 
 def _parse_args(config_dictionary):
@@ -70,8 +72,8 @@ def _parse_args(config_dictionary):
     required.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
                           help='Basecaller sequencing summary source, ' +
                                'can be compressed with gzip (.gz) or bzip2 (.bz2)',
-                          metavar='SEQUENCING_SUMMARY_SOURCE',
-                          required=True)
+                          metavar='SEQUENCING_SUMMARY_SOURCE')#,
+                          #required=True)
     required.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
                           help='Basecaller telemetry file source, ' +
                                'can be compressed with gzip (.gz) or bzip2 (.bz2)',
@@ -80,8 +82,20 @@ def _parse_args(config_dictionary):
     required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source',
                           help='Fast5 file source (necessary if no telemetry file), ' +
                                'can also be in a tar.gz/tar.bz2 archive or a directory')
-
+    
+    required.add_argument('-q', '--fastq', action='append', dest='fastq',
+                          help='FASTQ file (necessary if no sequencing summary file), ' +
+                               'can also be in a tar.gz archive')
+    
+    required.add_argument('-u', '--bam', action='append', dest='bam',
+                          help='uBAM file (necessary if no sequencing summary file), ' +
+                               'can also be in SAM format')
+    
     # Add all optional arguments
+    optional.add_argument("--thread", action='store', dest="thread", help="Number of threads", type=int, default=30)
+    optional.add_argument("--batch_size", action='store', dest="batch_size", help="Batch size", type=int, default=500)
+    optional.add_argument("--threshold", action='store', dest="threshold", help="Qscore threshold", type=int, default=11)
+
     optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
     optional.add_argument('--output-directory', action='store', dest='output', help='Output directory')
     optional.add_argument('-o', '--html-report-path', action='store', dest='html_report_path',
@@ -130,6 +144,11 @@ def _parse_args(config_dictionary):
         ('sequencing_summary_source', _join_parameter_arguments(args.sequencing_summary_source)),
         ('sequencing_summary_1dsqr_source', _join_parameter_arguments(args.sequencing_summary_1dsqr_source)),
         ('sequencing_telemetry_source', args.telemetry_source),
+        ('fastq', _join_parameter_arguments(args.fastq)),
+        ('bam', _join_parameter_arguments(args.bam)), 
+        ('thread', args.thread),
+        ('batch_size', args.batch_size),
+        ('threshold', args.threshold),
         ('result_directory', args.output),
         ('html_report_path', args.html_report_path),
         ('data_report_path', args.data_report_path),
@@ -174,7 +193,8 @@ def _check_conf(config_dictionary):
         argparse.ArgumentParser.print_help
 
     if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
-        sys.exit('ERROR: The sequencing summary file argument is empty')
+        if 'fastq' not in config_dictionary and 'bam' not in config_dictionary:
+            sys.exit('ERROR: The sequencing summary file argument is empty')
 
     if 'html_report_path' not in config_dictionary or not config_dictionary['html_report_path']:
 
@@ -279,6 +299,13 @@ def _create_extractor_list(config_dictionary):
             config_dictionary['sequencing_summary_1dsqr_source']:
         result.append(sequencing_summary_onedsquare_extractor.
                       OneDSquareSequencingSummaryExtractor(config_dictionary))
+    if 'fastq' in config_dictionary and \
+            config_dictionary['fastq']:
+        result.append(fastq_extractor.fastqExtractor(config_dictionary))
+    elif 'bam' in config_dictionary and \
+            config_dictionary['bam']:
+        result.append(ubam_extractor.uBAM_Extractor(config_dictionary))
+
     else:
         result.append(sequencing_summary_extractor.SequencingSummaryExtractor(config_dictionary))
 
