@@ -1,14 +1,11 @@
-import multiprocessing as mp
 from math import log
 import os
 import numpy as np
-from tqdm import tqdm
 import pandas as pd
 import time
 import pysam
 from datetime import datetime
 from toulligqc.sequencing_summary_common import log_task
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from toulligqc.sequencing_summary_common import describe_dict
 from toulligqc.sequencing_summary_common import set_result_value
 from toulligqc.sequencing_summary_common import add_image_to_result
@@ -16,8 +13,9 @@ from toulligqc.sequencing_summary_common import check_result_values
 from toulligqc.sequencing_summary_common import count_boolean_elements
 from toulligqc.sequencing_summary_common import get_result_value
 from toulligqc.sequencing_summary_common import series_cols_boolean_elements
+from toulligqc.fastq_ubam_extractor_common import multiprocessing_submit, extract_headerTag
+from toulligqc.fastq_ubam_extractor_common import batch_iterator
 from toulligqc import plotly_graph_generator as pgg
-from toulligqc.common import is_numpy_1_24
 
 
 class uBAM_Extractor:
@@ -28,7 +26,7 @@ class uBAM_Extractor:
         self.threshold_Qscore = int(config_dictionary['threshold'])
         self.batch_size = int(config_dictionary['batch_size'])
         self.thread = int(config_dictionary['thread'])
-        self.runid, self.sampleid, self.model_version_id = ['Unknow']*3
+        self.header = dict()
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
         else:
@@ -142,9 +140,14 @@ class uBAM_Extractor:
         start_time = time.time()
         self._fill_series_dict(self.dataframe_dict, self.dataframe_1d)
 
-        self._set_result_dict_telemetry_value(result_dict, "run.id", self.runid)
-        self._set_result_dict_telemetry_value(result_dict, "sample.id", self.sampleid)
-        self._set_result_dict_telemetry_value(result_dict, "model.file", self.model_version_id)
+        self._set_result_dict_telemetry_value(result_dict, "run.id", self.header["run_id"])
+        self._set_result_dict_telemetry_value(result_dict, "sample.id", self.header["sample_id"])
+        self._set_result_dict_telemetry_value(result_dict, "model.file", self.header["model_version_id"])
+        self._set_result_dict_telemetry_value(result_dict, "software.name", self.header["basecaller"])
+        self._set_result_dict_telemetry_value(result_dict, "software.version", self.header["basecaller_version"])
+        self._set_result_dict_telemetry_value(result_dict, "flowcell.id", self.header["flow_cell_id"])
+        self._set_result_dict_telemetry_value(result_dict, "basecalling.date", self.header["run_date"])
+        self._set_result_dict_telemetry_value(result_dict, "pass.threshold.qscore", str(self.threshold_Qscore))
 
         set_result_value(self, result_dict, "read.count", len(self.dataframe_1d))
         set_result_value(self, result_dict, "read.pass.count",
@@ -217,7 +220,7 @@ class uBAM_Extractor:
         Load uBAM dataframe
         :return: a Pandas Dataframe object
         """  
-
+        self._get_header()
         uBAM_chunks = self.batch_generator()
         rst_futures = multiprocessing_submit(self._uBAM_extractor,
                                                         uBAM_chunks, 
@@ -325,7 +328,22 @@ class uBAM_Extractor:
         else:
             return None 
 
-        
+
+    def _get_header(self):
+        samfile = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)
+        header = samfile.header.to_dict()
+        run_id, model_version_id =  extract_headerTag(header,'RG','ID').split('_', 1)
+        self.header = {
+        "run_id" : run_id,
+        "run_date" : extract_headerTag(header, 'RG', 'DT'),
+        "sample_id" : extract_headerTag(header,'RG','SM'),
+        "basecaller" : extract_headerTag(header,'PG','PN'),
+        "basecaller_version" : extract_headerTag(header,'PG','VN'),
+        "model_version_id" : model_version_id,
+        "flow_cell_id" : extract_headerTag(header,'RG','PU')
+        }
+
+
     def _set_result_dict_telemetry_value(self, result_dict, key, new_value):
         """
         """
@@ -361,52 +379,3 @@ class uBAM_Extractor:
             tags[12].split(':',2)[2] # Duration
         ]
         return data
-
-
-def multiprocessing_submit(func, iterator, n_process=mp.cpu_count()-1 ,pbar = True, pbar_update = 500,  *arg, **kwargs):
-    """
-    """
-    executor = ProcessPoolExecutor(n_process)
-
-    max_queue = n_process * 2
-    if pbar:
-        pbar = tqdm(unit = 'read', desc='Processed')
-
-    futures = {}
-    n_job_in_queue = 0
-    while True:
-        while n_job_in_queue < max_queue:
-            i = next(iterator, None)
-            if not i:
-                break
-            futures[executor.submit(func, i, *arg, **kwargs)] = None
-            n_job_in_queue += 1
-
-        job = next(as_completed(futures), None)
-
-        # no more job  
-        if job is None:
-            break
-        else:
-            n_job_in_queue -= 1
-            pbar.update(pbar_update)
-            yield job
-            del futures[job]
-
-
-def pysam_toString(pysamObj):
-    return pysamObj.to_string()
-
-
-def batch_iterator(iterator, batch_size):
-    batch = []
-    i=0
-    for entry in iterator:
-        i += 1
-        batch.append(entry.to_string())
-        if i == batch_size:
-            yield batch
-            batch = []
-            i = 0
-    if len(batch):
-        yield batch
