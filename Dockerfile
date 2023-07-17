@@ -13,6 +13,8 @@ RUN apt update && \
                     python3-scipy\
                     python3-pandas\
                     python3-numpy\
+                    python3-tqdm\
+                    python3-pysam\
                     python3-sklearn && \
     pip3 install "plotly>=4.5.0,<4.6.0" && \
     cd /tmp && \
