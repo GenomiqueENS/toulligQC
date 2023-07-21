@@ -364,6 +364,8 @@ def _barcode_bases(extractor, barcode_selection, result_dict, entry: str, df_fil
          frequency_value = count_sorted[barcode] * 100 / sum(count_sorted)
          set_result_value(extractor, result_dict, entry.replace(".barcoded", ".") + barcode + ".frequency",
                           frequency_value)
+         set_result_value(extractor, result_dict, entry.replace(".barcoded", ".") + barcode + ".basecount",
+                          int(count_sorted[barcode]))
 
     return count_sorted
 
