@@ -202,10 +202,10 @@ def _smooth_data(npoints: int, sigma: int, data, min_arg=None, max_arg=None, wei
     """
 
     if min_arg is None:
-        min_arg = np.nanmin(data)
+        min_arg = 0 if len(data) == 0 else np.nanmin(data)
 
     if max_arg is None:
-        max_arg = np.nanmax(data)
+        max_arg = 0 if len(data) == 0 else np.nanmax(data)
 
     # Compute the bin
     bins = np.linspace(min_arg, max_arg, num=npoints)
@@ -1055,6 +1055,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
     fail_color = toulligqc_colors['fail']
     all_color = toulligqc_colors['all']
 
+    empty_fail = len(read_fail_length) == 0
 
     fig.add_trace(go.Histogram2dContour(
             x = all_length[idx_all],
@@ -1101,10 +1102,10 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
         visible=False
         ))
     
-    max_x_range = max(np.percentile(read_pass_length, 99), np.percentile(read_fail_length, 99))
-    max_y_range = max(np.percentile(read_pass_qscore, 99.8), np.percentile(read_fail_qscore, 99.8))
-    fig.update_xaxes(range=[0, max_x_range])
-    fig.update_yaxes(range=[0, max_y_range])
+    max_x_range = np.percentile(all_length, 99) 
+    max_y_range = np.percentile(all_qscore, 99.8) 
+    fig.update_xaxes(range=[min(all_length), max_x_range]) 
+    fig.update_yaxes(range=[min(all_qscore), max_y_range])
 
     fig.add_trace(go.Histogram(
             y = all_qscore[idx_all],
@@ -1141,7 +1142,6 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
             ),
             visible=False
             ))
-    
     fig.add_trace(go.Histogram(
             y = read_fail_qscore[idx_fail],
             xaxis = 'x2',
@@ -1214,7 +1214,9 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
                     dict(
                         args=[{'visible': [False, False, True, False, False, False, False, True, True]}, {'hovermode': False}],
                         label="Fail reads",
-                        method="restyle"
+                        method="restyle", 
+                    ) if not empty_fail else dict(
+
                     )
                 ]),
                 pad={"r": 20, "t": 20, "l": 20, "b": 20},
@@ -1231,6 +1233,9 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
         **_title(graph_name),
         **_legend(),
         **default_graph_layout,
+                          xaxis_rangeselector_font_color='black',
+                  xaxis_rangeselector_activecolor='red',
+                  xaxis_rangeselector_bgcolor='green'
         #hovermode='x',
         #**_xaxis('PHRED score', dict(rangemode="tozero")),
         #**_yaxis('Density probability', dict(rangemode="tozero")),

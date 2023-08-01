@@ -465,9 +465,10 @@ def plot_performance(df, result_directory):
 
     # Compute geometry of the flowcell
     channel_map = _compute_channel_map(df)
-
+    fail_df = df[~df['passes_filtering']]
     max_row, max_col, max_value, counts, z_pass, ids = _compute_channel_count(df[df['passes_filtering']], channel_map)
-    max_row, max_col, max_value, counts, z_fail, ids = _compute_channel_count(df[~df['passes_filtering']], channel_map)
+    if not fail_df.empty:
+        max_row, max_col, max_value, counts, z_fail, ids = _compute_channel_count(fail_df, channel_map)
     max_row, max_col, max_value, counts, z_all, ids = _compute_channel_count(df, channel_map)
 
     # Compute fail ratio
@@ -475,7 +476,7 @@ def plot_performance(df, result_directory):
     for i in range(len(z_ratio)):
         for j in range(len(z_ratio[i])):
             if z_ratio[i][j] > 0:
-                z_ratio[i][j] = z_fail[i][j] / z_ratio[i][j] * 100.0
+                z_ratio[i][j] = 0 if fail_df.empty else z_fail[i][j] / z_ratio[i][j] * 100.0
 
     fig = go.Figure()
     fig.add_trace(go.Heatmap(x=list(range(1, max_col + 1)),
@@ -507,21 +508,21 @@ def plot_performance(df, result_directory):
                              text=ids,
                              hoverongaps=False,
                              visible=False))
-
-    fig.add_trace(go.Heatmap(x=list(range(1, max_col + 1)),
-                             y=list(range(1, max_row + 1)),
-                             z=z_fail,
-                             zmax=max_value,
-                             zmin=0,
-                             name='Fail reads',
-                             colorbar=dict(title='Reads', len=0.6, yanchor='middle'),
-                             hovertemplate='<b>Channel ID:</b> %{text}<br>'
-                                           '<b>Row:</b> %{y}<br>'
-                                           '<b>Column:</b> %{x}<br>'
-                                           '<b>Reads:</b> %{z}<br>',
-                             text=ids,
-                             hoverongaps=False,
-                             visible=False))
+    if not fail_df.empty:
+        fig.add_trace(go.Heatmap(x=list(range(1, max_col + 1)),
+                                y=list(range(1, max_row + 1)),
+                                z=z_fail,
+                                zmax=max_value,
+                                zmin=0,
+                                name='Fail reads',
+                                colorbar=dict(title='Reads', len=0.6, yanchor='middle'),
+                                hovertemplate='<b>Channel ID:</b> %{text}<br>'
+                                            '<b>Row:</b> %{y}<br>'
+                                            '<b>Column:</b> %{x}<br>'
+                                            '<b>Reads:</b> %{z}<br>',
+                                text=ids,
+                                hoverongaps=False,
+                                visible=False))
 
     fig.add_trace(go.Heatmap(x=list(range(1, max_col + 1)),
                              y=list(range(1, max_row + 1)),
@@ -570,12 +571,12 @@ def plot_performance(df, result_directory):
                         args=[{'visible': [False, False, True, False]}, {'hovermode': 'x'}],
                         label="Fail reads",
                         method="update"
-                    ),
+                    ) if not fail_df.empty else dict(),
                     dict(
                         args=[{'visible': [False, False, False, True]}, {'hovermode': 'x'}],
                         label="Fail percent",
                         method="update"
-                    )
+                    ) if not fail_df.empty else dict()
                 ]),
                 pad={"r": 20, "t": 20, "l": 20, "b": 20},
                 showactive=True,

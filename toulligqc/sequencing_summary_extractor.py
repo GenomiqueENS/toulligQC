@@ -280,9 +280,11 @@ class SequencingSummaryExtractor:
                                                                                                        self.barcode_selection,
                                                                                                        self.images_directory))
 
-            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
-                                                                                                       self.barcode_selection,
-                                                                                                       self.images_directory))
+            read_fail = self.dataframe_dict["read.fail.barcoded"]
+            if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
+                add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
+                                                                                                      self.barcode_selection,
+                                                                                                      self.images_directory))
 
             add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
                                                                                             self.images_directory))
