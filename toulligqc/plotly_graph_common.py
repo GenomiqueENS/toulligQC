@@ -91,9 +91,12 @@ def _format_int(i):
 
 
 def _format_float(f):
-    s = str(f)
-    i = int(s.split('.')[0])
-    f = float('0.' + s.split('.')[1])
+    try:
+        s = str(f)
+        i = int(s.split('.')[0])
+        f = float('0.' + s.split('.')[1])
+    except:
+        return 0
 
     return '{:,d}'.format(i) + '{:.2f}'.format(f)[1:]
 

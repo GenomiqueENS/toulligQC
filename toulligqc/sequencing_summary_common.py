@@ -297,7 +297,11 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
     count_sorted.fillna(0, downcast='int16', inplace=True)
 
     # Compute sum of all used barcodes without barcode 'unclassified'
-    set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+    #set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+    if 'unclassified' in count_sorted.index:
+        set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+    else:
+        set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted))
 
     # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
     non_used_barcodes_count_key = entry.replace(".barcoded", ".non.used.barcodes.count")
@@ -344,8 +348,11 @@ def _barcode_bases(extractor, barcode_selection, result_dict, entry: str, df_fil
     count_sorted.fillna(0, downcast='int16', inplace=True)
 
     # Compute sum of all used barcodes without barcode 'unclassified'
-    set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
-
+    #set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+    if 'unclassified' in count_sorted.index:
+        set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
+    else:
+        set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted))
     # Replace entry name ie read.pass/fail.barcode with read.pass/fail.non.used.barcodes.count
     non_used_barcodes_count_key = entry.replace(".barcoded", ".non.used.barcodes.count")
 
