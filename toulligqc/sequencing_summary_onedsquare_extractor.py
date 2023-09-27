@@ -33,16 +33,16 @@ import pandas as pd
 
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc import plotly_graph_onedsquare_generator as pgg2
-from toulligqc.sequencing_summary_common import check_result_values
-from toulligqc.sequencing_summary_common import count_boolean_elements
-from toulligqc.sequencing_summary_common import describe_dict
-from toulligqc.sequencing_summary_common import extract_barcode_info
-from toulligqc.sequencing_summary_common import get_result_value
-from toulligqc.sequencing_summary_common import series_cols_boolean_elements
-from toulligqc.sequencing_summary_common import set_result_value
-from toulligqc.sequencing_summary_common import log_task
-from toulligqc.sequencing_summary_common import add_image_to_result
-from toulligqc.sequencing_summary_common import read_first_line_file
+from toulligqc.extractor_common import check_result_values
+from toulligqc.extractor_common import count_boolean_elements
+from toulligqc.extractor_common import describe_dict
+from toulligqc.extractor_common import extract_barcode_info
+from toulligqc.extractor_common import get_result_value
+from toulligqc.extractor_common import series_cols_boolean_elements
+from toulligqc.extractor_common import set_result_value
+from toulligqc.extractor_common import log_task
+from toulligqc.extractor_common import add_image_to_result
+from toulligqc.extractor_common import read_first_line_file
 from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 from toulligqc.common import is_numpy_1_24
 

@@ -26,7 +26,7 @@ import bz2
 import time
 import pandas as pd
 from toulligqc import common
-
+from datetime import datetime
 
 def set_result_value(extractor, result_dict, key: str, value):
     """
@@ -120,6 +120,39 @@ def sorted_series_boolean_elements_divided(dataframe, column_name1: str, column_
     :param denominator: number to divide by
     """
     return (dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)] / denominator).sort_values()
+
+
+def fill_series_dict(df_dict, df):
+    """
+    """
+    for read_type in ['pass', 'fail']:
+        read_type_bool = True if read_type == 'pass' else False
+
+        # Read length series
+        df_dict[read_type + '.reads.sequence.length'] = series_cols_boolean_elements(df,
+                                                                                        'sequence_length',
+                                                                                        'passes_filtering',
+                                                                                        read_type_bool)
+
+        # Read qscore series
+        df_dict[read_type + '.reads.mean.qscore'] = series_cols_boolean_elements(df,
+                                                                                    'mean_qscore',
+                                                                                    'passes_filtering',
+                                                                                    read_type_bool)
+
+    # Read length series
+    df_dict["all.reads.sequence.length"] = df['sequence_length']
+
+    # Mean QScore
+    df_dict["all.reads.mean.qscore"] = df['mean_qscore']
+
+    # Time series
+    if 'start_time' in df:
+        df_dict["all.reads.start.time"] = df['start_time']
+
+    # Duration series
+    if 'duration' in df:
+        df_dict["all.reads.duration"] = df['duration']
 
 
 def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_dict, df):
@@ -380,6 +413,14 @@ def add_image_to_result(quiet, image_list, start_time, image):
     image_list.append(image)
 
 
+def timeISO_to_float(iso_datetime, format):
+        """
+        """
+        dt = datetime.strptime(iso_datetime, format)
+        unix_timestamp = dt.timestamp()
+        return unix_timestamp
+
+
 def read_first_line_file(filename):
     """
     Load the first line of a file.
@@ -398,3 +439,19 @@ def read_first_line_file(filename):
                 return f.readline()
     except IOError:
         raise FileNotFoundError
+
+def set_result_dict_telemetry_value(result_dict, key, new_value):
+    """
+    """
+    final_key = "sequencing.telemetry.extractor." + key
+    current_value = None
+
+    if final_key in result_dict:
+        current_value = result_dict[final_key]
+        if len(current_value) == 0:
+            current_value = None
+
+    if new_value is None:
+        new_value = current_value
+
+    result_dict[final_key] = new_value

@@ -32,16 +32,17 @@ import numpy as np
 import pandas as pd
 
 from toulligqc import plotly_graph_generator as pgg
-from toulligqc.sequencing_summary_common import check_result_values
-from toulligqc.sequencing_summary_common import count_boolean_elements
-from toulligqc.sequencing_summary_common import describe_dict
-from toulligqc.sequencing_summary_common import extract_barcode_info
-from toulligqc.sequencing_summary_common import get_result_value
-from toulligqc.sequencing_summary_common import series_cols_boolean_elements
-from toulligqc.sequencing_summary_common import set_result_value
-from toulligqc.sequencing_summary_common import log_task
-from toulligqc.sequencing_summary_common import add_image_to_result
-from toulligqc.sequencing_summary_common import read_first_line_file
+from toulligqc.extractor_common import check_result_values
+from toulligqc.extractor_common import count_boolean_elements
+from toulligqc.extractor_common import describe_dict
+from toulligqc.extractor_common import extract_barcode_info
+from toulligqc.extractor_common import get_result_value
+from toulligqc.extractor_common import set_result_value
+from toulligqc.extractor_common import log_task
+from toulligqc.extractor_common import add_image_to_result
+from toulligqc.extractor_common import read_first_line_file
+from toulligqc.extractor_common import fill_series_dict
+from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel
 from toulligqc.common import is_numpy_1_24
 
 class SequencingSummaryExtractor:
@@ -130,6 +131,23 @@ class SequencingSummaryExtractor:
                  start_time,
                  time.time())
 
+
+    def clean(extractor, result_dict):
+        """
+        Removing dictionary entries that will not be kept in the report.data file
+        :return:
+        """
+
+        # Check values in result_dict (avoid Series and Dataframes)
+        check_result_values(extractor, result_dict)
+
+        # Clear dictionary for Series and Dataframe
+        extractor.dataframe_dict.clear()
+
+        # Clear DataFrame
+        extractor.dataframe_1d.iloc[0:0]
+
+
     @staticmethod
     def get_name() -> str:
         """
@@ -158,7 +176,7 @@ class SequencingSummaryExtractor:
         if 'sequencing.telemetry.extractor.software.analysis' not in result_dict:
             result_dict['sequencing.telemetry.extractor.software.analysis'] = '1d_basecalling'
 
-        self._fill_series_dict(self.dataframe_dict, self.dataframe_1d)
+        fill_series_dict(self.dataframe_dict, self.dataframe_1d)
 
         # Read count
         set_result_value(self, result_dict, "read.count", len(self.dataframe_1d))
@@ -195,13 +213,13 @@ class SequencingSummaryExtractor:
         # Yield, n50, run time
         set_result_value(self, result_dict, "yield", sum(self.dataframe_dict["all.reads.sequence.length"]))
 
-        set_result_value(self, result_dict, "n50", self._compute_NXX(50))
-        set_result_value(self, result_dict, "l50", self._compute_LXX(50))
+        set_result_value(self, result_dict, "n50", compute_NXX(self.dataframe_dict, 50))
+        set_result_value(self, result_dict, "l50", compute_LXX(self.dataframe_dict, 50))
 
         set_result_value(self, result_dict, "run.time", max(self.dataframe_1d['start_time']))
 
         # Get channel occupancy statistics and store each value into result_dict
-        for index, value in self._occupancy_channel().items():
+        for index, value in occupancy_channel(self.dataframe_1d).items():
             set_result_value(self,
                              result_dict, "channel.occupancy.statistics." + index, value)
 
@@ -238,34 +256,6 @@ class SequencingSummaryExtractor:
 
         log_task(self.quiet, 'Extract info from sequencing summary file', start_time, time.time())
 
-    def _fill_series_dict(self, df_dict, df):
-
-        for read_type in ['pass', 'fail']:
-            read_type_bool = True if read_type == 'pass' else False
-
-            # Read length series
-            df_dict[read_type + '.reads.sequence.length'] = series_cols_boolean_elements(df,
-                                                                                         'sequence_length',
-                                                                                         'passes_filtering',
-                                                                                         read_type_bool)
-
-            # Read qscore series
-            df_dict[read_type + '.reads.mean.qscore'] = series_cols_boolean_elements(df,
-                                                                                     'mean_qscore',
-                                                                                     'passes_filtering',
-                                                                                     read_type_bool)
-
-        # Read length series
-        df_dict["all.reads.sequence.length"] = df['sequence_length']
-
-        # Mean QScore
-        df_dict["all.reads.mean.qscore"] = df['mean_qscore']
-
-        # Time series
-        df_dict["all.reads.start.time"] = df['start_time']
-
-        # Duration series
-        df_dict["all.reads.duration"] = df['duration']
 
     def graph_generation(self, result_dict):
         """
@@ -301,28 +291,6 @@ class SequencingSummaryExtractor:
                                                                                                     self.images_directory))
         return images
 
-    def clean(self, result_dict):
-        """
-        Removing dictionary entries that will not be kept in the report.data file
-        :return:
-        """
-
-        # Check values in result_dict (avoid Series and Dataframes)
-        check_result_values(self, result_dict)
-
-        # Clear dictionary for Series and Dataframe
-        self.dataframe_dict.clear()
-
-        # Clear DataFrame
-        self.dataframe_1d.iloc[0:0]
-
-    def _occupancy_channel(self):
-        """
-        Statistics about the channels of the flowcell
-        :return: pd.Series object containing statistics about the channel occupancy without count value
-        """
-        total_reads_per_channel = pd.value_counts(self.dataframe_1d["channel"])
-        return pd.DataFrame.describe(total_reads_per_channel)
 
     def _load_sequencing_summary_data(self):
         """
@@ -436,30 +404,6 @@ class SequencingSummaryExtractor:
 
         except IOError:
             raise FileNotFoundError("Sequencing summary file not found")
-
-    def _compute_NXX(self, x):
-        """Compute NXX value of total sequence length"""
-        data = self.dataframe_dict["all.reads.sequence.length"].dropna().values
-        data.sort()
-        half_sum = data.sum() * x / 100
-        cum_sum = 0
-        for v in data:
-            cum_sum += v
-            if cum_sum >= half_sum:
-                return int(v)
-
-    def _compute_LXX(self, x):
-        """Compute LXX value of total sequence length"""
-        data = self.dataframe_dict["all.reads.sequence.length"].dropna().values
-        data.sort()
-        half_sum = data.sum() * x / 100
-        cum_sum = 0
-        count = 0
-        for v in data:
-            cum_sum += v
-            count += 1
-            if cum_sum >= half_sum:
-                return count
 
     @staticmethod
     def _is_barcode_file(filename):

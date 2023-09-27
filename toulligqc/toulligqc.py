@@ -55,7 +55,7 @@ from toulligqc import sequencing_summary_onedsquare_extractor
 from toulligqc import sequencing_telemetry_extractor
 from toulligqc import common
 from toulligqc import fastq_extractor
-from toulligqc import ubam_extractor
+from toulligqc import bam_extractor
 
 
 def _parse_args(config_dictionary):
@@ -304,7 +304,7 @@ def _create_extractor_list(config_dictionary):
         result.append(fastq_extractor.fastqExtractor(config_dictionary))
     elif 'bam' in config_dictionary and \
             config_dictionary['bam']:
-        result.append(ubam_extractor.uBAM_Extractor(config_dictionary))
+        result.append(bam_extractor.uBAM_Extractor(config_dictionary))
 
     else:
         result.append(sequencing_summary_extractor.SequencingSummaryExtractor(config_dictionary))
