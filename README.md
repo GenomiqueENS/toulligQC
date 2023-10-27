@@ -12,7 +12,7 @@ Click on [following image](https://htmlpreview.github.io/?https://github.com/Gen
 
 ## Authors / Support
 
-Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Sophie Lemoine, Morgane Thomas-Chollier, Stéphane Le Crom and Laurent Jourdren.
+Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Sophie Lemoine, Ali Hamraoui, Morgane Thomas-Chollier, Stéphane Le Crom and Laurent Jourdren.
 
 Support is availlable on [GitHub issue page](https://github.com/GenomicParisCentre/toulligQC/issues) and at **toulligqc** **at** **bio.ens.psl.eu**.
 
@@ -59,6 +59,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 * numpy
 * scipy
 * scikit-learn
+* pysam
 
 
 <a name="pypi-installation"></a>
@@ -104,11 +105,13 @@ It also needs a single FAST5 file (to catch the flowcell ID and the run date) if
 Flow cells and kits version are retrieved using the telemetry file.
 ToulligQC can take barcoding samples by adding the barcode list as a command line option.
 
+If the sequencing summary file is not available, toulligQC can also accept FASTQ or BAM files.
+
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2 and .fast5 to retrieve a FAST5 information.
 This tool will produce a set of graphs, statistic file in plain text format and a HTML report.
 
 
-To run ToulligQC you need the Guppy basecaller output files : ```sequencing_summary.txt``` and ```sequencing_telemetry.js```.
+To run ToulligQC you need the Guppy basecaller output files : ```sequencing_summary.txt``` and ```sequencing_telemetry.js```. or ```FASTQ``` or ```BAM```
 This can be compressed with gzip or bzip2. 
 You can use your initial Fast5 ONT file too.
 ToulligQC can perform analyses on your data if the directory is organised as the following:
@@ -154,6 +157,7 @@ This is a directory for 1D² analysis with barcoding files:
 General Options:
 ```
 usage: ToulligQC V2.2.1 -a SEQUENCING_SUMMARY_SOURCE [-t TELEMETRY_SOURCE]
+                        [--fastq -q FASTQ] [--bam -u BAM]
                         [-f FAST5_SOURCE] [-n REPORT_NAME]
                         [--output-directory OUTPUT] [-o HTML_REPORT_PATH]
                         [--data-report-path DATA_REPORT_PATH]
@@ -171,6 +175,12 @@ required arguments:
   -f FAST5_SOURCE, --fast5-source FAST5_SOURCE
                         Fast5 file source (necessary if no telemetry file),
                         can also be in a tar.gz/tar.bz2 archive or a directory
+  -q FASTQ, --fastq FASTQ
+                        FASTQ file (necessary if no sequencing summary file),
+                        can also be in a .gz archive
+  -u BAM, --bam BAM
+                        BAM file (necessary if no sequencing summary file),
+                        can also be a SAM format
 
 optional arguments:
   -n REPORT_NAME, --report-name REPORT_NAME
@@ -189,6 +199,10 @@ optional arguments:
   -l BARCODES, --barcodes BARCODES
                         Coma separated barcode list (e.g.
                         BC05,RB09,NB01,barcode10)
+  --thread THREAD       Number of threads for parsing FASTQ or BAM files (default: 2).
+  --batch_size BATCH_SIZE Batch size for each threads (default: 500).
+  --qscore_threshold THRESHOLD Q-score threshold to distinguish between passing filter and
+                        fail reads (default: 9), applicable only for FASTQ and BAM files.
   --quiet               Quiet mode
   --force               Force overwriting of existing files
   -h, --help            Show this help message and exit
