@@ -333,11 +333,25 @@ def main():
 
         if 'barcodes' in config_dictionary:
             barcode_set = set()
-            for b in config_dictionary['barcodes'].strip().split(','):
-                pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', b.strip().upper())
+            if ":" in config_dictionary['barcodes']:
+                start, end  = config_dictionary['barcodes'].strip().split(':')
+                pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', start.strip().upper())
                 if pattern:
-                    barcode = 'barcode{}'.format(pattern.group(2))
+                    start_number = int(pattern.group(2))
+                pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', end.strip().upper())
+                if pattern:
+                    end_number = int(pattern.group(2)) 
+                for i in range(start_number, end_number + 1):
+                    barcode = f"barcode{i:02}"
                     barcode_set.add(barcode)
+                    
+            else:
+                for b in config_dictionary['barcodes'].strip().split(','):
+                    pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', b.strip().upper())
+                    if pattern:
+                        barcode = 'barcode{}'.format(pattern.group(2))
+                        barcode_set.add(barcode)
+
             barcode_selection = sorted(barcode_set)
 
             if len(barcode_selection) == 0:
