@@ -1,8 +1,13 @@
 # Changelog
+## 2.5 (2023-11-03)
+* Fixed error when no failed reads were found (Issue #20).
+* Fixed error when unclassified barcodes were missing.
+* FASTQ and BAM files can now be used instead of the sequencing summary file.
+* Added the ability to specify a barcode range (e.g., `--barcodes barcode01:barcode48`).
 
 ## 2.4 (2023-04-26)
 * In over time graphs (read length, PHRED score and translocation speed), now fill the gaps for the 75% and 25% to avoid filling glitch.
-* fix 2D density plot title style.
+* Fix 2D density plot title style.
 * Fix error when a summary file with barcode information was provided in addition of barcoding files (Issue #17), now the barcode files will be skipped with a warning message in case summary file with barcode information is provided.
 * Add the selected speed and sample frequency of the run in the "Run statistics" table of the ToulligQC report
 
