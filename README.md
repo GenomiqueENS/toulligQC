@@ -200,8 +200,8 @@ optional arguments:
                         Coma separated barcode list (e.g.
                         BC05,RB09,NB01,barcode10)
   --thread THREAD       Number of threads for parsing FASTQ or BAM files (default: 2).
-  --batch_size BATCH_SIZE Batch size for each threads (default: 500).
-  --qscore_threshold THRESHOLD Q-score threshold to distinguish between passing filter and
+  --batch-size BATCH_SIZE Batch size for each threads (default: 500).
+  --qscore-threshold THRESHOLD Q-score threshold to distinguish between passing filter and
                         fail reads (default: 9), applicable only for FASTQ and BAM files.
   --quiet               Quiet mode
   --force               Force overwriting of existing files
