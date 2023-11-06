@@ -71,17 +71,21 @@ class Fast5Extractor:
         else:
             self.file_to_process = self.fast5_source
 
-        if self.file_to_process.endswith('.tar.gz'):
-            self.fast5_file_extension = 'tar.gz'
+        if self.file_to_process.endswith('.tar'):
+            self.fast5_file_extension = 'tar'
 
-        elif self.file_to_process.endswith('.fast5'):
-            self.fast5_file_extension = 'fast5'
+        elif self.file_to_process.endswith('.tar.gz'):
+            self.fast5_file_extension = 'tar.gz'
 
         elif self.file_to_process.endswith('.tar.bz2'):
             self.fast5_file_extension = 'tar.bz2'
 
+        elif self.file_to_process.endswith('.fast5'):
+            self.fast5_file_extension = 'fast5'
+
         else:
-            return False, 'The fast5 extension is not supported (fast5, tar.bz2 or tar.gz format): ' + self.fast5_source
+            return (False, 'The file extension for FAST5 input is not supported '
+                           '(only .fast5, .tar, .tar.gz or .tar.bz2 are supported): ' + self.fast5_source)
 
         return True, ""
 
@@ -165,35 +169,28 @@ class Fast5Extractor:
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
 
-    def _fast5_tar_bz2_extraction(self, tar_bz2_file, output_directory):
+    def _fast5_tar_extraction(self, tar_file, extension, output_directory):
         """
-        Extraction of the FAST5 file stored in tar_bz2 format
-        :param tar_bz2_file: tar bz2 file containing the set of the raw FAST5 files
-        :param output_directory:dictionary which gathers all the extracted
-        information that will be reported in the report.data file
-        :return: a FAST5 file
-        """
-        tar_bz2 = tarfile.open(tar_bz2_file, 'r:bz2')
-        while True:
-            member = tar_bz2.next()
-            if member.name.endswith('.fast5'):
-                tar_bz2.extract(member, path=output_directory)
-                break
-        return output_directory + '/' + member.name
-
-    def _fast5_tar_gz_extraction(self, tar_gz_file, output_directory):
-        """
-        Extraction of a FAST5 file stored in tar_gz format
-        :param tar_gz_file: tar gz file containing the set of the raw FAST5 files
+        Extraction of a FAST5 file stored in a tar file,
+        :param tar_file: tar file containing the set of the raw FAST5 files
+        :param extension of the file
         :param output_directory: dictionary which gathers all the extracted
         information that will be reported in the report.data file
         :return: a FAST5 file
         """
-        tar_gz = tarfile.open(self, tar_gz_file, 'r:gz')
+
+        if extension == 'tar.gz':
+            tar_mode = 'r:gz'
+        elif extension == 'tar.bz2':
+            tar_mode = 'r:bz2'
+        else:
+            tar_mode = 'r'
+
+        tf = tarfile.open(name=tar_file, mode=tar_mode)
         while True:
-            member = tar_gz.next()
+            member = tf.next()
             if member.name.endswith('.fast5'):
-                tar_gz.extract(member, path=output_directory)
+                tf.extract(member, path=output_directory)
                 break
         return output_directory + '/' + member.name
 
@@ -204,14 +201,11 @@ class Fast5Extractor:
         :return: h5py_file: h5py file
         """
         self.temporary_directory = tempfile.mkdtemp()
-        if self.fast5_file_extension == 'tar.bz2':
-            tar_bz2_file = self.file_to_process
-            self.fast5_file = self._fast5_tar_bz2_extraction(tar_bz2_file, self.temporary_directory)
-
-        elif self.fast5_file_extension == 'tar.gz':
-            tar_gz_file = self.file_to_process
-            self.fast5_file = self._fast5_tar_gz_extraction(tar_gz_file, self.temporary_directory)
-
+        if self.fast5_file_extension == 'tar' or \
+                self.fast5_file_extension == 'tar.gz' or \
+                self.fast5_file_extension == 'tar.bz2':
+            self.fast5_file = self._fast5_tar_extraction(self.file_to_process, self.fast5_file_extension,
+                                                         self.temporary_directory)
         elif self.fast5_file_extension == 'fast5' or self.fast5_file_extension == '.fast5':
             self.fast5_file = self.file_to_process
         else:
