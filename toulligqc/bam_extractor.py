@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import time
 import pysam
-from datetime import datetime
+from collections import defaultdict
 from toulligqc.extractor_common import log_task
 from toulligqc.extractor_common import describe_dict
 from toulligqc.extractor_common import set_result_value
@@ -15,6 +15,7 @@ from toulligqc.extractor_common import get_result_value
 from toulligqc.extractor_common import set_result_dict_telemetry_value
 from toulligqc.extractor_common import fill_series_dict
 from toulligqc.extractor_common import timeISO_to_float
+from toulligqc.extractor_common import extract_barcode_info
 from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel, avg_qual
 from toulligqc.fastq_bam_common import multiprocessing_submit, extract_headerTag
 from toulligqc.fastq_bam_common import batch_iterator
@@ -23,13 +24,16 @@ from toulligqc import plotly_graph_generator as pgg
 
 class uBAM_Extractor:
     def __init__(self, config_dictionary):
-        self.config_file_dictionary = config_dictionary
+        self.config_dictionary = config_dictionary
         self.ubam = config_dictionary['bam'].split('\t')
         self.images_directory = config_dictionary['images_directory']
         self.threshold_Qscore = int(config_dictionary['threshold'])
         self.batch_size = int(config_dictionary['batch_size'])
         self.thread = int(config_dictionary['thread'])
         self.header = dict()
+        self.is_barcode = False
+        if config_dictionary['barcoding'] == 'True':
+            self.is_barcode = True
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
         else:
@@ -52,12 +56,23 @@ class uBAM_Extractor:
         :return: Panda's Dataframe object
         """
         start_time = time.time()
-        self.dataframe_1d = self._load_uBAM_data()
-        if self.dataframe_1d.empty:
+        self.dataframe = self._load_uBAM_file()
+        if self.dataframe.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
         self.dataframe_dict = {}
+        
+        # Add missing categories
+        if 'barcode_arrangement' in self.dataframe.columns:
+           self.dataframe['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
+                                                                       inplace=True)
+        
+        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+        self.dataframe = self.dataframe.fillna(0)
+            
+        self.barcode_selection = self.config_dictionary['barcode_selection']
+
         log_task(self.quiet,
-                 'Load BAM file ({:,.2f} MB used)'.format(self.dataframe_1d.memory_usage(deep=True).sum()/1024/1024),
+                 'Load BAM file ({:,.2f} MB used)'.format(self.dataframe.memory_usage(deep=True).sum()/1024/1024),
                  start_time,
                  time.time())
 
@@ -69,7 +84,7 @@ class uBAM_Extractor:
         """
         check_result_values(self, result_dict)
         self.dataframe_dict.clear()
-        self.dataframe_1d.iloc[0:0]
+        self.dataframe.iloc[0:0]
 
 
     @staticmethod
@@ -78,7 +93,7 @@ class uBAM_Extractor:
         Get the name of the extractor.
         :return: the name of the extractor
         """
-        return 'ubam'
+        return 'uBAM'
 
 
     @staticmethod
@@ -99,14 +114,30 @@ class uBAM_Extractor:
 
         add_image_to_result(self.quiet, images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
-        add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
-        add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
+        add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.twod_density(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.speed_over_time(self.dataframe_dict, self.images_directory))
+        if self.is_barcode:
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
+                                                                                                       self.barcode_selection,
+                                                                                                       self.images_directory))
+
+            read_fail = self.dataframe_dict["read.fail.barcoded"]
+            if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
+                add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
+                                                                                                      self.barcode_selection,
+                                                                                                      self.images_directory))
+
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
+                                                                                            self.images_directory))
+
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
+                                                                                                    self.images_directory))
         return images
 
 
@@ -116,7 +147,7 @@ class uBAM_Extractor:
         :param result_dict:
         """
         start_time = time.time()
-        fill_series_dict(self.dataframe_dict, self.dataframe_1d)
+        fill_series_dict(self.dataframe_dict, self.dataframe)
 
         set_result_dict_telemetry_value(result_dict, "run.id", self.header["run_id"])
         set_result_dict_telemetry_value(result_dict, "sample.id", self.header["sample_id"])
@@ -127,11 +158,11 @@ class uBAM_Extractor:
         set_result_dict_telemetry_value(result_dict, "basecalling.date", self.header["run_date"])
         set_result_dict_telemetry_value(result_dict, "pass.threshold.qscore", str(self.threshold_Qscore))
 
-        set_result_value(self, result_dict, "read.count", len(self.dataframe_1d))
+        set_result_value(self, result_dict, "read.count", len(self.dataframe))
         set_result_value(self, result_dict, "read.pass.count",
-                         count_boolean_elements(self.dataframe_1d, 'passes_filtering', True))
+                         count_boolean_elements(self.dataframe, 'passes_filtering', True))
         set_result_value(self, result_dict, "read.fail.count",
-                         count_boolean_elements(self.dataframe_1d, 'passes_filtering', False))
+                         count_boolean_elements(self.dataframe, 'passes_filtering', False))
         total_reads = get_result_value(self, result_dict, "read.count")
 
         # Ratios
@@ -159,9 +190,9 @@ class uBAM_Extractor:
         set_result_value(self, result_dict, "n50", compute_NXX(self.dataframe_dict, 50))
         set_result_value(self, result_dict, "l50", compute_LXX(self.dataframe_dict, 50))
 
-        set_result_value(self, result_dict, "run.time", max(self.dataframe_1d['start_time']))
+        set_result_value(self, result_dict, "run.time", max(self.dataframe['start_time']))
         # Get channel occupancy statistics and store each value into result_dict
-        for index, value in occupancy_channel(self.dataframe_1d).items():
+        for index, value in occupancy_channel(self.dataframe).items():
             set_result_value(self,
                             result_dict, "channel.occupancy.statistics." + index, value)
         
@@ -179,7 +210,7 @@ class uBAM_Extractor:
                       "fail.reads.sequence.length")
 
         # Get Qscore statistics without count value and store them into result_dict
-        qscore_statistics = self.dataframe_1d['mean_qscore'].describe().drop(
+        qscore_statistics = self.dataframe['mean_qscore'].describe().drop(
             "count")
 
         for index, value in qscore_statistics.items():
@@ -189,11 +220,16 @@ class uBAM_Extractor:
         # Add statistics (without count) about read pass/fail qscore in the result_dict
         describe_dict(self, result_dict, self.dataframe_dict["pass.reads.mean.qscore"], "pass.reads.mean.qscore")
         describe_dict(self, result_dict, self.dataframe_dict["fail.reads.mean.qscore"], "fail.reads.mean.qscore")
-
+        if self.is_barcode:
+            extract_barcode_info(self, result_dict,
+                                 self.barcode_selection,
+                                 self.dataframe_dict,
+                                 self.dataframe)
+                                 
         log_task(self.quiet, 'Extract info from uBAM file', start_time, time.time())       
 
 
-    def _load_uBAM_data(self):
+    def _load_uBAM_file(self):
         """
         Load uBAM dataframe
         :return: a Pandas Dataframe object
@@ -204,23 +240,27 @@ class uBAM_Extractor:
                                                         uBAM_chunks, 
                                                         n_process=self.thread, 
                                                         pbar_update=self.batch_size)
-        uBAM_data = []
+        uBAM_df = []
         
         for _, f in enumerate(rst_futures):
-            uBAM_data.extend(f.result())
+            uBAM_df.extend(f.result())
 
         columns = ['sequence_length', 'mean_qscore', 'passes_filtering', 'start_time', 'channel', 'duration']
-        
-        uBAM_data = pd.DataFrame(uBAM_data, columns=columns)
+        if self.is_barcode:
+            columns.append('barcode_arrangement')
 
-        uBAM_data['sequence_length'] = uBAM_data['sequence_length'].astype(np.uint32)
-        uBAM_data['mean_qscore'] = uBAM_data['mean_qscore'].astype(np.float32)
-        uBAM_data['passes_filtering'] = uBAM_data['passes_filtering'].astype(np.bool)
-        uBAM_data["start_time"] = uBAM_data["start_time"] - uBAM_data["start_time"].min()
-        uBAM_data['channel'] = uBAM_data['channel'].astype(np.int16)
-        uBAM_data['start_time'] = uBAM_data['start_time'].astype(np.float64)
-        uBAM_data['duration'] = uBAM_data['duration'].astype(np.float32)
-        return uBAM_data 
+        uBAM_df = pd.DataFrame(uBAM_df, columns=columns)
+
+        uBAM_df['sequence_length'] = uBAM_df['sequence_length'].astype(np.uint32)
+        uBAM_df['mean_qscore'] = uBAM_df['mean_qscore'].astype(np.float32)
+        uBAM_df['passes_filtering'] = uBAM_df['passes_filtering'].astype(np.bool)
+        uBAM_df["start_time"] = uBAM_df["start_time"] - uBAM_df["start_time"].min()
+        uBAM_df['channel'] = uBAM_df['channel'].astype(np.int16)
+        uBAM_df['start_time'] = uBAM_df['start_time'].astype(np.float64)
+        uBAM_df['duration'] = uBAM_df['duration'].astype(np.float32)
+        if self.is_barcode:
+            uBAM_df['barcode_arrangement'] = uBAM_df['barcode_arrangement'].astype("category")
+        return uBAM_df 
 
 
     def _uBAM_batch_reader(self, uBAM_chunk):
@@ -262,16 +302,16 @@ class uBAM_Extractor:
         "flow_cell_id" : extract_headerTag(header,'RG','PU')
         }
 
-
+    
+    
     def _process_record(self, rec):
         """
         extract QC info from BAM record
         return : dict of QC info
         """
         tags = rec.split("\t")
-        tag_dict = {key : value for key,_, value in [item.split(':',2) for item in tags[11:]]}
-        print(tag_dict)
-        exit()
+        tag_dict = defaultdict(lambda:'unclassified')
+        tag_dict.update({key : value for key,_, value in [item.split(':',2) for item in tags[11:]]})
         start_time = timeISO_to_float(tag_dict['st'], '%Y-%m-%dT%H:%M:%S.%f%z')
         qual = avg_qual(tags[10]) 
         passes_filtering = True if qual > self.threshold_Qscore else False
@@ -283,4 +323,7 @@ class uBAM_Extractor:
             tag_dict['ch'],
             tag_dict['du']
         ]
+        if self.is_barcode:
+            bc = tag_dict['BC'].split('_')[-1]
+            data.append(bc)
         return data
