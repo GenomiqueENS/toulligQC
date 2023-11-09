@@ -41,6 +41,7 @@ from toulligqc.extractor_common import set_result_value
 from toulligqc.extractor_common import log_task
 from toulligqc.extractor_common import add_image_to_result
 from toulligqc.extractor_common import read_first_line_file
+from toulligqc.extractor_common import pd_read_sequencing_summary
 from toulligqc.extractor_common import fill_series_dict
 from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel
 from toulligqc.common import is_numpy_1_24
@@ -62,6 +63,7 @@ class SequencingSummaryExtractor:
         self.sequencing_summary_source = config_dictionary['sequencing_summary_source']
         self.images_directory = config_dictionary['images_directory']
         self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
+        self.threshold_Qscore = int(config_dictionary['threshold'])
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
         else:
@@ -116,6 +118,9 @@ class SequencingSummaryExtractor:
         if 'barcode_arrangement' in self.dataframe_1d.columns:
             self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
                                                                         inplace=True)
+        if 'passes_filtering' not in self.dataframe_1d.columns:
+            self.dataframe_1d['passes_filtering'] = np.where(self.dataframe_1d['mean_qscore'] > self.threshold_Qscore, True, False)
+
 
         # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
         self.dataframe_1d = self.dataframe_1d.fillna(0)
@@ -330,8 +335,7 @@ class SequencingSummaryExtractor:
         try:
             # If 1 file and it's a sequencing_summary.txt
             if len(files) == 1 and self._is_sequencing_summary_file(files[0]):
-                return pd.read_csv(files[0], sep="\t", usecols=sequencing_summary_columns,
-                                   dtype=sequencing_summary_datatypes)
+                return pd_read_sequencing_summary(files[0], cols=sequencing_summary_columns, data_type=sequencing_summary_datatypes)
 
             # If 1 file and it's a sequencing_summary.txt with barcode info, load column barcode_arrangement
             elif len(files) == 1 and self._is_sequencing_summary_with_barcodes(files[0]):
@@ -339,15 +343,14 @@ class SequencingSummaryExtractor:
                 sequencing_summary_datatypes.update(
                     {'barcode_arrangement': 'category'})
 
-                return pd.read_csv(files[0], sep="\t", usecols=sequencing_summary_columns,
-                                   dtype=sequencing_summary_datatypes)
+                return pd_read_sequencing_summary(files[0], cols=sequencing_summary_columns, data_type=sequencing_summary_datatypes)
 
             # If multiple files, check if there's a barcoding one and a sequencing one :
             for f in files:
                 # check for presence of barcoding files
                 if self._is_barcode_file(f):
-                    dataframe = pd.read_csv(
-                        f, sep="\t", usecols=barcoding_summary_columns, dtype=barcoding_summary_datatypes)
+                    dataframe = pd_read_sequencing_summary(
+                        f, cols=barcoding_summary_columns, data_type=barcoding_summary_datatypes)
                     if barcode_dataframe is None:
                         barcode_dataframe = dataframe
                     # if a barcoding file has already been read, append the 2 dataframes
@@ -362,8 +365,8 @@ class SequencingSummaryExtractor:
                         {'barcode_arrangement': 'category'})
                     sys.stderr.write('Warning: The sequencing summary file {} contains barcode information.'
                                      ' The barcoding summary files will be skipped.\n'.format(f))
-                    return pd.read_csv(f, sep="\t", usecols=sequencing_summary_columns,
-                                    dtype=sequencing_summary_datatypes)
+                    return pd_read_sequencing_summary(f, cols=sequencing_summary_columns,
+                                    data_type=sequencing_summary_datatypes)
 
                 # check for presence of sequencing_summary file, if True add column read_id for merging with barcode dataframe
                 else:
@@ -372,8 +375,8 @@ class SequencingSummaryExtractor:
                         sequencing_summary_datatypes.update(
                             {'read_id': object})
 
-                        dataframe = pd.read_csv(f, sep="\t", usecols=sequencing_summary_columns,
-                                                dtype=sequencing_summary_datatypes)
+                        dataframe = pd_read_sequencing_summary(f, cols=sequencing_summary_columns,
+                                                data_type=sequencing_summary_datatypes)
                         if summary_dataframe is None:
                             summary_dataframe = dataframe
                         else:

@@ -447,6 +447,7 @@ def read_first_line_file(filename):
     except IOError:
         raise FileNotFoundError
 
+
 def set_result_dict_telemetry_value(result_dict, key, new_value):
     """
     """
@@ -462,3 +463,14 @@ def set_result_dict_telemetry_value(result_dict, key, new_value):
         new_value = current_value
 
     result_dict[final_key] = new_value
+
+
+def pd_read_sequencing_summary(file, cols, data_type):
+        try:
+            return pd.read_csv(file, sep="\t", usecols=cols,
+                            dtype=data_type)
+        except:
+            del data_type['passes_filtering']
+            cols.remove('passes_filtering')
+            return pd.read_csv(file, sep="\t", usecols=cols,
+                            dtype=data_type)
