@@ -248,14 +248,6 @@ class uBAM_Extractor:
                 yield batch
 
 
-    def _timeISO_to_float(self, iso_datetime, format):
-        """
-        """
-        dt = datetime.strptime(iso_datetime, format)
-        unix_timestamp = dt.timestamp()
-        return unix_timestamp
-
-
     def _get_header(self):
         samfile = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)
         header = samfile.header.to_dict()
@@ -277,15 +269,18 @@ class uBAM_Extractor:
         return : dict of QC info
         """
         tags = rec.split("\t")
-        iso_start_time = tags[17].split(':',2)[2]
-        qual = avg_qual(tags[10])
+        tag_dict = {key : value for key,_, value in [item.split(':',2) for item in tags[11:]]}
+        print(tag_dict)
+        exit()
+        start_time = timeISO_to_float(tag_dict['st'], '%Y-%m-%dT%H:%M:%S.%f%z')
+        qual = avg_qual(tags[10]) 
         passes_filtering = True if qual > self.threshold_Qscore else False
         data = [
-            len(tags[9]), # read length
-            qual, # AVG Qscore
-            passes_filtering, # Passing filter
-            timeISO_to_float(iso_start_time, '%Y-%m-%dT%H:%M:%S.%f%z'), # start time
-            tags[16].split(':',2)[2], # Channel
-            tags[12].split(':',2)[2] # Duration
+            len(tags[9]),
+            qual,
+            passes_filtering,
+            start_time,
+            tag_dict['ch'],
+            tag_dict['du']
         ]
         return data
