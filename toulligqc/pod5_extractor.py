@@ -1,0 +1,252 @@
+# -*- coding: utf-8 -*-
+#                  ToulligQC development code
+#
+# This code may be freely distributed and modified under the
+# terms of the GNU General Public License version 3 or later
+# and CeCILL. This should be distributed with the code. If you
+# do not have a copy, see:
+#
+#      http://www.gnu.org/licenses/gpl-3.0-standalone.html
+#      http://www.cecill.info/licences/Licence_CeCILL_V2-en.html
+#
+# Copyright for this code is held jointly by the Genomic platform
+# of the Institut de Biologie de l'École Normale Supérieure and
+# the individual authors.
+#
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomicParisCentre/toulligQC
+#
+# First author: Lionel Ferrato-Berberian
+# Maintainer: Bérengère Laffay
+# Since version 0.1
+
+# Extraction of the information about the Pod5 files
+
+import glob
+import os
+import shutil
+import sys
+import tarfile
+import tempfile
+
+import pod5 as p5
+
+class Pod5Extractor:
+    """
+    Extraction of different information from a Pod5 file
+    param pod5_source: Pod5 file directory
+    param result_directory: dictionary which gathers all the extracted
+    information that will be reported in the report.data file
+    param pod5_file_extension: extension used for the storage of the set of Pod5 files if there's one
+    param report_name: report name
+    return: a tuple containing the information about a Pod5 file
+    """
+
+    def __init__(self, config_dictionary):
+        self.config_file_dictionary = config_dictionary
+        self.pod5_source = config_dictionary['pod5_source']
+        self.file_to_process = None
+        self.report_name = config_dictionary['report_name']
+        self.pod5_file_extension = ''
+        self.pod5_file = ''
+        self.get_report_data_file_id()
+
+    def check_conf(self):
+        """
+        Configuration checking
+        :return:
+        """
+
+        if not os.path.exists(self.pod5_source):
+            return False, 'The input file or directory for Pod5 file does not exists: ' + self.pod5_source
+
+        if os.path.isdir(self.pod5_source):
+            file_found = self._find_file_in_directory()
+            if file_found is None:
+                return False, 'No Pod5 file found in directory: ' + self.pod5_source
+            self.file_to_process = file_found
+        else:
+            self.file_to_process = self.pod5_source
+
+        if self.file_to_process.endswith('.tar'):
+            self.pod5_file_extension = 'tar'
+
+        elif self.file_to_process.endswith('.tar.gz'):
+            self.pod5_file_extension = 'tar.gz'
+
+        elif self.file_to_process.endswith('.tar.bz2'):
+            self.pod5_file_extension = 'tar.bz2'
+
+        elif self.file_to_process.endswith('.pod5'):
+            self.pod5_file_extension = 'pod5'
+
+        else:
+            return (False, 'The file extension for Pod5 input is not supported '
+                           '(only .pod5, .tar, .tar.gz or .tar.bz2 are supported): ' + self.pod5_source)
+
+        return True, ""
+
+    def init(self):
+        """
+        Determination of the pod5 file extension
+        """
+        return
+
+    @staticmethod
+    def get_name():
+        """
+        Get the name of the extractor.
+        :return: the name of the extractor
+        """
+        return 'Pod5'
+
+    @staticmethod
+    def get_report_data_file_id():
+        """
+        Get the report.data id of the extractor
+        :return: the report.data id
+        """
+        return 'pod5.extractor'
+
+
+    def extract(self, result_dict):
+        """
+        Extraction of the different information about the pod5 files
+        :param result_dict: Dictionary which gathers all the extracted
+        information that will be reported in the report.data file
+        :return: result_dict filled
+        """
+        p5_file = self._read_pod5()
+        run_info_dict = self._get_pod5_items(p5_file)
+        tracking_id_dict = run_info_dict.tracking_id
+        if len(tracking_id_dict) == 0:
+            return
+
+        prefix = 'sequencing.telemetry.extractor'
+        result_dict[prefix + '.source'] = self.pod5_source
+        _set_result_dict_value(result_dict, prefix + '.flowcell.id', tracking_id_dict, 'flow_cell_id')
+        _set_result_dict_value(result_dict, prefix + '.minknow.version', tracking_id_dict, 'version')
+        _set_result_dict_value(result_dict, prefix + '.hostname', tracking_id_dict, 'hostname')
+        _set_result_dict_value(result_dict, prefix + '.operating.system', tracking_id_dict, 'operating_system')
+        _set_result_dict_value(result_dict, prefix + '.run.id', tracking_id_dict, 'run_id')
+        _set_result_dict_value(result_dict, prefix + '.protocol.run.id', tracking_id_dict, 'protocol_run_id')
+        _set_result_dict_value(result_dict, prefix + '.protocol.group.id', tracking_id_dict, 'protocol_group_id')
+        _set_result_dict_value(result_dict, prefix + '.sample.id', tracking_id_dict, 'sample_id')
+        _set_result_dict_value(result_dict, prefix + '.exp.start.time', tracking_id_dict, 'exp_start_time')
+        _set_result_dict_value(result_dict, prefix + '.device.id', tracking_id_dict, 'device_id')
+        _set_result_dict_value(result_dict, prefix + '.device.type', tracking_id_dict, 'device_type')
+        _set_result_dict_value(result_dict, prefix + '.distribution.version', tracking_id_dict, 'distribution_version')
+        _set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict,
+                               'flow_cell_product_code')
+
+        context_tags_dict = run_info_dict.context_tags
+        if len(context_tags_dict) != 0:
+            _set_result_dict_value(result_dict, prefix + '.selected.speed.bases.per.second', context_tags_dict, 'selected_speed_bases_per_second')
+            _set_result_dict_value(result_dict, prefix + '.sample.frequency', context_tags_dict, 'sample_frequency')
+            _set_result_dict_value(result_dict, prefix + '.sequencing.kit.version', context_tags_dict, 'sequencing_kit')
+
+
+    def graph_generation(self, result_dict):
+        """
+        Graph generation
+        :return: nothing
+        """
+        return []
+
+
+    def clean(self, result_dict):
+        """
+        Deleting the temporary pod5 file extracted from the tar archive if used
+        and removing dictionary entries that will not be kept in the report.data file
+        :param result_dict: dictionary which gathers all the extracted
+        information that will be reported in the report.data file
+        :return:
+        """
+        if self.temporary_directory:
+            shutil.rmtree(self.temporary_directory, ignore_errors=True)
+
+
+    def _read_pod5(self):
+        """
+        Extraction of one pod5 file from the archive and stores
+        it in a p5 object for next retrieving information
+        :return: p5_file: pod5file
+        """
+        self.temporary_directory = tempfile.mkdtemp()
+        if self.pod5_file_extension == 'tar' or \
+                self.pod5_file_extension == 'tar.gz' or \
+                self.pod5_file_extension == 'tar.bz2':
+            self.fast5_file = self._pod5_tar_extraction(self.file_to_process, self.pod5_file_extension,
+                                                         self.temporary_directory)
+        elif self.pod5_file_extension == 'pod5' or self.pod5_file_extension == '.pod5':
+            self.pod5_file = self.file_to_process
+        else:
+            err_msg = 'There is a problem with the pod5 file or the tar file'
+            sys.exit(err_msg)
+        p5_file = p5.Reader(self.pod5_file)
+
+        return p5_file
+
+
+    def _pod5_tar_extraction(self, tar_file, extension, output_directory):
+            """
+            Extraction of a Pod5 file stored in a tar file,
+            :param tar_file: tar file containing the set of the raw Pod5 files
+            :param extension of the file
+            :param output_directory: dictionary which gathers all the extracted
+            information that will be reported in the report.data file
+            :return: a Pod5 file
+            """
+
+            if extension == 'tar.gz':
+                tar_mode = 'r:gz'
+            elif extension == 'tar.bz2':
+                tar_mode = 'r:bz2'
+            else:
+                tar_mode = 'r'
+
+            tf = tarfile.open(name=tar_file, mode=tar_mode)
+            while True:
+                member = tf.next()
+                if member.name.endswith('.pod5'):
+                    tf.extract(member, path=output_directory)
+                    break
+            return output_directory + '/' + member.name
+
+
+    def _get_pod5_items(self, h5py_file):
+        """
+        Global function to extract run information stores in h5py format
+        :param h5py_file: fast5 file store in a h5py object
+        :param key:  required h5py attributes
+        :return: h5py value, for example flow_cell_id : FAE22827
+        """
+
+        for read_record in h5py_file.reads():
+            return read_record.run_info
+        return {}
+
+    def _find_file_in_directory(self):
+        """
+        Method that looking for a suitable Fast5 file in the source directory.
+        :return: The path to the first suitable file in the source directory
+        """
+
+        for ext in ('fast5', 'tar.bz2', 'tar.gz'):
+            if glob.glob(self.fast5_source + '/*.' + ext):
+                files_found = os.listdir(self.fast5_source)
+                if len(files_found) > 0:
+                    return self.fast5_source + files_found[0]
+
+        return None
+
+
+def _set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
+    value = ''
+    if dict_key in tracking_id_dict:
+        value = tracking_id_dict[dict_key]
+
+    result_dict[key] = value
+

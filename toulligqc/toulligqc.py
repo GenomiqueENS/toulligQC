@@ -50,6 +50,7 @@ from toulligqc import html_report_generator
 from toulligqc import version
 from toulligqc import configuration
 from toulligqc import fast5_extractor
+from toulligqc import pod5_extractor
 from toulligqc import sequencing_summary_extractor
 from toulligqc import sequencing_summary_onedsquare_extractor
 from toulligqc import sequencing_telemetry_extractor
@@ -83,6 +84,10 @@ def _parse_args(config_dictionary):
                           help='Fast5 file source (necessary if no telemetry file), ' +
                                'can also be in a tar.gz/tar.bz2 archive or a directory')
     
+    required.add_argument('-p', '--pod5-source', action='store', dest='pod5_source',
+                          help='pod5 file source (necessary if no telemetry file), ' +
+                               'can also be in a tar.gz/tar.bz2 archive or a directory')
+
     required.add_argument('-q', '--fastq', action='append', dest='fastq',
                           help='FASTQ file (necessary if no sequencing summary file), ' +
                                'can also be in a tar.gz archive')
@@ -141,6 +146,7 @@ def _parse_args(config_dictionary):
     # Rewrite the configuration file value if argument option is present
     args_dict = {
         ('fast5_source', args.fast5_source),
+        ('pod5_source', args.pod5_source),
         ('sequencing_summary_source', _join_parameter_arguments(args.sequencing_summary_source)),
         ('sequencing_summary_1dsqr_source', _join_parameter_arguments(args.sequencing_summary_1dsqr_source)),
         ('sequencing_telemetry_source', args.telemetry_source),
@@ -294,6 +300,9 @@ def _create_extractor_list(config_dictionary):
 
     if 'fast5_source' in config_dictionary and config_dictionary['fast5_source']:
         result.append(fast5_extractor.Fast5Extractor(config_dictionary))
+
+    if 'pod5_source' in config_dictionary and config_dictionary['pod5_source']:
+        result.append(pod5_extractor.Pod5Extractor(config_dictionary))
 
     if 'sequencing_summary_1dsqr_source' in config_dictionary and \
             config_dictionary['sequencing_summary_1dsqr_source']:
