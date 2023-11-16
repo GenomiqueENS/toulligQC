@@ -116,8 +116,10 @@ class SequencingSummaryExtractor:
 
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
-            self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
-                                                                        inplace=True)
+            #self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
+            #                                                            inplace=True)
+            self.dataframe_1d['barcode_arrangement'] = self.dataframe_1d['barcode_arrangement'].cat.add_categories(
+                                                                        [0, 'other barcodes', 'passes_filtering'])
         if 'passes_filtering' not in self.dataframe_1d.columns:
             self.dataframe_1d['passes_filtering'] = np.where(self.dataframe_1d['mean_qscore'] > self.threshold_Qscore, True, False)
 

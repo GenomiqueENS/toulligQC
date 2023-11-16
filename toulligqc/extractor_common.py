@@ -74,7 +74,7 @@ def describe_dict(extractor, result_dict: dict, function, entry: str):
     :param entry: entry to put in result_dict completed with the statistics
     """
     stats = pd.Series.describe(function).drop("count")
-    for key, value in stats.iteritems():
+    for key, value in stats.items():
         set_result_value(extractor, result_dict, entry + '.' + key, value)
 
 
@@ -347,7 +347,7 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
     other_all_barcode_count = pd.Series(other_barcode_count, index=['other barcodes'])
 
     # Append Series of non-used barcode counts to the Series of barcode_selection counts
-    count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
+    count_sorted = pd.concat([count_sorted, other_all_barcode_count]).sort_index()
 
     # Compute frequency for all barcode counts and save into dataframe_dict
     for barcode in count_sorted.to_dict():
@@ -397,7 +397,7 @@ def _barcode_bases(extractor, barcode_selection, result_dict, entry: str, df_fil
     other_all_barcode_count = pd.Series(other_barcode_count, index=['other barcodes'])
 
     # Append Series of non-used barcode counts to the Series of barcode_selection counts
-    count_sorted = count_sorted.append(other_all_barcode_count).sort_index()
+    count_sorted = pd.concat([count_sorted, other_all_barcode_count]).sort_index()
 
     # Compute frequency for all barcode counts and save into dataframe_dict
     for barcode in count_sorted.to_dict():
