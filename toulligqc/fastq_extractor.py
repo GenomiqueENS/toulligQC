@@ -14,6 +14,7 @@ from toulligqc.extractor_common import get_result_value
 from toulligqc.extractor_common import fill_series_dict
 from toulligqc.extractor_common import set_result_dict_telemetry_value
 from toulligqc.extractor_common import timeISO_to_float
+from toulligqc.extractor_common import extract_barcode_info
 from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel, avg_qual
 from toulligqc.fastq_bam_common import multiprocessing_submit
 from toulligqc import plotly_graph_generator as pgg
@@ -22,7 +23,7 @@ from toulligqc import plotly_graph_generator as pgg
 class fastqExtractor:
 
     def __init__(self, config_dictionary):
-        self.config_file_dictionary = config_dictionary
+        self.config_dictionary = config_dictionary
         self.fastq = config_dictionary['fastq'].split('\t')
         self.images_directory = config_dictionary['images_directory']
         self.threshold_Qscore = int(config_dictionary['threshold'])
@@ -30,6 +31,9 @@ class fastqExtractor:
         self.thread = int(config_dictionary['thread'])
         self.rich = False
         self.runid, self.sampleid, self.model_version_id = ['Unknow']*3
+        self.is_barcode = False
+        if config_dictionary['barcoding'] == 'True':
+            self.is_barcode = True
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
         else:
@@ -56,6 +60,15 @@ class fastqExtractor:
         if self.dataframe_1d.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
         self.dataframe_dict = {}
+
+        # Add missing categories
+        if 'barcode_arrangement' in self.dataframe_1d.columns:
+           self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
+                                                                       inplace=True)
+        self.dataframe_1d = self.dataframe_1d.fillna(0)
+        self.barcode_selection = self.config_dictionary['barcode_selection']
+        
+
         log_task(self.quiet,
                  'Load FASTQ file ({:,.2f} MB used)'.format(self.dataframe_1d.memory_usage(deep=True).sum()/1024/1024),
                  start_time,
@@ -114,6 +127,22 @@ class fastqExtractor:
         if self.rich:
             add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
             add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
+        if self.is_barcode:
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
+                                                                                                       self.barcode_selection,
+                                                                                                       self.images_directory))
+
+            read_fail = self.dataframe_dict["read.fail.barcoded"]
+            if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
+                add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
+                                                                                                      self.barcode_selection,
+                                                                                                      self.images_directory))
+
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
+                                                                                            self.images_directory))
+
+            add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
+                                                                                                    self.images_directory))
         return images
 
 
@@ -180,6 +209,11 @@ class fastqExtractor:
                       "pass.reads.sequence.length")
         describe_dict(self, result_dict, self.dataframe_dict["fail.reads.sequence.length"],
                       "fail.reads.sequence.length")
+        if self.is_barcode:
+            extract_barcode_info(self, result_dict,
+                                 self.barcode_selection,
+                                 self.dataframe_dict,
+                                 self.dataframe_1d)
 
         # Get Qscore statistics without count value and store them into result_dict
         qscore_statistics = self.dataframe_1d['mean_qscore'].describe().drop(
@@ -205,7 +239,7 @@ class fastqExtractor:
 
         if run_info:
             self.rich = True
-            self.runid, self.sampleid, self.model_version_id = run_info   
+            self.runid, self.sampleid, self.model_version_id = run_info
         else:
             self.rich = False
 
@@ -214,25 +248,30 @@ class fastqExtractor:
                                                         read_batchs, 
                                                         n_process=self.thread, 
                                                         pbar_update=self.batch_size)
-        fq_data = []
+        fq_df = []
         
         for _, f in enumerate(rst_futures):
-            fq_data.extend(f.result())
+            fq_df.extend(f.result())
 
-        columns = ['sequence_length', 'mean_qscore', 'passes_filtering', 'start_time', 'channel'] if self.rich \
-                else ['sequence_length', 'mean_qscore', 'passes_filtering']
+        columns = ['sequence_length', 'mean_qscore', 'passes_filtering']
+        if self.rich:
+            columns.extend(['start_time', 'channel'])
+        if self.is_barcode:
+            columns.append('barcode_arrangement')
 
-        fq_data = pd.DataFrame(fq_data, columns=columns)
+        fq_df = pd.DataFrame(fq_df, columns=columns)
 
-        fq_data['sequence_length'] = fq_data['sequence_length'].astype(np.uint32)
-        fq_data['mean_qscore'] = fq_data['mean_qscore'].astype(np.float32)
-        fq_data['passes_filtering'] = fq_data['passes_filtering'].astype(np.bool)
+        fq_df['sequence_length'] = fq_df['sequence_length'].astype(np.uint32)
+        fq_df['mean_qscore'] = fq_df['mean_qscore'].astype(np.float32)
+        fq_df['passes_filtering'] = fq_df['passes_filtering'].astype(np.bool)
 
         if self.rich:
-            fq_data["start_time"] = fq_data["start_time"] - fq_data["start_time"].min()
-            fq_data['start_time'] = fq_data['start_time'].astype(np.float64)
-            fq_data['channel'] = fq_data['channel'].astype(np.int16)
-        return fq_data 
+            fq_df["start_time"] = fq_df["start_time"] - fq_df["start_time"].min()
+            fq_df['start_time'] = fq_df['start_time'].astype(np.float64)
+            fq_df['channel'] = fq_df['channel'].astype(np.int16)
+        if self.is_barcode:
+            fq_df['barcode_arrangement'] = fq_df['barcode_arrangement'].astype("category")
+        return fq_df 
 
 
     def _fastq_batch_generator(self):
@@ -278,8 +317,12 @@ class fastqExtractor:
                 name = read[0]
                 qscore = avg_qual(read[1])
                 passes_filtering = True if qscore > self.threshold_Qscore else False
-                start_time, ch = self._extract_info_from_name(name)
-                fastq_lines.append((len(read[1]), qscore, passes_filtering, start_time, ch))
+                if self.is_barcode:
+                    start_time, ch, barcode = self._extract_info_from_name(name)
+                    fastq_lines.append((len(read[1]), qscore, passes_filtering, start_time, ch, barcode))
+                else:
+                    start_time, ch = self._extract_info_from_name(name)
+                    fastq_lines.append((len(read[1]), qscore, passes_filtering, start_time, ch))
         else:
             for read in read_batch:
                 qscore = avg_qual(read)
@@ -295,10 +338,12 @@ class fastqExtractor:
 
         with open_fn(self.fastq[0], 'rt') as fq:
             first_line = fq.readline().strip('\n')
-        try:
-            metadata = dict(x.split("=") for x in first_line.split(" ")[1:])
-            if 'model_version_id' not in metadata:
+        metadata = dict(x.split("=") for x in first_line.split(" ")[1:])
+        if 'barcode' not in metadata:
+            self.is_barcode = False
+        if 'model_version_id' not in metadata:
                 metadata['model_version_id'] = 'Unknow'
+        try:
             return metadata['runid'] , metadata['sampleid'] , metadata['model_version_id'] 
         except:
             return None
@@ -309,4 +354,6 @@ class fastqExtractor:
         """
         metadata = dict(x.split("=") for x in name.split(" ")[1:])
         start_time = timeISO_to_float(metadata['start_time'], '%Y-%m-%dT%H:%M:%SZ')
+        if self.is_barcode:
+            return  start_time, metadata['ch'], metadata['barcode']
         return  start_time, metadata['ch']
