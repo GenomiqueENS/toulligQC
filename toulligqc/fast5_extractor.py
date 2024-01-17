@@ -24,15 +24,15 @@
 
 # Extraction of the information about the FAST5 files
 
-import glob
 import os
 import shutil
 import sys
 import tarfile
 import tempfile
-
 import h5py
 
+from toulligqc.common import find_file_in_directory
+from toulligqc.common import set_result_dict_value
 
 class Fast5Extractor:
     """
@@ -64,7 +64,7 @@ class Fast5Extractor:
             return False, 'The input file or directory for Fast5 file does not exists: ' + self.fast5_source
 
         if os.path.isdir(self.fast5_source):
-            file_found = self._find_file_in_directory()
+            file_found = find_file_in_directory(self.fast5_source, "fast5")
             if file_found is None:
                 return False, 'No Fast5 file found in directory: ' + self.fast5_source
             self.file_to_process = file_found
@@ -90,13 +90,12 @@ class Fast5Extractor:
         return True, ""
 
 
-
-
     def init(self):
         """
         Determination of the fast5 file extension
         """
         return
+
 
     @staticmethod
     def get_name():
@@ -106,6 +105,7 @@ class Fast5Extractor:
         """
         return 'Fast5'
 
+
     @staticmethod
     def get_report_data_file_id():
         """
@@ -113,6 +113,7 @@ class Fast5Extractor:
         :return: the report.data id
         """
         return 'fast5.extractor'
+
 
     def extract(self, result_dict):
         """
@@ -129,26 +130,26 @@ class Fast5Extractor:
 
         prefix = 'sequencing.telemetry.extractor'
         result_dict[prefix + '.source'] = self.fast5_source
-        _set_result_dict_value(result_dict, prefix + '.flowcell.id', tracking_id_dict, 'flow_cell_id')
-        _set_result_dict_value(result_dict, prefix + '.minknow.version', tracking_id_dict, 'version')
-        _set_result_dict_value(result_dict, prefix + '.hostname', tracking_id_dict, 'hostname')
-        _set_result_dict_value(result_dict, prefix + '.operating.system', tracking_id_dict, 'operating_system')
-        _set_result_dict_value(result_dict, prefix + '.run.id', tracking_id_dict, 'run_id')
-        _set_result_dict_value(result_dict, prefix + '.protocol.run.id', tracking_id_dict, 'protocol_run_id')
-        _set_result_dict_value(result_dict, prefix + '.protocol.group.id', tracking_id_dict, 'protocol_group_id')
-        _set_result_dict_value(result_dict, prefix + '.sample.id', tracking_id_dict, 'sample_id')
-        _set_result_dict_value(result_dict, prefix + '.exp.start.time', tracking_id_dict, 'exp_start_time')
-        _set_result_dict_value(result_dict, prefix + '.device.id', tracking_id_dict, 'device_id')
-        _set_result_dict_value(result_dict, prefix + '.device.type', tracking_id_dict, 'device_type')
-        _set_result_dict_value(result_dict, prefix + '.distribution.version', tracking_id_dict, 'distribution_version')
-        _set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict,
+        set_result_dict_value(result_dict, prefix + '.flowcell.id', tracking_id_dict, 'flow_cell_id')
+        set_result_dict_value(result_dict, prefix + '.minknow.version', tracking_id_dict, 'version')
+        set_result_dict_value(result_dict, prefix + '.hostname', tracking_id_dict, 'hostname')
+        set_result_dict_value(result_dict, prefix + '.operating.system', tracking_id_dict, 'operating_system')
+        set_result_dict_value(result_dict, prefix + '.run.id', tracking_id_dict, 'run_id')
+        set_result_dict_value(result_dict, prefix + '.protocol.run.id', tracking_id_dict, 'protocol_run_id')
+        set_result_dict_value(result_dict, prefix + '.protocol.group.id', tracking_id_dict, 'protocol_group_id')
+        set_result_dict_value(result_dict, prefix + '.sample.id', tracking_id_dict, 'sample_id')
+        set_result_dict_value(result_dict, prefix + '.exp.start.time', tracking_id_dict, 'exp_start_time')
+        set_result_dict_value(result_dict, prefix + '.device.id', tracking_id_dict, 'device_id')
+        set_result_dict_value(result_dict, prefix + '.device.type', tracking_id_dict, 'device_type')
+        set_result_dict_value(result_dict, prefix + '.distribution.version', tracking_id_dict, 'distribution_version')
+        set_result_dict_value(result_dict, prefix + '.flow.cell.product.code', tracking_id_dict,
                                'flow_cell_product_code')
 
         context_tags_dict = self._get_fast5_items(h5py_file, 'context_tags')
         if len(context_tags_dict) != 0:
-            _set_result_dict_value(result_dict, prefix + '.selected.speed.bases.per.second', context_tags_dict, 'selected_speed_bases_per_second')
-            _set_result_dict_value(result_dict, prefix + '.sample.frequency', context_tags_dict, 'sample_frequency')
-            _set_result_dict_value(result_dict, prefix + '.sequencing.kit.version', context_tags_dict, 'sequencing_kit')
+            set_result_dict_value(result_dict, prefix + '.selected.speed.bases.per.second', context_tags_dict, 'selected_speed_bases_per_second')
+            set_result_dict_value(result_dict, prefix + '.sample.frequency', context_tags_dict, 'sample_frequency')
+            set_result_dict_value(result_dict, prefix + '.sequencing.kit.version', context_tags_dict, 'sequencing_kit')
 
 
     def graph_generation(self, result_dict):
@@ -157,6 +158,7 @@ class Fast5Extractor:
         :return: nothing
         """
         return []
+
 
     def clean(self, result_dict):
         """
@@ -168,6 +170,7 @@ class Fast5Extractor:
         """
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
+
 
     def _fast5_tar_extraction(self, tar_file, extension, output_directory):
         """
@@ -194,6 +197,7 @@ class Fast5Extractor:
                 break
         return output_directory + '/' + member.name
 
+
     def _read_fast5(self):
         """
         Extraction of one fast5 file from the archive and stores
@@ -215,6 +219,7 @@ class Fast5Extractor:
 
         return h5py_file
 
+
     def _get_fast5_items(self, h5py_file, group):
         """
         Global function to extract run information stores in h5py format
@@ -231,25 +236,3 @@ class Fast5Extractor:
                 return tracking_id_dict
 
         return {}
-
-    def _find_file_in_directory(self):
-        """
-        Method that looking for a suitable Fast5 file in the source directory.
-        :return: The path to the first suitable file in the source directory
-        """
-
-        for ext in ('fast5', 'tar.bz2', 'tar.gz'):
-            if glob.glob(self.fast5_source + '/*.' + ext):
-                files_found = os.listdir(self.fast5_source)
-                if len(files_found) > 0:
-                    return self.fast5_source + files_found[0]
-
-        return None
-
-
-def _set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
-    value = ''
-    if dict_key in tracking_id_dict:
-        value = tracking_id_dict[dict_key]
-
-    result_dict[key] = value
