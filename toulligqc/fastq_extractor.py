@@ -17,6 +17,7 @@ from toulligqc.extractor_common import timeISO_to_float
 from toulligqc.extractor_common import extract_barcode_info
 from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel, avg_qual
 from toulligqc.fastq_bam_common import multiprocessing_submit
+from toulligqc.common import is_numpy_1_24
 from toulligqc import plotly_graph_generator as pgg
 
 
@@ -263,7 +264,7 @@ class fastqExtractor:
 
         fq_df['sequence_length'] = fq_df['sequence_length'].astype(np.uint32)
         fq_df['mean_qscore'] = fq_df['mean_qscore'].astype(np.float32)
-        fq_df['passes_filtering'] = fq_df['passes_filtering'].astype(np.bool)
+        fq_df['passes_filtering'] = fq_df['passes_filtering'].astype(np.bool_ if is_numpy_1_24 else np.bool)
 
         if self.rich:
             fq_df["start_time"] = fq_df["start_time"] - fq_df["start_time"].min()
