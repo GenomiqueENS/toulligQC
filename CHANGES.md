@@ -1,4 +1,13 @@
 # Changelog
+## 2.6 (2024-01-26)
+* Support for the POD5 format.
+* Handling of barcoding in BAM and FASTQ files.
+* Support for Fast5 .tar files without compression.
+* Fixed an issue with BAM tags extraction.
+* Fixed the issue with the 'passes_filtering'-only sequencing summary.
+* Fixed the bug related to numpy.bool with numpy version 1.24 or later.
+* Improved compatibility with pandas 2.0.
+
 ## 2.5 (2023-11-03)
 * Fixed error when no failed reads were found (Issue #20).
 * Fixed error when unclassified barcodes were missing.

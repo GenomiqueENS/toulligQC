@@ -1,7 +1,7 @@
 FROM ubuntu:23.10
 
 MAINTAINER Laurent Jourdren <jourdren@bio.ens.psl.eu>
-ARG VERSION=2.5
+ARG VERSION=2.6
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
                     python3 \
