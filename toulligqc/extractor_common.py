@@ -172,7 +172,7 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     barcodes_found = set(dataframe_dict["barcode.arrangement"].unique())
     for element in barcode_selection:
         if element not in barcodes_found and element != 'other barcodes':
-            sys.stderr.write("Warning: The barcode {} doesn't exist in input data\n".format(element))
+            sys.stderr.write("\033[93mWarning:\033[0m The barcode {} doesn't exist in input data\n".format(element))
 
 
     # Get barcodes frequency by Bases
