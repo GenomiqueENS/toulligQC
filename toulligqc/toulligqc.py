@@ -360,6 +360,9 @@ def main():
                     if pattern:
                         barcode = 'barcode{}'.format(pattern.group(2))
                         barcode_set.add(barcode)
+                    else: 
+                        sys.stderr.write("\033[93mWarning:\033[0m Barcode '{}' is non-standard custom arrangement.\n".format(b))
+                        barcode_set.add(b)
 
             barcode_selection = sorted(barcode_set)
 
