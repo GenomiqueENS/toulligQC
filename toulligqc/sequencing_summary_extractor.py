@@ -74,6 +74,7 @@ class SequencingSummaryExtractor:
             for f in self.sequencing_summary_files:
                 if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(f):
                     self.is_barcode = True
+                    self._get_barcode_colname(f)
 
     def check_conf(self):
         """
@@ -107,12 +108,17 @@ class SequencingSummaryExtractor:
         start_time = time.time()
 
         self.dataframe_1d = self._load_sequencing_summary_data()
+
         if self.dataframe_1d.empty:
             raise pd.errors.EmptyDataError("Dataframe is empty")
 
         # Rename 'sequence_length_template' and 'mean_qscore_template'
         self.dataframe_1d.rename(columns={'sequence_length_template': 'sequence_length',
                                           'mean_qscore_template': 'mean_qscore'}, inplace=True)
+        
+        # Rename 'barcode_arrangement'
+        if self.is_barcode and self.barcode_colname == "barcode":
+            self.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
 
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
@@ -327,11 +333,11 @@ class SequencingSummaryExtractor:
             'duration': np.float32}
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
-        barcoding_summary_columns = ['read_id', 'barcode_arrangement']
+        barcoding_summary_columns = ['read_id', self.barcode_colname]
 
         barcoding_summary_datatypes = {
             'read_id': object,
-            'barcode_arrangement': 'category'
+            self.barcode_colname: 'category'
         }
 
         try:
@@ -341,9 +347,9 @@ class SequencingSummaryExtractor:
 
             # If 1 file and it's a sequencing_summary.txt with barcode info, load column barcode_arrangement
             elif len(files) == 1 and self._is_sequencing_summary_with_barcodes(files[0]):
-                sequencing_summary_columns.append('barcode_arrangement')
+                sequencing_summary_columns.append(self.barcode_colname)
                 sequencing_summary_datatypes.update(
-                    {'barcode_arrangement': 'category'})
+                    {self.barcode_colname: 'category'})
 
                 return pd_read_sequencing_summary(files[0], cols=sequencing_summary_columns, data_type=sequencing_summary_datatypes)
 
@@ -360,11 +366,11 @@ class SequencingSummaryExtractor:
                         barcode_dataframe = barcode_dataframe.append(
                             dataframe, ignore_index=True)
 
-                # check for presence of sequencing_summary file with barcode info, if true load column barcode_arrangement and ignore barcoding files.
+                # check for presence of sequencing_summary file with barcode info, if true load barcode column and ignore barcoding files.
                 elif self._is_sequencing_summary_with_barcodes(f):
-                    sequencing_summary_columns.append('barcode_arrangement')
+                    sequencing_summary_columns.append(self.barcode_colname)
                     sequencing_summary_datatypes.update(
-                        {'barcode_arrangement': 'category'})
+                        {self.barcode_colname: 'category'})
                     sys.stderr.write('Warning: The sequencing summary file {} contains barcode information.'
                                      ' The barcoding summary files will be skipped.\n'.format(f))
                     return pd_read_sequencing_summary(f, cols=sequencing_summary_columns,
@@ -392,20 +398,20 @@ class SequencingSummaryExtractor:
                 dataframes_merged = pd.merge(
                     summary_dataframe, barcode_dataframe, on='read_id', how='left')
 
-                missing_barcodes_count = dataframes_merged['barcode_arrangement'].isna().sum()
+                missing_barcodes_count = dataframes_merged[self.barcode_colname].isna().sum()
                 if missing_barcodes_count > 0:
                     sys.stderr.write('Warning: {} barcodes values are missing in sequencing summary file(s).'
                                      ' They will be marked as "unclassified".\n'.format(missing_barcodes_count))
 
                 # Replace missing barcodes values by 'unclassified'
-                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna(
+                dataframes_merged[self.barcode_colname] = dataframes_merged[self.barcode_colname].fillna(
                     'unclassified')
 
                 # Delete column read_id after merging
                 del dataframes_merged['read_id']
 
                 # Set 'barcode_arrangement' column type as category
-                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].astype('category')
+                dataframes_merged[self.barcode_colname] = dataframes_merged[self.barcode_colname].astype('category')
 
                 return dataframes_merged
 
@@ -420,7 +426,7 @@ class SequencingSummaryExtractor:
         :return: True if the filename is a barcoding summary file
         """
         header = read_first_line_file(filename)
-        return header.startswith('read_id') and 'barcode_arrangement' in header
+        return header.startswith('read_id') and any(col in header for col in ['barcode_arrangement', 'barcode'])
 
     @staticmethod
     def _is_sequencing_summary_file(filename):
@@ -430,7 +436,7 @@ class SequencingSummaryExtractor:
         :return: True if the file is indeed a sequencing summary file
         """
         header = read_first_line_file(filename)
-        return header.startswith('filename') and not 'barcode_arrangement' in header
+        return header.startswith('filename') and not any(col in header for col in ['barcode_arrangement', 'barcode'])
 
     @staticmethod
     def _is_sequencing_summary_with_barcodes(filename):
@@ -441,7 +447,15 @@ class SequencingSummaryExtractor:
         :return: True if the filename is a sequencing summary file with barcodes
         """
         header = read_first_line_file(filename)
-        return header.startswith('filename') and 'barcode_arrangement' in header
+        return header.startswith('filename') and any(col in header for col in ['barcode_arrangement', 'barcode'])
+    
+    def _get_barcode_colname(self, filename):
+        """
+        Check if the barcode colname in sequencing summary is "barcode_arrangement" or "barcode"
+        :param filename: path of the file to test
+        """
+        header = read_first_line_file(filename)
+        self.barcode_colname = 'barcode_arrangement' if 'barcode_arrangement' in header else 'barcode'
 
 
 
