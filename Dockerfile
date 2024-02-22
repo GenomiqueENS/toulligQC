@@ -1,7 +1,7 @@
-FROM ubuntu:20.04
+FROM ubuntu:23.10
 
 MAINTAINER Laurent Jourdren <jourdren@bio.ens.psl.eu>
-ARG VERSION=2.5
+ARG VERSION=2.5.1
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
                     python3 \
@@ -15,8 +15,8 @@ RUN apt update && \
                     python3-numpy\
                     python3-tqdm\
                     python3-pysam\
-                    python3-sklearn && \
-    pip3 install "plotly>=4.5.0,<4.6.0" && \
+                    python3-sklearn\
+                    python3-plotly && \
     cd /tmp && \
     git clone https://github.com/GenomicParisCentre/toulligQC && \
     cd toulligQC && \
@@ -26,5 +26,3 @@ RUN apt update && \
     apt autoremove --yes && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
-ENTRYPOINT ["toulligqc"]
-CMD ["--help"]
