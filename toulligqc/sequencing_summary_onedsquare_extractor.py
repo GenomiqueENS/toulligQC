@@ -115,7 +115,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         # Copy dataframe to avoid changing original df when dropping columns
         dataframe_1d_copy = self.dataframe_1d.copy(deep=True)
-        dataframe_1d_copy.drop(columns=["sequence_length", "mean_qscore", "passes_filtering"], inplace=True)
+        dataframe_1d_copy = dataframe_1d_copy.drop(columns=["sequence_length", "mean_qscore", "passes_filtering"])
 
         # Load dataframe_1dsqr df from 1D² files
         self.dataframe_1dsqr = self._load_sequencing_summary_1dsqr_data()
@@ -123,7 +123,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Create duration column in dataframe_1dsqr
         self.dataframe_1dsqr['duration'] = self.dataframe_1dsqr['trimmed_duration1'] + self.dataframe_1dsqr[
             'trimmed_duration2']  # duration of the 2 strands sequenced
-        self.dataframe_1dsqr.drop(columns=['trimmed_duration1', 'trimmed_duration2'], inplace=True)
+        self.dataframe_1dsqr = self.dataframe_1dsqr.drop(columns=['trimmed_duration1', 'trimmed_duration2'])
 
         # dataframe_dicts
         self.dataframe_dict_1dsqr = {}
@@ -398,8 +398,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                         barcode_dataframe = dataframe
                     # if a barcoding file has already been read, append the 2 dataframes
                     else:
-                        barcode_dataframe = barcode_dataframe.append(
-                            dataframe, ignore_index=True)
+                        barcode_dataframe = pd.concat([barcode_dataframe, dataframe], ignore_index=True)
 
                 # check for presence of sequencing_summary file, if True add column read_id for merging with barcode dataframe
                 else:
@@ -423,8 +422,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 # If no barcodes in files, no merged dataframes on column 'read_id'
                 return summary_dataframe.drop(columns=['read_id1'])
             else:
-                summary_dataframe.rename(columns={"read_id1": "read_id"},
-                                         inplace=True)
+                summary_dataframe = summary_dataframe.rename(columns={"read_id1": "read_id"})
                 dataframes_merged = pd.merge(summary_dataframe,
                                              barcode_dataframe,
                                              on='read_id',
@@ -436,10 +434,9 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                     sys.stderr.write('Warning: {} barcodes values are missing in sequencing summary file(s).'
                                      ' They will be marked as "unclassified".\n'.format(missing_barcodes_count))
                 # Add missing categories
-                dataframes_merged['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
-                                                                            inplace=True)
+                dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'])
                 if 'unclassified' not in dataframes_merged['barcode_arrangement'].cat.categories:
-                    dataframes_merged['barcode_arrangement'].cat.add_categories(['unclassified'], inplace=True)
+                    dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].cat.add_categories(['unclassified'])
 
                 # Replace missing barcodes values by 'unclassified'
                 dataframes_merged['barcode_arrangement'] = dataframes_merged['barcode_arrangement'].fillna(
