@@ -113,7 +113,8 @@ class SequencingSummaryExtractor:
                                           'mean_qscore_template': 'mean_qscore'}, inplace=True)
 
         # Add missing categories
-        self.dataframe_1d['barcode_arrangement'] = self.dataframe_1d['barcode_arrangement'].cat.add_categories(
+        if 'barcode_arrangement' in self.dataframe_1d.columns:
+            self.dataframe_1d['barcode_arrangement'] = self.dataframe_1d['barcode_arrangement'].cat.add_categories(
                                                                         [0, 'other barcodes', 'passes_filtering'])
 
         # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
