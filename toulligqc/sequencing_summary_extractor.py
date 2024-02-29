@@ -118,12 +118,10 @@ class SequencingSummaryExtractor:
         
         # Rename 'barcode_arrangement'
         if self.is_barcode and self.barcode_colname == "barcode":
-            self.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
+            self.dataframe_1dself.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
 
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
-            #self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
-            #                                                            inplace=True)
             self.dataframe_1d['barcode_arrangement'] = self.dataframe_1d['barcode_arrangement'].cat.add_categories(
                                                                         [0, 'other barcodes', 'passes_filtering'])
         if 'passes_filtering' not in self.dataframe_1d.columns:
@@ -333,12 +331,13 @@ class SequencingSummaryExtractor:
             'duration': np.float32}
 
         # If barcoding files are provided, merging of dataframes must be done on read_id column
-        barcoding_summary_columns = ['read_id', self.barcode_colname]
+        if self.is_barcode:
+            barcoding_summary_columns = ['read_id', self.barcode_colname]
 
-        barcoding_summary_datatypes = {
-            'read_id': object,
-            self.barcode_colname: 'category'
-        }
+            barcoding_summary_datatypes = {
+                'read_id': object,
+                self.barcode_colname: 'category'
+            }
 
         try:
             # If 1 file and it's a sequencing_summary.txt
