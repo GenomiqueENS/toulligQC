@@ -18,6 +18,7 @@ from toulligqc.extractor_common import timeISO_to_float
 from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel, avg_qual
 from toulligqc.fastq_bam_common import multiprocessing_submit, extract_headerTag
 from toulligqc.fastq_bam_common import batch_iterator
+from toulligqc.common import is_numpy_1_24
 from toulligqc import plotly_graph_generator as pgg
 
 
@@ -215,7 +216,7 @@ class uBAM_Extractor:
 
         uBAM_data['sequence_length'] = uBAM_data['sequence_length'].astype(np.uint32)
         uBAM_data['mean_qscore'] = uBAM_data['mean_qscore'].astype(np.float32)
-        uBAM_data['passes_filtering'] = uBAM_data['passes_filtering'].astype(np.bool)
+        uBAM_data['passes_filtering'] = uBAM_data['passes_filtering'].astype(np.bool_ if is_numpy_1_24 else np.bool)
         uBAM_data["start_time"] = uBAM_data["start_time"] - uBAM_data["start_time"].min()
         uBAM_data['channel'] = uBAM_data['channel'].astype(np.int16)
         uBAM_data['start_time'] = uBAM_data['start_time'].astype(np.float64)

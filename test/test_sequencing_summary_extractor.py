@@ -6,6 +6,7 @@ from unittest.mock import patch, Mock, MagicMock
 import config as cfg
 import pandas as pd
 import pandas.util.testing as testing
+from toulligqc.common import is_numpy_1_24
 import numpy as np
 from distutils import util
 
@@ -65,7 +66,7 @@ class TestSequencingSummaryExtractorWholeConfig (unittest.TestCase):
         cls.expected_df = cls.expected_df.astype({
             'channel': np.int16,
             'start_time': np.float,
-            'passes_filtering': np.bool,
+            'passes_filtering': np.bool_ if is_numpy_1_24 else np.bool,
             'sequence_length': np.uint32,
             'mean_qscore_template': np.float,
             'duration': np.float,
