@@ -1,6 +1,8 @@
 # Changelog
-## 2.5.1 (2023-02-22)
-* Adapts ToulligQC v2.5 to pandas 2.0
+## 2.5.2 (2023-02-22)
+* Adapts ToulligQC v2.5 to pandas v2.0
+* Adapts ToulligQC v2.5 to numpy >v1.24
+* FIX: 'barcode_arrangement' column error (v2.5.1 bug).
 ## 2.5 (2023-11-03)
 * Fixed error when no failed reads were found (Issue #20).
 * Fixed error when unclassified barcodes were missing.
