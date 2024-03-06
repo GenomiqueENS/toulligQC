@@ -156,14 +156,15 @@ This is a directory for 1D² analysis with barcoding files:
 
 General Options:
 ```
-usage: ToulligQC V2.2.1 -a SEQUENCING_SUMMARY_SOURCE [-t TELEMETRY_SOURCE]
-                        [--fastq -q FASTQ] [--bam -u BAM]
-                        [-f FAST5_SOURCE] [-n REPORT_NAME]
-                        [--output-directory OUTPUT] [-o HTML_REPORT_PATH]
-                        [--data-report-path DATA_REPORT_PATH]
-                        [--images-directory IMAGES_DIRECTORY]
-                        [-d SEQUENCING_SUMMARY_1DSQR_SOURCE] [-b]
-                        [-l BARCODES] [--quiet] [--force] [-h] [--version]
+usage: ToulligQC V2.6 [-a SEQUENCING_SUMMARY_SOURCE] [-t TELEMETRY_SOURCE]
+                      [-f FAST5_SOURCE] [-p POD5_SOURCE] [-q FASTQ] [-u BAM]
+                      [--thread THREAD] [--batch-size BATCH_SIZE] [--qscore-threshold THRESHOLD]
+                      [-n REPORT_NAME] [--output-directory OUTPUT] [-o HTML_REPORT_PATH]
+                      [--data-report-path DATA_REPORT_PATH] 
+                      [--images-directory IMAGES_DIRECTORY]
+                      [-d SEQUENCING_SUMMARY_1DSQR_SOURCE]
+                      [-b] [-l BARCODES]
+                      [--quiet] [--force] [-h] [--version]
 
 required arguments:
   -a SEQUENCING_SUMMARY_SOURCE, --sequencing-summary-source SEQUENCING_SUMMARY_SOURCE
@@ -174,6 +175,9 @@ required arguments:
                         with gzip (.gz) or bzip2 (.bz2)
   -f FAST5_SOURCE, --fast5-source FAST5_SOURCE
                         Fast5 file source (necessary if no telemetry file),
+                        can also be in a tar.gz/tar.bz2 archive or a directory
+  -p POD5_SOURCE, --pod5-source POD5_SOURCE
+                        pod5 file source (necessary if no telemetry file), 
                         can also be in a tar.gz/tar.bz2 archive or a directory
   -q FASTQ, --fastq FASTQ
                         FASTQ file (necessary if no sequencing summary file),
