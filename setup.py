@@ -34,7 +34,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)',
 
-        'Programming Language :: Python :: 3.8'
+        'Programming Language :: Python :: 3.11'
     ],
 
     keywords='Nanopore MinION QC report',
@@ -45,9 +45,10 @@ setup(
     zip_safe=False,
     include_package_data=True,
 
-    python_requires='>=3.8.0',
-    install_requires=['matplotlib>=3.1.2', 'plotly>=4.5.0', 'h5py>=2.10',
-                      'pandas>=0.25.3', 'numpy>=1.17.4', 'scipy>=1.3.3', 'scikit-learn>=0.22'],
+    python_requires='>=3.11.0',
+    install_requires=['matplotlib>=3.6.3',   'plotly>=5.15.0', 'h5py>=3.7.0',
+                      'pandas>=1.5.3',       'numpy>=1.24.2',  'scipy>=1.10.1',
+                      'scikit-learn>=1.2.1', 'tqdm>=4.64.1',   'pysam>=0.21.0'],
 
     entry_points={
         'console_scripts': [
