@@ -231,8 +231,10 @@ class uBAM_Extractor:
         """
         #def process_bam_chunk(bam_chunk):
         rec_data = []
+        record_count = 0
         for rec in uBAM_chunk:
-            rec_dict = self._process_record(rec)
+            record_count += 1
+            rec_dict = self._process_record(rec, record_count)
             rec_data.append(rec_dict)
         return rec_data
 
@@ -258,35 +260,43 @@ class uBAM_Extractor:
 
 
     def _get_header(self):
-        samfile = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)
-        header = samfile.header.to_dict()
-        run_id, model_version_id =  extract_headerTag(header,'RG','ID').split('_', 1)
+        sam_file = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)
+        header = sam_file.header.to_dict()
+        run_id, model_version_id = extract_headerTag(header, 'RG','ID',
+                                                     'Unknown_Unknown').split('_', 1)
         self.header = {
-        "run_id" : run_id,
-        "run_date" : extract_headerTag(header, 'RG', 'DT'),
-        "sample_id" : extract_headerTag(header,'RG','SM'),
-        "basecaller" : extract_headerTag(header,'PG','PN'),
-        "basecaller_version" : extract_headerTag(header,'PG','VN'),
-        "model_version_id" : model_version_id,
-        "flow_cell_id" : extract_headerTag(header,'RG','PU')
+            "run_id": run_id,
+            "run_date": extract_headerTag(header, 'RG', 'DT', 'Unknown'),
+            "sample_id": extract_headerTag(header, 'RG', 'SM', 'Unknown'),
+            "basecaller": extract_headerTag(header, 'PG', 'PN', 'Unknown'),
+            "basecaller_version": extract_headerTag(header, 'PG', 'VN', 'Unknown'),
+            "model_version_id": model_version_id,
+            "flow_cell_id": extract_headerTag(header, 'RG', 'PU', 'Unknown')
         }
 
 
-    def _process_record(self, rec):
+    def _process_record(self, rec, record_count):
         """
         extract QC info from BAM record
         return : dict of QC info
         """
-        tags = rec.split("\t")
-        iso_start_time = tags[17].split(':',2)[2]
-        qual = avg_qual(tags[10])
+        fields = rec.split("\t")
+
+        # Parse optional fields
+        attributes = {}
+        for t in fields[11:]:
+            k, t, v = t.split(':', 2)
+            attributes[k] = v
+
+        iso_start_time = attributes.get('st', None)
+        qual = avg_qual(fields[10])
         passes_filtering = True if qual > self.threshold_Qscore else False
         data = [
-            len(tags[9]), # read length
+            len(fields[9]), # read length
             qual, # AVG Qscore
             passes_filtering, # Passing filter
-            timeISO_to_float(iso_start_time, '%Y-%m-%dT%H:%M:%S.%f%z'), # start time
-            tags[16].split(':',2)[2], # Channel
-            tags[12].split(':',2)[2] # Duration
+            float(record_count) if iso_start_time is None else timeISO_to_float(iso_start_time, '%Y-%m-%dT%H:%M:%S.%f%z'), # start time
+            attributes.get('ch', '1'),  # Channel
+            attributes.get('du', '1')  # Duration
         ]
         return data

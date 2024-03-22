@@ -2,8 +2,23 @@ import multiprocessing as mp
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-def extract_headerTag(header, tagGroup, tag):
-        return header[tagGroup][0][tag]
+def extract_headerTag(header, tagGroup, tag, defaultValue = None):
+
+    if tagGroup not in header:
+        if defaultValue is not None:
+            return defaultValue
+        else:
+            raise KeyError(tagGroup)
+
+    first_entry = header[tagGroup][0]
+
+    if tag not in first_entry:
+        if defaultValue is not None:
+            return defaultValue
+        else:
+            raise KeyError(tag)
+
+    return first_entry[tag]
 
 
 def batch_iterator(iterator, batch_size):
