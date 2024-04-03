@@ -201,7 +201,7 @@ optional arguments:
                         Basecaller 1dsq summary source
   -b, --barcoding       Option for barcode usage
   -l BARCODES, --barcodes BARCODES
-                        Coma separated barcode list (e.g.
+                        Comma separated barcode list (e.g.
                         BC05,RB09,NB01,barcode10)
   --thread THREAD       Number of threads for parsing FASTQ or BAM files (default: 2).
   --batch-size BATCH_SIZE Batch size for each threads (default: 500).
