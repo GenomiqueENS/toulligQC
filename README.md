@@ -95,6 +95,17 @@ $ docker run -ti \
              -v /path/to/result/directory:/path/to/result/directory \
              genomicpariscentre/toulligqc:latest
 ```
+
+<a name="nf-core"></a>
+### 1.4 Using nf-core
+ToulligQC is also available on nf-core as a module written in nextflow. To install nf-core on your system, please visit their website (<https://nf-co.re/docs/usage/introduction>).
+
+The following command line will install the latest version of the ToulligQC module:
+
+```bash
+$ nf-core modules install toulligqc
+```
+
 <a name="usage"></a>
 ## 2. Usage
 <a name="command-line"></a>
