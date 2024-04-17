@@ -629,9 +629,9 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
                         method="update"
                     ),
                     dict(
-                        args=[{'visible': [False, False, False, True]},
+                        args=[{'visible': [False, False, True, False]},
                               {**_xaxis('Barcodes', dict(visible=True)),
-                               **_yaxis('Base count', dict(visible=True)),
+                               **_yaxis('Read count', dict(visible=True)),
                                'plot_bgcolor': plotly_background_color}],
                         label="Reads Histogram",
                         method="update"
@@ -645,9 +645,9 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
                         method="update"
                     ),
                     dict(
-                        args=[{'visible': [False, False, True, False]},
+                        args=[{'visible': [False, False, False, True]},
                               {**_xaxis('Barcodes', dict(visible=True)),
-                               **_yaxis('Read count', dict(visible=True)),
+                               **_yaxis('Base count', dict(visible=True)),
                                'plot_bgcolor': plotly_background_color}],
                         label="Bases Histogram",
                         method="update"
