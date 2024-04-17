@@ -22,6 +22,7 @@
 
 from collections import defaultdict
 
+import pkgutil
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
@@ -301,6 +302,10 @@ def _transparent_component(c, b, a):
         return '0' + r
     return r
 
+def _copy_latest_minjs(result_directory, js_file):
+    with open(result_directory + '/' + js_file , 'w+') as f:
+        plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')
+        f.write(plotly_min_js) 
 
 def _create_and_save_div(fig, result_directory, main):
     div = py.plot(fig,
@@ -311,11 +316,13 @@ def _create_and_save_div(fig, result_directory, main):
 
     if result_directory is not None:
         output_file = result_directory + '/' + '_'.join(main.split())
+        js_file="plotly.min.js"
         py.plot(fig,
                 filename=output_file,
                 output_type="file",
-                include_plotlyjs="directory",
+                include_plotlyjs= js_file, 
                 auto_open=False)
+        _copy_latest_minjs(result_directory, js_file)
     else:
         output_file = None
 
