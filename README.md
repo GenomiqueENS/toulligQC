@@ -24,6 +24,7 @@ Support is availlable on [GitHub issue page](https://github.com/GenomicParisCent
   * 1.3 [Docker](#docker)
      *  [Docker image recovery](#docker-image-recovery)
      *  [Launching Docker image with docker run](#launching-Docker-image-with-docker-run)
+  * 1.4 [nf-core module](#nfcore-module)
 
 * 2.[Usage](#usage)
   * 2.1 [Command line](#command-line)
@@ -96,8 +97,8 @@ $ docker run -ti \
              genomicpariscentre/toulligqc:latest
 ```
 
-<a name="nf-core"></a>
-### 1.4 Using nf-core
+<a name="#nfcore-module"></a>
+### 1.4 Using nf-core module
 ToulligQC is also available on nf-core as a module written in nextflow. To install nf-core on your system, please visit their website (<https://nf-co.re/docs/usage/introduction>).
 
 The following command line will install the latest version of the ToulligQC module:
