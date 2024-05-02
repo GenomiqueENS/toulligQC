@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.7 (2024-05-02)
+* Fixed ezcharts version for EPI2ME
+
 ## 2.5.6 (2024-04-25)
 * Fixed Plotly version for EPI2ME
 * Added handling for empty lines in FASTQ file parsing 
