@@ -46,9 +46,10 @@ setup(
     include_package_data=True,
 
     python_requires='>=3.11.0',
-    install_requires=['matplotlib>=3.6.3',   'plotly>=5.15.0', 'h5py>=3.7.0',
+    install_requires=['matplotlib>=3.6.3',   'plotly==4.5.0', 'h5py>=3.7.0',
                       'pandas>=1.5.3',       'numpy>=1.24.2',  'scipy>=1.10.1',
-                      'scikit-learn>=1.2.1', 'tqdm>=4.64.1',   'pysam>=0.21.0'],
+                      'scikit-learn>=1.2.1', 'tqdm>=4.64.1',   'pysam>=0.21.0',
+                      'ezcharts==0.7.6'],
 
     entry_points={
         'console_scripts': [

@@ -283,9 +283,10 @@ class fastqExtractor:
                 fastq_lines.append((len(read[1]), qscore, passes_filtering, start_time, ch))
         else:
             for read in read_batch:
-                qscore = avg_qual(read)
-                passes_filtering = True if qscore > self.threshold_Qscore else False
-                fastq_lines.append((len(read), qscore, passes_filtering))
+                if len(read)>0:
+                    qscore = avg_qual(read)
+                    passes_filtering = True if qscore > self.threshold_Qscore else False
+                    fastq_lines.append((len(read), qscore, passes_filtering))
         return fastq_lines
 
 
