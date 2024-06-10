@@ -183,7 +183,7 @@ class Pod5Extractor:
         if self.pod5_file_extension == 'tar' or \
                 self.pod5_file_extension == 'tar.gz' or \
                 self.pod5_file_extension == 'tar.bz2':
-            self.fast5_file = self._pod5_tar_extraction(self.file_to_process, self.pod5_file_extension,
+            self.pod5_file = self._pod5_tar_extraction(self.file_to_process, self.pod5_file_extension,
                                                          self.temporary_directory)
         elif self.pod5_file_extension == 'pod5' or self.pod5_file_extension == '.pod5':
             self.pod5_file = self.file_to_process
