@@ -72,7 +72,7 @@ def html_report(config_dictionary, result_dict, graphs):
     report = """<!doctype html>
 <html>
   <head>
-    <title>Report run MinION : {report_name} </title>
+    <title>ToulligQC: {report_name} </title>
     <meta charset='UTF-8'>
     <script>{plotlyjs}</script>
 
@@ -91,7 +91,7 @@ def html_report(config_dictionary, result_dict, graphs):
       <div id="header_filename">
         Sample ID: {sample_id} <br>
         Run date: {run_date} <br>
-        Report date : {report_date} <br>
+        Report date: {report_date} <br>
       </div>
     </div>
 
