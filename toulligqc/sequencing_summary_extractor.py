@@ -63,6 +63,7 @@ class SequencingSummaryExtractor:
         self.sequencing_summary_source = config_dictionary['sequencing_summary_source']
         self.images_directory = config_dictionary['images_directory']
         self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
+        self.barcode_colname = 'barcode_arrangement'
         self.threshold_Qscore = int(config_dictionary['threshold'])
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
@@ -118,7 +119,7 @@ class SequencingSummaryExtractor:
         
         # Rename 'barcode_arrangement'
         if self.is_barcode and self.barcode_colname == "barcode":
-            self.dataframe_1dself.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
+            self.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
 
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
@@ -346,7 +347,8 @@ class SequencingSummaryExtractor:
 
             # If 1 file and it's a sequencing_summary.txt with barcode info, load column barcode_arrangement
             elif len(files) == 1 and self._is_sequencing_summary_with_barcodes(files[0]):
-                sequencing_summary_columns.append(self.barcode_colname)
+                if self.is_barcode:
+                    sequencing_summary_columns.append(self.barcode_colname)
                 sequencing_summary_datatypes.update(
                     {self.barcode_colname: 'category'})
 
@@ -367,7 +369,8 @@ class SequencingSummaryExtractor:
 
                 # check for presence of sequencing_summary file with barcode info, if true load barcode column and ignore barcoding files.
                 elif self._is_sequencing_summary_with_barcodes(f):
-                    sequencing_summary_columns.append(self.barcode_colname)
+                    if self.is_barcode:
+                        sequencing_summary_columns.append(self.barcode_colname)
                     sequencing_summary_datatypes.update(
                         {self.barcode_colname: 'category'})
                     sys.stderr.write('Warning: The sequencing summary file {} contains barcode information.'
@@ -454,7 +457,7 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         """
         header = read_first_line_file(filename)
-        self.barcode_colname = 'barcode_arrangement' if 'barcode_arrangement' in header else 'barcode'
+        self.barcode_colname =  'barcode' if 'barcode' in header.split("\t") else 'barcode_arrangement'
 
 
 
