@@ -76,6 +76,7 @@ class SequencingSummaryExtractor:
                 if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(f):
                     self.is_barcode = True
                     self._get_barcode_colname(f)
+                    break
 
     def check_conf(self):
         """
@@ -466,7 +467,10 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         """
         header = read_first_line_file(filename)
-        self.barcode_colname =  'barcode' if 'barcode' in header.split("\t") else 'barcode_arrangement'
+        if 'barcode_arrangement' in header:
+            self.barcode_colname = 'barcode_arrangement'
+        else :
+            self.barcode_colname = 'barcode'
 
 
 
