@@ -164,11 +164,18 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     if "unclassified" not in barcode_selection:
         barcode_selection.append("unclassified")
 
+
+    # If the barcode_arrangement column contains a barcode kit id
+    mask = df['barcode_arrangement'].str.startswith(('SQK', 'VQK'))
+
+    if mask.any():
+        df['barcode_arrangement'] = df['barcode_arrangement'].astype(str)
+        df.loc[mask, 'barcode_arrangement'] = df.loc[mask, 'barcode_arrangement'].str.extract(r'[SV]QK-.+_(.+)$')[0]
+
     # Create keys barcode.arrangement, and read.pass/fail.barcode in dataframe_dict with all values of
     # column barcode_arrangement when reads are passed/failed
-    df['barcode_arrangement'] = df['barcode_arrangement'].str.extract(r'[SV]QK-.+_(.+)$')
-    df['barcode_arrangement'].fillna('unclassified', inplace=True)
-    dataframe_dict["barcode.arrangement"] = df["barcode_arrangement"]
+    dataframe_dict["barcode.arrangement"] = df['barcode_arrangement']
+
 
     # Print warning message if a barcode is unknown
     barcodes_found = set(df["barcode_arrangement"].unique())
