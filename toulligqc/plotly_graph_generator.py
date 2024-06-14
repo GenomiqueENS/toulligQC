@@ -598,7 +598,7 @@ def plot_performance(df, result_directory):
 #
 
 
-def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_directory):
+def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_directory, barcode_alias):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
@@ -612,10 +612,11 @@ def barcode_percentage_pie_chart_pass(dataframe_dict, barcode_selection, result_
                             count_sorted=[read_count_sorted, base_count_sorted],
                             color_palette=toulligqc_colors['pie_chart_palette'],
                             one_d_square=False,
-                            result_directory=result_directory)
+                            result_directory=result_directory,
+                            barcode_alias=barcode_alias)
 
 
-def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_directory):
+def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_directory, barcode_alias):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -630,10 +631,11 @@ def barcode_percentage_pie_chart_fail(dataframe_dict, barcode_selection, result_
                             count_sorted=[read_count_sorted, base_count_sorted],
                             color_palette=toulligqc_colors['pie_chart_palette'],
                             one_d_square=False,
-                            result_directory=result_directory)
+                            result_directory=result_directory,
+                            barcode_alias=barcode_alias)
 
 
-def barcode_length_boxplot(datafame_dict, result_directory):
+def barcode_length_boxplot(datafame_dict, result_directory, barcode_alias):
     """
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -649,10 +651,11 @@ def barcode_length_boxplot(datafame_dict, result_directory):
                                   fail_color=toulligqc_colors['fail'],
                                   yaxis_title="Sequence length (bp)",
                                   legend_title="Read type",
-                                  result_directory=result_directory)
+                                  result_directory=result_directory,
+                                  barcode_alias=barcode_alias)
 
 
-def barcoded_phred_score_frequency(dataframe_dict, result_directory):
+def barcoded_phred_score_frequency(dataframe_dict, result_directory, barcode_alias):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -668,7 +671,8 @@ def barcoded_phred_score_frequency(dataframe_dict, result_directory):
                                   fail_color=toulligqc_colors['fail'],
                                   yaxis_title="PHRED score",
                                   legend_title="Read type",
-                                  result_directory=result_directory)
+                                  result_directory=result_directory,
+                                  barcode_alias=barcode_alias)
 
 
 def sequence_length_over_time(dataframe_dict, result_directory):

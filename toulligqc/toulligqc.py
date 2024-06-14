@@ -42,6 +42,7 @@ import argparse
 import os
 import time
 import datetime
+import pandas as pd
 
 import warnings
 from toulligqc import toulligqc_info_extractor
@@ -97,6 +98,9 @@ def _parse_args(config_dictionary):
                                'can also be in SAM format')
     
     # Add all optional arguments
+    optional.add_argument('-s', '--samplesheet', action='store', dest="samplesheet", 
+                          help='a sample sheet (.csv file)to fill out sample names in MinKNOW')
+
     optional.add_argument("--thread", action='store', dest="thread", help="Number of threads", type=int, default=2)
     optional.add_argument("--batch-size", action='store', dest="batch_size", help="Batch size", type=int, default=500)
     optional.add_argument("--qscore-threshold", action='store', dest="threshold", help="Qscore threshold", type=int, default=9)
@@ -132,8 +136,8 @@ def _parse_args(config_dictionary):
     is_barcode = args.is_barcode
     barcodes = args.barcodes
 
-    # If a barcode list is provided, automatically add --barcoding argument
-    if len(barcodes) > 0:
+    # If a barcode list or samplesheet are is provided, automatically add --barcoding argument
+    if len(barcodes) > 0 or args.samplesheet:
         is_barcode = True
 
     # If no report_name specified, create default one : ToulligQC-report-YYYYMMDD_HHMMSS
@@ -150,6 +154,7 @@ def _parse_args(config_dictionary):
         ('sequencing_summary_source', _join_parameter_arguments(args.sequencing_summary_source)),
         ('sequencing_summary_1dsqr_source', _join_parameter_arguments(args.sequencing_summary_1dsqr_source)),
         ('sequencing_telemetry_source', args.telemetry_source),
+        ('samplesheet', args.samplesheet),
         ('fastq', _join_parameter_arguments(args.fastq)),
         ('bam', _join_parameter_arguments(args.bam)), 
         ('thread', args.thread),
@@ -235,7 +240,6 @@ def _check_conf(config_dictionary):
     _check_if_file_exists(config_dictionary['html_report_path'], force)
     _check_if_file_exists(config_dictionary['data_report_path'], force)
 
-    print(config_dictionary['html_report_path'])
 
 
 def _check_if_dir_exists(dir, force):
@@ -323,6 +327,20 @@ def _create_extractor_list(config_dictionary):
     return result
 
 
+def parse_samplesheet(sample_sheet):
+    columns = ['flow_cell_id', 'experiment_id',
+                                      'flow_cell_product_code',
+                                      'kit',
+                                      'barcode',
+                                      'alias']
+    try:
+        samplesheet = pd.read_csv(sample_sheet, usecols=columns)
+    except IOError:
+            raise FileNotFoundError("Error while reading samplesheet file")
+    
+    return samplesheet
+
+
 def main():
     """
     Main function creating graphs and statistics
@@ -369,6 +387,13 @@ def main():
             if len(barcode_selection) == 0:
                 sys.exit("ERROR: No known barcode found in provided list of barcodes")
             config_dictionary['barcode_selection'] = barcode_selection
+
+        elif 'samplesheet' in config_dictionary:
+            samplesheet = parse_samplesheet(config_dictionary['samplesheet'])
+            config_dictionary['barcode_selection'] = list(samplesheet['barcode'])
+            config_dictionary['barcode_alias'] = pd.Series(samplesheet.alias.values, 
+                                                           index=samplesheet.barcode).to_dict()
+
     else:
         config_dictionary['barcode_selection'] = ''
 

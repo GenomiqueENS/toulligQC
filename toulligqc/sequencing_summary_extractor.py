@@ -63,6 +63,7 @@ class SequencingSummaryExtractor:
         self.sequencing_summary_source = config_dictionary['sequencing_summary_source']
         self.images_directory = config_dictionary['images_directory']
         self.sequencing_summary_files = self.sequencing_summary_source.split('\t')
+        self.barcode_colname = 'barcode_arrangement'
         self.threshold_Qscore = int(config_dictionary['threshold'])
         if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
             self.quiet = False
@@ -75,6 +76,7 @@ class SequencingSummaryExtractor:
                 if self._is_barcode_file(f) or self._is_sequencing_summary_with_barcodes(f):
                     self.is_barcode = True
                     self._get_barcode_colname(f)
+                    break
 
     def check_conf(self):
         """
@@ -118,7 +120,7 @@ class SequencingSummaryExtractor:
         
         # Rename 'barcode_arrangement'
         if self.is_barcode and self.barcode_colname == "barcode":
-            self.dataframe_1dself.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
+            self.dataframe_1d.rename(columns={'barcode': 'barcode_arrangement'}, inplace=True)
 
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
@@ -287,21 +289,30 @@ class SequencingSummaryExtractor:
         add_image_to_result(self.quiet, images, time.time(), pgg.speed_over_time(self.dataframe_dict, self.images_directory))
 
         if self.is_barcode:
+            if "barcode_alias" in self.config_dictionary:
+                barcode_alias = self.config_dictionary['barcode_alias']
+            else:
+                barcode_alias = None 
+
             add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
                                                                                                        self.barcode_selection,
-                                                                                                       self.images_directory))
+                                                                                                       self.images_directory,
+                                                                                                       barcode_alias))
 
             read_fail = self.dataframe_dict["read.fail.barcoded"]
             if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
                 add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
                                                                                                       self.barcode_selection,
-                                                                                                      self.images_directory))
+                                                                                                      self.images_directory,
+                                                                                                      barcode_alias))
 
             add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
-                                                                                            self.images_directory))
+                                                                                            self.images_directory,
+                                                                                            barcode_alias))
 
             add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
-                                                                                                    self.images_directory))
+                                                                                                    self.images_directory,
+                                                                                                    barcode_alias))
         return images
 
 
@@ -346,7 +357,8 @@ class SequencingSummaryExtractor:
 
             # If 1 file and it's a sequencing_summary.txt with barcode info, load column barcode_arrangement
             elif len(files) == 1 and self._is_sequencing_summary_with_barcodes(files[0]):
-                sequencing_summary_columns.append(self.barcode_colname)
+                if self.is_barcode:
+                    sequencing_summary_columns.append(self.barcode_colname)
                 sequencing_summary_datatypes.update(
                     {self.barcode_colname: 'category'})
 
@@ -367,7 +379,8 @@ class SequencingSummaryExtractor:
 
                 # check for presence of sequencing_summary file with barcode info, if true load barcode column and ignore barcoding files.
                 elif self._is_sequencing_summary_with_barcodes(f):
-                    sequencing_summary_columns.append(self.barcode_colname)
+                    if self.is_barcode:
+                        sequencing_summary_columns.append(self.barcode_colname)
                     sequencing_summary_datatypes.update(
                         {self.barcode_colname: 'category'})
                     sys.stderr.write('Warning: The sequencing summary file {} contains barcode information.'
@@ -454,7 +467,10 @@ class SequencingSummaryExtractor:
         :param filename: path of the file to test
         """
         header = read_first_line_file(filename)
-        self.barcode_colname = 'barcode_arrangement' if 'barcode_arrangement' in header else 'barcode'
+        if 'barcode_arrangement' in header:
+            self.barcode_colname = 'barcode_arrangement'
+        else :
+            self.barcode_colname = 'barcode'
 
 
 

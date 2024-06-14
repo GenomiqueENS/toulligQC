@@ -483,7 +483,7 @@ def _over_time_graph(data_series,
 
 
 def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_color, yaxis_title, legend_title,
-                           result_directory):
+                           result_directory, barcode_alias=None):
     # Sort reads by read type and drop read type column
     pass_df = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
     fail_df = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
@@ -511,7 +511,7 @@ def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_c
                 lowerfence=[d['lowerfence']],
                 upperfence=[d['upperfence']],
                 name=read_type + " reads",
-                x0=barcode,
+                x0=barcode_alias.get(barcode, barcode) if barcode_alias else barcode,
                 marker_color=color,
                 offsetgroup=read_type.lower(),
                 showlegend=first
@@ -546,10 +546,12 @@ def _barcode_boxplot_graph(graph_name, df, barcode_selection, pass_color, fail_c
     return graph_name, output_file, table_html, div
 
 
-def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, result_directory):
+def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, result_directory, barcode_alias=None):
     read_count_sorted = count_sorted[0]
     base_count_sorted = count_sorted[1]
     labels = read_count_sorted.index.values.tolist()
+    if barcode_alias:
+        labels = [barcode_alias.get(label, label) for label in labels]
 
     fig = go.Figure()
 
@@ -671,6 +673,9 @@ def _pie_chart_graph(graph_name, count_sorted, color_palette, one_d_square, resu
     barcode_table = pd.DataFrame({"Barcode arrangement (%)": read_count_sorted / sum(read_count_sorted) * 100,
                                   count_col_name: read_count_sorted,
                                  "Base count": base_count_sorted})
+    if barcode_alias:
+        barcode_table = barcode_table.rename(index=barcode_alias)
+
     barcode_table.sort_index(inplace=True)
     pd.options.display.float_format = percent_format_str.format
     barcode_table[count_col_name] = barcode_table[count_col_name].astype(int).apply(lambda x: _format_int(x))

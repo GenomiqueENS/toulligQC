@@ -166,14 +166,15 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
 
     # Create keys barcode.arrangement, and read.pass/fail.barcode in dataframe_dict with all values of
     # column barcode_arrangement when reads are passed/failed
+    df['barcode_arrangement'] = df['barcode_arrangement'].str.extract(r'[SV]QK-.+_(.+)$')
+    df['barcode_arrangement'].fillna('unclassified', inplace=True)
     dataframe_dict["barcode.arrangement"] = df["barcode_arrangement"]
 
     # Print warning message if a barcode is unknown
-    barcodes_found = set(dataframe_dict["barcode.arrangement"].unique())
+    barcodes_found = set(df["barcode_arrangement"].unique())
     for element in barcode_selection:
         if element not in barcodes_found and element != 'other barcodes':
             sys.stderr.write("\033[93mWarning:\033[0m The barcode {} doesn't exist in input data\n".format(element))
-
 
     # Get barcodes frequency by Bases
     df_base_pass_barcode = series_cols_boolean_elements(df, ["barcode_arrangement",  "sequence_length"],
@@ -218,6 +219,7 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
                      (read_fail_barcoded_count / total_reads) * 100)
 
     # Replaces all rows with unused barcodes (ie not in barcode_selection) in column barcode_arrangement with the 'other' value
+
     df.loc[~df['barcode_arrangement'].isin(
         barcode_selection), 'barcode_arrangement'] = 'other barcodes'
 
