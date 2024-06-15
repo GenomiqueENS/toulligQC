@@ -415,8 +415,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                         if summary_dataframe is None:
                             summary_dataframe = dataframe
                         else:
-                            summary_dataframe = summary_dataframe.append(
-                                dataframe, ignore_index=True)
+                            summary_dataframe = pd.concat([summary_dataframe, dataframe], ignore_index=True)
 
             if barcode_dataframe is None:
                 # If no barcodes in files, no merged dataframes on column 'read_id'

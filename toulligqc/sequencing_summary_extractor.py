@@ -374,8 +374,7 @@ class SequencingSummaryExtractor:
                         barcode_dataframe = dataframe
                     # if a barcoding file has already been read, append the 2 dataframes
                     else:
-                        barcode_dataframe = barcode_dataframe.append(
-                            dataframe, ignore_index=True)
+                        barcode_dataframe = pd.concat([barcode_dataframe, dataframe], ignore_index=True)
 
                 # check for presence of sequencing_summary file with barcode info, if true load barcode column and ignore barcoding files.
                 elif self._is_sequencing_summary_with_barcodes(f):
@@ -400,8 +399,7 @@ class SequencingSummaryExtractor:
                         if summary_dataframe is None:
                             summary_dataframe = dataframe
                         else:
-                            summary_dataframe = summary_dataframe.append(
-                                dataframe, ignore_index=True)
+                            summary_dataframe = pd.concat([summary_dataframe,dataframe], ignore_index=True)
 
             if barcode_dataframe is None:
                 # If no barcodes in files, no merged dataframes on column 'read_id'
