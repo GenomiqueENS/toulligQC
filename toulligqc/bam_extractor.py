@@ -124,21 +124,29 @@ class uBAM_Extractor:
         add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.speed_over_time(self.dataframe_dict, self.images_directory))
         if self.is_barcode:
+            if "barcode_alias" in self.config_dictionary:
+                barcode_alias = self.config_dictionary['barcode_alias']
+            else:
+                barcode_alias = None 
             add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
                                                                                                        self.barcode_selection,
-                                                                                                       self.images_directory))
+                                                                                                       self.images_directory,
+                                                                                                       barcode_alias))
 
             read_fail = self.dataframe_dict["read.fail.barcoded"]
             if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
                 add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
                                                                                                       self.barcode_selection,
-                                                                                                      self.images_directory))
+                                                                                                      self.images_directory,
+                                                                                                      barcode_alias))
 
             add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
-                                                                                            self.images_directory))
+                                                                                            self.images_directory,
+                                                                                            barcode_alias))
 
             add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
-                                                                                                    self.images_directory))
+                                                                                                    self.images_directory,
+                                                                                                    barcode_alias))
         return images
 
 
@@ -331,4 +339,6 @@ class uBAM_Extractor:
             attributes.get('ch', '1'),  # Channel
             attributes.get('du', '1')  # Duration
         ]
+        if self.is_barcode:
+            data.append(attributes.get('BC', 'unclassified'))
         return data
