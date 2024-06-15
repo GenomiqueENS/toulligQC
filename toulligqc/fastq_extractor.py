@@ -64,8 +64,9 @@ class fastqExtractor:
 
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe_1d.columns:
-           self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
-                                                                       inplace=True)
+            self.dataframe_1d['barcode_arrangement'] = self.dataframe_1d['barcode_arrangement'].cat.add_categories([0, 
+                                                                                                    'other barcodes',
+                                                                                                    'passes_filtering'])
         self.dataframe_1d = self.dataframe_1d.fillna(0)
         self.barcode_selection = self.config_dictionary['barcode_selection']
         
