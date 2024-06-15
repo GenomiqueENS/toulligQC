@@ -64,8 +64,9 @@ class uBAM_Extractor:
         
         # Add missing categories
         if 'barcode_arrangement' in self.dataframe.columns:
-           self.dataframe['barcode_arrangement'].cat.add_categories([0, 'other barcodes', 'passes_filtering'],
-                                                                       inplace=True)
+            self.dataframe['barcode_arrangement'] = self.dataframe['barcode_arrangement'].cat.add_categories([0,
+                                                                                        'other barcodes',
+                                                                                        'passes_filtering'])
         
         # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
         self.dataframe = self.dataframe.fillna(0)
