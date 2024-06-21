@@ -1,5 +1,5 @@
 # Changelog
-## 2.7 (TBD)
+## 2.7 (2024-06-21)
 * Moved to Ubuntu 24.04.
 * Added support for ONT samplesheet.
 * ToulligQC now recognizes the barcode column name as 'barcode'.
