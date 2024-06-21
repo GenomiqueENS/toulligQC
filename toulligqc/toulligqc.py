@@ -117,7 +117,7 @@ def _parse_args(config_dictionary):
     optional.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Option for barcode usage",
                           default=False)
     optional.add_argument('-l', '--barcodes', action='store', default='', dest='barcodes',
-                          help='Coma separated barcode list (e.g. BC05,RB09,NB01,barcode10)')
+                          help='Comma-separated barcode list (e.g., BC05,RB09,NB01,barcode10) or a range separated with ":" (e.g., barcode01:barcode19)')
     optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
                           default=False)
     optional.add_argument("--report-only", action='store_true', dest='report_only',
