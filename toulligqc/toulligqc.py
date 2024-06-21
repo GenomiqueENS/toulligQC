@@ -32,9 +32,6 @@
 # 4. In the case of barcoded sequencing, it searches all barcodes from the command line argument --barcodes
 # 5. It uses all the information collected to generate a qc in the form of a htl-report and a report.data file
 
-import matplotlib
-
-matplotlib.use('Agg')
 import shutil
 import sys
 import re
