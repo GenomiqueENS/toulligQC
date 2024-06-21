@@ -99,7 +99,7 @@ def _parse_args(config_dictionary):
     
     # Add all optional arguments
     optional.add_argument('-s', '--samplesheet', action='store', dest="samplesheet", 
-                          help='a sample sheet (.csv file)to fill out sample names in MinKNOW')
+                          help='a samplesheet (.csv file) to fill out sample names in MinKNOW')
 
     optional.add_argument("--thread", action='store', dest="thread", help="Number of threads", type=int, default=2)
     optional.add_argument("--batch-size", action='store', dest="batch_size", help="Batch size", type=int, default=500)
