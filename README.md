@@ -175,6 +175,7 @@ usage: ToulligQC V2.6 [-a SEQUENCING_SUMMARY_SOURCE] [-t TELEMETRY_SOURCE]
                       [--data-report-path DATA_REPORT_PATH] 
                       [--images-directory IMAGES_DIRECTORY]
                       [-d SEQUENCING_SUMMARY_1DSQR_SOURCE]
+                      [-s SAMPLESHEET]
                       [-b] [-l BARCODES]
                       [--quiet] [--force] [-h] [--version]
 
@@ -199,6 +200,8 @@ required arguments:
                         can also be a SAM format
 
 optional arguments:
+  -s SAMPLESHEET, --samplesheet SAMPLESHEET
+                        Samplesheet (.csv file) to fill out sample names in MinKNOW.
   -n REPORT_NAME, --report-name REPORT_NAME
                         Report name
   --output-directory OUTPUT
@@ -213,8 +216,9 @@ optional arguments:
                         Basecaller 1dsq summary source
   -b, --barcoding       Option for barcode usage
   -l BARCODES, --barcodes BARCODES
-                        Comma separated barcode list (e.g.
-                        BC05,RB09,NB01,barcode10)
+                        Comma-separated barcode list (e.g.,
+                        BC05,RB09,NB01,barcode10) or a range separated with ':' (e.g.,
+                        barcode01:barcode19)
   --thread THREAD       Number of threads for parsing FASTQ or BAM files (default: 2).
   --batch-size BATCH_SIZE Batch size for each threads (default: 500).
   --qscore-threshold THRESHOLD Q-score threshold to distinguish between passing filter and
@@ -321,7 +325,7 @@ $ toulligqc \
     --sequencing-summary-source sequencing_summary.txt \
     --sequencing-summary-source barcoding_summary_pass.txt \
     --sequencing-summary-source barcoding_summary_fail.txt \
-    --barcodes                  BC01,BC02,BC03,BC04,BC05,BC07 \
+    --barcodes                  BC01:BC07 \
     --output-directory          output
 ```
 
