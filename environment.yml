@@ -1,0 +1,57 @@
+name: toulligqc
+channels:
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - _openmp_mutex=5.1=1_gnu
+  - bzip2=1.0.8=h5eee18b_6
+  - ca-certificates=2024.7.2=h06a4308_0
+  - ld_impl_linux-64=2.38=h1181459_1
+  - libffi=3.4.4=h6a678d5_1
+  - libgcc-ng=11.2.0=h1234567_1
+  - libgomp=11.2.0=h1234567_1
+  - libstdcxx-ng=11.2.0=h1234567_1
+  - libuuid=1.41.5=h5eee18b_0
+  - ncurses=6.4=h6a678d5_0
+  - openssl=3.0.14=h5eee18b_0
+  - pip=24.0=py311h06a4308_0
+  - python=3.11.9=h955ad1f_0
+  - readline=8.2=h5eee18b_0
+  - setuptools=69.5.1=py311h06a4308_0
+  - sqlite=3.45.3=h5eee18b_0
+  - tk=8.6.14=h39e8969_0
+  - wheel=0.43.0=py311h06a4308_0
+  - xz=5.4.6=h5eee18b_1
+  - zlib=1.2.13=h5eee18b_1
+  - pip:
+      - contourpy==1.2.1
+      - cycler==0.12.1
+      - fonttools==4.53.1
+      - h5py==3.11.0
+      - iso8601==2.1.0
+      - joblib==1.4.2
+      - kiwisolver==1.4.5
+      - lib-pod5==0.3.12
+      - matplotlib==3.9.1
+      - more-itertools==10.3.0
+      - numpy==2.0.0
+      - packaging==24.1
+      - pandas==1.26.4
+      - pillow==10.4.0
+      - plotly==5.22.0
+      - pod5==0.3.12
+      - polars==0.20.31
+      - pyarrow==16.1.0
+      - pyparsing==3.1.2
+      - pysam==0.22.1
+      - python-dateutil==2.9.0.post0
+      - pytz==2024.1
+      - scikit-learn==1.5.1
+      - scipy==1.14.0
+      - six==1.16.0
+      - tenacity==8.5.0
+      - threadpoolctl==3.5.0
+      - tqdm==4.66.4
+      - tzdata==2024.1
+      - vbz-h5py-plugin==1.0.1
+prefix: /users/depbio/hamraoui/miniconda3/envs/toulligqc2.7
