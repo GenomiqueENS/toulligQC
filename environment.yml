@@ -54,4 +54,3 @@ dependencies:
       - tqdm==4.66.4
       - tzdata==2024.1
       - vbz-h5py-plugin==1.0.1
-prefix: /users/depbio/hamraoui/miniconda3/envs/toulligqc2.7
