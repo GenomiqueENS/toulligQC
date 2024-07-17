@@ -18,7 +18,7 @@ def compute_LXX(dataframe_dict, x):
     cum_sum = 0
     count = 0
     for v in data:
-        cum_sum += v
+        cum_sum += int(v)
         count += 1
         if cum_sum >= half_sum:
             return count
@@ -31,7 +31,7 @@ def compute_NXX(dataframe_dict, x):
     half_sum = data.sum() * x / 100
     cum_sum = 0
     for v in data:
-        cum_sum += v
+        cum_sum += int(v)
         if cum_sum >= half_sum:
             return int(v)
 
