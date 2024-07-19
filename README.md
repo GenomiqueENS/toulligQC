@@ -53,15 +53,25 @@ $ cd toulligqc && python3 setup.py build install
 ToulligQC is written with Python 3.
 To run ToulligQC without Docker, you need to install the following Python modules:
 
-* matplotlib
-* plotly
-* h5py
+ * matplotlib
+ * plotly
+ * h5py
 * pandas
 * numpy
 * scipy
 * scikit-learn
 * pysam
+* tqdm
+* pod5
 
+* **Conda environemnt**
+
+You can use a conda environment to install the required packages:
+
+```
+conda env create -f environment.yml
+conda activate toulliqc
+```
 
 <a name="pypi-installation"></a>
 ### 1.2 Using a PyPi package
