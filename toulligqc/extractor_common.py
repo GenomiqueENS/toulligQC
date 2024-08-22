@@ -432,7 +432,11 @@ def add_image_to_result(quiet, image_list, start_time, image):
 def timeISO_to_float(iso_datetime, format):
         """
         """
-        dt = datetime.strptime(iso_datetime, format)
+        try:
+            dt = datetime.strptime(iso_datetime, format)
+        except:
+            format = '%Y-%m-%dT%H:%M:%SZ'
+            dt = datetime.strptime(iso_datetime, format)
         unix_timestamp = dt.timestamp()
         return unix_timestamp
 

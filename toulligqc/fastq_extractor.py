@@ -119,32 +119,45 @@ class fastqExtractor:
 
         add_image_to_result(self.quiet, images, time.time(), pgg.read_count_histogram(result_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory))
+
         if self.rich:
             add_image_to_result(self.quiet, images, time.time(), pgg.yield_plot(self.dataframe_1d, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.read_quality_multiboxplot(self.dataframe_dict, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.allphred_score_frequency(self.dataframe_dict, self.images_directory))
+
         if self.rich:
             add_image_to_result(self.quiet, images, time.time(), pgg.plot_performance(self.dataframe_1d, self.images_directory))
         add_image_to_result(self.quiet, images, time.time(), pgg.twod_density(self.dataframe_dict, self.images_directory))
+
         if self.rich:
             add_image_to_result(self.quiet, images, time.time(), pgg.sequence_length_over_time(self.dataframe_dict, self.images_directory))
             add_image_to_result(self.quiet, images, time.time(), pgg.phred_score_over_time(self.dataframe_dict, result_dict, self.images_directory))
-        if self.is_barcode:
-            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
-                                                                                                       self.barcode_selection,
-                                                                                                       self.images_directory))
 
-            read_fail = self.dataframe_dict["read.fail.barcoded"]
-            if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
-                add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
-                                                                                                      self.barcode_selection,
-                                                                                                      self.images_directory))
+            if self.is_barcode:
+                if "barcode_alias" in self.config_dictionary:
+                    barcode_alias = self.config_dictionary['barcode_alias']
+                else:
+                    barcode_alias = None
 
-            add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
-                                                                                            self.images_directory))
+                add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_pass(self.dataframe_dict,
+                                                                                                        self.barcode_selection,
+                                                                                                        self.images_directory,
+                                                                                                        barcode_alias))
 
-            add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
-                                                                                                    self.images_directory))
+                read_fail = self.dataframe_dict["read.fail.barcoded"]
+                if not (len(read_fail) == 1 and read_fail["other barcodes"] == 0):
+                    add_image_to_result(self.quiet, images, time.time(), pgg.barcode_percentage_pie_chart_fail(self.dataframe_dict,
+                                                                                                        self.barcode_selection,
+                                                                                                        self.images_directory,
+                                                                                                        barcode_alias))
+
+                add_image_to_result(self.quiet, images, time.time(), pgg.barcode_length_boxplot(self.dataframe_dict,
+                                                                                                self.images_directory,
+                                                                                                barcode_alias))
+
+                add_image_to_result(self.quiet, images, time.time(), pgg.barcoded_phred_score_frequency(self.dataframe_dict,
+                                                                                                        self.images_directory,
+                                                                                                        barcode_alias))
         return images
 
 
@@ -211,7 +224,7 @@ class fastqExtractor:
                       "pass.reads.sequence.length")
         describe_dict(self, result_dict, self.dataframe_dict["fail.reads.sequence.length"],
                       "fail.reads.sequence.length")
-        if self.is_barcode:
+        if self.rich and self.is_barcode:
             extract_barcode_info(self, result_dict,
                                  self.barcode_selection,
                                  self.dataframe_dict,
@@ -258,8 +271,9 @@ class fastqExtractor:
         columns = ['sequence_length', 'mean_qscore', 'passes_filtering']
         if self.rich:
             columns.extend(['start_time', 'channel'])
-        if self.is_barcode:
-            columns.append('barcode_arrangement')
+
+            if self.is_barcode:
+                columns.append('barcode_arrangement')
 
         fq_df = pd.DataFrame(fq_df, columns=columns)
 
@@ -271,8 +285,10 @@ class fastqExtractor:
             fq_df["start_time"] = fq_df["start_time"] - fq_df["start_time"].min()
             fq_df['start_time'] = fq_df['start_time'].astype(np.float64)
             fq_df['channel'] = fq_df['channel'].astype(np.int16)
-        if self.is_barcode:
-            fq_df['barcode_arrangement'] = fq_df['barcode_arrangement'].astype("category")
+
+            if self.is_barcode:
+                fq_df['barcode_arrangement'] = fq_df['barcode_arrangement'].astype("category")
+
         return fq_df 
 
 
@@ -346,8 +362,11 @@ class fastqExtractor:
             self.is_barcode = False
         if 'model_version_id' not in metadata:
                 metadata['model_version_id'] = 'Unknow'
+        run_info = []
         try:
-            return metadata['runid'] , metadata['sampleid'] , metadata['model_version_id'] 
+           sample_id = 'sample_id' if 'sample_id' in metadata else 'sampleid'
+           run_id = 'run_id' if 'run_id' in metadata else 'runid'
+           return metadata[run_id] , metadata[sample_id] , metadata['model_version_id'] 
         except:
             return None
 
@@ -356,7 +375,7 @@ class fastqExtractor:
         """
         """
         metadata = dict(x.split("=") for x in name.split(" ")[1:])
-        start_time = timeISO_to_float(metadata['start_time'], '%Y-%m-%dT%H:%M:%SZ')
+        start_time = timeISO_to_float(metadata['start_time'],  '%Y-%m-%dT%H:%M:%S.%f%z')
         if self.is_barcode:
             return  start_time, metadata['ch'], metadata['barcode']
         return  start_time, metadata['ch']

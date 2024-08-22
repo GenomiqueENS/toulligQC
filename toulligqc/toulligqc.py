@@ -352,17 +352,25 @@ def main():
         sys.exit("ERROR: dico_path is empty")
 
     # Get barcode selection
+    allowed_patterns = r'(BC|RB|NB|BP|BARCODE)(\d{2})'
+
     if config_dictionary['barcoding'].lower() == 'true':
         config_dictionary['barcode_selection'] = []
 
-        if 'barcodes' in config_dictionary:
+        if 'samplesheet' in config_dictionary:
+            samplesheet = parse_samplesheet(config_dictionary['samplesheet'])
+            config_dictionary['barcodes'] = ",".join(list(samplesheet['barcode']))
+            config_dictionary['barcode_alias'] = pd.Series(samplesheet.alias.values, 
+                                                           index=samplesheet.barcode).to_dict()
+
+        if 'barcodes' in config_dictionary or 'samplesheet' in config_dictionary:
             barcode_set = set()
             if ":" in config_dictionary['barcodes']:
                 start, end  = config_dictionary['barcodes'].strip().split(':')
-                pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', start.strip().upper())
+                pattern = re.search(allowed_patterns, start.strip().upper())
                 if pattern:
                     start_number = int(pattern.group(2))
-                pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', end.strip().upper())
+                pattern = re.search(allowed_patterns, end.strip().upper())
                 if pattern:
                     end_number = int(pattern.group(2)) 
                 for i in range(start_number, end_number + 1):
@@ -371,25 +379,21 @@ def main():
                     
             else:
                 for b in config_dictionary['barcodes'].strip().split(','):
-                    pattern = re.search(r'(BC|RB|NB|BP|BARCODE)(\d{2})', b.strip().upper())
+                    pattern = re.search(allowed_patterns, b.strip().upper())
                     if pattern:
                         barcode = 'barcode{}'.format(pattern.group(2))
                         barcode_set.add(barcode)
                     else: 
                         sys.stderr.write("\033[93mWarning:\033[0m Barcode '{}' is non-standard custom arrangement.\n".format(b))
                         barcode_set.add(b)
+                    if 'samplesheet' in config_dictionary:
+                        config_dictionary['barcode_alias'][barcode] = config_dictionary['barcode_alias'].pop(b)
 
             barcode_selection = sorted(barcode_set)
 
             if len(barcode_selection) == 0:
                 sys.exit("ERROR: No known barcode found in provided list of barcodes")
             config_dictionary['barcode_selection'] = barcode_selection
-
-        elif 'samplesheet' in config_dictionary:
-            samplesheet = parse_samplesheet(config_dictionary['samplesheet'])
-            config_dictionary['barcode_selection'] = list(samplesheet['barcode'])
-            config_dictionary['barcode_alias'] = pd.Series(samplesheet.alias.values, 
-                                                           index=samplesheet.barcode).to_dict()
 
     else:
         config_dictionary['barcode_selection'] = ''
