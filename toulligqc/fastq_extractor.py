@@ -375,10 +375,7 @@ class fastqExtractor:
         """
         """
         metadata = dict(x.split("=") for x in name.split(" ")[1:])
-        try:
-            start_time = timeISO_to_float(metadata['start_time'], '%Y-%m-%dT%H:%M:%SZ')
-        except:
-            start_time = timeISO_to_float(metadata['start_time'], '%Y-%m-%dT%H:%M:%S.%f')
+        start_time = timeISO_to_float(metadata['start_time'],  '%Y-%m-%dT%H:%M:%S.%f%z')
         if self.is_barcode:
             return  start_time, metadata['ch'], metadata['barcode']
         return  start_time, metadata['ch']
