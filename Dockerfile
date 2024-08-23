@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 
 MAINTAINER Laurent Jourdren <jourdren@bio.ens.psl.eu>
-ARG VERSION=2.7
+ARG VERSION=2.7.1
 ARG INSTALL_PACKAGES="git"
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \

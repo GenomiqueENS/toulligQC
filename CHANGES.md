@@ -1,4 +1,13 @@
 # Changelog
+## 2.7.1 (2024-08-23)
+* Added Conda environment.yml.
+* Fixed bugs:
+  * Corrected N50 and L50 computation (issue #28).
+  * Recognized the standard barcode arrangement (BC|RB|NB|BP) in the samplesheet (issue #27).
+  * Fixed barcoding for the Fastq_extractor (issue #30).
+  * Fixed time format for BAM and FASTQ extractors.
+  
+
 ## 2.7 (2024-06-21)
 * Moved to Ubuntu 24.04.
 * Added support for ONT samplesheet.
