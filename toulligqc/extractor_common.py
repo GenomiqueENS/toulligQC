@@ -46,7 +46,7 @@ def get_result_value(extractor, result_dict, key: str):
     :param key: string entry to add to result_dict
     Returns the value associated with the result_dict key
     """
-    if not (extractor.get_report_data_file_id() + '.' + key) in result_dict.keys():
+    if (extractor.get_report_data_file_id() + '.' + key) not in result_dict.keys():
         raise KeyError("Key {key} not found").__format__(key)
     return result_dict.get(extractor.get_report_data_file_id() + '.' + key)
 
@@ -434,7 +434,7 @@ def timeISO_to_float(iso_datetime, format):
         """
         try:
             dt = datetime.strptime(iso_datetime, format)
-        except:
+        except ValueError:
             format = '%Y-%m-%dT%H:%M:%SZ'
             dt = datetime.strptime(iso_datetime, format)
         unix_timestamp = dt.timestamp()
@@ -482,7 +482,8 @@ def pd_read_sequencing_summary(file, cols, data_type):
         try:
             return pd.read_csv(file, sep="\t", usecols=cols,
                             dtype=data_type)
-        except:
+        except (ValueError, KeyError):
+            # Handle case where 'passes_filtering' column doesn't exist
             del data_type['passes_filtering']
             cols.remove('passes_filtering')
             return pd.read_csv(file, sep="\t", usecols=cols,

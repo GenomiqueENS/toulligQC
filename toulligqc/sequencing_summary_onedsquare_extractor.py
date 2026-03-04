@@ -81,7 +81,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :return: boolean and a string for error message
         """
         # Check the presence of sequencing_summary.txt
-        if self.sse.check_conf()[0] == False:
+        if not self.sse.check_conf()[0]:
             return False, "No sequencing summary file has been found"
 
         # Check the presence of sequencing_1dsq_summary.txt

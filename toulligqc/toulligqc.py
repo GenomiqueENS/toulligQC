@@ -180,7 +180,7 @@ def _parse_args(config_dictionary):
 
     # Directory paths must ends with '/'
     for key, value in config_dictionary.items():
-        if type(value) == str and (key.endswith('_source') or key.endswith('_directory')) and os.path.isdir(value) and (
+        if isinstance(value, str) and (key.endswith('_source') or key.endswith('_directory')) and os.path.isdir(value) and (
                 not value.endswith('/')):
             config_dictionary[key] = value + '/'
 
@@ -389,7 +389,7 @@ def main():
                         barcode = 'barcode{}'.format(pattern.group(2))
                         barcode_set.add(barcode)
                     else:
-                        if not 'use_alias_for_barcodes' in config_dictionary:
+                        if 'use_alias_for_barcodes' not in config_dictionary:
                             sys.stderr.write("\033[93mWarning:\033[0m Barcode '{}' is non-standard custom arrangement.\n".format(b))
                         barcode_set.add(b)
                     if 'samplesheet' in config_dictionary and 'use_alias_for_barcodes' not in config_dictionary:
