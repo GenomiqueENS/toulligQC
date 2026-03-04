@@ -143,7 +143,8 @@ def read_count_histogram(result_dict, result_directory):
     fig = go.Figure(data=trace, layout=layout)
 
     # HTML table
-    dataframe.iloc[0] = dataframe.iloc[0].astype(int).apply(lambda x: _format_int(x))
+    dataframe = dataframe.astype(object)
+    dataframe.iloc[0] = [_format_int(int(v)) for v in dataframe.iloc[0]]
     dataframe.iloc[1:] = dataframe.iloc[1:].map(_format_float)
     table_html = _dataFrame_to_html(dataframe)
 
