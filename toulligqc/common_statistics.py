@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from math import log
 
@@ -13,7 +14,7 @@ def occupancy_channel(dataframe):
 def compute_LXX(dataframe_dict, x):
     """Compute LXX value of total sequence length"""
     data = dataframe_dict["all.reads.sequence.length"].dropna().values
-    data.sort()
+    data = np.sort(data)
     half_sum = data.sum() * x / 100
     cum_sum = 0
     count = 0
@@ -27,7 +28,7 @@ def compute_LXX(dataframe_dict, x):
 def compute_NXX(dataframe_dict, x):
     """Compute NXX value of total sequence length"""
     data = dataframe_dict["all.reads.sequence.length"].dropna().values
-    data.sort()
+    data = np.sort(data)
     half_sum = data.sum() * x / 100
     cum_sum = 0
     for v in data:
