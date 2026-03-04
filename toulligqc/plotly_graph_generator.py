@@ -144,7 +144,7 @@ def read_count_histogram(result_dict, result_directory):
 
     # HTML table
     dataframe.iloc[0] = dataframe.iloc[0].astype(int).apply(lambda x: _format_int(x))
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap(_format_float)
+    dataframe.iloc[1:] = dataframe.iloc[1:].map(_format_float)
     table_html = _dataFrame_to_html(dataframe)
 
     div, output_file = _create_and_save_div(fig, result_directory, graph_name)
