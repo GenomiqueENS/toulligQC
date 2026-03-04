@@ -7,7 +7,7 @@ def occupancy_channel(dataframe):
     Statistics about the channels of the flowcell
     :return: pd.Series object containing statistics about the channel occupancy without count value
     """
-    total_reads_per_channel = pd.value_counts(dataframe["channel"])
+    total_reads_per_channel = dataframe["channel"].value_counts()
     return pd.DataFrame.describe(total_reads_per_channel)
 
 
