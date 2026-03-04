@@ -336,7 +336,7 @@ def _barcode_frequency(extractor, barcode_selection, result_dict, entry: str, df
     # Sort by list of barcode_selection
     count_sorted = all_barcode_count.sort_index()[barcode_selection_existing]
     # Replace all NaN values to zero
-    count_sorted.fillna(0, downcast='int16', inplace=True)
+    count_sorted.fillna(0, inplace=True)
 
     # Compute sum of all used barcodes without barcode 'unclassified'
     #set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
@@ -387,7 +387,7 @@ def _barcode_bases(extractor, barcode_selection, result_dict, entry: str, df_fil
     # Sort by list of barcode_selection
     count_sorted = all_barcode_count.sort_index()[barcode_selection_existing]
     # Replace all NaN values to zero
-    count_sorted.fillna(0, downcast='int16', inplace=True)
+    count_sorted.fillna(0, inplace=True)
 
     # Compute sum of all used barcodes without barcode 'unclassified'
     #set_result_value(extractor, result_dict, entry + '.count', sum(count_sorted.drop("unclassified")))
