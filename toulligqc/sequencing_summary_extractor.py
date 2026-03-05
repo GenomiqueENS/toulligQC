@@ -145,20 +145,20 @@ class SequencingSummaryExtractor:
                  time.time())
 
 
-    def clean(extractor, result_dict):
+    def clean(self, result_dict):
         """
         Removing dictionary entries that will not be kept in the report.data file
         :return:
         """
 
         # Check values in result_dict (avoid Series and Dataframes)
-        check_result_values(extractor, result_dict)
+        check_result_values(self, result_dict)
 
         # Clear dictionary for Series and Dataframe
-        extractor.dataframe_dict.clear()
+        self.dataframe_dict.clear()
 
         # Clear DataFrame
-        extractor.dataframe_1d.iloc[0:0]
+        self.dataframe_1d.iloc[0:0]
 
 
     @staticmethod

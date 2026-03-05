@@ -1,10 +1,8 @@
-from math import log
 import os
 import numpy as np
 import pandas as pd
 import time
 import pysam
-from collections import defaultdict
 from toulligqc.extractor_common import log_task
 from toulligqc.extractor_common import describe_dict
 from toulligqc.extractor_common import set_result_value

@@ -296,7 +296,7 @@ def _other_module_reports(graphs, remove_image_files):
         {html}
         {table}
       </div>
-""".format(i=i, name=name, html=html, table=table)
+""".format(i=i, html=html, table=table)
 
             # Plotly graph without table
             else:
@@ -304,7 +304,7 @@ def _other_module_reports(graphs, remove_image_files):
       <div class="module" id=M{i}>
         {html}
       </div>
-""".format(i=i, name=name, html=html, table=table)
+""".format(i=i, html=html)
 
 
         elif len(t) == 3:
