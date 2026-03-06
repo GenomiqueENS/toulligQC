@@ -362,12 +362,11 @@ class fastqExtractor:
             self.is_barcode = False
         if 'model_version_id' not in metadata:
                 metadata['model_version_id'] = 'Unknow'
-        run_info = []
         try:
            sample_id = 'sample_id' if 'sample_id' in metadata else 'sampleid'
            run_id = 'run_id' if 'run_id' in metadata else 'runid'
            return metadata[run_id] , metadata[sample_id] , metadata['model_version_id'] 
-        except:
+        except KeyError:
             return None
 
 

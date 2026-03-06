@@ -156,7 +156,7 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
     try:
         seconds = result_dict["basecaller.sequencing.summary.1d.extractor.run.time"]
         run_time = '%dh%02dm%02ds' % (seconds // 3600, (seconds % 3600) // 60, seconds % 60)
-    except:
+    except KeyError:
         run_time = "Unknown"
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]

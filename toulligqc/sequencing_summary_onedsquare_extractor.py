@@ -467,7 +467,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         :return: True if the file is indeed a sequencing summary file
         """
         header = read_first_line_file(filename)
-        return header.startswith('filename1') and not 'barcode_arrangement' in header
+        return header.startswith('filename1') and 'barcode_arrangement' not in header
 
     @staticmethod
     def _is_sequencing_summary_1dsqr_with_barcodes(filename):

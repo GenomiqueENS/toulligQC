@@ -181,8 +181,8 @@ def yield_plot(df, result_directory, oneDsquare=False):
     new_df['start_time'] = new_df[start_time_column] / 3600
 
     all_reads_length_df = new_df.filter(['sequence_length', start_time_column])
-    pass_reads_length_df = new_df[new_df['passes_filtering'] == True].filter(['sequence_length', start_time_column])
-    fail_reads_length_df = new_df[new_df['passes_filtering'] == False].filter(['sequence_length', start_time_column])
+    pass_reads_length_df = new_df[new_df['passes_filtering']].filter(['sequence_length', start_time_column])
+    fail_reads_length_df = new_df[~new_df['passes_filtering']].filter(['sequence_length', start_time_column])
 
     data = [(all_reads_length_df, 'All reads', toulligqc_colors['all']),
             (pass_reads_length_df, 'Pass reads', toulligqc_colors['pass']),
