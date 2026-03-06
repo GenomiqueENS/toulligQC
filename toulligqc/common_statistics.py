@@ -1,6 +1,7 @@
 import pandas as pd
 from math import log
 
+
 def occupancy_channel(dataframe):
     """
     Statistics about the channels of the flowcell
@@ -37,13 +38,14 @@ def compute_NXX(dataframe_dict, x):
 
 
 def avg_qual(quals):
-        """
-        Estimates mean quality Phred score
-        return: float
-        """
-        if quals:
-            qscore =  -10 * log(sum([10**((ord(q)-33) / -10) for q in quals]) / len(quals), 10)
-            return round(qscore, 2)
-        else:
-            return None
-
+    """
+    Estimates mean quality Phred score
+    return: float
+    """
+    if quals:
+        qscore = -10 * log(
+            sum([10 ** ((ord(q) - 33) / -10) for q in quals]) / len(quals), 10
+        )
+        return round(qscore, 2)
+    else:
+        return None

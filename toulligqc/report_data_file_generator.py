@@ -34,7 +34,7 @@ def add_values_to_unwritten_key(result_dict, values):
     :param values: must be a list
     :return:
     """
-    return result_dict['unwritten.keys'].extend(values)
+    return result_dict["unwritten.keys"].extend(values)
 
 
 def statistics_generator(config_dictionary, result_dict):
@@ -44,10 +44,10 @@ def statistics_generator(config_dictionary, result_dict):
     :param config_dictionary:
     """
 
-    if config_dictionary['data_report_path'] is None:
+    if config_dictionary["data_report_path"] is None:
         return
 
-    with open(config_dictionary['data_report_path'], 'w') as file_data:
+    with open(config_dictionary["data_report_path"], "w") as file_data:
         for key, value in result_dict.items():
-            if key not in result_dict['unwritten.keys']:
+            if key not in result_dict["unwritten.keys"]:
                 file_data.write("{0}={1}\n".format(key, value))

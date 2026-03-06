@@ -37,13 +37,15 @@ class ToulligqcConf:
     """
 
     def __init__(self):
-        self._config_dictionary = {'app.name': "ToulligQC",
-                                   'app.url': "https://github.com/GenomicParisCentre/toulligQC",
-                                   'app.version': version.__version__,
-                                   'quiet': 'False',
-                                   'tmpdir': tempfile.gettempdir(),
-                                   'barcoding': 'False',
-                                   'report_only': 'False'}
+        self._config_dictionary = {
+            "app.name": "ToulligQC",
+            "app.url": "https://github.com/GenomicParisCentre/toulligQC",
+            "app.version": version.__version__,
+            "quiet": "False",
+            "tmpdir": tempfile.gettempdir(),
+            "barcoding": "False",
+            "report_only": "False",
+        }
 
     def __getitem__(self, item):
         return self._config_dictionary[item]
@@ -81,9 +83,9 @@ class ToulligqcConf:
 
     def qscore_threshold(self):
         default_threshold = "9"
-        result = self._config_dictionary.get('threshold', default_threshold)
+        result = self._config_dictionary.get("threshold", default_threshold)
 
         return default_threshold if result == "-1" else result
 
     def is_default_qscore_threshold(self):
-        return self._config_dictionary.get('threshold') == "-1"
+        return self._config_dictionary.get("threshold") == "-1"
