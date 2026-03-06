@@ -11,7 +11,6 @@ Listing of all configurations required for unit tests
 
 whole_config = {
     "barcoding": "True",
-    "barcode_selection": ["BC01", "BC02", "BC03", "BC04", "BC05", "BC06", "BC07"],
     "barcode_selection": ["barcode07", "barcode08", "barcode10", "barcode12"],
     "result_directory": path,
     "dpi": "100",

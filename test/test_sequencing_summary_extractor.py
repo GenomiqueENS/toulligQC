@@ -1,15 +1,16 @@
-import sys, os, re
+import sys
+import os
+import re
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../toulligqc")
 from toulligqc import sequencing_summary_extractor as sse
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock
 import config as cfg
 import pandas as pd
 import pandas.util.testing as testing
 from toulligqc.common import is_numpy_1_24
 import numpy as np
-from distutils import util
 
 ####################################################################################
 # Tests of the SequencingSummaryExtractor class with several configuration cases : #
@@ -234,11 +235,11 @@ class TestSequencingSummaryExtractorOnlySequencingSummary(unittest.TestCase):
         # values to compare
         read_count = len(instance.dataframe_1d)
         read_pass_count = len(
-            instance.dataframe_1d.loc[instance.dataframe_1d["passes_filtering"] == True]
+            instance.dataframe_1d.loc[instance.dataframe_1d["passes_filtering"]]
         )
         read_fail_count = len(
             instance.dataframe_1d.loc[
-                instance.dataframe_1d["passes_filtering"] == False
+                ~instance.dataframe_1d["passes_filtering"]
             ]
         )
         read_pass_ratio = read_pass_count / read_count
@@ -256,12 +257,12 @@ class TestSequencingSummaryExtractorOnlySequencingSummary(unittest.TestCase):
         # read_pass_length_min = pd.DataFrame.min(instance.sequence_length_df[instance.dataframe_1d['passes_filtering'] == True])
         read_pass_length_min = pd.DataFrame.min(
             instance.dataframe_dict["all.reads.sequence.length"][
-                instance.dataframe_1d["passes_filtering"] == True
+                instance.dataframe_1d["passes_filtering"]
             ]
         )
         # read_fail_qscore = instance.qscore_df.loc[instance.dataframe_1d['passes_filtering'] == False]
         read_fail_qscore = instance.dataframe_dict["all.reads.mean.qscore"][
-            instance.dataframe_1d["passes_filtering"] == False
+            ~instance.dataframe_1d["passes_filtering"]
         ]
         read_fail_qscore_50 = pd.Series.quantile(read_fail_qscore, q=0.5)
 
