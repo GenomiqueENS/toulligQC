@@ -23,6 +23,7 @@ from packaging import version
 import glob
 import os
 
+
 def is_numpy_1_24():
     """
     This function checks if Numpy version is later then 1.20
@@ -44,7 +45,7 @@ def set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
     """
     Set metadata values from Fast5 or pod5 dict to result_dict
     """
-    value = ''
+    value = ""
     if dict_key in tracking_id_dict:
         value = tracking_id_dict[dict_key]
 
@@ -56,8 +57,8 @@ def find_file_in_directory(source_file, format):
     Looking for a suitable Fast5 or Pod5 file in the source directory.
     :return: The path to the first suitable file in the source directory
     """
-    for ext in (format, 'tar.bz2', 'tar.gz'):
-        if glob.glob(source_file + '/*.' + ext):
+    for ext in (format, "tar.bz2", "tar.gz"):
+        if glob.glob(source_file + "/*." + ext):
             files_found = os.listdir(source_file)
             if len(files_found) > 0:
                 return source_file + files_found[0]

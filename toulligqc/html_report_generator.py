@@ -44,29 +44,41 @@ def html_report(config_dictionary, result_dict, graphs):
     :param graphs:
     """
 
-    report_name = config_dictionary['report_name']
-    remove_image_files = True if config_dictionary['images_directory'] is None else False
+    report_name = config_dictionary["report_name"]
+    remove_image_files = (
+        True if config_dictionary["images_directory"] is None else False
+    )
 
     # Get report date
-    report_date = _get_result_date_value(result_dict, 'toulligqc.info.start.time', "Unknown")
+    report_date = _get_result_date_value(
+        result_dict, "toulligqc.info.start.time", "Unknown"
+    )
 
     # Get run date
-    run_date = _get_result_date_value(result_dict, 'sequencing.telemetry.extractor.exp.start.time', "Unknown")
+    run_date = _get_result_date_value(
+        result_dict, "sequencing.telemetry.extractor.exp.start.time", "Unknown"
+    )
 
-    sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
+    sample_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.sample.id", "Unknown"
+    )
 
     # Read CSS file resource
-    css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode('utf8')
+    css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode("utf8")
 
     # Set CSS module class width to the width of the figures
-    css = css.replace("{figure_image_width}", str(figure_image_width) + "px") \
-        .replace("{title_size}", str(title_size)) \
+    css = (
+        css.replace("{figure_image_width}", str(figure_image_width) + "px")
+        .replace("{title_size}", str(title_size))
         .replace("{graph_font}", str(graph_font))
+    )
 
     # Read Plotly JavaScript code
-    plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode('utf8')
+    plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode(
+        "utf8"
+    )
 
-    f = open(config_dictionary['html_report_path'], 'w')
+    f = open(config_dictionary["html_report_path"], "w")
 
     # Create the report
     report = """<!doctype html>
@@ -110,19 +122,28 @@ def html_report(config_dictionary, result_dict, graphs):
     <div id="footer"> Produced by <a href="{app_url}">{app_name}</a> (version {app_version})</div>
   </body>
 
-</html>""".format(report_name=report_name,
-                  toulligqc_logo=_embedded_image("resources/toulligqc.png", True),
-                  plotlyjs=plotly_min_js,
-                  css=css,
-                  sample_id=sample_id,
-                  run_date=run_date,
-                  report_date=report_date,
-                  summary_list=_summary(graphs),
-                  modules_report=_modules_report(graphs, result_dict, sample_id, report_name, run_date,
-                                                 config_dictionary['app.version'], remove_image_files),
-                  app_url=config_dictionary['app.url'],
-                  app_name=config_dictionary['app.name'],
-                  app_version=config_dictionary['app.version'])
+</html>""".format(
+        report_name=report_name,
+        toulligqc_logo=_embedded_image("resources/toulligqc.png", True),
+        plotlyjs=plotly_min_js,
+        css=css,
+        sample_id=sample_id,
+        run_date=run_date,
+        report_date=report_date,
+        summary_list=_summary(graphs),
+        modules_report=_modules_report(
+            graphs,
+            result_dict,
+            sample_id,
+            report_name,
+            run_date,
+            config_dictionary["app.version"],
+            remove_image_files,
+        ),
+        app_url=config_dictionary["app.url"],
+        app_name=config_dictionary["app.name"],
+        app_version=config_dictionary["app.version"],
+    )
 
     # Write the HTML page
     f.write(report)
@@ -135,61 +156,137 @@ def _summary(graphs):
     :param graphs:
     :return: a string with HTML code for the module list
     """
-    result = "        <ul class=\"menu-vertical\">\n"
-    result += "          <li class=\"mv-item\"><a href=\"#run_statistics" "\">Run statistics</a></li>\n"
-    result += "          <li class=\"mv-item\"><a href=\"#software_info" "\">Device and software</a></li>\n"
+    result = '        <ul class="menu-vertical">\n'
+    result += (
+        '          <li class="mv-item"><a href="#run_statistics'
+        '">Run statistics</a></li>\n'
+    )
+    result += (
+        '          <li class="mv-item"><a href="#software_info'
+        '">Device and software</a></li>\n'
+    )
     for i, t in enumerate(graphs):
-        result += "          <li class=\"mv-item\"><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
+        result += (
+            '          <li class="mv-item"><a href="#M'
+            + str(i)
+            + '">'
+            + t[0]
+            + "</a></li>\n"
+        )
     result += "        </ul>\n"
     return result
 
 
-def _modules_report(graphs, result_dict, run_id, report_name, run_date, toulligqc_version, remove_image_files):
-    result = _basic_statistics_module_report(result_dict, run_id, report_name, run_date, toulligqc_version)
+def _modules_report(
+    graphs,
+    result_dict,
+    run_id,
+    report_name,
+    run_date,
+    toulligqc_version,
+    remove_image_files,
+):
+    result = _basic_statistics_module_report(
+        result_dict, run_id, report_name, run_date, toulligqc_version
+    )
     result += _other_module_reports(graphs, remove_image_files)
     return result
 
 
-def _basic_statistics_module_report(result_dict, sample_id, report_name, run_date, toulligqc_version):
-    minknow_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.minknow.version', "Unknown")
+def _basic_statistics_module_report(
+    result_dict, sample_id, report_name, run_date, toulligqc_version
+):
+    minknow_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.minknow.version", "Unknown"
+    )
 
     try:
         seconds = result_dict["basecaller.sequencing.summary.1d.extractor.run.time"]
-        run_time = '%dh%02dm%02ds' % (seconds // 3600, (seconds % 3600) // 60, seconds % 60)
-    except:
+        run_time = "%dh%02dm%02ds" % (
+            seconds // 3600,
+            (seconds % 3600) // 60,
+            seconds % 60,
+        )
+    except KeyError:
         run_time = "Unknown"
 
     read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-    run_yield = _format_int_with_prefix(result_dict["basecaller.sequencing.summary.1d.extractor.yield"])
+    run_yield = _format_int_with_prefix(
+        result_dict["basecaller.sequencing.summary.1d.extractor.yield"]
+    )
     n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
     l50 = result_dict["basecaller.sequencing.summary.1d.extractor.l50"]
 
     # from telemetry file
-    flow_cell_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.id', "Unknown")
-    experiment_group = _get_result_value(result_dict, 'sequencing.telemetry.extractor.protocol.group.id', "Unknown")
-    run_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.run.id', "Unknown")
-    flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
-    kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
-    sequencing_kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sequencing.kit.version', "Unknown")
-    barcode_kits_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.barcode.kits.version', "Unknown")
-    selected_speed_bases_per_second = _get_result_value(result_dict, 'sequencing.telemetry.extractor.selected.speed.bases.per.second', "Unknown")
-    sample_frequency = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.frequency', "Unknown")
-    basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
-    basecaller_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.version', "Unknown")
-    basecaller_analysis = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.analysis', "Unknown")
-    hostname = _get_result_value(result_dict, 'sequencing.telemetry.extractor.hostname', "Unknown")
-    device_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.id', "Unknown")
-    device_type = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.type', "Unknown")
-    model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
-    min_qscore_threshold = _get_result_value(result_dict, 'sequencing.telemetry.extractor.pass.threshold.qscore',
-                                             value_type='float', default_value="Unknown")
+    flow_cell_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.flowcell.id", "Unknown"
+    )
+    experiment_group = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.protocol.group.id", "Unknown"
+    )
+    run_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.run.id", "Unknown"
+    )
+    flowcell_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.flowcell.version", "Unknown"
+    )
+    kit_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.kit.version", "Unknown"
+    )
+    sequencing_kit_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.sequencing.kit.version", "Unknown"
+    )
+    barcode_kits_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.barcode.kits.version", "Unknown"
+    )
+    selected_speed_bases_per_second = _get_result_value(
+        result_dict,
+        "sequencing.telemetry.extractor.selected.speed.bases.per.second",
+        "Unknown",
+    )
+    sample_frequency = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.sample.frequency", "Unknown"
+    )
+    basecaller_name = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.software.name", "Unknown"
+    )
+    basecaller_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.software.version", "Unknown"
+    )
+    basecaller_analysis = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.software.analysis", "Unknown"
+    )
+    hostname = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.hostname", "Unknown"
+    )
+    device_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.device.id", "Unknown"
+    )
+    device_type = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.device.type", "Unknown"
+    )
+    model_file = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.model.file", "Unknown"
+    )
+    min_qscore_threshold = _get_result_value(
+        result_dict,
+        "sequencing.telemetry.extractor.pass.threshold.qscore",
+        value_type="float",
+        default_value="Unknown",
+    )
 
-    distribution_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.distribution.version',
-                                             "Unknown")
-    operating_system = _get_result_value(result_dict, 'sequencing.telemetry.extractor.operating.system', "Unknown")
-    flow_cell_product_code = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flow.cell.product.code',
-                                               "Unknown")
-    basecalling_date = _get_result_date_value(result_dict, 'sequencing.telemetry.extractor.basecalling.date', "Unknown")
+    distribution_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.distribution.version", "Unknown"
+    )
+    operating_system = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.operating.system", "Unknown"
+    )
+    flow_cell_product_code = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.flow.cell.product.code", "Unknown"
+    )
+    basecalling_date = _get_result_date_value(
+        result_dict, "sequencing.telemetry.extractor.basecalling.date", "Unknown"
+    )
 
     # Compose the main of the page
     result = """
@@ -219,25 +316,27 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
               </tbody>
             </table>
       </div> <!-- End of "Run-statistics" module -->
-    """.format(help_link=help_html_link("Run Statistics"),
-               run_id=run_id,
-               experiment_group=experiment_group,
-               sample_id=sample_id,
-               report_name=report_name,
-               run_date=run_date,
-               run_time=run_time,
-               flow_cell_id=flow_cell_id,
-               flow_cell_product_code=flow_cell_product_code,
-               flowcell_version=flowcell_version,
-               kit_version=kit_version,
-               sequencing_kit_version=sequencing_kit_version,
-               barcode_kits_version=barcode_kits_version,
-               selected_speed_bases_per_second=selected_speed_bases_per_second,
-               sample_frequency=sample_frequency,
-               run_yield=run_yield,
-               read_count=_format_int(read_count),
-               n50=_format_int(int(n50)),
-               l50=_format_int(int(l50)))
+    """.format(
+        help_link=help_html_link("Run Statistics"),
+        run_id=run_id,
+        experiment_group=experiment_group,
+        sample_id=sample_id,
+        report_name=report_name,
+        run_date=run_date,
+        run_time=run_time,
+        flow_cell_id=flow_cell_id,
+        flow_cell_product_code=flow_cell_product_code,
+        flowcell_version=flowcell_version,
+        kit_version=kit_version,
+        sequencing_kit_version=sequencing_kit_version,
+        barcode_kits_version=barcode_kits_version,
+        selected_speed_bases_per_second=selected_speed_bases_per_second,
+        sample_frequency=sample_frequency,
+        run_yield=run_yield,
+        read_count=_format_int(read_count),
+        n50=_format_int(int(n50)),
+        l50=_format_int(int(l50)),
+    )
 
     result += """
       <div class="module" id="software_info">
@@ -261,20 +360,22 @@ def _basic_statistics_module_report(result_dict, sample_id, report_name, run_dat
                 </tbody>
             </table>
       </div> <!-- End of "Software-info" module -->
-    """.format(help_link=help_html_link("Software info"),
-               minknow_version=minknow_version,
-               basecaller_name=basecaller_name,
-               basecaller_version=basecaller_version,
-               basecaller_analysis=basecaller_analysis,
-               basecalling_date=basecalling_date,
-               toulligqc_version=toulligqc_version,
-               hostname=hostname,
-               operating_system=operating_system,
-               distribution_version=distribution_version,
-               device_type=device_type,
-               device_id=device_id,
-               model_file=model_file,
-               min_qscore_threshold=min_qscore_threshold)
+    """.format(
+        help_link=help_html_link("Software info"),
+        minknow_version=minknow_version,
+        basecaller_name=basecaller_name,
+        basecaller_version=basecaller_version,
+        basecaller_analysis=basecaller_analysis,
+        basecalling_date=basecalling_date,
+        toulligqc_version=toulligqc_version,
+        hostname=hostname,
+        operating_system=operating_system,
+        distribution_version=distribution_version,
+        device_type=device_type,
+        device_id=device_id,
+        model_file=model_file,
+        min_qscore_threshold=min_qscore_threshold,
+    )
 
     return result
 
@@ -283,7 +384,6 @@ def _other_module_reports(graphs, remove_image_files):
     result = ""
 
     for i, t in enumerate(graphs):
-
         if len(t) == 4:
             # Plotly Graph
 
@@ -306,7 +406,6 @@ def _other_module_reports(graphs, remove_image_files):
       </div>
 """.format(i=i, html=html)
 
-
         elif len(t) == 3:
             # image
             name, path, table = t
@@ -319,8 +418,13 @@ def _other_module_reports(graphs, remove_image_files):
               <div class="box"><img src="{image}"/></div>
               {table}
             </div>
-            """.format(i=i, name=name, help_link=help_html_link(name),
-                       image=_embedded_image(path, remove=remove_image_files), table=table)
+            """.format(
+                    i=i,
+                    name=name,
+                    help_link=help_html_link(name),
+                    image=_embedded_image(path, remove=remove_image_files),
+                    table=table,
+                )
 
             # Image without table
             else:
@@ -329,8 +433,12 @@ def _other_module_reports(graphs, remove_image_files):
               <h2>{name} {help_link}</h2>
               <div class="box"><img src="{image}"/></div>
             </div>
-            """.format(i=i, name=name, help_link=help_html_link(name),
-                       image=_embedded_image(path, remove=remove_image_files))
+            """.format(
+                    i=i,
+                    name=name,
+                    help_link=help_html_link(name),
+                    image=_embedded_image(path, remove=remove_image_files),
+                )
 
     return result
 
@@ -348,7 +456,7 @@ def _embedded_image(image_path, resource=False, remove=False):
         with open(image_path, "rb") as image_file:
             data = image_file.read()
 
-    result = "data:image/png;base64," + base64.b64encode(data).decode('ascii')
+    result = "data:image/png;base64," + base64.b64encode(data).decode("ascii")
 
     if remove:
         os.unlink(image_path)
@@ -356,7 +464,7 @@ def _embedded_image(image_path, resource=False, remove=False):
     return result
 
 
-def _get_result_value(result_dict, key, default_value="", value_type='str'):
+def _get_result_value(result_dict, key, default_value="", value_type="str"):
     """
     Get the value of the result dictionary or a default value if the key does not exists.
     :param result_dict: result dictionary
@@ -367,9 +475,8 @@ def _get_result_value(result_dict, key, default_value="", value_type='str'):
     if key in result_dict:
         result = result_dict[key]
         if len(result) > 0:
-
-            if value_type == 'float':
-                result = '{:.2f}'.format(float(result))
+            if value_type == "float":
+                result = "{:.2f}".format(float(result))
 
             return result
 
@@ -400,7 +507,7 @@ def _iso8601_to_formatted_date(date_string):
     :return: a formatted date
     """
     try:
-        d = datetime.datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+        d = datetime.datetime.fromisoformat(date_string.replace("Z", "+00:00"))
     except ValueError:
         return date_string
 
@@ -408,8 +515,8 @@ def _iso8601_to_formatted_date(date_string):
 
 
 def _format_int_with_prefix(i):
-    for x in ((12, 'T'), (9, 'G'), (6, 'M'), (3, 'K')):
+    for x in ((12, "T"), (9, "G"), (6, "M"), (3, "K")):
         if i / 10 ** x[0] > 1:
-            return '{:.2f}{}'.format(float(i) / float(10 ** x[0]), x[1])
+            return "{:.2f}{}".format(float(i) / float(10 ** x[0]), x[1])
 
     return i
