@@ -651,7 +651,7 @@ def _pie_chart_graph(
             marker=pie_marker,
             textposition="inside",
             hovertemplate="<b>%{label}</b><br>%{percent:.1%} (%{value:,})<extra></extra>",
-            visible=True,
+            visible=False,
         )
     )
     # Reads Histogram
@@ -701,7 +701,7 @@ def _pie_chart_graph(
                     [
                         dict(
                             args=[
-                                {"visible": [False, True, False, False]},
+                                {"visible": [True, False, False, False]},
                                 {
                                     "xaxis": {"visible": False},
                                     "yaxis": {"visible": False},
@@ -725,7 +725,7 @@ def _pie_chart_graph(
                         ),
                         dict(
                             args=[
-                                {"visible": [True, False, False, False]},
+                                {"visible": [False, True, False, False]},
                                 {
                                     "xaxis": {"visible": False},
                                     "yaxis": {"visible": False},
