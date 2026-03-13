@@ -1,4 +1,4 @@
-<a href="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/Toulligqc.png" align="middle" height="50" width="190" > </a>
+<a href="https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/docs/Toulligqc.png" align="middle" height="50" width="190" > </a>
 [![PyPI version](https://badge.fury.io/py/toulligqc.svg)](https://badge.fury.io/py/toulligqc) [![Downloads](https://pepy.tech/badge/toulligqc)](https://pepy.tech/project/toulligqc) [![Python 3.6](https://img.shields.io/badge/python-3.8-orange.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
@@ -14,15 +14,15 @@ ToulligQC can take barcoding samples by adding the barcode list as a command lin
 To do so, ToulligQC deals with different file formats: gz, tar.gz, bz2, tar.bz2 and .fast5 to retrieve a FAST5 information.
 This tool will produce a set of graphs, statistic files in txt format and a HTML report.
 
-<a href="https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/Docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomicParisCentre/toulligQC/master/Docs/images.png)</a>
+<a href="https://htmlpreview.github.com/?https://github.com/GenomiqueENS/toulligQC/blob/master/Docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/Docs/images.png)</a>
 
-Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomicParisCentre/toulligQC/blob/master/Docs/report.html) to see an report example!
+Click on the [image](https://htmlpreview.github.com/?https://github.com/GenomiqueENS/toulligQC/blob/master/Docs/report.html) to see an report example!
 
 ## Authors / Support
 
 Karine Dias, Bérengère Laffay, Lionel Ferrato-Berberian, Laurent Jourdren, Sophie Lemoine and Stéphane Le Crom.
 
-Support is availlable on [GitHub issue page](https://github.com/GenomicParisCentre/toulligQC/issues) and at **toulligqc** **at** **bio.ens.psl.eu**.
+Support is availlable on [GitHub issue page](https://github.com/GenomiqueENS/toulligQC/issues) and at **toulligqc** **at** **bio.ens.psl.eu**.
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ Support is availlable on [GitHub issue page](https://github.com/GenomicParisCent
 This option is also suitable if you are interested in further developments of the package, but requires a little bit more hands-on. Install the dependencies required and clone the repository locally.
 
 ```bash
-$ git clone https://github.com/GenomicParisCentre/toulligQC.git
+$ git clone https://github.com/GenomiqueENS/toulligQC.git
 # X.X here is the version of ToulligQC to install
 $ git checkout vX.X
 $ cd toulligqc && python3 setup.py build install
