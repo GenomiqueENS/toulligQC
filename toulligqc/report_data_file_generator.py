@@ -24,10 +24,8 @@
 # Since version 0.1
 
 # Creation of a text file containing statistics retrieved from the result_dict dictionary.
-# The information by modules is retained in a key-value form.
+#  The information by modules is retained in a key-value form.
 # The prefix of a key being the report data file id of the module.
-
-import os
 
 
 def add_values_to_unwritten_key(result_dict, values):
@@ -36,7 +34,7 @@ def add_values_to_unwritten_key(result_dict, values):
     :param values: must be a list
     :return:
     """
-    return result_dict['unwritten.keys'].extend(values)
+    return result_dict["unwritten.keys"].extend(values)
 
 
 def statistics_generator(config_dictionary, result_dict):
@@ -45,15 +43,11 @@ def statistics_generator(config_dictionary, result_dict):
     :param result_dict:
     :param config_dictionary:
     """
-    result_directory = config_dictionary['result_directory']
 
-    complete_name = os.path.join(result_directory, "report.data")
+    if config_dictionary["data_report_path"] is None:
+        return
 
-    add_values_to_unwritten_key(result_dict, ["sequence_length_template", "passes_filtering",
-                                              "read_pass", "read_fail", "start_time_sorted",
-                                              "read_pass_sorted", "read_fail_sorted"])
-
-    with open(complete_name, 'w') as file_data:
+    with open(config_dictionary["data_report_path"], "w") as file_data:
         for key, value in result_dict.items():
-            if key not in result_dict['unwritten.keys']:
+            if key not in result_dict["unwritten.keys"]:
                 file_data.write("{0}={1}\n".format(key, value))

@@ -26,6 +26,14 @@
 # Generates a quality control report in HTML format including graphs and statistical tables
 import base64
 import datetime
+import os
+import pkgutil
+
+from toulligqc.plotly_graph_common import _format_int
+from toulligqc.plotly_graph_common import figure_image_width
+from toulligqc.plotly_graph_common import graph_font
+from toulligqc.plotly_graph_common import help_html_link
+from toulligqc.plotly_graph_common import title_size
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -36,432 +44,427 @@ def html_report(config_dictionary, result_dict, graphs):
     :param graphs:
     """
 
-    result_directory = config_dictionary['result_directory']
-    report_name = config_dictionary['report_name']
+    report_name = config_dictionary["report_name"]
+    remove_image_files = (
+        True if config_dictionary["images_directory"] is None else False
+    )
 
-    # from sequence summary file
+    # Get report date
+    report_date = _get_result_date_value(
+        result_dict, "toulligqc.info.start.time", "Unknown"
+    )
 
-    td = datetime.timedelta(hours=result_dict["basecaller.sequencing.summary.1d.extractor.run.time"])
-    seconds = td.total_seconds()
-    run_time = '%d:%02d:%02d' % (seconds / 3600, seconds / 60 % 60, seconds % 60)
+    # Get run date
+    run_date = _get_result_date_value(
+        result_dict, "sequencing.telemetry.extractor.exp.start.time", "Unknown"
+    )
 
-    report_date = result_dict['toulligqc.info.start.time']
+    sample_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.sample.id", "Unknown"
+    )
 
-    # from Fast5 file
-    run_date = result_dict['sequencing.telemetry.extractor.exp.start.time']
-    flow_cell_id = result_dict['sequencing.telemetry.extractor.flowcell.id']
-    run_id = result_dict['sequencing.telemetry.extractor.sample.id']
-    minknow_version = result_dict['sequencing.telemetry.extractor.minknow.version']
+    # Read CSS file resource
+    css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode("utf8")
 
-    read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
-    run_yield = round(result_dict["basecaller.sequencing.summary.1d.extractor.yield"]/1000000000, 2)
-    n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
+    # Set CSS module class width to the width of the figures
+    css = (
+        css.replace("{figure_image_width}", str(figure_image_width) + "px")
+        .replace("{title_size}", str(title_size))
+        .replace("{graph_font}", str(graph_font))
+    )
 
-    # from telemetry file
-    flowcell_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.flowcell.version', "Unknown")
-    kit_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.kit.version', "Unknown")
-    basecaller_name = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.name', "Unknown")
-    basecaller_version = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.version', "Unknown")
-    basecaller_analysis = _get_result_value(result_dict, 'sequencing.telemetry.extractor.software.analysis', "Unknown")
-    hostname = _get_result_value(result_dict, 'sequencing.telemetry.extractor.hostname', "Unknown")
-    device_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.id', "Unknown")
-    device_type = _get_result_value(result_dict, 'sequencing.telemetry.extractor.device.type', "Unknown")
-    model_file = _get_result_value(result_dict, 'sequencing.telemetry.extractor.model.file', "Unknown")
-    sample_id = _get_result_value(result_dict, 'sequencing.telemetry.extractor.sample.id', "Unknown")
+    # Read Plotly JavaScript code
+    plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode(
+        "utf8"
+    )
 
-    f = open(result_directory + 'report.html', 'w')
+    f = open(config_dictionary["html_report_path"], "w")
 
-# Define the header of the page
-    title = """<!doctype html>
+    # Create the report
+    report = """<!doctype html>
 <html>
   <head>
-    <title>Report run MinION : {0} </title>
+    <title>ToulligQC: {report_name} </title>
     <meta charset='UTF-8'>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>{plotlyjs}</script>
+
+    <!-- CSS stylesheet -->
     <style type="text/css">
-    """.format(report_name)
-
-    header = """
-
-  @media screen {
-
-    div.summary {
-      width: 16em;
-      position:absolute;
-      overflow-y:scroll;
-      height:800px;
-      scrollbar-width: auto;
-      top: 4.5em;
-      margin:1em 0 0 1em;
-    }
-
-    div.main {
-      display:block;
-      position:absolute;
-      overflow:auto;
-      height:auto;
-      width:auto;
-      top:4.5em;
-      bottom:2.3em;
-      left:18em;
-      right:0;
-      border-left: 1px solid #CCC;
-      padding:0 0 0 1em;
-      background-color: white;
-      z-index:1;
-    }
-
-    div.header {
-      background-color: #EEE;
-      border:0;
-      margin:0;
-      padding: 0.5em;
-      font-size: 200%;
-      font-weight: bold;
-      position:fixed;
-      width:100%;
-      top:0;
-      left:0;
-      z-index:2;
-    }
-
-    div.footer {
-      background-color: #EEE;
-      border:0;
-      margin:0;
-      padding:0.5em;
-      height: 1.3em;
-      overflow:hidden;
-      font-size: 100%;
-      font-weight: bold;
-      position:fixed;
-      bottom:0;
-      width:100%;
-      z-index:2;
-    }
-
-    img.indented {
-      margin-left: 3em;
-    }
-  }
-
-  @media print {
-
-    img {
-      max-width:80% !important;
-      page-break-inside: avoid;
-    }
-
-    h2, h3 {
-      page-break-after: avoid;
-    }
-
-    div.header {
-      background-color: #FFF;
-    }
-
-  }
-
-  body {
-    font-family: sans-serif;
-    color: #000;
-    background-color: #FFF;
-    border: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  div.header {
-    border:0;
-    margin:0;
-    padding: 0.5em;
-    font-size: 200%;
-    font-weight: bold;
-    width:100%;
-  }
-
-  #header_title {
-    display:inline-block;
-    float:left;
-    clear:left;
-  }
-
-  #header_filename {
-    display:inline-block;
-    float:right;
-    clear:right;
-    font-size: 50%;
-    margin-right:2em;
-    text-align: right;
-  }
-
-  div.header h3 {
-    font-size: 50%;
-    margin-bottom: 0;
-  }
-
-  div.summary ul {
-    padding-left:0;
-    list-style-type:none;
-  }
-
-  div.summary ul li img {
-    margin-bottom:-0.5em;
-    margin-top:0.5em;
-  }
-
-  div.main {
-    background-color: white;
-  }
-
-  div.module {
-    padding-bottom:1.5em;
-    padding-top:1.5em;
-  }
-
-  .info-box {
-    float:left;
-    min-width: 400px;
-    height: 350px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:0em;
-    top: 0 auto;
-    bottom: 0 auto;
-  }
-
-  .info-box-left {
-    float:left;
-    min-width: 400px;
-    height: 350px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:0em;
-    top: 0 auto;
-    bottom: 0 auto;
-  }
-
-  .box {
-    float:left;
-    min-width: 1150px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:1.8em;
-    top: 0 auto;
-    bottom: 0 auto;
-  }
-
-    .box-left {
-    float:left;
-    min-width: 350px;
-    height: 350px;
-    margin: 0em;
-    padding-bottom:1.5em;
-    padding-top:1.5em;
-    top: 0.3px;
-    bottom: 0 auto;
-  }
-
-  .after-box {
-    clear: left;
-    padding-bottom: 50px;
-  }
-
-  div.footer {
-    background-color: #EEE;
-    border:0;
-    margin:0;
-    padding: 0.5em;
-    font-size: 100%;
-    font-weight: bold;
-    width:100%;
-  }
-
-
-  a {
-    color: #000080;
-  }
-
-  a:hover {
-    color: #800000;
-  }
-
-  h2 {
-    color: #000000;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    clear:left;
-  }
-
-  table {
-    margin-left: 3em;
-    text-align: center;
-    border-collapse:collapse;
-  }
-
-  th {
-    text-align: center;
-    background-color: #244C89;
-    color: #FFF;
-    padding: 0.4em;
-  }
-
-  td {
-    font-family: monospace;
-    text-align: right;
-    background-color: #EFEFEF;
-    color: #000;
-    padding: 0.4em;
-  }
-
-  img {
-    padding-top: 0;
-    margin-top: 0;
-    border-top: 0;
-  }
-
-  p {
-    padding-top: 0;
-    margin-top: 0;
-  }
-
+    {css}
     </style>
-  </head>
-"""
 
-    # Define the footer of the page
-    footer = """
-    <div class="footer"> Produced by <a href="{0}">{1}</a> (version {2})</div>
+  </head>
+
+  <body>
+
+    <!-- The banner -->
+    <div id="banner">
+      <div id="header_title"><img id="header_logo" alt="ToulligQC" src="{toulligqc_logo}"/>Report for {report_name}</div>
+      <div id="header_filename">
+        Sample ID: {sample_id} <br>
+        Run date: {run_date} <br>
+        Report date: {report_date} <br>
+      </div>
+    </div>
+
+    <!-- The summary -->
+    <div id="leftCol">
+      <!--h2>Summary</h2-->
+{summary_list}
+    </div>
+
+    <!-- Module results -->
+    <div id="content">
+{modules_report}
+    </div> <!-- End of Content -->
+
+    <!-- Footer -->
+    <div id="footer"> Produced by <a href="{app_url}">{app_name}</a> (version {app_version})</div>
   </body>
 
-</html>
-""".format(config_dictionary['app.url'], config_dictionary['app.name'], config_dictionary['app.version'])
-
-    # Compose the Banner of the page
-    banner = """
-    <div class="header">
-      <div id="header_title">ToulligQC report for {0} <br/></div>
-      <div id="header_filename">
-        Run id: {0} <br>
-        Report name: {1} <br>
-        Run date: {2} <br>
-        Report date : {3} <br>
-      </div>
-    </div>
-""".format(run_id, report_name, run_date, report_date)
-
-    # Compose the summary section of the page
-    summary = """
-    <div class='summary'>
-      <h2>Summary</h2>
-      <ol>
-"""
-    summary += "<li><a href=\"#Basic-statistics" "\"> Basic Statistics </a></li>\n"
-    for i, t in enumerate(graphs):
-        summary += "        <li><a href=\"#M" + str(i) + "\">" + t[0] + "</a></li>\n"
-    summary += """      </ol>
-    </div>
-"""
-    # Compose the main of the page
-    main_report = """
-    <div class = 'main'>
-      <div class=\"module\" id="Basic-statistics">
-        <div class = "info-box">
-            <h2 id=M{0}>Basic Statistics</h2>
-            <h2 id=M{0}></h2>
-            <h3 style="text-align:center">Run info</h3>
-            <table class=\" dataframe \" border="1">
-              <thead><tr><th>Measure</th><th>Value</th></tr></thead>
-              <tbody>
-              <tr><th>Run id</th><td> {0} </td></tr>
-              <tr><th>Sample</th><td> {1} </td></tr>
-              <tr><th>Report name </th><td> {2} </td></tr>
-              <tr><th>Run date</th><td> {3} </td></tr>
-              <tr><th>Run duration </th><td> {4} </td></tr>
-              <tr><th>Flowcell id </th><td> {5} </td></tr>
-              <tr><th>Flowcell version</th><td> {6} </td></tr>
-              <tr><th>Kit</th><td> {7} </td></tr>
-              <tr><th>Yield (Gbp)</th><td> {8} </td></tr>
-              <tr><th>Read count</th><td> {9} </td></tr>
-              <tr><th>N50 (bp)</th><td> {10} </td></tr>
-              </tbody>
-            </table>
-        </div> <!-- end .info-box -->
-      </div>
-    """.format(run_id,sample_id, report_name, run_date, run_time, flow_cell_id, flowcell_version, kit_version, run_yield, read_count, n50)
-
-    main_report += """
-      <div class=\"module\">
-        <div class = "info-box-left">
-            <h2 id=M{0}></h2>
-            <h2 id=M{0}></h2>
-            <h3 style="text-align:center">Software info</h3>
-            <table class=\" dataframe \" border="1">
-                <thead><tr><th>Measure</th><th>Value</th></tr></thead>
-                <tbody>
-                <tr><th>MinKNOW version </th><td> {0} </td></tr>
-                <tr><th>Basecaller name</th><td> {1} </td></tr>
-                <tr><th>Basecaller version</th><td> {2} </td></tr>
-                <tr><th>Basecaller analysis</th><td> {3} </td></tr>
-                <tr><th>ToulligQC version</th><td> {4} </td></tr>
-                <tr><th>Hostname</th><td> {5} </td></tr>
-                <tr><th>Device</th><td> {6} </td></tr>
-                <tr><th>Device ID</th><td> {7} </td></tr>
-                <tr><th>Model file</th><td> {8} </td></tr>
-                </tbody>
-            </table>
-        </div> <!-- end .info-box-left -->
-        <div class=\"after-box\"><p></p></div>
-      </div>
-    """.format(minknow_version,basecaller_name, basecaller_version, basecaller_analysis, config_dictionary['app.version'],hostname,device_type,device_id,model_file)
-
-    for i, t in enumerate(graphs):
-      if len(t)==5:
-        main_report += "      <div class=\"module\" id=M{0}></div>".format(i)
-        main_report += t[4]
-        if t[2] is None:
-          main_report += "      <div class=\"after-box\"></div>\n"
-        else:
-          main_report += "      <div class=\"box-left\">\n {} </div>\n".format(t[2])
-
-      else:
-        main_report += "      <div class=\"module\" id=M{0}><h2> {1} <a title=\"<b>{4}</b>\">&#x1F263;</a></h2></div>" \
-            .format(i, t[0], _embedded_image(t[1]), t[2], t[3])
-
-        if t[2] is None:
-            main_report += "      <div class=\"module\"><p><img src=\"{2}\" " \
-                           "alt=\"{1} image\"></p></div>\n".format(i, t[0], _embedded_image(t[1]))
-        else:
-            main_report += "      <div class=\"box\"><img src=\"{2}\">" \
-                           "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
-
-            main_report += "      <div class=\"box-left\">\n {3}" \
-                           "</div>\n".format(i, t[0], _embedded_image(t[1]), t[2])
-
-            main_report += "      <div class=\"after-box\"><p></p></div>\n"
-    main_report += "    </div>\n"
-
-    # Add all the element of the page
-    report = title + header + banner + summary + main_report + footer
+</html>""".format(
+        report_name=report_name,
+        toulligqc_logo=_embedded_image("resources/toulligqc.png", True),
+        plotlyjs=plotly_min_js,
+        css=css,
+        sample_id=sample_id,
+        run_date=run_date,
+        report_date=report_date,
+        summary_list=_summary(graphs),
+        modules_report=_modules_report(
+            graphs,
+            result_dict,
+            sample_id,
+            report_name,
+            run_date,
+            config_dictionary["app.version"],
+            remove_image_files,
+        ),
+        app_url=config_dictionary["app.url"],
+        app_name=config_dictionary["app.name"],
+        app_version=config_dictionary["app.version"],
+    )
 
     # Write the HTML page
     f.write(report)
     f.close()
 
 
-def _embedded_image(image_path):
+def _summary(graphs):
+    """
+    Compose the summary section of the page
+    :param graphs:
+    :return: a string with HTML code for the module list
+    """
+    result = '        <ul class="menu-vertical">\n'
+    result += (
+        '          <li class="mv-item"><a href="#run_statistics'
+        '">Run statistics</a></li>\n'
+    )
+    result += (
+        '          <li class="mv-item"><a href="#software_info'
+        '">Device and software</a></li>\n'
+    )
+    for i, t in enumerate(graphs):
+        result += (
+            '          <li class="mv-item"><a href="#M'
+            + str(i)
+            + '">'
+            + t[0]
+            + "</a></li>\n"
+        )
+    result += "        </ul>\n"
+    return result
+
+
+def _modules_report(
+    graphs,
+    result_dict,
+    run_id,
+    report_name,
+    run_date,
+    toulligqc_version,
+    remove_image_files,
+):
+    result = _basic_statistics_module_report(
+        result_dict, run_id, report_name, run_date, toulligqc_version
+    )
+    result += _other_module_reports(graphs, remove_image_files)
+    return result
+
+
+def _basic_statistics_module_report(
+    result_dict, sample_id, report_name, run_date, toulligqc_version
+):
+    minknow_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.minknow.version", "Unknown"
+    )
+
+    try:
+        seconds = result_dict["basecaller.sequencing.summary.1d.extractor.run.time"]
+        run_time = "%dh%02dm%02ds" % (
+            seconds // 3600,
+            (seconds % 3600) // 60,
+            seconds % 60,
+        )
+    except KeyError:
+        run_time = "Unknown"
+
+    read_count = result_dict["basecaller.sequencing.summary.1d.extractor.read.count"]
+    run_yield = _format_int_with_prefix(
+        result_dict["basecaller.sequencing.summary.1d.extractor.yield"]
+    )
+    n50 = result_dict["basecaller.sequencing.summary.1d.extractor.n50"]
+    l50 = result_dict["basecaller.sequencing.summary.1d.extractor.l50"]
+
+    # from telemetry file
+    flow_cell_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.flowcell.id", "Unknown"
+    )
+    experiment_group = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.protocol.group.id", "Unknown"
+    )
+    run_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.run.id", "Unknown"
+    )
+    flowcell_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.flowcell.version", "Unknown"
+    )
+    kit_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.kit.version", "Unknown"
+    )
+    sequencing_kit_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.sequencing.kit.version", "Unknown"
+    )
+    barcode_kits_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.barcode.kits.version", "Unknown"
+    )
+    selected_speed_bases_per_second = _get_result_value(
+        result_dict,
+        "sequencing.telemetry.extractor.selected.speed.bases.per.second",
+        "Unknown",
+    )
+    sample_frequency = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.sample.frequency", "Unknown"
+    )
+    basecaller_name = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.software.name", "Unknown"
+    )
+    basecaller_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.software.version", "Unknown"
+    )
+    basecaller_analysis = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.software.analysis", "Unknown"
+    )
+    hostname = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.hostname", "Unknown"
+    )
+    device_id = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.device.id", "Unknown"
+    )
+    device_type = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.device.type", "Unknown"
+    )
+    model_file = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.model.file", "Unknown"
+    )
+    min_qscore_threshold = _get_result_value(
+        result_dict,
+        "sequencing.telemetry.extractor.pass.threshold.qscore",
+        value_type="float",
+        default_value="Unknown",
+    )
+
+    distribution_version = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.distribution.version", "Unknown"
+    )
+    operating_system = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.operating.system", "Unknown"
+    )
+    flow_cell_product_code = _get_result_value(
+        result_dict, "sequencing.telemetry.extractor.flow.cell.product.code", "Unknown"
+    )
+    basecalling_date = _get_result_date_value(
+        result_dict, "sequencing.telemetry.extractor.basecalling.date", "Unknown"
+    )
+
+    # Compose the main of the page
+    result = """
+      <div class="module" id="run_statistics">
+            <h2>Run statistics {help_link}</h2>
+            <table class="dataframe" border="">
+              <thead><tr><th>Measure</th><th>Value</th></tr></thead>
+              <tbody>
+              <tr><th>Report name </th><td>{report_name}</td></tr>
+              <tr><th>Experiment group</th><td>{experiment_group}</td></tr>
+              <tr><th>Sample ID</th><td>{sample_id}</td></tr>
+              <tr><th>Run ID</th><td>{run_id}</td></tr>
+              <tr><th>Run date</th><td>{run_date}</td></tr>
+              <tr><th>Run duration </th><td>{run_time}</td></tr>
+              <tr><th>Flowcell ID</th><td>{flow_cell_id}</td></tr>
+              <tr><th>Flowcell product code</th><td>{flow_cell_product_code}</td></tr>
+              <tr><th>Flowcell version</th><td>{flowcell_version}</td></tr>
+              <tr><th>Kit</th><td>{kit_version}</td></tr>
+              <tr><th>Sequencing kit</th><td>{sequencing_kit_version}</td></tr>
+              <tr><th>Barcode kits</th><td>{barcode_kits_version}</td></tr>
+              <tr><th>Selected speed (bps)</th><td>{selected_speed_bases_per_second}</td></tr>
+              <tr><th>Sample frequency (Hz)</th><td>{sample_frequency}</td></tr>
+              <tr><th>Yield</th><td>{run_yield}</td></tr>
+              <tr><th>Read count</th><td>{read_count}</td></tr>
+              <tr><th>N50 (bp)</th><td>{n50}</td></tr>
+              <tr><th>L50</th><td>{l50}</td></tr>
+              </tbody>
+            </table>
+      </div> <!-- End of "Run-statistics" module -->
+    """.format(
+        help_link=help_html_link("Run Statistics"),
+        run_id=run_id,
+        experiment_group=experiment_group,
+        sample_id=sample_id,
+        report_name=report_name,
+        run_date=run_date,
+        run_time=run_time,
+        flow_cell_id=flow_cell_id,
+        flow_cell_product_code=flow_cell_product_code,
+        flowcell_version=flowcell_version,
+        kit_version=kit_version,
+        sequencing_kit_version=sequencing_kit_version,
+        barcode_kits_version=barcode_kits_version,
+        selected_speed_bases_per_second=selected_speed_bases_per_second,
+        sample_frequency=sample_frequency,
+        run_yield=run_yield,
+        read_count=_format_int(read_count),
+        n50=_format_int(int(n50)),
+        l50=_format_int(int(l50)),
+    )
+
+    result += """
+      <div class="module" id="software_info">
+            <h2>Device and software {help_link}</h2>
+            <table class="dataframe" border="">
+                <thead><tr><th>Measure</th><th>Value</th></tr></thead>
+                <tbody>
+                <tr><th>Device type</th><td>{device_type}</td></tr>
+                <tr><th>Device ID</th><td>{device_id}</td></tr>
+                <tr><th>Device hostname</th><td>{hostname}</td></tr>
+                <tr><th>Device OS</th><td>{operating_system}</td></tr>
+                <tr><th>Distribution version</th><td>{distribution_version}</td></tr>
+                <tr><th>MinKNOW version</th><td>{minknow_version}</td></tr>
+                <tr><th>Basecaller name</th><td>{basecaller_name} </td></tr>
+                <tr><th>Basecaller version</th><td>{basecaller_version}</td></tr>
+                <tr><th>Basecaller analysis</th><td>{basecaller_analysis}</td></tr>
+                <tr><th>Basecalling date</th><td>{basecalling_date}</td></tr>
+                <tr><th>Model file</th><td>{model_file}</td></tr>
+                <tr><th>Min qscore threshold</th><td>{min_qscore_threshold}</td></tr>
+                <tr><th>ToulligQC version</th><td>{toulligqc_version}</td></tr>
+                </tbody>
+            </table>
+      </div> <!-- End of "Software-info" module -->
+    """.format(
+        help_link=help_html_link("Software info"),
+        minknow_version=minknow_version,
+        basecaller_name=basecaller_name,
+        basecaller_version=basecaller_version,
+        basecaller_analysis=basecaller_analysis,
+        basecalling_date=basecalling_date,
+        toulligqc_version=toulligqc_version,
+        hostname=hostname,
+        operating_system=operating_system,
+        distribution_version=distribution_version,
+        device_type=device_type,
+        device_id=device_id,
+        model_file=model_file,
+        min_qscore_threshold=min_qscore_threshold,
+    )
+
+    return result
+
+
+def _other_module_reports(graphs, remove_image_files):
+    result = ""
+
+    for i, t in enumerate(graphs):
+        if len(t) == 4:
+            # Plotly Graph
+
+            name, path, table, html = t
+
+            # Plotly graph with table
+            if table is not None:
+                result += """
+      <div class="module" id=M{i}>
+        {html}
+        {table}
+      </div>
+""".format(i=i, html=html, table=table)
+
+            # Plotly graph without table
+            else:
+                result += """
+      <div class="module" id=M{i}>
+        {html}
+      </div>
+""".format(i=i, html=html)
+
+        elif len(t) == 3:
+            # image
+            name, path, table = t
+
+            # Image with table
+            if table is not None:
+                result += """
+            <div class="module" id=M{i}>
+              <h2>{name} {help_link}</h2>
+              <div class="box"><img src="{image}"/></div>
+              {table}
+            </div>
+            """.format(
+                    i=i,
+                    name=name,
+                    help_link=help_html_link(name),
+                    image=_embedded_image(path, remove=remove_image_files),
+                    table=table,
+                )
+
+            # Image without table
+            else:
+                result += """
+            <div class="module" id=M{i}>
+              <h2>{name} {help_link}</h2>
+              <div class="box"><img src="{image}"/></div>
+            </div>
+            """.format(
+                    i=i,
+                    name=name,
+                    help_link=help_html_link(name),
+                    image=_embedded_image(path, remove=remove_image_files),
+                )
+
+    return result
+
+
+def _embedded_image(image_path, resource=False, remove=False):
     """
     Embedded an image
     :param image_path: path of the image
     :return: a string with the image in base64
     """
-    with open(image_path, "rb") as image_file:
-        result = "data:image/png;base64," + base64.b64encode(image_file.read()).decode('ascii')
+
+    if resource:
+        data = pkgutil.get_data(__name__, image_path)
+    else:
+        with open(image_path, "rb") as image_file:
+            data = image_file.read()
+
+    result = "data:image/png;base64," + base64.b64encode(data).decode("ascii")
+
+    if remove:
+        os.unlink(image_path)
 
     return result
 
 
-def _get_result_value(result_dict, key , default_value = ""):
+def _get_result_value(result_dict, key, default_value="", value_type="str"):
     """
     Get the value of the result dictionary or a default value if the key does not exists.
     :param result_dict: result dictionary
@@ -470,6 +473,50 @@ def _get_result_value(result_dict, key , default_value = ""):
     :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
     """
     if key in result_dict:
-        return result_dict[key]
-    else:
-        return default_value
+        result = result_dict[key]
+        if len(result) > 0:
+            if value_type == "float":
+                result = "{:.2f}".format(float(result))
+
+            return result
+
+    return default_value
+
+
+def _get_result_date_value(result_dict, key, default_value=""):
+    """
+    Get a date value of the result dictionary and formot it. A default value is returned if the key does not exists.
+    :param result_dict: result dictionary
+    :param key: the key to use
+    :param default_value: the default value
+    :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
+    """
+
+    if key in result_dict:
+        result = result_dict[key]
+        if len(result) > 0:
+            return _iso8601_to_formatted_date(result)
+
+    return default_value
+
+
+def _iso8601_to_formatted_date(date_string):
+    """
+    Format an ISO 8601 date.
+    :param date_string: date to format
+    :return: a formatted date
+    """
+    try:
+        d = datetime.datetime.fromisoformat(date_string.replace("Z", "+00:00"))
+    except ValueError:
+        return date_string
+
+    return d.strftime("%a %b %d %H:%M:%S %Z %Y")
+
+
+def _format_int_with_prefix(i):
+    for x in ((12, "T"), (9, "G"), (6, "M"), (3, "K")):
+        if i / 10 ** x[0] > 1:
+            return "{:.2f}{}".format(float(i) / float(10 ** x[0]), x[1])
+
+    return i

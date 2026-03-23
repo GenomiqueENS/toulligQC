@@ -20,47 +20,41 @@
 
 # Class for generating Plotly and MPL graphs and statistics tables in HTML format, they use the result_dict or dataframe_dict dictionnaries.
 
-import pandas as pd
-import seaborn as sns
+import copy
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib import gridspec
-from matplotlib.ticker import FormatStrFormatter
-from matplotlib.pyplot import table
-
-from plotly.subplots import make_subplots
-from scipy.interpolate import interp1d
-from scipy.stats import norm
-from sklearn.utils import resample
+import pandas as pd
 import plotly.graph_objs as go
-import plotly.offline as py
-import plotly.colors as colors
-from collections import defaultdict
-from scipy.ndimage.filters import gaussian_filter1d
 
-figure_image_width = 1024
-figure_image_height = 576
+from toulligqc.plotly_graph_common import _barcode_boxplot_graph
+from toulligqc.plotly_graph_common import _create_and_save_div
+from toulligqc.plotly_graph_common import _dataFrame_to_html
+from toulligqc.plotly_graph_common import _format_float
+from toulligqc.plotly_graph_common import _format_int
+from toulligqc.plotly_graph_common import _legend
+from toulligqc.plotly_graph_common import _over_time_graph
+from toulligqc.plotly_graph_common import _phred_score_density
+from toulligqc.plotly_graph_common import _pie_chart_graph
+from toulligqc.plotly_graph_common import _quality_multiboxplot
+from toulligqc.plotly_graph_common import _read_length_distribution
+from toulligqc.plotly_graph_common import _twod_density_char
+from toulligqc.plotly_graph_common import _smooth_data
+from toulligqc.plotly_graph_common import _title
+from toulligqc.plotly_graph_common import _transparent_colors
+from toulligqc.plotly_graph_common import _xaxis
+from toulligqc.plotly_graph_common import _yaxis
+from toulligqc.plotly_graph_common import default_graph_layout
+from toulligqc.plotly_graph_common import interpolation_points
+from toulligqc.plotly_graph_common import line_width
+from toulligqc.plotly_graph_common import plotly_background_color
+from toulligqc.plotly_graph_common import toulligqc_colors
 
-def _make_desribe_dataframe(value):
-    """
-    Creation of a statistics table printed with the graph in report.html
-    :param value: information measured (series)
-    """
-
-    desc = value.describe()
-    desc.loc['count'] = desc.loc['count'].astype(int).astype(str)
-    desc.iloc[1:] = desc.iloc[1:].applymap(lambda x: '%.2f' % x)
-    desc.rename({'50%': 'median'}, axis='index', inplace=True)
-
-    return desc
 
 #
 #  1D plots
 #
 
 
-def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_directory, desc):
+def read_count_histogram(result_dict, result_directory):
     """
     Plots the histogram of count of the different types of reads:
     1D read return by Guppy
@@ -68,1355 +62,951 @@ def read_count_histogram(result_dict, dataframe_dict, main, my_dpi, result_direc
     1D fail read return by Guppy (Qscore < 7)
     """
 
-    output_file = result_directory + '/' + '_'.join(main.split())
+    graph_name = "Read count histogram"
 
     # Histogram with barcoded read counts
-    if 'read.pass.barcoded.count' in dataframe_dict:
-
+    if (
+        "basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"
+        in result_dict
+    ):
         data = {
-            'Read Count': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-            'Read Pass Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-            'Read Pass Barcoded Count': dataframe_dict["read.pass.barcoded.count"],
-            'Read Fail Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
-            'Read Fail Barcoded Count': dataframe_dict["read.fail.barcoded.count"]
+            "All reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.count"
+            ],
+            "Pass reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.pass.count"
+            ],
+            "Fail reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.fail.count"
+            ],
+            "Pass barcoded reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"
+            ],
+            "Fail barcoded reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"
+            ],
         }
-        colors = ["#54A8FC", "salmon", '#ffa931', "#50c878", "SlateBlue"]
 
-        trace = go.Bar(x=[*data], y=list(data.values()),
-                                hovertext=["<b>Total number of reads</b>",
-                                           "<b>Reads of qscore > 7</b>",
-                                           "<b>Barcoded reads with qscore > 7</b>",
-                                           "<b>Reads of qscore < 7</b>",
-                                           "<b>Barcoded reads with qscore < 7</b>"],
-                                #hoverinfo="x",
-                                name="Barcoded graph",
-                                marker_color=colors,
-                                marker_line_color="black",
-                                marker_line_width=1.5, opacity=0.9)
+        colors = [
+            toulligqc_colors["all"],
+            toulligqc_colors["pass"],
+            toulligqc_colors["fail"],
+            toulligqc_colors["barcode_pass"],
+            toulligqc_colors["barcode_fail"],
+        ]
+
+        trace = go.Bar(
+            x=[*data],
+            y=list(data.values()),
+            hovertemplate="<b>%{x}</b><br>%{y:,}<extra></extra>",
+            marker_color=_transparent_colors(colors, plotly_background_color, 0.5),
+            marker_line_color=colors,
+            marker_line_width=line_width,
+        )
 
         # Array of data for HTML table with barcode reads
         array = np.array(
-            #count
-            [[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-              dataframe_dict["read.pass.barcoded.count"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"],
-              dataframe_dict["read.fail.barcoded.count"]],
-             #frequencies
-             [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"],
-              result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"]]])
+            # count
+            [
+                [
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.count"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.pass.count"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.fail.count"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.count"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.count"
+                    ],
+                ],
+                # frequencies
+                [
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.count.frequency"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.pass.frequency"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.fail.frequency"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.pass.barcoded.frequency"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.fail.barcoded.frequency"
+                    ],
+                ],
+            ]
+        )
 
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Read count", "1D pass", "1D pass barcoded", "1D fail", "1D fail barcoded"])
+        dataframe = pd.DataFrame(
+            array,
+            index=["count", "percent"],
+            columns=[
+                "All reads",
+                "Pass reads",
+                "Fail reads",
+                "Pass barcoded reads",
+                "Fail barcoded reads",
+            ],
+        )
 
     # Histogram without barcodes
     else:
-
         data = {
-            'Read Count': result_dict['basecaller.sequencing.summary.1d.extractor.read.count'],
-            'Read Pass Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-            'Read Fail Count': result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]
+            "All reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.count"
+            ],
+            "Pass reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.pass.count"
+            ],
+            "Fail reads": result_dict[
+                "basecaller.sequencing.summary.1d.extractor.read.fail.count"
+            ],
         }
 
-        colors = ["#54A8FC", "salmon", "#50c878"]
+        colors = [
+            toulligqc_colors["all"],
+            toulligqc_colors["pass"],
+            toulligqc_colors["fail"],
+        ]
 
-        trace = go.Bar(x=[*data], y=list(data.values()),
-                       hovertext=["<b>Total number of reads</b>",
-                                  "<b>Reads of qscore > 7</b>",
-                                  "<b>Barcoded reads with qscore > 7</b>",
-                                  "<b>Reads of qscore < 7</b>",
-                                  "<b>Barcoded reads with qscore < 7</b>"],
-                       name="Barcoded graph",
-                       marker_color=colors,
-                       marker_line_color="black",
-                       marker_line_width=1.5, opacity=0.9)
+        trace = go.Bar(
+            x=[*data],
+            y=list(data.values()),
+            hovertemplate="<b>%{x}</b><br>%{y:,}<extra></extra>",
+            marker_color=_transparent_colors(colors, plotly_background_color, 0.5),
+            marker_line_color=colors,
+            marker_line_width=line_width,
+        )
 
         # Array of data for HTML table without barcode reads
-        array = np.array([[result_dict["basecaller.sequencing.summary.1d.extractor.read.count"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.count"],
-                           result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.count"]],
-                          # frequencies
-                          [result_dict["basecaller.sequencing.summary.1d.extractor.read.count.frequency"],
-                          result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.frequency"],
-                          result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.frequency"]]])
+        array = np.array(
+            [
+                [
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.count"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.pass.count"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.fail.count"
+                    ],
+                ],
+                # frequencies
+                [
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.count.frequency"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.pass.frequency"
+                    ],
+                    result_dict[
+                        "basecaller.sequencing.summary.1d.extractor.read.fail.frequency"
+                    ],
+                ],
+            ]
+        )
 
         # Create dataframe with array data
-        dataframe = pd.DataFrame(array, index=['count', 'frequency'],
-                                 columns=["Read count", "1D pass", "1D fail"])
+        dataframe = pd.DataFrame(
+            array,
+            index=["count", "percent"],
+            columns=["All reads", "Pass reads", "Fail reads"],
+        )
 
     layout = go.Layout(
+        **_title(graph_name),
+        **default_graph_layout,
         hovermode="x",
-        title={
-            'text': "<b>Read count histogram</b>",
-            'y': 0.95,
-            'x': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
-            'font': dict(
-                size=20,
-                color="black")
-        },
-        xaxis=dict(title="<b>Read type</b>",
-                   linecolor="black",
-                   titlefont=dict(
-                       size=14,
-                       color="black"
-                   ),
-                   categoryorder="total descending"
-                   ),
-        yaxis=dict(title="<b>Counts</b>",
-                   linecolor="black",
-                   titlefont=dict(
-                       size=14,
-                       color="black"
-                   )),
-        width=figure_image_width,
-        height=figure_image_height,
-        plot_bgcolor="white",
-        paper_bgcolor="white"
+        **_xaxis("Read type", dict(fixedrange=True, categoryorder="total descending")),
+        **_yaxis("Read count"),
     )
 
     fig = go.Figure(data=trace, layout=layout)
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
     # HTML table
-    dataframe.iloc[0] = dataframe.iloc[0].astype(int).astype(str)
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
-    table_html = pd.DataFrame.to_html(dataframe)
+    dataframe = dataframe.astype(object)
+    dataframe.iloc[0] = [_format_int(int(v)) for v in dataframe.iloc[0]]
+    dataframe.iloc[1:] = dataframe.iloc[1:].map(_format_float)
+    table_html = _dataFrame_to_html(dataframe)
 
-    return main, output_file, table_html, desc, div
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
 
 
-def read_length_scatterplot(result_dict, sequence_length_df, main, my_dpi, result_directory, desc):
+def read_length_scatterplot(dataframe_dict, result_directory):
+    graph_name = "Distribution of read lengths"
 
-    output_file = result_directory + '/' + '_'.join(main.split())
-
-    all_read = sequence_length_df.loc[sequence_length_df >= 10].dropna().values
-    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.length'] >= 10]
-    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'].loc[result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.length'] >= 10]
-
-    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
-
-    # Find 50 percentile for zoomed range on x axis
-    max_x_range = max(np.percentile(count_x1, 50), np.percentile(count_x2, 50), np.percentile(count_x3, 50))
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=count_y1,
-                             name='All reads',
-                             hoverinfo='x+y',
-                             fill='tozeroy',
-                             marker_color='#fca311'  # yellow
-                             ))
-    fig.add_trace(go.Scatter(x=count_x2,
-                               y=count_y2,
-                               name='Pass reads',
-                               hoverinfo='x+y',
-                               fill='tozeroy',
-                               marker_color='#51a96d'  # green
-                               ))
-    fig.add_trace(go.Scatter(x=count_x3,
-                               y=count_y3,
-                               name='Fail reads',
-                               hoverinfo='x+y',
-                               fill='tozeroy',
-                               marker_color='#d90429'  # red
-                               ))
-
-    fig.update_layout(
-        title={
-            'text': "<b>Distribution of read lengths</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>Read length (bp)</b>",
-            titlefont_size=14,
-            range=[0, max_x_range]
-        ),
-        yaxis=dict(
-            title='<b>Density</b>',
-            titlefont_size=14,
-            tickfont_size=14
-        ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        hovermode='x',
-        height=figure_image_height, width=figure_image_width
+    return _read_length_distribution(
+        graph_name=graph_name,
+        all_reads=dataframe_dict["all.reads.sequence.length"],
+        pass_reads=dataframe_dict["pass.reads.sequence.length"],
+        fail_reads=dataframe_dict["fail.reads.sequence.length"],
+        all_color=toulligqc_colors["all"],
+        pass_color=toulligqc_colors["pass"],
+        fail_color=toulligqc_colors["fail"],
+        xaxis_title="Read length (bp)",
+        result_directory=result_directory,
     )
 
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
-    table_html = None
-
-    return main, output_file, table_html, desc, div
-
-
-def yield_plot(result_dict, main, my_dpi, result_directory, desc):
+def yield_plot(df, result_directory, oneDsquare=False):
     """
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
 
-    all_read = result_dict['basecaller.sequencing.summary.1d.extractor.start.time.sorted']
-    read_pass = result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.sorted']
-    read_fail = result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.sorted']
+    graph_name = "Yield plot through time"
 
-    count_x1, count_y1 = _smooth_data(10000, 5.0, all_read)
-    count_x2, count_y2 = _smooth_data(10000, 5.0, read_pass)
-    count_x3, count_y3 = _smooth_data(10000, 5.0, read_fail)
+    if oneDsquare:
+        start_time_column = "start_time1"
+    else:
+        start_time_column = "start_time"
+
+    new_df = df.filter(
+        ["sequence_length", start_time_column, "passes_filtering"]
+    ).sort_values(by=start_time_column)
+    new_df["start_time"] = new_df[start_time_column] / 3600
+
+    all_reads_length_df = new_df.filter(["sequence_length", start_time_column])
+    pass_reads_length_df = new_df[new_df["passes_filtering"]].filter(
+        ["sequence_length", start_time_column]
+    )
+    fail_reads_length_df = new_df[~new_df["passes_filtering"]].filter(
+        ["sequence_length", start_time_column]
+    )
+
+    data = [
+        (all_reads_length_df, "All reads", toulligqc_colors["all"]),
+        (pass_reads_length_df, "Pass reads", toulligqc_colors["pass"]),
+        (fail_reads_length_df, "Fail reads", toulligqc_colors["fail"]),
+    ]
+
+    npoints, sigma = interpolation_points(new_df["start_time"], "yield_plot")
+    coef = max(all_reads_length_df[start_time_column]) / npoints
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=count_y1,
-                               name='All reads',
-                               marker_color='#fca311',
-                               fill='tozeroy'
-                               ))
+    # Figures for cumulative base yield plot
+    first = True
+    for reads in [True, False]:
+        smooth_data_dict = {}
+        for d in data:
+            if d[1] not in smooth_data_dict:
+                if reads:
+                    count_x, count_y, cum_count_y = _smooth_data(
+                        npoints=npoints, sigma=sigma, data=d[0][start_time_column]
+                    )
+                else:
+                    count_x, count_y, cum_count_y = _smooth_data(
+                        npoints=npoints,
+                        sigma=sigma,
+                        data=d[0][start_time_column],
+                        weights=d[0]["sequence_length"],
+                    )
 
-    fig.add_trace(go.Scatter(x=count_x2,
-                             y=count_y2,
-                               name='Pass reads',
-                               marker_color='#51a96d',
-                               fill='tozeroy'
-                               ))
+                smooth_data_dict[d[1]] = (count_x, count_y, cum_count_y)
 
-    fig.add_trace(go.Scatter(x=count_x3,
-                             y=count_y3,
-                               name='Fail reads',
-                               marker_color='#d90429',
-                               fill='tozeroy'
-                               ))
-    # Figures for cumulative yield plot
-    fig.add_trace(go.Scatter(x=count_x1,
-                             y=np.cumsum(count_y1),
-                             name='All reads',
-                             hoverinfo='x+y',
-                             fill='tozeroy',
-                             marker_color='#fca311',
-                             visible=False
-                             ))
-    fig.add_trace(go.Scatter(x=count_x2,
-                               y=np.cumsum(count_y2),
-                               name='Pass reads',
-                               hoverinfo='x+y',
-                               fill='tozeroy',
-                               marker_color='#51a96d',
-                               visible=False
-                               ))
-    fig.add_trace(go.Scatter(x=count_x3,
-                               y=np.cumsum(count_y3),
-                               name='Fail reads',
-                               hoverinfo='x+y',
-                               fill='tozeroy',
-                               marker_color='#d90429',
-                               visible=False
-                               ))
+            count_x, count_y, cum_count_y = smooth_data_dict[d[1]]
+
+            fig.add_trace(
+                go.Scatter(
+                    x=count_x,
+                    y=cum_count_y,
+                    name=d[1],
+                    fill="tozeroy",
+                    marker_color=d[2],
+                    visible=first,
+                )
+            )
+
+        count_x, count_y, cum_count_y = smooth_data_dict[data[0][1]]
+        for p in [50, 75, 90, 99]:
+            y = cum_count_y
+            ymax = max(y)
+            index = (np.abs(y - ymax * p / 100)).argmin()
+            x0 = count_x[index]
+            fig.add_trace(
+                go.Scatter(
+                    mode="lines+text",
+                    name=d[1],
+                    x=[x0, x0],
+                    y=[0, ymax],
+                    line=dict(color="gray", width=1, dash="dot"),
+                    text=["", str(p) + "% all reads"],
+                    textposition="top center",
+                    hoverinfo="skip",
+                    showlegend=False,
+                    visible=first,
+                )
+            )
+        first = False
+
+        for d in data:
+            count_x, count_y, cum_count_y = smooth_data_dict[d[1]]
+
+            fig.add_trace(
+                go.Scatter(
+                    x=count_x,
+                    y=count_y / coef,
+                    name=d[1],
+                    marker_color=d[2],
+                    fill="tozeroy",
+                    visible=False,
+                )
+            )
 
     fig.update_layout(
-        title={
-            'text': "<b>Yield plot through experiment time</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>Time (hours)</b>",
-            titlefont_size=14
-        ),
-        yaxis=dict(
-            title='<b>Density</b>',
-            titlefont_size=14,
-            tickfont_size=14,
-        ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        hovermode='x',
-        height=figure_image_height, width=figure_image_width
+        **_title(graph_name),
+        **default_graph_layout,
+        **_legend(args=dict(y=0.75)),
+        hovermode="x",
+        **_xaxis("Time (hours)", dict(rangemode="tozero")),
+        **_yaxis("Read count", dict(fixedrange=False, rangemode="tozero")),
     )
 
     # Add buttons
+
     fig.update_layout(
         updatemenus=[
             dict(
-                type = "buttons",
-                direction = "left",
-                buttons=list([
-                    dict(
-                        args=[{'visible': [True, True, True, False, False, False]}],
-                        label="Yield plot",
-                        method="update"
-                    ),
-                    dict(
-                        args=[{'visible': [False, False, False, True, True, True]}],
-                        label="Cumulative yield plot",
-                        method="update"
-                    )
-                ]),
-                pad={"r": 20, "t": 20, "l":20, "b":20},
+                type="buttons",
+                direction="down",
+                buttons=list(
+                    [
+                        dict(
+                            args=[
+                                {
+                                    "visible": [
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                    ]
+                                },
+                                {
+                                    "yaxis": {
+                                        "title": "<b>Read count</b>",
+                                        "rangemode": "tozero",
+                                    }
+                                },
+                            ],
+                            label="Cumulative reads",
+                            method="update",
+                        ),
+                        dict(
+                            args=[
+                                {
+                                    "visible": [
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        True,
+                                        True,
+                                        True,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                    ]
+                                },
+                                {
+                                    "yaxis": {
+                                        "title": "<b>Read count per hour</b>",
+                                        "rangemode": "tozero",
+                                    }
+                                },
+                            ],
+                            label="Yield reads",
+                            method="update",
+                        ),
+                        dict(
+                            args=[
+                                {
+                                    "visible": [
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        False,
+                                        False,
+                                        False,
+                                    ]
+                                },
+                                {
+                                    "yaxis": {
+                                        "title": "<b>Base count</b>",
+                                        "rangemode": "tozero",
+                                    }
+                                },
+                            ],
+                            label="Cumulative bases",
+                            method="update",
+                        ),
+                        dict(
+                            args=[
+                                {
+                                    "visible": [
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        True,
+                                        True,
+                                        True,
+                                    ]
+                                },
+                                {
+                                    "yaxis": {
+                                        "title": "<b>Base count per hour</b>",
+                                        "rangemode": "tozero",
+                                    }
+                                },
+                            ],
+                            label="Yield bases",
+                            method="update",
+                        ),
+                    ]
+                ),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
                 showactive=True,
                 x=1.0,
                 xanchor="left",
                 y=1.25,
-                yanchor="top"
+                yanchor="top",
             ),
         ]
     )
-
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
     table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
 
-    return main, output_file, table_html, desc, div
 
-
-def read_quality_multiboxplot(result_dict, main, my_dpi, result_directory, desc):
+def read_quality_multiboxplot(dataframe_dict, result_directory):
     """
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
+
+    graph_name = "PHRED score distribution"
 
     df = pd.DataFrame(
-        {"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
-         "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-         "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']
-         })
+        {
+            "1D": dataframe_dict["all.reads.mean.qscore"],
+            "1D pass": dataframe_dict["pass.reads.mean.qscore"],
+            "1D fail": dataframe_dict["fail.reads.mean.qscore"],
+        }
+    )
 
-    # If more than 10.000 reads, interpolate data
-    if len(df["1D"]) > 10000:
-        dataframe = pd.DataFrame({
-        "1D" : _interpolate(df["1D"], 1000),
-        "1D pass" : _interpolate(df["1D pass"], 1000),
-        "1D fail" : _interpolate(df["1D fail"], 1000)
-    })
+    return _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False)
+
+
+def allphred_score_frequency(dataframe_dict, result_directory):
+    """
+    Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
+    """
+
+    graph_name = "PHRED score density distribution"
+
+    dataframe = pd.DataFrame(
+        {
+            "1D": dataframe_dict["all.reads.mean.qscore"],
+            "1D pass": dataframe_dict["pass.reads.mean.qscore"],
+            "1D fail": dataframe_dict["fail.reads.mean.qscore"],
+        }
+    )
+
+    return _phred_score_density(
+        graph_name=graph_name,
+        dataframe=dataframe,
+        prefix="1D",
+        all_color=toulligqc_colors["all"],
+        pass_color=toulligqc_colors["pass"],
+        fail_color=toulligqc_colors["fail"],
+        result_directory=result_directory,
+    )
+
+
+def twod_density(dataframe_dict, result_directory):
+    """
+    Plot the scatter plot representing the relation between the phred score and the sequence length in log
+    """
+
+    graph_name = "Correlation between read length and PHRED score"
+
+    return _twod_density_char(graph_name, dataframe_dict, result_directory)
+
+
+def _compute_channel_map(df):
+
+    max_channel = df["channel"].max()
+    if max_channel > 512:
+        # PromethION geometry
+        # Array is simple blocks of 25*10 channels
+        channel_array = np.hstack(
+            [np.arange(x, x + 250).reshape(25, 10) for x in range(1, 2752, 250)]
+        )
+        ca = pd.DataFrame(channel_array).reset_index().melt("index")
+        ca.columns = ["row", "column", "channel"]
+
+    elif max_channel <= 130:
+        # Flongle geometry
+        # channels are in a simple grid except two upper- and
+        # lower-most channels on right-hand column are missing
+        channel_array = np.concatenate(
+            [
+                np.arange(1, 13),
+                np.array([0]),
+                np.arange(13, 25),
+                np.array([0]),
+                np.arange(25, 115),
+                np.array([0]),
+                np.arange(115, 127),
+                np.array([0]),
+            ]
+        ).reshape(10, 13)
+        ca = pd.DataFrame(channel_array).reset_index().melt("index")
+        ca.columns = ["row", "column", "channel"]
+
     else:
-        dataframe = df
-    names = {"1D": "All reads",
-             "1D pass": "Read pass",
-             "1D fail": "Read fail"}
+        # MinION geometry
+        # The array is composed of blocks of 64 channels, the low
+        # halve is to the right (high to left), working inwards
+        # in a 4 x 8 block
+        def channel_block(i):
+            m = np.zeros((4, 16), dtype=int)
+            m[4::-1, :7:-1] = np.arange(i, i + 32).reshape(4, 8)
+            m[4::-1, 0:8] = np.arange(i + 32, i + 64).reshape(4, 8)
+            return m
 
-    colors = {"1D": '#fca311',
-              "1D pass": '#51a96d',
-              "1D fail": '#d90429'}
+        # the blocks ascend from high to low, except the
+        # lowest block is at the top
+        first_channel = list(range(65, 450, 64)) + [1]
+        channel_array = np.vstack([channel_block(x) for x in first_channel])
+        ca = pd.DataFrame(channel_array).reset_index().melt("index")
+        ca.columns = ["row", "column", "channel"]
 
-    # Max yaxis value for displaying same scale between plots
-    max_yaxis = (dataframe.max(skipna=True, numeric_only=True).values.max() + 2.0)
-    min_yaxis = (dataframe.min(skipna=True, numeric_only=True).values.min() - 2.0)
+    return ca
+
+
+def _compute_channel_count(df, channel_map):
+
+    # count pass reads per channel...
+    # counts = df[df['passes_filtering']] \
+    counts = df.groupby("channel").size().to_frame("reads").reset_index()
+
+    # ...and merge with the channel map
+    counts = counts.merge(channel_map, on="channel", how="outer").fillna(0)
+
+    max_row = counts["row"].max()
+    max_col = counts["column"].max()
+    data = counts.to_dict("split")["data"]
+    z = []
+    ids = []
+    for i in range(max_row + 1):
+        z.append([np.nan] * (max_col + 1))
+        ids.append([0] * (max_col + 1))
+
+    max_value = 0
+    for v in data:
+        if v[0] == 0:
+            z[v[2]][v[3]] = np.nan
+            ids[v[2]][v[3]] = "no channel"
+        else:
+            z[v[2]][v[3]] = v[1]
+            ids[v[2]][v[3]] = str(v[0])
+            max_value = max(max_value, v[1])
+
+    return max_row, max_col, int(max_value), counts, z, ids
+
+
+def plot_performance(df, result_directory):
+    """
+    Plots the channels occupancy by the reads
+    @:param pore_measure: reads number per pore
+    """
+
+    graph_name = "Channel occupancy of the flowcell"
+
+    # Compute geometry of the flowcell
+    channel_map = _compute_channel_map(df)
+    fail_df = df[~df["passes_filtering"]]
+    max_row, max_col, max_value, counts, z_pass, ids = _compute_channel_count(
+        df[df["passes_filtering"]], channel_map
+    )
+    if not fail_df.empty:
+        max_row, max_col, max_value, counts, z_fail, ids = _compute_channel_count(
+            fail_df, channel_map
+        )
+    max_row, max_col, max_value, counts, z_all, ids = _compute_channel_count(
+        df, channel_map
+    )
+
+    # Compute fail ratio
+    z_ratio = copy.deepcopy(z_all)
+    for i in range(len(z_ratio)):
+        for j in range(len(z_ratio[i])):
+            if z_ratio[i][j] > 0:
+                z_ratio[i][j] = (
+                    0 if fail_df.empty else z_fail[i][j] / z_ratio[i][j] * 100.0
+                )
 
     fig = go.Figure()
+    fig.add_trace(
+        go.Heatmap(
+            x=list(range(1, max_col + 1)),
+            y=list(range(1, max_row + 1)),
+            z=z_all,
+            zmax=max_value,
+            zmin=0,
+            name="All reads",
+            colorbar=dict(title="Reads", len=0.6, yanchor="middle"),
+            hovertemplate="<b>Channel ID:</b> %{text}<br>"
+            "<b>Row:</b> %{y}<br>"
+            "<b>Column:</b> %{x}<br>"
+            "<b>Reads:</b> %{z}<br>",
+            text=ids,
+            hoverongaps=False,
+            visible=True,
+        )
+    )
 
-    for column in dataframe.columns:
-        fig.add_trace(go.Box(
-            y=dataframe[column],
-            name=names[column],
-            marker=dict(
-                opacity=0.3,
-                color=colors[column]
+    fig.add_trace(
+        go.Heatmap(
+            x=list(range(1, max_col + 1)),
+            y=list(range(1, max_row + 1)),
+            z=z_pass,
+            zmax=max_value,
+            zmin=0,
+            name="Pass reads",
+            colorbar=dict(title="Reads", len=0.6, yanchor="middle"),
+            hovertemplate="<b>Channel ID:</b> %{text}<br>"
+            "<b>Row:</b> %{y}<br>"
+            "<b>Column:</b> %{x}<br>"
+            "<b>Reads:</b> %{z}<br>",
+            text=ids,
+            hoverongaps=False,
+            visible=False,
+        )
+    )
+    if not fail_df.empty:
+        fig.add_trace(
+            go.Heatmap(
+                x=list(range(1, max_col + 1)),
+                y=list(range(1, max_row + 1)),
+                z=z_fail,
+                zmax=max_value,
+                zmin=0,
+                name="Fail reads",
+                colorbar=dict(title="Reads", len=0.6, yanchor="middle"),
+                hovertemplate="<b>Channel ID:</b> %{text}<br>"
+                "<b>Row:</b> %{y}<br>"
+                "<b>Column:</b> %{x}<br>"
+                "<b>Reads:</b> %{z}<br>",
+                text=ids,
+                hoverongaps=False,
+                visible=False,
+            )
+        )
 
-            ),
-            boxmean=False,
-            showlegend=True
-        ))
+    fig.add_trace(
+        go.Heatmap(
+            x=list(range(1, max_col + 1)),
+            y=list(range(1, max_row + 1)),
+            z=z_ratio,
+            name="Percent of<br>fail reads",
+            colorscale="reds",
+            colorbar=dict(title="%", len=0.6, yanchor="middle"),
+            hovertemplate="<b>Channel ID:</b> %{text}<br>"
+            "<b>Row:</b> %{y}<br>"
+            "<b>Column:</b> %{x}<br>"
+            "<b>Fail reads:</b> %{z:.1f}%<br>",
+            text=ids,
+            hoverongaps=False,
+            visible=False,
+        )
+    )
 
-        fig.add_trace(go.Violin(y=dataframe[column],
-                            name=names[column],
-                            meanline_visible=True,
-                      marker=dict(color=colors[column]),
-                      visible = False))
+    graph_layout = dict(default_graph_layout)
+    graph_layout["plot_bgcolor"] = "rgba(0,0,0,0)"
 
     fig.update_layout(
-        title={
-            'text': "<b>PHRED score distribution of all read types</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>Read type</b>",
-            titlefont_size=14
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=14,
-            tickfont_size=14,
-            range=[min_yaxis, max_yaxis]
-        ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        hovermode='x',
-        height=figure_image_height, width=figure_image_width
+        **_title(graph_name),
+        **_legend(),
+        **graph_layout,
+        hovermode="x",
+        **_xaxis("Columns", dict(fixedrange=True)),
+        **_yaxis("Rows", dict(fixedrange=True)),
     )
 
     # Add buttons
     fig.update_layout(
         updatemenus=[
             dict(
-                type = "buttons",
-                direction = "left",
-                buttons=list([
-                    dict(
-                        args=[{'visible': [True, False]}],
-                        label="Boxplot",
-                        method="update"
-                    ),
-                    dict(
-                        args=[{'visible': [False, True]}],
-                        label="Violin plot",
-                        method="update"
-                    )
-                ]),
-                pad={"r": 20, "t": 20, "l":20, "b":20},
+                type="buttons",
+                direction="down",
+                buttons=list(
+                    [
+                        dict(
+                            args=[
+                                {"visible": [True, False, False, False]},
+                                {"hovermode": "x"},
+                            ],
+                            label="All reads",
+                            method="update",
+                        ),
+                        dict(
+                            args=[
+                                {"visible": [False, True, False, False]},
+                                {"hovermode": "x"},
+                            ],
+                            label="Pass reads",
+                            method="update",
+                        ),
+                        dict(
+                            args=[
+                                {"visible": [False, False, True, False]},
+                                {"hovermode": "x"},
+                            ],
+                            label="Fail reads",
+                            method="update",
+                        )
+                        if not fail_df.empty
+                        else dict(),
+                        dict(
+                            args=[
+                                {"visible": [False, False, False, True]},
+                                {"hovermode": "x"},
+                            ],
+                            label="Fail percent",
+                            method="update",
+                        )
+                        if not fail_df.empty
+                        else dict(),
+                    ]
+                ),
+                pad={"r": 20, "t": 20, "l": 20, "b": 20},
                 showactive=True,
                 x=1.0,
                 xanchor="left",
                 y=1.25,
-                yanchor="top"
+                yanchor="top",
             ),
         ]
     )
 
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
-    df = df[["1D", "1D pass", "1D fail"]]
-    table_html = pd.DataFrame.to_html(_make_desribe_dataframe(df))
-
-    return main, output_file, table_html, desc, div
-
-
-
-def allphred_score_frequency(result_dict, main, my_dpi, result_directory, desc):
-    """
-    Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
-    """
-    output_file = result_directory + '/' + '_'.join(main.split())
-
-    dataframe = \
-        pd.DataFrame({"1D": result_dict["basecaller.sequencing.summary.1d.extractor.mean.qscore"],
-                      "1D pass": result_dict['basecaller.sequencing.summary.1d.extractor.read.pass.qscore'],
-                      "1D fail": result_dict['basecaller.sequencing.summary.1d.extractor.read.fail.qscore']})
-
-    # If more than 10.000 reads, interpolate data
-    if len(dataframe["1D"]) > 10000:
-        phred_score_pass = _interpolate(dataframe["1D pass"], npoints=5000)
-        phred_score_fail = _interpolate(dataframe["1D fail"], npoints=5000)
-    else:
-        phred_score_pass = dataframe["1D pass"]
-        phred_score_fail = dataframe["1D fail"]
-
-    arr_1D_pass = np.array(pd.Series(phred_score_pass).dropna())
-    x = np.linspace(0, max(arr_1D_pass), 200)
-    mu, std = norm.fit(arr_1D_pass)
-    pdf_1D_pass = norm.pdf(x, mu, std)
-
-    arr_1D_fail = np.array(pd.Series(phred_score_fail).dropna())
-    x2 = np.linspace(0, max(arr_1D_fail), 200)
-    mu2, std2 = norm.fit(arr_1D_fail)
-    pdf_1D_fail = norm.pdf(x2, mu2, std2)
-
-    fig = go.Figure()
-    fig.add_trace(go.Histogram(x=phred_score_pass, name="Read pass", marker_color="#51a96d", histnorm='probability density'))
-    fig.add_trace(go.Histogram(x=phred_score_fail, name="Read fail", marker_color="#d90429", histnorm='probability density'))
-    fig.add_trace(go.Scatter(x=x, y=pdf_1D_pass, mode="lines", name='Density curve of read pass', line=dict(color='#51a96d', width=3, shape="spline", smoothing=0.5)))
-    fig.add_trace(go.Scatter(x=x2, y=pdf_1D_fail, mode="lines", name='Density curve of read fail', line=dict(color='#d90429', width=3, shape="spline", smoothing=0.5)))
-
-    fig.update_layout(
-        title={
-            'text': "<b>PHRED Score Density Distribution</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>PHRED score</b>",
-            titlefont_size=14
-        ),
-        yaxis=dict(
-            title='<b>Density probability</b>',
-            titlefont_size=14,
-            tickfont_size=14,
-        ),
-        legend=dict(
-            x=1.02,
-            y=0.95,
-            title_text="<b>Legend</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        barmode='group',
-        hovermode='x',
-        height=figure_image_height, width=figure_image_width
-    )
-
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
-    dataframe = _make_desribe_dataframe(dataframe).drop('count')
-
-    table_html = pd.DataFrame.to_html(dataframe)
-
-    return main, output_file, table_html, desc, div
-
-
-def all_scatterplot(result_dict, main, my_dpi, result_directory, desc):
-    """
-    Plot the scatter plot representing the relation between the phred score and the sequence length in log
-    """
-    output_file = result_directory + '/' + '_'.join(main.split())
-
-    read_pass_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.length"]
-    read_pass_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.pass.qscore"]
-    read_fail_length = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.length"]
-    read_fail_qscore = result_dict["basecaller.sequencing.summary.1d.extractor.read.fail.qscore"]
-
-    # If more than 10.000 reads, interpolate data
-    if len(read_pass_length) > 10000:
-        pass_data = _interpolate(read_pass_length, 4000, y=read_pass_qscore, interp_type="nearest")
-        fail_data = _interpolate(read_fail_length, 4000, y=read_fail_qscore, interp_type="nearest")
-    else:
-        pass_data = [read_pass_length, read_pass_qscore]
-        fail_data = [read_fail_length, read_fail_qscore]
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(x=pass_data[0],
-                             y=pass_data[1],
-                             name="Pass reads",
-                             marker_color="#51a96d",
-                             mode="markers"
-                             ))
-
-    fig.add_trace(go.Scatter(x=fail_data[0],
-                             y=fail_data[1],
-                             name="Fail reads",
-                             marker_color="#d90429",
-                             mode="markers"
-                             ))
-
-    fig.update_layout(
-        title={
-            'text': "<b>Correlation between read length and PHRED score</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>Sequence length (bp)</b>",
-            titlefont_size=14
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=14,
-            tickfont_size=14,
-        ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Read Type</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        height=figure_image_height, width=figure_image_width
-    )
-    # Trim x axis to avoid negative values
-    if max(read_pass_length) >= max(read_fail_length):
-        max_val = max(read_pass_length)
-    max_val = max(read_fail_length)
-
-    fig.update_xaxes(range=[0, max_val])
-
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
     table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
 
-    return main, output_file, table_html, desc, div
-
-
-def channel_count_histogram(Guppy_log, main, my_dpi, result_directory, desc):
-    """
-    Plots an histogram of the channel count according to the channel number (not use anymore)
-    """
-    output_file = result_directory + '/' + '_'.join(main.split())
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[2, 1])
-    ax = plt.subplot(gs[0])
-    ax.hist(Guppy_log['channel'], edgecolor='black',
-            bins=range(min(Guppy_log['channel']), max(Guppy_log['channel']) + 64, 64))
-    ax.set_xlabel("Channel number")
-    ax.set_ylabel("Count")
-
-    channel_count = Guppy_log['channel']
-    total_number_reads_per_channel = pd.value_counts(channel_count)
-    plt.subplot(gs[1])
-
-    dataframe = table(ax, np.round(total_number_reads_per_channel
-                                   .describe().drop(['mean', 'std', '50%', '75%', '25%']), 2), loc='center')
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.axis('off')
-
-    dataframe.set_fontsize(12)
-    dataframe.scale(1, 1.2)
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-    table_html = pd.DataFrame.to_html(total_number_reads_per_channel.describe())
-
-    return main, output_file, table_html, desc
-
-
-def _minion_flowcell_layout():
-    """
-    Represents the layout of a minion flowcell (not use anymore)
-    """
-    seeds = [125, 121, 117, 113, 109, 105, 101, 97,
-             93, 89, 85, 81, 77, 73, 69, 65,
-             61, 57, 53, 49, 45, 41, 37, 33,
-             29, 25, 21, 17, 13, 9, 5, 1]
-
-    flowcell_layout = []
-    for s in seeds:
-        for block in range(4):
-            for row in range(4):
-                flowcell_layout.append(s + 128 * block + row)
-    return flowcell_layout
-
-
-def plot_performance(pore_measure, main, my_dpi, result_directory, desc):
-    """
-    Plots the channels occupancy by the reads
-    @:param pore_measure: reads number per pore
-    """
-    output_file = result_directory + '/' + '_'.join(main.split()) + '.png'
-    flowcell_layout = _minion_flowcell_layout()
-
-    pore_values = []
-    for pore in flowcell_layout:
-        if pore in pore_measure:
-            pore_values.append(pore_measure[pore])
-        else:
-            pore_values.append(0)
-
-    d = {'Row number': list(range(1, 17)) * 32,
-         'Column number': sorted(list(range(1, 33)) * 16),
-         'tot_reads': pore_values,
-         'labels': flowcell_layout}
-
-    df = pd.DataFrame(d)
-
-    d = df.pivot("Row number", "Column number", "tot_reads")
-    df.pivot("Row number", "Column number", "labels")
-    plt.figure(figsize=(figure_image_width / my_dpi, figure_image_height / my_dpi), dpi=my_dpi)
-    sns.heatmap(d, fmt="", linewidths=.5, cmap="YlGnBu", annot_kws={"size": 7},
-                cbar_kws={'label': 'Read number per pore channel', "orientation": "horizontal"})
-
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
-
-    table_html = None
-
-    return main, output_file, table_html, desc
 
 #
 # For each barcode 1D
 #
 
 
-def barcode_percentage_pie_chart_pass(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_pass(
+    dataframe_dict, barcode_selection, result_directory, barcode_alias
+):
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
 
-    for element in barcode_selection:
+    graph_name = "Pass barcoded reads distribution"
 
-        if all(dataframe_dict['barcode.arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
+    read_count_sorted = dataframe_dict["read.pass.barcoded"]
+    base_count_sorted = dataframe_dict["base.pass.barcoded"]
 
-    count_sorted = dataframe_dict["read.pass.barcoded"]
-    labels = count_sorted.index.values.tolist()
-
-    fig = go.Figure(data=[go.Pie(labels=labels,
-                                 values=count_sorted)])
-    if len(labels) <= 12:
-        palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275", "#b8e994", "#78e08f"]
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                  marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
-    else:
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                  marker=dict(line=dict(color='#2a2a2a', width=.5)))
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    fig.update_layout(
-        title={
-            'text': "<b>Read Pass Barcode Distribution</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Barcodes</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        height=figure_image_height, width=figure_image_width
+    return _pie_chart_graph(
+        graph_name=graph_name,
+        count_sorted=[read_count_sorted, base_count_sorted],
+        color_palette=toulligqc_colors["pie_chart_palette"],
+        one_d_square=False,
+        result_directory=result_directory,
+        barcode_alias=barcode_alias,
     )
 
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
-    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
-                                 "read count": count_sorted})
-    barcode_table.sort_index(inplace=True)
-    pd.options.display.float_format = '{:.2f}%'.format
-    table_html = pd.DataFrame.to_html(barcode_table)
-
-    return main, output_file, table_html, desc, div
-
-
-def barcode_percentage_pie_chart_fail(result_dict, dataframe_dict, main, barcode_selection, my_dpi, result_directory, desc):
+def barcode_percentage_pie_chart_fail(
+    dataframe_dict, barcode_selection, result_directory, barcode_alias
+):
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
 
-    for element in barcode_selection:
+    graph_name = "Fail barcoded reads distribution"
 
-        if all(dataframe_dict['barcode.arrangement'] != element):
-            print("The barcode {} doesn't exist".format(element))
-            return False
+    read_count_sorted = dataframe_dict["read.fail.barcoded"]
+    base_count_sorted = dataframe_dict["base.fail.barcoded"]
 
-    count_sorted = dataframe_dict["read.fail.barcoded"]
-    labels = count_sorted.index.values.tolist()
-
-    fig = go.Figure(data=[go.Pie(labels=labels,
-                                 values=count_sorted)])
-    if len(labels) <= 12:
-        palette = ["f3a683", "f7d794", "778beb", "e77f67", "cf6a87", "786fa6", "f8a5c2", "63cdda", "ea8685", "596275"]
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                  marker=dict(colors=palette, line=dict(color='#2a2a2a', width=.5)))
-    else:
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent', textfont_size=14,
-                  marker=dict(line=dict(color='#2a2a2a', width=.5)))
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    fig.update_layout(
-        title={
-            'text': "<b>Read Pass Barcode Distribution</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Barcodes</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        height=figure_image_height, width=figure_image_width
+    return _pie_chart_graph(
+        graph_name=graph_name,
+        count_sorted=[read_count_sorted, base_count_sorted],
+        color_palette=toulligqc_colors["pie_chart_palette"],
+        one_d_square=False,
+        result_directory=result_directory,
+        barcode_alias=barcode_alias,
     )
 
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
-    barcode_table = pd.DataFrame({"barcode arrangement": count_sorted/sum(count_sorted)*100,
-                                  "read count": count_sorted})
-    barcode_table.sort_index(inplace=True)
-    pd.options.display.float_format = '{:.2f}%'.format
-
-    table_html = pd.DataFrame.to_html(barcode_table)
-
-    return main, output_file, table_html, desc, div
-
-
-def barcode_length_boxplot(result_dict, datafame_dict, main, my_dpi, result_directory, desc):
+def barcode_length_boxplot(datafame_dict, result_directory, barcode_alias):
     """
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
 
-    df = datafame_dict['barcode_selection_sequence_length_dataframe']
+    graph_name = "Read size distribution for barcodes"
 
-    # Sort reads by read type and drop read type column
-    read_pass_length = df.loc[df['passes_filtering']
-                              == bool(True)].drop(columns='passes_filtering')
-    read_fail_length = df.loc[df['passes_filtering']
-                              == bool(False)].drop(columns='passes_filtering')
+    df = datafame_dict["barcode_selection_sequence_length_dataframe"]
 
-    # Remove negative values from all columns of the dataframes
-    for col in read_pass_length.columns:
-        read_pass_length[col] = read_pass_length[col].loc[read_pass_length[col] > 0]
-    for col in read_fail_length.columns:
-        read_fail_length[col] = read_fail_length[col].loc[read_fail_length[col] > 0]
-
-    fig = go.Figure()
-
-    for col in read_pass_length.columns:
-        fig.add_trace(go.Box(
-            y=read_pass_length[col],
-            name=col,
-            marker_color='#51a96d',
-            legendgroup="pass",
-            offsetgroup="pass"
-        ))
-
-    for col in read_fail_length.columns:
-        fig.add_trace(go.Box(
-            y=read_fail_length[col],
-            name=col,
-            marker_color='#d90429',
-            legendgroup="fail",
-            offsetgroup="fail"
-        ))
-
-    fig.update_layout(
-        title={
-            'text': "<b>Read size distribution for each barcode</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>Barcodes</b>",
-            titlefont_size=14
-        ),
-        yaxis=dict(
-            title='<b>Sequence length (bp)</b>',
-            titlefont_size=14,
-            tickfont_size=14,
-        ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Read Type</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        boxmode='group',
-        boxgap=0.4,
-        boxgroupgap=0,
-        height=figure_image_height, width=figure_image_width
+    return _barcode_boxplot_graph(
+        graph_name=graph_name,
+        df=df,
+        barcode_selection=df.columns.drop("passes_filtering"),
+        pass_color=toulligqc_colors["pass"],
+        fail_color=toulligqc_colors["fail"],
+        yaxis_title="Sequence length (bp)",
+        legend_title="Read type",
+        result_directory=result_directory,
+        barcode_alias=barcode_alias,
     )
 
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
-    all_read = df.describe().T
-    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
-    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
-    concat = pd.concat([all_read, read_pass, read_fail],
-                       keys=['1D', '1D pass', '1D fail'])
-    dataframe = concat.T
-
-    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
-    table_html = pd.DataFrame.to_html(dataframe)
-
-    table_html = None
-
-    return main, output_file, table_html, desc, div
-
-
-def barcoded_phred_score_frequency(barcode_selection, dataframe_dict, main, my_dpi, result_directory, desc):
+def barcoded_phred_score_frequency(dataframe_dict, result_directory, barcode_alias):
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
-    output_file = result_directory + '/' + '_'.join(main.split())
 
-    df = dataframe_dict['barcode_selection_sequence_phred_melted_dataframe']
-    barcode_list = barcode_selection
+    graph_name = "PHRED score distribution for barcodes"
 
-    # Sort reads by read type and drop read type column
-    read_pass_qscore = df.loc[df['passes_filtering'] == bool(True)].drop(columns='passes_filtering')
-    read_fail_qscore = df.loc[df['passes_filtering'] == bool(False)].drop(columns='passes_filtering')
+    df = dataframe_dict["barcode_selection_sequence_phred_dataframe"]
 
-    fig = go.Figure()
-
-    for barcode in barcode_list:
-        final_df = read_pass_qscore.loc[read_pass_qscore['barcodes'] == barcode].dropna()
-        fig.add_trace(go.Box(
-                             y=final_df['qscore'],
-                             name=barcode,
-                             marker_color='#51a96d',
-                             legendgroup="pass",
-                             offsetgroup="pass"
-                             ))
-
-    for barcode in barcode_list:
-        final_df = read_fail_qscore.loc[read_fail_qscore['barcodes'] == barcode].dropna()
-        fig.add_trace(go.Box(
-                             y=final_df['qscore'],
-                             name=barcode,
-                             marker_color='#d90429',
-                             legendgroup="fail",
-                             offsetgroup="fail"
-                             ))
-
-    fig.update_layout(
-        title={
-            'text': "<b>PHRED score distribution for each barcode</b>",
-            'y': 0.95,
-            'x': 0,
-                    'xanchor': 'left',
-                    'yanchor': 'top',
-                    'font': dict(
-                        size=20,
-                        color="black")},
-        xaxis=dict(
-            title="<b>Barcodes</b>",
-            titlefont_size=14
-        ),
-        yaxis=dict(
-            title='<b>PHRED score</b>',
-            titlefont_size=14,
-            tickfont_size=14,
-        ),
-        legend=dict(
-            x=1.02,
-            y=.5,
-            title_text="<b>Read Type</b>",
-            title=dict(font=dict(size=16)),
-            bgcolor='white',
-            bordercolor='white',
-            font=dict(size=15)
-        ),
-        boxmode='group',
-        boxgap=0.4,
-        boxgroupgap=0,
-        height=figure_image_height, width=figure_image_width
+    return _barcode_boxplot_graph(
+        graph_name=graph_name,
+        df=df,
+        barcode_selection=df.columns.drop("passes_filtering"),
+        pass_color=toulligqc_colors["pass"],
+        fail_color=toulligqc_colors["fail"],
+        yaxis_title="PHRED score",
+        legend_title="Read type",
+        result_directory=result_directory,
+        barcode_alias=barcode_alias,
     )
 
-    div = py.plot(fig,
-                  include_plotlyjs=False,
-                  output_type='div',
-                  auto_open=False,
-                  show_link=False)
-    py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
 
-    all_read = df.describe().T
-    read_pass = df.loc[df['passes_filtering'] == bool(True)].describe().T
-    read_fail = df.loc[df['passes_filtering'] == bool(False)].describe().T
-    concat = pd.concat([all_read, read_pass, read_fail], keys=['1D', '1D pass', '1D fail'])
-    dataframe = concat.T
-    dataframe.loc['count'] = dataframe.loc['count'].astype(int).astype(str)
-    dataframe.iloc[1:] = dataframe.iloc[1:].applymap('{:.2f}'.format)
-    table_html = pd.DataFrame.to_html(dataframe)
+def sequence_length_over_time(dataframe_dict, result_directory):
+    graph_name = "Read length over time"
 
-    return main, output_file, table_html, desc, div
+    return _over_time_graph(
+        data_series=dataframe_dict["all.reads.sequence.length"],
+        time_series=dataframe_dict["all.reads.start.time"],
+        result_directory=result_directory,
+        graph_name=graph_name,
+        color=toulligqc_colors["sequence_length_over_time"],
+        yaxis_title="Read length (bp)",
+    )
 
 
-def sequence_length_over_time(time_df, dataframe_dict, main, my_dpi, result_directory, desc):
+def phred_score_over_time(dataframe_dict, result_dict, result_directory):
+    graph_name = "PHRED score over time"
 
-        output_file = result_directory + '/' + '_'.join(main.split())
+    pass_min_qscore = 7
+    key = "sequencing.telemetry.extractor.pass.threshold.qscore"
+    if key in result_dict:
+        pass_min_qscore = float(result_dict[key])
 
-        time = [t/3600 for t in time_df.dropna()]
-        time = np.array(sorted(time))
+    qscore_series = dataframe_dict["all.reads.mean.qscore"]
+    time_series = dataframe_dict["all.reads.start.time"]
 
-        length = dataframe_dict.get('sequence.length')
-
-         # If more than 10.000 reads, interpolate data
-        if len(length) > 10000:
-            df_time, df_length = _interpolate(time, 200, length, "linear")
-        else:
-            df_time = time
-            df_length = length
-
-        fig = go.Figure()
-
-        fig.add_trace(go.Scatter(
-        x=df_time,
-        y=df_length,
-        fill='tozeroy',
-        fillcolor="#2f8769",
-        mode='lines',
-        name='interpolation curve',
-        line=dict(color='#205b47', width=3, shape="spline", smoothing=0.5))
-        )
-
-        fig.update_layout(
-                title={
-                'text': "<b>Read length over experiment time</b>",
-                'y':0.95,
-                'x':0,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font' : dict(
-                size=20,
-                color="black")},
-            xaxis=dict(
-                title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
-                ),
-            yaxis=dict(
-                title='<b>Read length (bp)</b>',
-                titlefont_size=14,
-                tickfont_size=14,
-            ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
-            hovermode=False,
-            height=figure_image_height, width=figure_image_width
-        )
-
-        div = py.plot(fig,
-                            include_plotlyjs=False,
-                            output_type='div',
-                            auto_open=False,
-                            show_link=False)
-        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
-        table_html = None
-
-        return main, output_file, table_html, desc, div
+    return _over_time_graph(
+        data_series=qscore_series,
+        time_series=time_series,
+        result_directory=result_directory,
+        graph_name=graph_name,
+        color=toulligqc_colors["phred_score_over_time"],
+        yaxis_title="PHRED quality score",
+        min_max=True,
+        yaxis_starts_zero=True,
+        green_zone_starts_at=pass_min_qscore,
+        green_zone_color=toulligqc_colors["green_zone_color"],
+    )
 
 
-def phred_score_over_time(qscore_df, time_df, main, my_dpi, result_directory, desc):
+def speed_over_time(dataframe_dict, result_directory):
+    graph_name = "Translocation speed"
 
-        output_file = result_directory + '/' + '_'.join(main.split())
+    sequence_length_series = dataframe_dict["all.reads.sequence.length"]
+    duration_series = dataframe_dict["all.reads.duration"]
 
-        # Time data
-        time = [t/3600 for t in time_df.dropna()]
-        time = np.array(sorted(time))
+    speed_series = pd.Series(sequence_length_series / duration_series)
 
-        # Qscore data
-        qscore = qscore_df.dropna()
-
-        #If more than 10.000 reads, interpolate data
-        if len(qscore) > 10000:
-            df_time, df_qscore = _interpolate(time, 100, qscore, "nearest")
-        else:
-            df_time = time
-            df_qscore = qscore
-
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=df_time,
-            y=df_qscore,
-            fill='tozeroy',
-            fillcolor="#adccf3",
-            mode='lines',
-            name='interpolation curve',
-            line=dict(color='#7aaceb', width=3, shape="spline", smoothing=0.5),
-            marker=dict(
-                size=10,
-                color="blue")))
-
-        fig.update_layout(
-                title={
-                'text': "<b>PHRED score over experiment time</b>",
-                'y':0.95,
-                'x':0,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font' : dict(
-                size=20,
-                color="black")},
-            xaxis=dict(
-                title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
-                ),
-            yaxis=dict(
-                title='<b>PHRED quality score</b>',
-                titlefont_size=14,
-                tickfont_size=14,
-            ),
-            height=figure_image_height, width=figure_image_width
-        )
-
-        div = py.plot(fig,
-                            include_plotlyjs=False,
-                            output_type='div',
-                            auto_open=False,
-                            show_link=False)
-        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-        table_html = None
-
-        return main, output_file, table_html, desc, div
-
-
-def speed_over_time(duration_df, sequence_length_df, time_df, main, my_dpi, result_directory, desc):
-
-        output_file = result_directory + '/' + '_'.join(main.split())
-
-        speed = pd.Series(sequence_length_df / duration_df)
-
-        time = [t/3600 for t in time_df]
-        time = np.array(sorted(time))
-
-        # If more than 10.000 reads, interpolate data
-        if len(time) > 10000:
-            time_df, speed_df = _interpolate(time, 200, speed, "linear")
-        else:
-            time_df = time
-            speed_df = speed
-
-        fig = go.Figure()
-
-        fig.add_trace(go.Scatter(
-        x=time_df,
-        y=speed_df,
-        fill='tozeroy',
-        mode='lines',
-        line=dict(color='#AE3F7B', width=3, shape="linear"))
-        )
-
-        fig.update_layout(
-                title={
-                'text': "<b>Speed over experiment time</b>",
-                'y':0.95,
-                'x':0,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font' : dict(
-                size=20,
-                color="black")},
-            xaxis=dict(
-                title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
-                ),
-            yaxis=dict(
-                title='<b>Speed (bases per second)</b>',
-                titlefont_size=14,
-                tickfont_size=14,
-            ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
-            hovermode='x',
-            height=figure_image_height, width=figure_image_width
-        )
-        fig.update_yaxes(type="log")
-
-        div = py.plot(fig,
-                            include_plotlyjs=False,
-                            output_type='div',
-                            auto_open=False,
-                            show_link=False)
-        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
-        table_html = None
-
-        return main, output_file, table_html, desc, div
-
-
-def nseq_over_time(time_df, main, my_dpi, result_directory, desc):
-
-        output_file = result_directory + '/' + '_'.join(main.split())
-
-        time = [t/3600 for t in time_df]
-        time = pd.Series(time)
-
-        # create custom xaxis points to reduce graph size
-        time_points = np.linspace(min(time), max(time), 50)
-        n_seq = time.groupby(pd.cut(time, time_points, right=True)).count()
-
-        fig = go.Figure()
-
-        fig.add_trace(go.Scatter(
-            x=time_points,
-            y=list(n_seq.values), mode='lines',
-            fill="tozeroy",
-            fillcolor="#f4d2a7",
-            line=dict(color='#edb773', width=3, shape="spline", smoothing=0.7)
-        ))
-
-        fig.update_layout(
-                title={
-                'text': "<b>Number of sequences through experiment time</b>",
-                'y':0.95,
-                'x':0,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font' : dict(
-                size=20,
-                color="black")},
-            xaxis=dict(
-                title="<b>Experiment time (hours)</b>",
-                titlefont_size=14
-                ),
-            yaxis=dict(
-                title='<b>Number of sequences</b>',
-                titlefont_size=14,
-                tickfont_size=14,
-            ),
-            legend=dict(
-                x=1.0,
-                y=0.95,
-                title_text="<b>Legend</b>",
-                title=dict(font=dict(size=16)),
-                bgcolor='rgba(255, 255, 255, 0)',
-                bordercolor='rgba(255, 255, 255, 0)',
-                font=dict(size=15)
-            ),
-            hovermode='x',
-            height=figure_image_height, width=figure_image_width
-        )
-
-        div = py.plot(fig,
-                            include_plotlyjs=False,
-                            output_type='div',
-                            auto_open=False,
-                            show_link=False)
-        py.plot(fig, filename=output_file, output_type="file", include_plotlyjs="directory", auto_open=False)
-
-        table_html = None
-
-        return main, output_file, table_html, desc, div
-
-
-def _interpolate(x, npoints:int, y=None, interp_type=None, axis=-1):
-    """
-    Function returning an interpolated version of data passed as input
-    :param x: array of data
-    :param npoints: number of desired points after interpolation (int)
-    :param y: second array in case of 2D data
-    :param interp_type: string specifying the type of interpolation (i.e. linear, nearest, cubic, quadratic etc.)
-    :param axis: number specifying the axis of y along which to interpolate. Default = -1
-    """
-    # In case of single array of data, use
-    if y is None:
-        return np.sort(resample(x, n_samples=npoints, random_state=1))
-
-    else:
-        f = interp1d(x, y, kind=interp_type, axis=axis)
-        x_int = np.linspace(min(x), max(x), npoints)
-        y_int = f(x_int)
-        return pd.Series(x_int), pd.Series(y_int)
-
-
-def _smooth_data(npoints: int, sigma: int, data):
-    """
-    Function for smmothing data with numpy histogram function
-    Returns a tuple of smooth data (ndarray)
-    :param data: must be array-like data
-    :param npoints: number of desired points for smoothing
-    :param sigma: sigma value of the gaussian filter
-    """
-    bins = np.linspace(np.nanmin(data), np.nanmax(data), num=npoints)
-    count_y, count_x = np.histogram(a=data, bins=bins, density=True)
-    # Removes the first value of count_x1
-    count_x = count_x[1:]
-    count_y = gaussian_filter1d(count_y * len(data), sigma=sigma)
-    return count_x, count_y
+    return _over_time_graph(
+        data_series=speed_series,
+        time_series=dataframe_dict["all.reads.start.time"],
+        result_directory=result_directory,
+        graph_name=graph_name,
+        color=toulligqc_colors["speed_over_time"],
+        yaxis_title="Speed (bases per second)",
+        green_zone_starts_at=300,
+        green_zone_color=toulligqc_colors["green_zone_color"],
+    )

@@ -1,0 +1,65 @@
+[project]
+name = "toulligqc"
+dynamic = ["version"]
+description = "A post sequencing QC tool for Oxford Nanopore sequencers"
+readme = "README.md"
+requires-python = ">=3.11.0"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+    { name = "Genomic Paris Centre team", email = "toulligqc@bio.ens.psl.eu" }
+]
+keywords = ["Nanopore", "MinION", "QC", "report"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Operating System :: POSIX",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)",
+    "Programming Language :: Python :: 3.12"
+]
+dependencies = [
+    "matplotlib>=3.6.3",
+    "plotly==5.15.0",
+    "h5py>=3.10.0",
+    "pandas>=2.1.4,<3.0.0",
+    "numpy>=1.26.4",
+    "scipy>=1.11.4",
+    "scikit-learn>=1.4.1",
+    "tqdm>=4.66.2",
+    "pysam>=0.22.0",
+    "pod5>=0.3.10",
+    "ezcharts>=0.15.2"
+]
+
+[project.urls]
+Homepage = "https://github.com/GenomiqueENS/toulligQC"
+Repository = "https://github.com/GenomiqueENS/toulligQC"
+Issues = "https://github.com/GenomicParisCentre/toulligQC/issues"
+
+[project.scripts]
+toulligqc = "toulligqc.toulligqc:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "toulligqc/version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["toulligqc"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/toulligqc",
+    "/README.md",
+    "/LICENSE.txt",
+    "/LICENSE-CeCILL.txt",
+    "/AUTHORS",
+    "/CHANGES.md",
+]
+
+[tool.uv]
+dev-dependencies = []

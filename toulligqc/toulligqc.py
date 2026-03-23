@@ -32,25 +32,29 @@
 # 4. In the case of barcoded sequencing, it searches all barcodes from the command line argument --barcodes
 # 5. It uses all the information collected to generate a qc in the form of a htl-report and a report.data file
 
-import matplotlib
-matplotlib.use('Agg')
 import shutil
 import sys
-import csv
 import re
 import argparse
 import os
 import time
 import datetime
-import platform as pf
-import tempfile as tp
+import pandas as pd
+
 import warnings
-from toulligqc import toulligqc_extractor
+from toulligqc import toulligqc_info_extractor
 from toulligqc import report_data_file_generator
 from toulligqc import html_report_generator
 from toulligqc import version
-from pathlib import Path
 from toulligqc import configuration
+from toulligqc import fast5_extractor
+from toulligqc import pod5_extractor
+from toulligqc import sequencing_summary_extractor
+from toulligqc import sequencing_summary_onedsquare_extractor
+from toulligqc import sequencing_telemetry_extractor
+from toulligqc import common
+from toulligqc import fastq_extractor
+from toulligqc import bam_extractor
 
 
 def _parse_args(config_dictionary):
@@ -59,77 +63,261 @@ def _parse_args(config_dictionary):
     :return: config_dictionary containing the paths specified by line arguments
     """
 
-    parser = argparse.ArgumentParser(prog="ToulligQC V{0}".format(version.__version__), add_help=False)
-    required = parser.add_argument_group('required arguments')
-    optional = parser.add_argument_group('optional arguments')
+    parser = argparse.ArgumentParser(
+        prog="ToulligQC V{0}".format(version.__version__), add_help=False
+    )
+    required = parser.add_argument_group("required arguments")
+    optional = parser.add_argument_group("optional arguments")
 
     # Add all required arguments
-    required.add_argument('-a', '--sequencing-summary-source', action='append', dest='sequencing_summary_source',
-                        help='Basecaller sequencing summary source', metavar='SEQUENCING_SUMMARY_SOURCE' ,required=True)
-    required.add_argument('-t', '--telemetry-source', action='store', dest='telemetry_source',
-                        help='Basecaller telemetry file source', default=False, required=True)
+    required.add_argument(
+        "-a",
+        "--sequencing-summary-source",
+        action="append",
+        dest="sequencing_summary_source",
+        help="Basecaller sequencing summary source, "
+        + "can be compressed with gzip (.gz) or bzip2 (.bz2)",
+        metavar="SEQUENCING_SUMMARY_SOURCE",
+    )  # ,
+    # required=True)
+    required.add_argument(
+        "-t",
+        "--telemetry-source",
+        action="store",
+        dest="telemetry_source",
+        help="Basecaller telemetry file source, "
+        + "can be compressed with gzip (.gz) or bzip2 (.bz2)",
+        default=False,
+    )
 
-    required.add_argument('-f', '--fast5-source', action='store', dest='fast5_source', help='Fast5 file source (necessary if no telemetry file)')
+    required.add_argument(
+        "-f",
+        "--fast5-source",
+        action="store",
+        dest="fast5_source",
+        help="Fast5 file source (necessary if no telemetry file), "
+        + "can also be in a tar.gz/tar.bz2 archive or a directory",
+    )
 
+    required.add_argument(
+        "-p",
+        "--pod5-source",
+        action="store",
+        dest="pod5_source",
+        help="pod5 file source (necessary if no telemetry file), "
+        + "can also be in a tar.gz/tar.bz2 archive or a directory",
+    )
+
+    required.add_argument(
+        "-q",
+        "--fastq",
+        action="append",
+        dest="fastq",
+        help="FASTQ file (necessary if no sequencing summary file), "
+        + "can also be in a tar.gz archive",
+    )
+
+    required.add_argument(
+        "-u",
+        "--bam",
+        action="append",
+        dest="bam",
+        help="uBAM file (necessary if no sequencing summary file), "
+        + "can also be in SAM format",
+    )
 
     # Add all optional arguments
-    optional.add_argument("-n", "--report-name", action='store', dest="report_name", help="Report name", type=str)
-    optional.add_argument('-o', '--output', action='store', dest='output', help='Output directory')
-    optional.add_argument('-d', '--sequencing-summary-1dsqr-source', action='append', dest='sequencing_summary_1dsqr_source',
-                        help='Basecaller 1dsq summary source')
-    optional.add_argument("-b", "--barcoding", action='store_true', dest='is_barcode', help="Option for barcode usage",
-                        default=False)
-    optional.add_argument('-l', '--barcodes', action='store', dest='barcodes', help='Coma separated barcode list')
-    optional.add_argument("--quiet", action='store_true', dest='is_quiet', help="Quiet mode",
-                        default=False)
-    optional.add_argument("--report-only", action='store_true', dest='is_quicklaunch', help="No report.data file, only HTML report",
-                        default=False)
-    optional.add_argument("-h", "--help", action="help", help="Show this help message and exit")
-    optional.add_argument('--version', action='version', version=version.__version__)
+    optional.add_argument(
+        "-s",
+        "--samplesheet",
+        action="store",
+        dest="samplesheet",
+        help="a samplesheet (.csv file) to fill out sample names in MinKNOW",
+    )
+    optional.add_argument(
+        "--use-aliases-for-barcodes",
+        action="store_true",
+        dest="use_aliases",
+        help='Use the "alias" column for barcodes names in the sample sheet file instead of the "barcode" column',
+        default=False,
+    )
 
+    optional.add_argument(
+        "--thread",
+        action="store",
+        dest="thread",
+        help="Number of threads",
+        type=int,
+        default=2,
+    )
+    optional.add_argument(
+        "--batch-size",
+        action="store",
+        dest="batch_size",
+        help="Batch size",
+        type=int,
+        default=500,
+    )
+    optional.add_argument(
+        "--qscore-threshold",
+        action="store",
+        dest="threshold",
+        help="Qscore threshold",
+        type=int,
+        default=-1,
+    )
+
+    optional.add_argument(
+        "-n",
+        "--report-name",
+        action="store",
+        dest="report_name",
+        help="Report name",
+        type=str,
+    )
+    optional.add_argument(
+        "--output-directory", action="store", dest="output", help="Output directory"
+    )
+    optional.add_argument(
+        "-o",
+        "--html-report-path",
+        action="store",
+        dest="html_report_path",
+        help="Output HTML report",
+    )
+    optional.add_argument(
+        "--data-report-path",
+        action="store",
+        dest="data_report_path",
+        help="Output data report",
+    )
+    optional.add_argument(
+        "--images-directory",
+        action="store",
+        dest="images_directory",
+        help="Images directory",
+    )
+    optional.add_argument(
+        "-d",
+        "--sequencing-summary-1dsqr-source",
+        action="append",
+        dest="sequencing_summary_1dsqr_source",
+        help="Basecaller 1dsq summary source",
+    )
+    optional.add_argument(
+        "-b",
+        "--barcoding",
+        action="store_true",
+        dest="is_barcode",
+        help="Option for barcode usage",
+        default=False,
+    )
+    optional.add_argument(
+        "-l",
+        "--barcodes",
+        action="store",
+        default="",
+        dest="barcodes",
+        help='Comma-separated barcode list (e.g., BC05,RB09,NB01,barcode10) or a range separated with ":" (e.g., barcode01:barcode19)',
+    )
+    optional.add_argument(
+        "--quiet",
+        action="store_true",
+        dest="is_quiet",
+        help="Quiet mode",
+        default=False,
+    )
+    optional.add_argument(
+        "--report-only",
+        action="store_true",
+        dest="report_only",
+        help=argparse.SUPPRESS,
+        default=False,
+    )
+    optional.add_argument(
+        "--force",
+        action="store_true",
+        dest="force",
+        help="Force overwriting of existing files",
+        default=False,
+    )
+    optional.add_argument(
+        "--debug",
+        action="store_true",
+        dest="debug",
+        help=argparse.SUPPRESS,
+        default=False,
+    )
+    optional.add_argument(
+        "-h", "--help", action="help", help="Show this help message and exit"
+    )
+    optional.add_argument("--version", action="version", version=version.__version__)
 
     # Parsing lone arguments and assign each argument value to a variable
-    argument_value = parser.parse_args()
-    fast5_source = argument_value.fast5_source
-    sequencing_summary_source = argument_value.sequencing_summary_source
-    sequencing_summary_1dsqr_source = argument_value.sequencing_summary_1dsqr_source
-    sequencing_telemetry_source = argument_value.telemetry_source
-    report_name = argument_value.report_name
-    is_barcode = argument_value.is_barcode
-    result_directory = argument_value.output
-    is_quiet = argument_value.is_quiet
-    is_quicklaunch = argument_value.is_quicklaunch
-    barcodes = argument_value.barcodes
+    args = parser.parse_args()
+    report_name = args.report_name
+    is_barcode = args.is_barcode
+    barcodes = args.barcodes
+
+    # If a barcode list or samplesheet are is provided, automatically add --barcoding argument
+    if len(barcodes) > 0 or args.samplesheet:
+        is_barcode = True
 
     # If no report_name specified, create default one : ToulligQC-report-YYYYMMDD_HHMMSS
     if not report_name:
         timestamp = datetime.datetime.now()
-        config_dictionary['report_name'] = "Toulligqc-report-" + str((timestamp.strftime("%Y-%m-%d-%H%M%S")))
+        config_dictionary["report_name"] = "Toulligqc-report-" + str(
+            (timestamp.strftime("%Y-%m-%d-%H%M%S"))
+        )
     else:
-        config_dictionary['report_name'] = report_name
+        config_dictionary["report_name"] = report_name
 
     # Rewrite the configuration file value if argument option is present
-    source_file = {
-        ('fast5_source', fast5_source),
-        ('sequencing_summary_source', _join_parameter_arguments(sequencing_summary_source)),
-        ('sequencing_summary_1dsqr_source', _join_parameter_arguments(sequencing_summary_1dsqr_source)),
-        ('sequencing_telemetry_source',sequencing_telemetry_source),
-        ('result_directory', result_directory),
-        ('barcoding', is_barcode),
-        ('barcodes', barcodes),
-        ('quiet', is_quiet),
-        ('is_quicklaunch', is_quicklaunch)
+    args_dict = {
+        ("fast5_source", args.fast5_source),
+        ("pod5_source", args.pod5_source),
+        (
+            "sequencing_summary_source",
+            _join_parameter_arguments(args.sequencing_summary_source),
+        ),
+        (
+            "sequencing_summary_1dsqr_source",
+            _join_parameter_arguments(args.sequencing_summary_1dsqr_source),
+        ),
+        ("sequencing_telemetry_source", args.telemetry_source),
+        ("samplesheet", args.samplesheet),
+        ("use_alias_for_barcodes", args.use_aliases),
+        ("fastq", _join_parameter_arguments(args.fastq)),
+        ("bam", _join_parameter_arguments(args.bam)),
+        ("thread", args.thread),
+        ("batch_size", args.batch_size),
+        ("threshold", args.threshold),
+        ("result_directory", args.output),
+        ("html_report_path", args.html_report_path),
+        ("data_report_path", args.data_report_path),
+        ("images_directory", args.images_directory),
+        ("barcoding", is_barcode),
+        ("barcodes", barcodes),
+        ("quiet", args.is_quiet),
+        ("report_only", args.report_only),
+        ("force", args.force),
+        ("debug", args.debug),
     }
 
     # Put arguments values in configuration object
-    for key, value in source_file:
+    for key, value in args_dict:
         if value:
             config_dictionary[key] = value
 
     # Directory paths must ends with '/'
     for key, value in config_dictionary.items():
-        if type(value) == str and os.path.isdir(value) and (not value.endswith('/')):
-            config_dictionary[key] = value + '/'
+        if (
+            isinstance(value, str)
+            and (key.endswith("_source") or key.endswith("_directory"))
+            and os.path.isdir(value)
+            and (not value.endswith("/"))
+        ):
+            config_dictionary[key] = value + "/"
 
     # Convert all configuration values in strings
     for key, value in config_dictionary.items():
@@ -143,59 +331,101 @@ def _check_conf(config_dictionary):
     Check the configuration
     :param config_dictionary: configuration dictionary containing the file or directory paths
     """
-    if ('sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']) and \
-    ('sequencing_telemetry_source' not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
+
+    force = True if config_dictionary.get("force", "False").lower() == "true" else False
+
+    if (
+        "sequencing_summary_source" not in config_dictionary
+        or not config_dictionary["sequencing_summary_source"]
+    ) and (
+        "sequencing_telemetry_source" not in config_dictionary
+        or not config_dictionary["sequencing_telemetry_source"]
+    ):
         argparse.ArgumentParser.print_help
 
-    if ('fast5_source' not in config_dictionary or not config_dictionary['fast5_source']) and \
-       ('sequencing_telemetry_source'  not in config_dictionary or not config_dictionary['sequencing_telemetry_source']):
-        sys.exit('The FAST5 source argument and the telemetry file source are empty. One is needed')
+    if (
+        "sequencing_summary_source" not in config_dictionary
+        or not config_dictionary["sequencing_summary_source"]
+    ):
+        if "fastq" not in config_dictionary and "bam" not in config_dictionary:
+            sys.exit("ERROR: The sequencing summary file argument is empty")
 
-    if 'sequencing_summary_source' not in config_dictionary or not config_dictionary['sequencing_summary_source']:
-        sys.exit('The sequencing summary source argument is empty')
+    if (
+        "html_report_path" not in config_dictionary
+        or not config_dictionary["html_report_path"]
+    ):
+        # If no --output argument provided, create output folder in current directory
+        if (
+            "result_directory" not in config_dictionary
+            or not config_dictionary["result_directory"]
+        ):
+            current_directory = os.getcwd()
+            config_dictionary["result_directory"] = current_directory + "/"
 
-    if config_dictionary['barcoding'] == 'True':
-        if not 'barcodes' in config_dictionary:
-            sys.exit('No barcode list argument provided')
+        # Create the root output directory if not exists
+        if not os.path.isdir(config_dictionary["result_directory"]):
+            os.makedirs(config_dictionary["result_directory"])
 
-    # If no --output argument provided, create output folder in current directory
-    if 'result_directory' not in config_dictionary or not config_dictionary['result_directory']:
-        current_directory = os.getcwd()
-        final_directory = os.path.join(current_directory, r'toulligqc_output')
-        if not os.path.exists(final_directory):
-            os.makedirs(final_directory)
-        config_dictionary['result_directory'] = final_directory
+        # Define the output directory
+        config_dictionary["result_directory"] = (
+            config_dictionary["result_directory"]
+            + config_dictionary["report_name"]
+            + "/"
+        )
 
-    # Create the root output directory if not exists
-    if not os.path.isdir(config_dictionary['result_directory']):
-        os.makedirs(config_dictionary['result_directory'])
+        _check_if_dir_exists(config_dictionary["result_directory"], force)
 
-    # Define the output directory
-    config_dictionary['result_directory'] = \
-        config_dictionary['result_directory'] + ('/' + config_dictionary['report_name'] + '/')
+        # Define the output paths
+        config_dictionary["images_directory"] = (
+            config_dictionary["result_directory"] + "images/"
+        )
+        config_dictionary["html_report_path"] = (
+            config_dictionary["result_directory"] + "report.html"
+        )
+        config_dictionary["data_report_path"] = (
+            config_dictionary["result_directory"] + "report.data"
+        )
+        del config_dictionary["result_directory"]
 
-    if os.path.isdir(config_dictionary['result_directory']):
-        shutil.rmtree(config_dictionary['result_directory'], ignore_errors=True)
-        os.makedirs(config_dictionary['result_directory'])
-    else:
-        os.makedirs(config_dictionary['result_directory'])
+    if "images_directory" not in config_dictionary:
+        config_dictionary["images_directory"] = None
+
+    if "data_report_path" not in config_dictionary:
+        config_dictionary["data_report_path"] = None
+
+    _check_if_dir_exists(config_dictionary["images_directory"], force)
+    _check_if_file_exists(config_dictionary["html_report_path"], force)
+    _check_if_file_exists(config_dictionary["data_report_path"], force)
 
 
-def _create_output_directories(config_dictionary):
-    """
-    Create output directories
-    :param config_dictionary: configuration dictionary
-    """
-    image_directory = config_dictionary['result_directory'] + 'images/'
-    os.makedirs(image_directory)
+def _check_if_dir_exists(dir, force):
+    if dir is None:
+        return
 
+    if os.path.isdir(dir):
+        if not force:
+            sys.exit("Error directory already exists: " + dir)
+        else:
+            shutil.rmtree(dir, ignore_errors=True)
+    os.makedirs(dir)
+
+
+def _check_if_file_exists(path, force):
+    if path is None:
+        return
+
+    if os.path.isfile(path):
+        if not force:
+            sys.exit("Error file already exists: " + path)
+        else:
+            os.remove(path)
 
 
 def _welcome(config_dictionary):
     """
     Print welcome message
     """
-    _show(config_dictionary, "ToulligQC version " + config_dictionary['app.version'])
+    _show(config_dictionary, "ToulligQC version " + config_dictionary["app.version"])
 
 
 def _show(config_dictionary, msg):
@@ -204,18 +434,8 @@ def _show(config_dictionary, msg):
     :param config_dictionary: configuration dictionary
     :param msg: message to print
     """
-    if 'quiet' not in config_dictionary or config_dictionary['quiet'].lower() != 'true':
+    if "quiet" not in config_dictionary or config_dictionary["quiet"].lower() != "true":
         print(msg)
-
-
-def _format_time(t):
-    """
-    Format a time duration
-    :param t: time in milliseconds
-    :return: the duration in string
-    """
-
-    return time.strftime("%H:%M:%S", time.gmtime(t))
 
 
 def _join_parameter_arguments(arg):
@@ -225,54 +445,71 @@ def _join_parameter_arguments(arg):
     :return: a string with arguments separated by tab character or None if the input parameter is None
     """
 
-    if (arg is None):
+    if arg is None:
         return None
-    return '\t'.join(arg)
+    return "\t".join(arg)
 
 
-def _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict):
-    """
-    Initialization of the result_dict with the OS parameters and the environment variables
-    :param config_dictionary: details from command user line
-    :param result_dict: Dictionary which gathers all the extracted
-    information that will be reported in the report.data file
-    :return: result_dict dictionary and extractors list
-    """
-    result_dict['toulligqc.info.username'] = os.environ.get('USERNAME')
-    result_dict['toulligqc.info.user.home'] = os.environ['HOME']
-    result_dict['toulligqc.info.temporary.directory'] = tp.gettempdir()
-    result_dict['toulligqc.info.operating.system'] = pf.processor()
-    result_dict['toulligqc.info.python.version'] = pf.python_version()
-    result_dict['toulligqc.info.python.implementation'] = pf.python_implementation()
-    result_dict['toulligqc.info.hostname'] = os.uname()[1]
-    result_dict['toulligqc.info.report.name'] = config_dictionary['report_name']
-    result_dict['toulligqc.info.start.time'] = time.strftime("%x %X %Z")
-    result_dict['toulligqc.info.command.line'] = sys.argv
-    result_dict['toulligqc.info.executable.path'] = sys.argv[0]
-    result_dict['toulligqc.info.version'] = config_dictionary['app.version']
-    result_dict['toulligqc.info.output.dir'] = config_dictionary['result_directory']
-    result_dict['toulligqc.info.barcode.option'] = "False"
-    if config_dictionary['barcoding'].lower() == 'true':
-        result_dict['toulligqc.info.barcode.option'] = "True"
-        result_dict['toulligqc.info.barcode.selection'] = config_dictionary['barcode_selection']
-    dependancies_version(result_dict)
+def _create_extractor_list(config_dictionary):
+    result = []
 
-    return result_dict
+    if (
+        "sequencing_telemetry_source" in config_dictionary
+        and config_dictionary["sequencing_telemetry_source"]
+    ):
+        result.append(
+            sequencing_telemetry_extractor.SequencingTelemetryExtractor(
+                config_dictionary
+            )
+        )
+
+    if "fast5_source" in config_dictionary and config_dictionary["fast5_source"]:
+        result.append(fast5_extractor.Fast5Extractor(config_dictionary))
+
+    if "pod5_source" in config_dictionary and config_dictionary["pod5_source"]:
+        result.append(pod5_extractor.Pod5Extractor(config_dictionary))
+
+    if (
+        "sequencing_summary_1dsqr_source" in config_dictionary
+        and config_dictionary["sequencing_summary_1dsqr_source"]
+    ):
+        result.append(
+            sequencing_summary_onedsquare_extractor.OneDSquareSequencingSummaryExtractor(
+                config_dictionary
+            )
+        )
+    if "fastq" in config_dictionary and config_dictionary["fastq"]:
+        result.append(fastq_extractor.fastqExtractor(config_dictionary))
+    elif "bam" in config_dictionary and config_dictionary["bam"]:
+        result.append(bam_extractor.uBAM_Extractor(config_dictionary))
+
+    else:
+        result.append(
+            sequencing_summary_extractor.SequencingSummaryExtractor(config_dictionary)
+        )
+
+    result.insert(
+        0, toulligqc_info_extractor.ToulligqcInfoExtractor(config_dictionary, result)
+    )
+
+    return result
 
 
-def dependancies_version(result_dict):
-    """
-    Get the environment variables
-    :param result_dict: result_dict dictionnary
-    :return: result_dict entries about the environment variable like LANG
-    """
-    for name, module in sorted(sys.modules.items()):
-        if hasattr(module, '__version__'):
-            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.__version__
-        elif hasattr(module, 'VERSION'):
-            result_dict['toulligqc.info.dependancy.' + name + '.version'] = module.VERSION
-    for name, value in os.environ.items():
-        result_dict['toulligqc.info.env.' + name] = value
+def parse_samplesheet(sample_sheet):
+    columns = [
+        "flow_cell_id",
+        "experiment_id",
+        "flow_cell_product_code",
+        "kit",
+        "barcode",
+        "alias",
+    ]
+    try:
+        samplesheet = pd.read_csv(sample_sheet, usecols=columns)
+    except IOError:
+        raise FileNotFoundError("Error while reading samplesheet file")
+
+    return samplesheet
 
 
 def main():
@@ -282,29 +519,74 @@ def main():
     config_dictionary = configuration.ToulligqcConf()
     _parse_args(config_dictionary)
     _check_conf(config_dictionary)
-    _create_output_directories(config_dictionary)
 
-    warnings.simplefilter('ignore')
+    warnings.simplefilter("ignore")
 
     if not config_dictionary:
-        sys.exit("Error, dico_path is empty")
+        sys.exit("ERROR: dico_path is empty")
 
     # Get barcode selection
-    if config_dictionary['barcoding'].lower() == 'true':
+    allowed_patterns = r"(BC|RB|NB|BP|BARCODE)(\d{2})"
 
-        if 'barcodes' in config_dictionary:
+    if config_dictionary["barcoding"].lower() == "true":
+        config_dictionary["barcode_selection"] = []
+
+        if "samplesheet" in config_dictionary:
+            samplesheet = parse_samplesheet(config_dictionary["samplesheet"])
+            column = (
+                "alias" if "use_alias_for_barcodes" in config_dictionary else "barcode"
+            )
+            config_dictionary["barcodes"] = ",".join(
+                list(samplesheet[column].astype(str))
+            )
+            config_dictionary["barcode_alias"] = pd.Series(
+                samplesheet.alias.values, index=samplesheet[column]
+            ).to_dict()
+
+        if "barcodes" in config_dictionary or "samplesheet" in config_dictionary:
             barcode_set = set()
-            for b in config_dictionary['barcodes'].strip().split(','):
-                pattern = re.search(r'BC(\d{2})', b.strip().upper())
+            if ":" in config_dictionary["barcodes"]:
+                start, end = config_dictionary["barcodes"].strip().split(":")
+                pattern = re.search(allowed_patterns, start.strip().upper())
                 if pattern:
-                    barcode = 'barcode{}'.format(pattern.group(1))
+                    start_number = int(pattern.group(2))
+                pattern = re.search(allowed_patterns, end.strip().upper())
+                if pattern:
+                    end_number = int(pattern.group(2))
+                for i in range(start_number, end_number + 1):
+                    barcode = f"barcode{i:02}"
                     barcode_set.add(barcode)
+
+            else:
+                for b in config_dictionary["barcodes"].strip().split(","):
+                    pattern = re.search(allowed_patterns, b.strip().upper())
+                    if pattern:
+                        barcode = "barcode{}".format(pattern.group(2))
+                        barcode_set.add(barcode)
+                    else:
+                        if "use_alias_for_barcodes" not in config_dictionary:
+                            sys.stderr.write(
+                                "\033[93mWarning:\033[0m Barcode '{}' is non-standard custom arrangement.\n".format(
+                                    b
+                                )
+                            )
+                        barcode_set.add(b)
+                    if (
+                        "samplesheet" in config_dictionary
+                        and "use_alias_for_barcodes" not in config_dictionary
+                    ):
+                        config_dictionary["barcode_alias"][barcode] = config_dictionary[
+                            "barcode_alias"
+                        ].pop(b)
+
             barcode_selection = sorted(barcode_set)
-        config_dictionary['barcode_selection'] = barcode_selection
-        if barcode_selection == '':
-            sys.exit("No barcode selected defined")
+
+            if len(barcode_selection) == 0:
+                sys.exit("ERROR: No known barcode found in provided list of barcodes")
+            config_dictionary["barcode_selection"] = barcode_selection
+
     else:
-        config_dictionary['barcode_selection'] = ''
+        config_dictionary["barcode_selection"] = ""
 
     # Print welcome message
     _welcome(config_dictionary)
@@ -312,25 +594,26 @@ def main():
     # Configuration checking and initialisation of the extractors
     _show(config_dictionary, "* Initialize extractors")
 
-    extractors_list = []
-    result_dict = {'unwritten.keys': ['unwritten.keys']}
-    result_dict = _extractors_list_and_result_dictionary_initialisation(config_dictionary, result_dict)
-
-    toulligqc_extractor.ToulligqcExtractor.init(config_dictionary)
-    toulligqc_extractor.ToulligqcExtractor.extract(config_dictionary, extractors_list, result_dict)
+    # Create the list of extractors to execute
+    extractors_list = _create_extractor_list(config_dictionary)
 
     # Check extractor configuration
     for extractor in extractors_list:
         (check_result, error_message) = extractor.check_conf()
         if not check_result:
-            sys.exit("Error while checking " + extractor.get_name() + " configuration: " + error_message)
+            sys.exit(
+                "ERROR: Error while checking "
+                + extractor.get_name()
+                + " configuration: "
+                + error_message
+            )
 
+    result_dict = {}
     graphs = []
     qc_start = time.time()
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
-
         _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
         extractor_start = time.time()
 
@@ -342,22 +625,33 @@ def main():
 
         extractor_end = time.time()
         extract_time = extractor_end - extractor_start
-        result_dict['{}.duration'.format(extractor.get_report_data_file_id())] = round(extract_time, 2)
+        result_dict["{}.duration".format(extractor.get_report_data_file_id())] = round(
+            extract_time, 2
+        )
 
-        _show(config_dictionary, "* End of {0} extractor (done in {1})".format(extractor.get_name(),
-                                                                               _format_time(extract_time)))
+        _show(
+            config_dictionary,
+            "* End of {0} extractor (done in {1})".format(
+                extractor.get_name(), common.format_duration(extract_time)
+            ),
+        )
 
     # HTML report and report.data file generation
     _show(config_dictionary, "* Write HTML report")
     html_report_generator.html_report(config_dictionary, result_dict, graphs)
 
     qc_end = time.time()
-    result_dict['toulligqc.info.execution.duration'] = round((qc_end - qc_start), 2)
+    result_dict["toulligqc.info.execution.duration"] = round((qc_end - qc_start), 2)
 
-    if config_dictionary['is_quicklaunch'].lower() != 'true':
+    if config_dictionary["report_only"].lower() != "true":
         _show(config_dictionary, "* Write statistics files")
         report_data_file_generator.statistics_generator(config_dictionary, result_dict)
-    _show(config_dictionary, "* End of the QC extractor (done in {})".format(_format_time(qc_end - qc_start)))
+    _show(
+        config_dictionary,
+        "* End of the QC extractor (done in {})".format(
+            common.format_duration(qc_end - qc_start)
+        ),
+    )
 
 
 if __name__ == "__main__":

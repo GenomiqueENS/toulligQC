@@ -27,6 +27,7 @@
 #
 
 import tempfile
+
 from toulligqc import version
 
 
@@ -34,18 +35,23 @@ class ToulligqcConf:
     """
     Dictionary for the storage of configuration file
     """
+
     def __init__(self):
-        self._config_dictionary = {'app.name': "ToulligQC",
-                                   'app.url': "https://github.com/GenomicParisCentre/toulligQC",
-                                   'app.version':  version.__version__,
-                                   'quiet': 'False',
-                                   'dpi': '100',
-                                   'tmpdir': tempfile.gettempdir(),
-                                   'barcoding': 'False',
-                                   'is_quicklaunch': 'False'}
+        self._config_dictionary = {
+            "app.name": "ToulligQC",
+            "app.url": "https://github.com/GenomicParisCentre/toulligQC",
+            "app.version": version.__version__,
+            "quiet": "False",
+            "tmpdir": tempfile.gettempdir(),
+            "barcoding": "False",
+            "report_only": "False",
+        }
 
     def __getitem__(self, item):
         return self._config_dictionary[item]
+
+    def get(self, item, default):
+        return self._config_dictionary.get(item, default)
 
     def __setitem__(self, key, value):
         self._config_dictionary.__setitem__(key, value)
@@ -75,3 +81,11 @@ class ToulligqcConf:
     def keys(self):
         return self._config_dictionary.keys()
 
+    def qscore_threshold(self):
+        default_threshold = "9"
+        result = self._config_dictionary.get("threshold", default_threshold)
+
+        return default_threshold if result == "-1" else result
+
+    def is_default_qscore_threshold(self):
+        return self._config_dictionary.get("threshold") == "-1"

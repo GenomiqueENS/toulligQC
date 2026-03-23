@@ -1,28 +1,37 @@
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
-MAINTAINER Laurent Jourdren <jourdren@bio.ens.psl.eu>
-ARG VERSION=2.0b2
+ARG VERSION=2.8.4
+ARG UV_VERSION=0.9.17
+ARG INSTALL_PACKAGES="curl git"
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
+                    $INSTALL_PACKAGES \
                     python3 \
                     python3-pip\
-                    git\
-                    python3-tk\
-                    python3-h5py\
                     python3-matplotlib\
                     python3-plotly\
-                    python3-scipy\
+                    python3-h5py\
                     python3-pandas\
                     python3-numpy\
-                    python3-sklearn\
-                    python3-seaborn && \
-    pip3 install --upgrade setuptools && \
+                    python3-scipy\
+                    python3-sklearn \
+                    python3-pysam && \
+    pip3 install --break-system-packages "pod5==0.3.10" "ezcharts==0.15.2" && \
+    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-installer.sh | sh && \
     cd /tmp && \
-    git clone https://github.com/GenomicParisCentre/toulligQC && \
+    git clone https://github.com/GenomiqueENS/toulligQC.git && \
     cd toulligQC && \
     git checkout v$VERSION && \
-    python3 setup.py build install && \
-    apt remove --yes git && \
-    apt clean
-ENTRYPOINT ["toulligqc"]
-CMD ["--help"]
+    cd /tmp/toulligQC && \
+    /root/.local/bin/uv build && \
+    cd dist && \
+    pip3 install --break-system-packages toulligqc-*.tar.gz && \
+    cd / && \
+    rm -rf /tmp/toulligQC && \
+    rm -rf /root/.local && \
+    mkdir -p /root/.local/bin && \
+    touch /root/.local/bin/env && \
+    apt remove --yes --purge $INSTALL_PACKAGES && \
+    apt autoremove --yes --purge && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*

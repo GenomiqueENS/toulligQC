@@ -1,0 +1,171 @@
+ body {
+  border: 0;
+  margin: 0;
+  padding: 0;
+
+  font-family: {graph_font};
+  font-weight: lighter;
+  font-size: 16px;
+  color: #444;
+}
+
+#banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  border: 0;
+  width: calc(100% - 1em);
+  padding: 0.5em;
+  z-index: 2;
+
+  background-color: white;
+  border-bottom: 1px solid #CCC;
+}
+
+#leftCol {
+  position: fixed;
+  top: 5em;
+  margin: 0.5em 0 0 0.5em;
+  width: calc(366px - 0.5em);
+}
+
+#content {
+  display: block;
+  position: absolute;
+  top: 4.5em;
+  left: 366px;
+  right: 0;
+  bottom: 2.3em;
+  height: auto;
+  width: calc(100% - 366px - 0.5em);
+  padding-left: 0;
+  padding-right: 0.5em;
+  z-index: 1;
+  overflow: auto;
+}
+
+
+
+#footer {
+  position: fixed;
+  bottom:0;
+  margin: 0;
+  border: 0;
+  height: 1.3em;
+  width: calc(100% - 1em);
+  padding: 0.5em;
+  z-index:2;
+  overflow:hidden;
+  background-color: white;
+
+  border-top: 1px solid #CCC;
+}
+
+/* Header */
+
+#header_title {
+  display:inline-block;
+  float:left;
+  clear:left;
+  font-size: 175%;
+  font-weight: bold;
+  height: 100%;
+  white-space: nowrap;
+  width: 1%;
+  vertical-align:middle;
+}
+
+#header_filename {
+  display:inline-block;
+  float:right;
+  clear:right;
+  font-size: 90%;
+  text-align: right;
+  height: 100%;
+  background-color: white;
+}
+
+#header_logo {
+  margin-right: 0.25em;
+  vertical-align:middle;
+}
+
+/* Menu */
+
+.menu-vertical {
+  right: 1em;
+  padding: 4px;
+  margin-right : 1em;
+  list-style: none;
+  text-align: left;
+  background: #F2F2F2;
+}
+
+.mv-item, .mv-item a {
+  display: block;
+}
+
+.mv-item a {
+  margin: 1px 0;
+  padding: 8px 20px;
+  color: #666;
+  background: #FFF;
+  text-decoration: none;
+  transition: all .3s;
+}
+
+.mv-item a:hover, .mv-item a:focus {
+  background: #79BF90;
+  color: #FFF;
+  padding-left: 30px;
+}
+
+.mv-item a:enabled {
+  font-weight: bold;
+}
+
+/* Content */
+
+.module {
+  margin-top : 0;
+  width: {figure_image_width};
+  margin-bottom: 3em;
+}
+
+h2 {
+  margin-top: 0;
+  padding-top: 1em;
+  font-size: {title_size};
+  color: black;
+}
+
+td, th {
+  border: 1px solid #BEBEBE;
+  padding: 10px;
+}
+
+td {
+  text-align: right;
+}
+
+tr:nth-child(even) {
+  background-color: #eee;
+}
+
+thead {
+  background-color: #d7d9f2;
+}
+
+table {
+  border-collapse: collapse;
+  border: 2px solid #C8C8C8;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#help_link {
+  color: #3C6DC5;
+  text-decoration: none;
+}
+
