@@ -17,13 +17,11 @@
 # For more information on the ToulligQC project and its aims,
 # visit the home page at:
 #
-#      https://github.com/GenomicParisCentre/toulligQC
+#      https://github.com/GenomiqueENS/toulligQC
 #
-# First author: Lionel Ferrato-Berberian
-# Maintainer: Bérengère Laffay
-# Since version 0.1
 
 # Generates a quality control report in HTML format including graphs and statistical tables
+
 import base64
 import datetime
 import os

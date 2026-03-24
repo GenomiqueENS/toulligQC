@@ -17,13 +17,7 @@
 # For more information on the ToulligQC project and its aims,
 # visit the home page at:
 #
-#      https://github.com/GenomicParisCentre/toulligQC
-#
-# For more information on the ToulligQC project and its aims,
-# visit the home page at:
-#
-#      https://github.com/GenomicParisCentre/toulligQC
-#
+#      https://github.com/GenomiqueENS/toulligQC
 #
 
 import tempfile
@@ -39,7 +33,7 @@ class ToulligqcConf:
     def __init__(self):
         self._config_dictionary = {
             "app.name": "ToulligQC",
-            "app.url": "https://github.com/GenomicParisCentre/toulligQC",
+            "app.url": "https://github.com/GenomiqueENS/toulligQC",
             "app.version": version.__version__,
             "quiet": "False",
             "tmpdir": tempfile.gettempdir(),

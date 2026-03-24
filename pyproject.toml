@@ -36,7 +36,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/GenomiqueENS/toulligQC"
 Repository = "https://github.com/GenomiqueENS/toulligQC"
-Issues = "https://github.com/GenomicParisCentre/toulligQC/issues"
+Issues = "https://github.com/GenomiqueENS/toulligQC/issues"
 
 [project.scripts]
 toulligqc = "toulligqc.toulligqc:main"

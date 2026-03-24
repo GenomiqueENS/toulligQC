@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 #                  ToulligQC development code
 #
 # This code may be freely distributed and modified under the
@@ -14,9 +14,11 @@
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
 #
-# First author: Laurent Jourdren
-# Maintainer: Laurent Jourdren
-# Since version 2.0
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomiqueENS/toulligQC
+#
 
 # This module contains common methods for sequencing summary modules.
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 #                  ToulligQC development code
 #
 # This code may be freely distributed and modified under the
@@ -17,11 +17,8 @@
 # For more information on the ToulligQC project and its aims,
 # visit the home page at:
 #
-#      https://github.com/GenomicParisCentre/toulligQC
+#      https://github.com/GenomiqueENS/toulligQC
 #
-# First author: Laurent Jourdren
-# Maintainer: Bérengère Laffay
-# Since version 1.1
 
 # Extraction of run information from the sequencing_telemetry.js file
 

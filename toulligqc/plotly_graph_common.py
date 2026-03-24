@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 #                  ToulligQC development code
 #
 # This code may be freely distributed and modified under the
@@ -14,9 +14,11 @@
 # of the Institut de Biologie de l'École Normale Supérieure and
 # the individual authors.
 #
-# First author: Lionel Ferrato-Berberian, Karine Dias, Laurent Jourdren
-# Maintainer: Karine Dias
-# Since version 2.0
+# For more information on the ToulligQC project and its aims,
+# visit the home page at:
+#
+#      https://github.com/GenomiqueENS/toulligQC
+#
 
 # This module contains common methods for plotly modules.
 
@@ -83,7 +85,7 @@ interpolation_point_count_dict = {
     "phred_violin": (10000, 4000, 3),
 }
 
-help_url = "https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/master/docs/help.html"
+help_url = "https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/master/docs/help.html"
 
 
 def help_html_link(title, javascript=True):

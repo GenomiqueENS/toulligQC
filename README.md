@@ -4,7 +4,7 @@
 
 ToulligQC is dedicated to the QC analyses of Oxford Nanopore runs. This software is written in Python and developped by the [GenomiqueENS core facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.bio.ens.psl.eu/).
 
-Click on [following image](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/report.html) to see an report example. An [online help](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/help.html) is available to better understand graphics generated with ToulligQC when clicking on the [ⓘ](https://htmlpreview.github.io/?https://github.com/GenomicParisCentre/toulligQC/blob/master/docs/help.html) icon.
+Click on [following image](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/report.html) to see an report example. An [online help](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/help.html) is available to better understand graphics generated with ToulligQC when clicking on the [ⓘ](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/help.html) icon.
 
 <a href="https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/docs/images.png)</a>
 
@@ -53,7 +53,7 @@ $ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Then, clone and install ToulligQC:
 ```bash
-$ git clone https://github.com/GenomicParisCentre/toulligQC.git
+$ git clone https://github.com/GenomiqueENS/toulligQC.git
 # X.X here is the version of ToulligQC to install
 $ git checkout vX.X
 $ cd toulligqc
@@ -107,7 +107,7 @@ To run ToulligQC without Docker, you need to install the following Python module
 You can use a conda environment to install the required packages:
 
 ```
-git clone https://github.com/GenomicParisCentre/toulligQC.git
+git clone https://github.com/GenomiqueENS/toulligQC.git
 cd toulligqc
 conda env create -f environment.yml
 conda activate toulligqc

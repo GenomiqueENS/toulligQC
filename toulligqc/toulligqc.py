@@ -18,12 +18,9 @@
 # For more information on the ToulligQC project and its aims,
 # visit the home page at:
 #
-#      https://github.com/GenomicParisCentre/toulligQC
+#      https://github.com/GenomiqueENS/toulligQC
 #
-# First author: Lionel Ferrato-Berberian
-# Maintainer: Bérengère Laffay
-# Since version 0.1
-#
+
 # Toulligqc.py: Main's constitution
 # 1. It scans the user command line and creates the output directory
 # 2. Depending on the options selected, it creates a list of the necessary extractors
