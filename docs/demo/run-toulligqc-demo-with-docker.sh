@@ -83,7 +83,7 @@ docker run -ti \
 	   toulligqc \
              --report-name               ToulligQC_Demo_Data \
              --barcoding \
-	     --barcodes                  BC01,BC02,BC03,BC04,BC05,B0C7 \
+	     --barcodes                  BC01,BC02,BC03,BC04,BC05,BC07 \
              --telemetry-source          "$DATA_DIR/sequencing_telemetry.js" \
              --sequencing-summary-source "$DATA_DIR/sequencing_summary.txt" \
              --sequencing-summary-source "$DATA_DIR/barcoding_summary_pass.txt" \
