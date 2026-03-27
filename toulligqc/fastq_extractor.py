@@ -501,13 +501,13 @@ class fastqExtractor:
                 lower_key = key.lower()
 
                 if lower_key == "st":
-                    key = "start_time"
+                    lower_key = "start_time"
 
                 if lower_key == "sm":
-                    key = "barcode"
+                    lower_key = "barcode"
 
                 if lower_key == "pu":
-                    key = "flow_cell_id"
+                    lower_key = "flow_cell_id"
 
                 metadata[lower_key] = value
             return metadata
@@ -541,8 +541,6 @@ class fastqExtractor:
                         metadata["sample_id"] = '_'.join(tokens[1:])
                     else:
                         metadata["sample_id"] = sample_id
-
-            print(metadata)
 
         if 'ch' not in metadata:
             return None
