@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -22,9 +21,9 @@
 
 # Extraction of run information from the sequencing_telemetry.js file
 
-import json
-import gzip
 import bz2
+import gzip
+import json
 import os.path
 
 
@@ -248,5 +247,5 @@ def _load_json(filename):
         with bz2.open(filename, "rb") as f:
             return json.loads(f.read(), encoding="utf-8")
     else:
-        with open(filename, "r") as f:
+        with open(filename) as f:
             return json.load(f)

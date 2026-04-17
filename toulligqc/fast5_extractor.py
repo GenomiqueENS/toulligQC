@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -27,10 +26,10 @@ import shutil
 import sys
 import tarfile
 import tempfile
+
 import h5py
 
-from toulligqc.common import find_file_in_directory
-from toulligqc.common import set_result_dict_value
+from toulligqc.common import find_file_in_directory, set_result_dict_value
 
 
 class Fast5Extractor:

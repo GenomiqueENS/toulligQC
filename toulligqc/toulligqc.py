@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -29,29 +28,32 @@
 # 4. In the case of barcoded sequencing, it searches all barcodes from the command line argument --barcodes
 # 5. It uses all the information collected to generate a qc in the form of a htl-report and a report.data file
 
+import argparse
+import datetime
+import os
+import re
 import shutil
 import sys
-import re
-import argparse
-import os
 import time
-import datetime
+import warnings
+
 import pandas as pd
 
-import warnings
-from toulligqc import toulligqc_info_extractor
-from toulligqc import report_data_file_generator
-from toulligqc import html_report_generator
-from toulligqc import version
-from toulligqc import configuration
-from toulligqc import fast5_extractor
-from toulligqc import pod5_extractor
-from toulligqc import sequencing_summary_extractor
-from toulligqc import sequencing_summary_onedsquare_extractor
-from toulligqc import sequencing_telemetry_extractor
-from toulligqc import common
-from toulligqc import fastq_extractor
-from toulligqc import bam_extractor
+from toulligqc import (
+    bam_extractor,
+    common,
+    configuration,
+    fast5_extractor,
+    fastq_extractor,
+    html_report_generator,
+    pod5_extractor,
+    report_data_file_generator,
+    sequencing_summary_extractor,
+    sequencing_summary_onedsquare_extractor,
+    sequencing_telemetry_extractor,
+    toulligqc_info_extractor,
+    version,
+)
 
 
 def _parse_args(config_dictionary):
@@ -61,7 +63,7 @@ def _parse_args(config_dictionary):
     """
 
     parser = argparse.ArgumentParser(
-        prog="ToulligQC V{0}".format(version.__version__), add_help=False
+        prog=f"ToulligQC V{version.__version__}", add_help=False
     )
     required = parser.add_argument_group("required arguments")
     optional = parser.add_argument_group("optional arguments")
@@ -264,7 +266,7 @@ def _parse_args(config_dictionary):
     if not report_name:
         timestamp = datetime.datetime.now()
         config_dictionary["report_name"] = "Toulligqc-report-" + str(
-            (timestamp.strftime("%Y-%m-%d-%H%M%S"))
+            timestamp.strftime("%Y-%m-%d-%H%M%S")
         )
     else:
         config_dictionary["report_name"] = report_name
@@ -503,7 +505,7 @@ def parse_samplesheet(sample_sheet):
     ]
     try:
         samplesheet = pd.read_csv(sample_sheet, usecols=columns)
-    except IOError:
+    except OSError:
         raise FileNotFoundError("Error while reading samplesheet file")
 
     return samplesheet
@@ -558,14 +560,12 @@ def main():
                 for b in config_dictionary["barcodes"].strip().split(","):
                     pattern = re.search(allowed_patterns, b.strip().upper())
                     if pattern:
-                        barcode = "barcode{}".format(pattern.group(2))
+                        barcode = f"barcode{pattern.group(2)}"
                         barcode_set.add(barcode)
                     else:
                         if "use_alias_for_barcodes" not in config_dictionary:
                             sys.stderr.write(
-                                "\033[93mWarning:\033[0m Barcode '{}' is non-standard custom arrangement.\n".format(
-                                    b
-                                )
+                                f"\033[93mWarning:\033[0m Barcode '{b}' is non-standard custom arrangement.\n"
                             )
                         barcode_set.add(b)
                     if (
@@ -611,7 +611,7 @@ def main():
 
     # Information extraction about statistics and generation of the graphs
     for extractor in extractors_list:
-        _show(config_dictionary, "* Start {0} extractor".format(extractor.get_name()))
+        _show(config_dictionary, f"* Start {extractor.get_name()} extractor")
         extractor_start = time.time()
 
         # Execute extractor
@@ -622,15 +622,13 @@ def main():
 
         extractor_end = time.time()
         extract_time = extractor_end - extractor_start
-        result_dict["{}.duration".format(extractor.get_report_data_file_id())] = round(
+        result_dict[f"{extractor.get_report_data_file_id()}.duration"] = round(
             extract_time, 2
         )
 
         _show(
             config_dictionary,
-            "* End of {0} extractor (done in {1})".format(
-                extractor.get_name(), common.format_duration(extract_time)
-            ),
+            f"* End of {extractor.get_name()} extractor (done in {common.format_duration(extract_time)})",
         )
 
     # HTML report and report.data file generation
@@ -645,9 +643,7 @@ def main():
         report_data_file_generator.statistics_generator(config_dictionary, result_dict)
     _show(
         config_dictionary,
-        "* End of the QC extractor (done in {})".format(
-            common.format_duration(qc_end - qc_start)
-        ),
+        f"* End of the QC extractor (done in {common.format_duration(qc_end - qc_start)})",
     )
 
 

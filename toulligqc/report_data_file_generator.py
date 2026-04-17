@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -47,4 +46,4 @@ def statistics_generator(config_dictionary, result_dict):
     with open(config_dictionary["data_report_path"], "w") as file_data:
         for key, value in result_dict.items():
             if key not in result_dict["unwritten.keys"]:
-                file_data.write("{0}={1}\n".format(key, value))
+                file_data.write(f"{key}={value}\n")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -27,11 +26,13 @@ import datetime
 import os
 import pkgutil
 
-from toulligqc.plotly_graph_common import _format_int
-from toulligqc.plotly_graph_common import figure_image_width
-from toulligqc.plotly_graph_common import graph_font
-from toulligqc.plotly_graph_common import help_html_link
-from toulligqc.plotly_graph_common import title_size
+from toulligqc.plotly_graph_common import (
+    _format_int,
+    figure_image_width,
+    graph_font,
+    help_html_link,
+    title_size,
+)
 
 
 def html_report(config_dictionary, result_dict, graphs):
@@ -389,20 +390,20 @@ def _other_module_reports(graphs, remove_image_files):
 
             # Plotly graph with table
             if table is not None:
-                result += """
+                result += f"""
       <div class="module" id=M{i}>
         {html}
         {table}
       </div>
-""".format(i=i, html=html, table=table)
+"""
 
             # Plotly graph without table
             else:
-                result += """
+                result += f"""
       <div class="module" id=M{i}>
         {html}
       </div>
-""".format(i=i, html=html)
+"""
 
         elif len(t) == 3:
             # image
@@ -410,33 +411,22 @@ def _other_module_reports(graphs, remove_image_files):
 
             # Image with table
             if table is not None:
-                result += """
+                result += f"""
             <div class="module" id=M{i}>
-              <h2>{name} {help_link}</h2>
-              <div class="box"><img src="{image}"/></div>
+              <h2>{name} {help_html_link(name)}</h2>
+              <div class="box"><img src="{_embedded_image(path, remove=remove_image_files)}"/></div>
               {table}
             </div>
-            """.format(
-                    i=i,
-                    name=name,
-                    help_link=help_html_link(name),
-                    image=_embedded_image(path, remove=remove_image_files),
-                    table=table,
-                )
+            """
 
             # Image without table
             else:
-                result += """
+                result += f"""
             <div class="module" id=M{i}>
-              <h2>{name} {help_link}</h2>
-              <div class="box"><img src="{image}"/></div>
+              <h2>{name} {help_html_link(name)}</h2>
+              <div class="box"><img src="{_embedded_image(path, remove=remove_image_files)}"/></div>
             </div>
-            """.format(
-                    i=i,
-                    name=name,
-                    help_link=help_html_link(name),
-                    image=_embedded_image(path, remove=remove_image_files),
-                )
+            """
 
     return result
 
@@ -474,7 +464,7 @@ def _get_result_value(result_dict, key, default_value="", value_type="str"):
         result = result_dict[key]
         if len(result) > 0:
             if value_type == "float":
-                result = "{:.2f}".format(float(result))
+                result = f"{float(result):.2f}"
 
             return result
 
@@ -515,6 +505,6 @@ def _iso8601_to_formatted_date(date_string):
 def _format_int_with_prefix(i):
     for x in ((12, "T"), (9, "G"), (6, "M"), (3, "K")):
         if i / 10 ** x[0] > 1:
-            return "{:.2f}{}".format(float(i) / float(10 ** x[0]), x[1])
+            return f"{float(i) / float(10 ** x[0]):.2f}{x[1]}"
 
     return i

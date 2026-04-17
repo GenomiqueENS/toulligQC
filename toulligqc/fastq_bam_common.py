@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -21,8 +20,9 @@
 #
 
 import multiprocessing as mp
-from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
+from tqdm import tqdm
 
 
 def extract_headerTag(header, tagGroup, tag, defaultValue=None):

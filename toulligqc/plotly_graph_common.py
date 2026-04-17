@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -22,9 +21,9 @@
 
 # This module contains common methods for plotly modules.
 
+import pkgutil
 from collections import defaultdict
 
-import pkgutil
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
@@ -101,7 +100,7 @@ def help_html_link(title, javascript=True):
 
 
 def _format_int(i):
-    return "{:,d}".format(i)
+    return f"{i:,d}"
 
 
 def _format_float(f):
@@ -112,7 +111,7 @@ def _format_float(f):
     except ValueError:
         return 0
 
-    return "{:,d}".format(i) + "{:.2f}".format(f)[1:]
+    return f"{i:,d}" + f"{f:.2f}"[1:]
 
 
 def _format_percent(f):
@@ -122,7 +121,7 @@ def _format_percent(f):
 def _title(title):
     return dict(
         title=dict(
-            text="<b>{}</b> <b>{}<b>".format(title, help_html_link(title, False)),
+            text=f"<b>{title}</b> <b>{help_html_link(title, False)}<b>",
             y=0.95,
             x=0,
             xanchor="left",
@@ -536,10 +535,10 @@ def _barcode_boxplot_graph(
     barcode_alias=None,
 ):
     # Sort reads by read type and drop read type column
-    pass_df = df.loc[df["passes_filtering"] == bool(True)].drop(
+    pass_df = df.loc[df["passes_filtering"] == True].drop(
         columns="passes_filtering"
     )
-    fail_df = df.loc[df["passes_filtering"] == bool(False)].drop(
+    fail_df = df.loc[df["passes_filtering"] == False].drop(
         columns="passes_filtering"
     )
 

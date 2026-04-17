@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -29,19 +28,21 @@ import numpy as np
 import pandas as pd
 
 from toulligqc import plotly_graph_generator as pgg
-from toulligqc.extractor_common import check_result_values
-from toulligqc.extractor_common import count_boolean_elements
-from toulligqc.extractor_common import describe_dict
-from toulligqc.extractor_common import extract_barcode_info
-from toulligqc.extractor_common import get_result_value
-from toulligqc.extractor_common import set_result_value
-from toulligqc.extractor_common import log_task
-from toulligqc.extractor_common import add_image_to_result
-from toulligqc.extractor_common import read_first_line_file
-from toulligqc.extractor_common import pd_read_sequencing_summary
-from toulligqc.extractor_common import fill_series_dict
-from toulligqc.common_statistics import compute_NXX, compute_LXX, occupancy_channel
 from toulligqc.common import is_numpy_1_24
+from toulligqc.common_statistics import compute_LXX, compute_NXX, occupancy_channel
+from toulligqc.extractor_common import (
+    add_image_to_result,
+    check_result_values,
+    count_boolean_elements,
+    describe_dict,
+    extract_barcode_info,
+    fill_series_dict,
+    get_result_value,
+    log_task,
+    pd_read_sequencing_summary,
+    read_first_line_file,
+    set_result_value,
+)
 
 
 class SequencingSummaryExtractor:
@@ -159,9 +160,7 @@ class SequencingSummaryExtractor:
 
         log_task(
             self.quiet,
-            "Load sequencing summary file ({:,.2f} MB used)".format(
-                self.dataframe_1d.memory_usage(deep=True).sum() / 1024 / 1024
-            ),
+            f"Load sequencing summary file ({self.dataframe_1d.memory_usage(deep=True).sum() / 1024 / 1024:,.2f} MB used)",
             start_time,
             time.time(),
         )
@@ -547,8 +546,8 @@ class SequencingSummaryExtractor:
                         {self.barcode_colname: "category"}
                     )
                     sys.stderr.write(
-                        "Warning: The sequencing summary file {} contains barcode information."
-                        " The barcoding summary files will be skipped.\n".format(f)
+                        f"Warning: The sequencing summary file {f} contains barcode information."
+                        " The barcoding summary files will be skipped.\n"
                     )
                     return pd_read_sequencing_summary(
                         f,
@@ -587,10 +586,8 @@ class SequencingSummaryExtractor:
                 )
                 if missing_barcodes_count > 0:
                     sys.stderr.write(
-                        "Warning: {} barcodes values are missing in sequencing summary file(s)."
-                        ' They will be marked as "unclassified".\n'.format(
-                            missing_barcodes_count
-                        )
+                        f"Warning: {missing_barcodes_count} barcodes values are missing in sequencing summary file(s)."
+                        ' They will be marked as "unclassified".\n'
                     )
 
                 # Replace missing barcodes values by 'unclassified'
@@ -608,7 +605,7 @@ class SequencingSummaryExtractor:
 
                 return dataframes_merged
 
-        except IOError:
+        except OSError:
             raise FileNotFoundError("Sequencing summary file not found")
 
     @staticmethod

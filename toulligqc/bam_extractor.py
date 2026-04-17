@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -21,31 +20,38 @@
 #
 
 import os
+import time
+
 import numpy as np
 import pandas as pd
-import time
 import pysam
-from toulligqc.extractor_common import log_task
-from toulligqc.extractor_common import describe_dict
-from toulligqc.extractor_common import set_result_value
-from toulligqc.extractor_common import add_image_to_result
-from toulligqc.extractor_common import check_result_values
-from toulligqc.extractor_common import count_boolean_elements
-from toulligqc.extractor_common import get_result_value
-from toulligqc.extractor_common import set_result_dict_telemetry_value
-from toulligqc.extractor_common import fill_series_dict
-from toulligqc.extractor_common import timeISO_to_float
-from toulligqc.extractor_common import extract_barcode_info
-from toulligqc.common_statistics import (
-    compute_NXX,
-    compute_LXX,
-    occupancy_channel,
-    avg_qual,
-)
-from toulligqc.fastq_bam_common import multiprocessing_submit, extract_headerTag
-from toulligqc.fastq_bam_common import batch_iterator
-from toulligqc.common import is_numpy_1_24
+
 from toulligqc import plotly_graph_generator as pgg
+from toulligqc.common import is_numpy_1_24
+from toulligqc.common_statistics import (
+    avg_qual,
+    compute_LXX,
+    compute_NXX,
+    occupancy_channel,
+)
+from toulligqc.extractor_common import (
+    add_image_to_result,
+    check_result_values,
+    count_boolean_elements,
+    describe_dict,
+    extract_barcode_info,
+    fill_series_dict,
+    get_result_value,
+    log_task,
+    set_result_dict_telemetry_value,
+    set_result_value,
+    timeISO_to_float,
+)
+from toulligqc.fastq_bam_common import (
+    batch_iterator,
+    extract_headerTag,
+    multiprocessing_submit,
+)
 
 
 class uBAM_Extractor:
@@ -102,9 +108,7 @@ class uBAM_Extractor:
 
         log_task(
             self.quiet,
-            "Load BAM file ({:,.2f} MB used)".format(
-                self.dataframe.memory_usage(deep=True).sum() / 1024 / 1024
-            ),
+            f"Load BAM file ({self.dataframe.memory_usage(deep=True).sum() / 1024 / 1024:,.2f} MB used)",
             start_time,
             time.time(),
         )

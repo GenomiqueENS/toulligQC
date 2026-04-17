@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -26,26 +25,27 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 
-from toulligqc.plotly_graph_common import _barcode_boxplot_graph
-from toulligqc.plotly_graph_common import _create_and_save_div
-from toulligqc.plotly_graph_common import _dataFrame_to_html
-from toulligqc.plotly_graph_common import _format_float
-from toulligqc.plotly_graph_common import _format_int
-from toulligqc.plotly_graph_common import _over_time_graph
-from toulligqc.plotly_graph_common import _phred_score_density
-from toulligqc.plotly_graph_common import _pie_chart_graph
-from toulligqc.plotly_graph_common import _quality_multiboxplot
-from toulligqc.plotly_graph_common import _read_length_distribution
-from toulligqc.plotly_graph_common import _twod_density_char
-from toulligqc.plotly_graph_common import _title
-from toulligqc.plotly_graph_common import _transparent_colors
-from toulligqc.plotly_graph_common import _xaxis
-from toulligqc.plotly_graph_common import _yaxis
-from toulligqc.plotly_graph_common import default_graph_layout
-from toulligqc.plotly_graph_common import line_width
-from toulligqc.plotly_graph_common import plotly_background_color
-from toulligqc.plotly_graph_common import toulligqc_colors
-
+from toulligqc.plotly_graph_common import (
+    _barcode_boxplot_graph,
+    _create_and_save_div,
+    _dataFrame_to_html,
+    _format_float,
+    _format_int,
+    _over_time_graph,
+    _phred_score_density,
+    _pie_chart_graph,
+    _quality_multiboxplot,
+    _read_length_distribution,
+    _title,
+    _transparent_colors,
+    _twod_density_char,
+    _xaxis,
+    _yaxis,
+    default_graph_layout,
+    line_width,
+    plotly_background_color,
+    toulligqc_colors,
+)
 
 #
 #  1D² plots

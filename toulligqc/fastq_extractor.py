@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -20,32 +19,36 @@
 #      https://github.com/GenomiqueENS/toulligQC
 #
 
-import os
-import numpy as np
-import pandas as pd
 import gzip
+import os
 import re
 import time
-from toulligqc.extractor_common import log_task
-from toulligqc.extractor_common import describe_dict
-from toulligqc.extractor_common import set_result_value
-from toulligqc.extractor_common import check_result_values
-from toulligqc.extractor_common import add_image_to_result
-from toulligqc.extractor_common import count_boolean_elements
-from toulligqc.extractor_common import get_result_value
-from toulligqc.extractor_common import fill_series_dict
-from toulligqc.extractor_common import set_result_dict_telemetry_value
-from toulligqc.extractor_common import timeISO_to_float
-from toulligqc.extractor_common import extract_barcode_info
+
+import numpy as np
+import pandas as pd
+
+from toulligqc import plotly_graph_generator as pgg
+from toulligqc.common import is_numpy_1_24
 from toulligqc.common_statistics import (
-    compute_NXX,
-    compute_LXX,
-    occupancy_channel,
     avg_qual,
+    compute_LXX,
+    compute_NXX,
+    occupancy_channel,
+)
+from toulligqc.extractor_common import (
+    add_image_to_result,
+    check_result_values,
+    count_boolean_elements,
+    describe_dict,
+    extract_barcode_info,
+    fill_series_dict,
+    get_result_value,
+    log_task,
+    set_result_dict_telemetry_value,
+    set_result_value,
+    timeISO_to_float,
 )
 from toulligqc.fastq_bam_common import multiprocessing_submit
-from toulligqc.common import is_numpy_1_24
-from toulligqc import plotly_graph_generator as pgg
 
 
 class fastqExtractor:
@@ -100,9 +103,7 @@ class fastqExtractor:
 
         log_task(
             self.quiet,
-            "Load FASTQ file ({:,.2f} MB used)".format(
-                self.dataframe_1d.memory_usage(deep=True).sum() / 1024 / 1024
-            ),
+            f"Load FASTQ file ({self.dataframe_1d.memory_usage(deep=True).sum() / 1024 / 1024:,.2f} MB used)",
             start_time,
             time.time(),
         )

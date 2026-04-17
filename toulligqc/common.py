@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -20,10 +19,11 @@
 #      https://github.com/GenomiqueENS/toulligQC
 #
 
-import numpy as np
-from packaging import version
 import glob
 import os
+
+import numpy as np
+from packaging import version
 
 
 def is_numpy_1_24():
@@ -40,7 +40,7 @@ def format_duration(t):
     :return: the duration in string
     """
 
-    return "{:,d}m{:2.2f}s".format(int(t // 60), t % 60)
+    return f"{int(t // 60):,d}m{t % 60:2.2f}s"
 
 
 def set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):

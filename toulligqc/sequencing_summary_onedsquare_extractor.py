@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -30,18 +29,20 @@ import pandas as pd
 
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc import plotly_graph_onedsquare_generator as pgg2
-from toulligqc.extractor_common import check_result_values
-from toulligqc.extractor_common import count_boolean_elements
-from toulligqc.extractor_common import describe_dict
-from toulligqc.extractor_common import extract_barcode_info
-from toulligqc.extractor_common import get_result_value
-from toulligqc.extractor_common import series_cols_boolean_elements
-from toulligqc.extractor_common import set_result_value
-from toulligqc.extractor_common import log_task
-from toulligqc.extractor_common import add_image_to_result
-from toulligqc.extractor_common import read_first_line_file
-from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 from toulligqc.common import is_numpy_1_24
+from toulligqc.extractor_common import (
+    add_image_to_result,
+    check_result_values,
+    count_boolean_elements,
+    describe_dict,
+    extract_barcode_info,
+    get_result_value,
+    log_task,
+    read_first_line_file,
+    series_cols_boolean_elements,
+    set_result_value,
+)
+from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
 
 
 class OneDSquareSequencingSummaryExtractor(SSE):
@@ -150,9 +151,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         log_task(
             self.quiet,
-            "Load 1D² sequencing summary file ({:,.2f} MB used)".format(
-                self.dataframe_1dsqr.memory_usage(deep=True).sum() / 1024 / 1024
-            ),
+            f"Load 1D² sequencing summary file ({self.dataframe_1dsqr.memory_usage(deep=True).sum() / 1024 / 1024:,.2f} MB used)",
             start_time,
             time.time(),
         )
@@ -625,10 +624,8 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 )
                 if missing_barcodes_count > 0:
                     sys.stderr.write(
-                        "Warning: {} barcodes values are missing in sequencing summary file(s)."
-                        ' They will be marked as "unclassified".\n'.format(
-                            missing_barcodes_count
-                        )
+                        f"Warning: {missing_barcodes_count} barcodes values are missing in sequencing summary file(s)."
+                        ' They will be marked as "unclassified".\n'
                     )
                 # Add missing categories
                 dataframes_merged["barcode_arrangement"] = dataframes_merged[
@@ -652,7 +649,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
                 return dataframes_merged
 
-        except IOError:
+        except OSError:
             raise FileNotFoundError("Sequencing summary file not found")
 
     @staticmethod

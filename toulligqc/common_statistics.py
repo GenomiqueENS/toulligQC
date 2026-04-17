@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #                  ToulligQC development code
 #
@@ -20,9 +19,10 @@
 #      https://github.com/GenomiqueENS/toulligQC
 #
 
+from math import log
+
 import numpy as np
 import pandas as pd
-from math import log
 
 
 def occupancy_channel(dataframe):

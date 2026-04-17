@@ -1,16 +1,18 @@
-import sys
 import os
 import re
+import sys
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../toulligqc")
-from toulligqc import sequencing_summary_extractor as sse
 import unittest
 from unittest.mock import MagicMock
+
 import config as cfg
+import numpy as np
 import pandas as pd
 import pandas.util.testing as testing
+
+from toulligqc import sequencing_summary_extractor as sse
 from toulligqc.common import is_numpy_1_24
-import numpy as np
 
 ####################################################################################
 # Tests of the SequencingSummaryExtractor class with several configuration cases : #
