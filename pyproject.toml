@@ -62,4 +62,37 @@ include = [
 ]
 
 [tool.uv]
-dev-dependencies = []
+dev-dependencies = [
+    "ruff>=0.4.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = [
+    ".git",
+    ".github",
+    "__pycache__",
+    "dist",
+    "build",
+    "docs",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["toulligqc"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
