@@ -201,11 +201,7 @@ def _basic_statistics_module_report(
 
     try:
         seconds = result_dict["basecaller.sequencing.summary.1d.extractor.run.time"]
-        run_time = "%dh%02dm%02ds" % (
-            seconds // 3600,
-            (seconds % 3600) // 60,
-            seconds % 60,
-        )
+        run_time = f"{seconds // 3600}h{(seconds % 3600) // 60:02d}m{seconds % 60:02d}s"
     except KeyError:
         run_time = "Unknown"
 

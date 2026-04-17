@@ -535,10 +535,10 @@ def _barcode_boxplot_graph(
     barcode_alias=None,
 ):
     # Sort reads by read type and drop read type column
-    pass_df = df.loc[df["passes_filtering"] == True].drop(
+    pass_df = df.loc[df["passes_filtering"]].drop(
         columns="passes_filtering"
     )
-    fail_df = df.loc[df["passes_filtering"] == False].drop(
+    fail_df = df.loc[not df["passes_filtering"]].drop(
         columns="passes_filtering"
     )
 

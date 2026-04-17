@@ -470,8 +470,7 @@ class uBAM_Extractor:
         for ubam in self.ubam:
             samfile = pysam.AlignmentFile(ubam, "rb", check_sq=False)
             bam_batch = batch_iterator(samfile, batch_size=self.batch_size)
-            for batch in bam_batch:
-                yield batch
+            yield from bam_batch
 
     def _get_header(self):
         sam_file = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)

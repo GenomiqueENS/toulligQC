@@ -287,10 +287,10 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     for index_barcode, barcode in enumerate(barcode_selection):
         barcode_all_reads_df = df[df["barcode_arrangement"] == barcode]
         barcode_pass_reads_df = barcode_all_reads_df.loc[
-            df["passes_filtering"] == True
+            df["passes_filtering"]
         ]
         barcode_fail_reads_df = barcode_all_reads_df.loc[
-            df["passes_filtering"] == False
+            not df["passes_filtering"]
         ]
 
         # Add all barcode statistics to result_dict based on values of selected dataframes

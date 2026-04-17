@@ -68,8 +68,7 @@ class ToulligqcConf:
         del self._config_dictionary[key]
 
     def __iter__(self):
-        for key in self._config_dictionary:
-            yield key
+        yield from self._config_dictionary
 
     def keys(self):
         return self._config_dictionary.keys()
