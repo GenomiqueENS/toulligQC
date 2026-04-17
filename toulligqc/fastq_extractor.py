@@ -60,7 +60,9 @@ class fastqExtractor:
         self.batch_size = int(config_dictionary["batch_size"])
         self.thread = int(config_dictionary["thread"])
         self.rich = False
-        self.runid, self.sampleid, self.model_version_id, self.flowcell_id = ["Unknown"] * 4
+        self.runid, self.sampleid, self.model_version_id, self.flowcell_id = [
+            "Unknown"
+        ] * 4
         self.is_barcode = False
         if config_dictionary["barcoding"] == "True":
             self.is_barcode = True
@@ -277,7 +279,6 @@ class fastqExtractor:
         )
         set_result_dict_telemetry_value(result_dict, "flowcell.id", self.flowcell_id)
 
-
         set_result_value(self, result_dict, "read.count", len(self.dataframe_1d))
         set_result_value(
             self,
@@ -402,7 +403,9 @@ class fastqExtractor:
 
         if run_info:
             self.rich = True
-            self.runid, self.sampleid, self.model_version_id, self.flowcell_id = run_info
+            self.runid, self.sampleid, self.model_version_id, self.flowcell_id = (
+                run_info
+            )
         else:
             self.rich = False
 
@@ -514,13 +517,13 @@ class fastqExtractor:
 
     def _parse_fastq_entry_header(self, header):
 
-        if '\t' not in header:
+        if "\t" not in header:
             return dict(x.split("=") for x in header.split(" ")[1:])
         else:
             metadata = {}
-            tags = header.split('\t')[1:]
+            tags = header.split("\t")[1:]
             for tag in tags:
-                key, _, value = tag.split(':', 2)
+                key, _, value = tag.split(":", 2)
                 lower_key = key.lower()
 
                 if lower_key == "st":
@@ -543,13 +546,19 @@ class fastqExtractor:
             first_line = fq.readline().strip("\n")
         metadata = self._parse_fastq_entry_header(first_line)
 
-        if 'rg' in metadata:
-            if '_' not in metadata['rg']:
+        if "rg" in metadata:
+            if "_" not in metadata["rg"]:
                 return None
 
-            m = re.search('([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_([a-z0-9@\\._]+@v[0-9.]+)([_0-9a-zA-Z]*)', metadata['rg'])
+            m = re.search(
+                "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_([a-z0-9@\\._]+@v[0-9.]+)([_0-9a-zA-Z]*)",
+                metadata["rg"],
+            )
             if not m:
-                m = re.search('([0-9a-f]{40})_([a-z0-9@\\._]+@v[0-9.]+)([_0-9a-zA-Z\\-]*)', metadata['rg'])
+                m = re.search(
+                    "([0-9a-f]{40})_([a-z0-9@\\._]+@v[0-9.]+)([_0-9a-zA-Z\\-]*)",
+                    metadata["rg"],
+                )
             if m:
                 groups = m.groups()
                 print(groups)
@@ -561,11 +570,11 @@ class fastqExtractor:
                     if sample_id.startswith("SQK-"):
                         tokens = sample_id.split("_")
                         metadata["sequencing_kit"] = tokens[0]
-                        metadata["sample_id"] = '_'.join(tokens[1:])
+                        metadata["sample_id"] = "_".join(tokens[1:])
                     else:
                         metadata["sample_id"] = sample_id
 
-        if 'ch' not in metadata:
+        if "ch" not in metadata:
             return None
 
         if "barcode" not in metadata:
@@ -575,7 +584,12 @@ class fastqExtractor:
         try:
             sample_id = "sample_id" if "sample_id" in metadata else "sampleid"
             run_id = "run_id" if "run_id" in metadata else "runid"
-            return metadata.get(run_id, "Unknown"), metadata.get(sample_id, "Unknown"), metadata.get("model_version_id", "Unknown"), metadata.get("flow_cell_id", "Unknown")
+            return (
+                metadata.get(run_id, "Unknown"),
+                metadata.get(sample_id, "Unknown"),
+                metadata.get("model_version_id", "Unknown"),
+                metadata.get("flow_cell_id", "Unknown"),
+            )
         except KeyError:
             return None
 

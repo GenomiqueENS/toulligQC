@@ -240,9 +240,7 @@ class TestSequencingSummaryExtractorOnlySequencingSummary(unittest.TestCase):
             instance.dataframe_1d.loc[instance.dataframe_1d["passes_filtering"]]
         )
         read_fail_count = len(
-            instance.dataframe_1d.loc[
-                ~instance.dataframe_1d["passes_filtering"]
-            ]
+            instance.dataframe_1d.loc[~instance.dataframe_1d["passes_filtering"]]
         )
         read_pass_ratio = read_pass_count / read_count
         read_fail_ratio = read_fail_count / read_count

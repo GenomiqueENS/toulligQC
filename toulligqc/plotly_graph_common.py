@@ -183,9 +183,9 @@ def _make_describe_dataframe(value):
 
     desc = value.describe()
     desc = desc.astype(object)
-    desc.loc['count'] = [_format_int(int(v)) for v in desc.loc['count']]
+    desc.loc["count"] = [_format_int(int(v)) for v in desc.loc["count"]]
     desc.iloc[1:] = desc.iloc[1:].map(lambda x: _format_float(x))
-    desc.rename({'50%': 'median'}, axis='index', inplace=True)
+    desc.rename({"50%": "median"}, axis="index", inplace=True)
 
     return desc
 
@@ -535,12 +535,8 @@ def _barcode_boxplot_graph(
     barcode_alias=None,
 ):
     # Sort reads by read type and drop read type column
-    pass_df = df.loc[df["passes_filtering"]].drop(
-        columns="passes_filtering"
-    )
-    fail_df = df.loc[not df["passes_filtering"]].drop(
-        columns="passes_filtering"
-    )
+    pass_df = df.loc[df["passes_filtering"]].drop(columns="passes_filtering")
+    fail_df = df.loc[not df["passes_filtering"]].drop(columns="passes_filtering")
 
     fig = go.Figure()
 

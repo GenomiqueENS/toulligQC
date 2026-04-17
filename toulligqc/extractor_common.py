@@ -71,9 +71,7 @@ def _check_result_key_value(key, value):
         and not isinstance(value, float)
         and not isinstance(value, str)
     ):
-        raise TypeError(
-            f"Invalid type for the value of the key {key}: {type(value)} "
-        )
+        raise TypeError(f"Invalid type for the value of the key {key}: {type(value)} ")
 
 
 def describe_dict(extractor, result_dict: dict, function, entry: str):
@@ -286,12 +284,8 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
     # Create dataframes filtered by barcodes and read quality
     for index_barcode, barcode in enumerate(barcode_selection):
         barcode_all_reads_df = df[df["barcode_arrangement"] == barcode]
-        barcode_pass_reads_df = barcode_all_reads_df.loc[
-            df["passes_filtering"]
-        ]
-        barcode_fail_reads_df = barcode_all_reads_df.loc[
-            not df["passes_filtering"]
-        ]
+        barcode_pass_reads_df = barcode_all_reads_df.loc[df["passes_filtering"]]
+        barcode_fail_reads_df = barcode_all_reads_df.loc[not df["passes_filtering"]]
 
         # Add all barcode statistics to result_dict based on values of selected dataframes
         _barcode_stats(
