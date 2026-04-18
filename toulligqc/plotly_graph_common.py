@@ -536,7 +536,7 @@ def _barcode_boxplot_graph(
 ):
     # Sort reads by read type and drop read type column
     pass_df = df.loc[df["passes_filtering"]].drop(columns="passes_filtering")
-    fail_df = df.loc[not df["passes_filtering"]].drop(columns="passes_filtering")
+    fail_df = df.loc[~df["passes_filtering"]].drop(columns="passes_filtering")
 
     fig = go.Figure()
 
