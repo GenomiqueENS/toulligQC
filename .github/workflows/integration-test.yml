@@ -39,5 +39,5 @@ jobs:
       - name: Compare report.data against expected values
         run: |
           uv run python test/toulligqc-compare-reports.py \
-            /tmp/toulligqc_output/report.data \
+            /tmp/toulligqc_output/*/report.data \
             test_data/integration/report.data.expected
