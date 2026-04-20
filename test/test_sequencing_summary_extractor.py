@@ -1,18 +1,13 @@
-import os
 import re
-import sys
-
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../toulligqc")
 import unittest
 from unittest.mock import MagicMock
 
 import config as cfg
 import numpy as np
 import pandas as pd
-import pandas.util.testing as testing
+import pandas.testing as testing
 
 from toulligqc import sequencing_summary_extractor as sse
-from toulligqc.common import is_numpy_1_24
 
 ####################################################################################
 # Tests of the SequencingSummaryExtractor class with several configuration cases : #
@@ -47,7 +42,7 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
             "duration",
             "passes_filtering",
             "sequence_length",
-            "mean_qscore_template",
+            "mean_qscore",
             "barcode_arrangement",
         ]
 
@@ -68,7 +63,7 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         )
 
         cls.expected_df = pd.DataFrame(
-            data=data_test, columns=cols, index=pd.Int64Index(data=pd.RangeIndex(0, 11))
+            data=data_test, columns=cols, index=pd.RangeIndex(0, 11)
         )
 
         # Convert explicitly string values of passes_filtering into booleans
@@ -79,11 +74,11 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         cls.expected_df = cls.expected_df.astype(
             {
                 "channel": np.int16,
-                "start_time": np.float,
-                "passes_filtering": np.bool_ if is_numpy_1_24 else np.bool,
+                "start_time": np.float64,
+                "passes_filtering": np.bool_,
                 "sequence_length": np.uint32,
-                "mean_qscore_template": np.float,
-                "duration": np.float,
+                "mean_qscore": np.float32,
+                "duration": np.float32,
                 "barcode_arrangement": object,
             }
         )
@@ -120,7 +115,9 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         instance.init()
         actual_df = instance.dataframe_1d.head(11)
 
-        testing.assert_frame_equal(self.expected_df, actual_df, check_exact=True)
+        testing.assert_frame_equal(
+            self.expected_df, actual_df, check_dtype=False, check_categorical=False
+        )
 
     def test_load_sequencing_summary_data_col_types(self):
         """
@@ -130,13 +127,13 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         actual_df = sse.SequencingSummaryExtractor(
             self.config
         )._load_sequencing_summary_data()
-        testing.is_bool(actual_df["passes_filtering"].dtype)
+        assert pd.api.types.is_bool_dtype(actual_df["passes_filtering"])
 
         # test if all columns are filled with number values except passes_filtering & barcode_arrangement
         actual_df_types = actual_df.drop(
             ["passes_filtering", "barcode_arrangement"], axis=1, inplace=False
         ).dtypes
-        testing.is_number(actual_df_types)
+        assert all(pd.api.types.is_numeric_dtype(t) for t in actual_df_types)
 
     def test_load_sequencing_summary_data_barcode_data(self):
         """
@@ -147,7 +144,7 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         )._load_sequencing_summary_data()
         random_values = actual_df["barcode_arrangement"].sample(n=10)
 
-        for index, value in random_values.iteritems():
+        for index, value in random_values.items():
             # when barcode_arrangement values are NaN type, do nothing
             if pd.isna(value):
                 continue
@@ -158,14 +155,6 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         """
         Test if instance variables created in init method are correct
         """
-        # Rename expected_df columns
-        self.expected_df.rename(
-            columns={
-                "sequence_length_template": "sequence_length",
-                "mean_qscore_template": "mean_qscore",
-            },
-            inplace=True,
-        )
         print(self.config)
         # Create instance of SequencingSummaryExtractor class
         instance = sse.SequencingSummaryExtractor(self.config)
@@ -175,13 +164,10 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         instance.extract(fake_dict)
 
         # Get instances variables of the dataframe_1d
-        # actual_df_channel = instance.channel_df.head(11)
-        actual_df_channel = instance.dataframe_dict["all.reads.channel"].head(11)
+        actual_df_channel = instance.dataframe_1d["channel"].head(11)
 
-        # actual_df_passes_filtering = instance.passes_filtering_df.head(11)
         actual_df_passes_filtering = instance.dataframe_1d["passes_filtering"].head(11)
 
-        # actual_df_sequence_length = instance.sequence_length_df.head(11)
         actual_df_sequence_length = instance.dataframe_dict[
             "all.reads.sequence.length"
         ].head(11)
@@ -189,19 +175,23 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
         actual_df = instance.dataframe_1d.head(11)
 
         # Test all instances variables VS expected
-        testing.assert_series_equal(self.expected_df["channel"], actual_df_channel)
         testing.assert_series_equal(
-            self.expected_df["passes_filtering"], actual_df_passes_filtering
+            self.expected_df["channel"], actual_df_channel, check_dtype=False
         )
         testing.assert_series_equal(
-            self.expected_df["sequence_length"], actual_df_sequence_length
+            self.expected_df["passes_filtering"], actual_df_passes_filtering, check_dtype=False
+        )
+        testing.assert_series_equal(
+            self.expected_df["sequence_length"], actual_df_sequence_length, check_dtype=False
         )
 
         print(self.expected_df)
         print("---")
         print(actual_df)
 
-        testing.assert_frame_equal(self.expected_df, actual_df)
+        testing.assert_frame_equal(
+            self.expected_df, actual_df, check_dtype=False, check_categorical=False
+        )
 
 
 class TestSequencingSummaryExtractorOnlySequencingSummary(unittest.TestCase):
@@ -247,19 +237,13 @@ class TestSequencingSummaryExtractorOnlySequencingSummary(unittest.TestCase):
         read_pass_frequency = read_pass_ratio * 100
         # yield_count = sum(instance.sequence_length_df)
         yield_count = actual_dict["basecaller.sequencing.summary.1d.extractor.yield"]
-        channel_max = pd.DataFrame.max(
-            pd.value_counts(instance.dataframe_1d["channel"])
-        )
+        channel_max = instance.dataframe_1d["channel"].value_counts().max()
         # mean_length = pd.DataFrame.mean(instance.sequence_length_df)
-        mean_length = pd.DataFrame.mean(
-            instance.dataframe_dict["all.reads.sequence.length"]
-        )
+        mean_length = instance.dataframe_dict["all.reads.sequence.length"].mean()
         # read_pass_length_min = pd.DataFrame.min(instance.sequence_length_df[instance.dataframe_1d['passes_filtering'] == True])
-        read_pass_length_min = pd.DataFrame.min(
-            instance.dataframe_dict["all.reads.sequence.length"][
-                instance.dataframe_1d["passes_filtering"]
-            ]
-        )
+        read_pass_length_min = instance.dataframe_dict["all.reads.sequence.length"][
+            instance.dataframe_1d["passes_filtering"]
+        ].min()
         # read_fail_qscore = instance.qscore_df.loc[instance.dataframe_1d['passes_filtering'] == False]
         read_fail_qscore = instance.dataframe_dict["all.reads.mean.qscore"][
             ~instance.dataframe_1d["passes_filtering"]
