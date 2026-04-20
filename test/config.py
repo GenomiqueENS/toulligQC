@@ -90,7 +90,6 @@ random_file_config = _make_config(
 missing_data_config = _make_config(
     {
         "barcoding": "False",
-        "sequencing_summary_source": path
-        + "/sequencing_summary_with_missing_data.txt",
+        "sequencing_summary_source": path + "/sequencing_summary_with_missing_data.txt",
     }
 )

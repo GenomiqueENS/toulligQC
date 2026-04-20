@@ -179,10 +179,14 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
             self.expected_df["channel"], actual_df_channel, check_dtype=False
         )
         testing.assert_series_equal(
-            self.expected_df["passes_filtering"], actual_df_passes_filtering, check_dtype=False
+            self.expected_df["passes_filtering"],
+            actual_df_passes_filtering,
+            check_dtype=False,
         )
         testing.assert_series_equal(
-            self.expected_df["sequence_length"], actual_df_sequence_length, check_dtype=False
+            self.expected_df["sequence_length"],
+            actual_df_sequence_length,
+            check_dtype=False,
         )
 
         print(self.expected_df)
