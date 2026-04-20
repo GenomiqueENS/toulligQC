@@ -66,6 +66,11 @@ class TestSequencingSummaryExtractorWholeConfig(unittest.TestCase):
             data=data_test, columns=cols, index=pd.RangeIndex(0, 11)
         )
 
+        # Convert explicitly string values of passes_filtering into booleans
+        cls.expected_df.passes_filtering = cls.expected_df.passes_filtering.map(
+            {"True": True, "False": False}
+        )
+
         cls.expected_df = cls.expected_df.astype(
             {
                 "channel": np.int16,
