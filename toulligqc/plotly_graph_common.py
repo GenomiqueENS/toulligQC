@@ -29,7 +29,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.offline as py
 from scipy.interpolate import interp1d
-from scipy.ndimage.filters import gaussian_filter1d
+from scipy.ndimage import gaussian_filter1d
 from sklearn.utils import resample
 
 figure_image_width = 1000

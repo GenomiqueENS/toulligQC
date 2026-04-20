@@ -464,7 +464,7 @@ def _barcode_bases(
     :return: Series with all barcodes (used, non used, and unclassified) frequencies
     """
     # Regroup all barcoded and sum all read lengths in df
-    all_barcode_count = df_filtered.groupby("barcode_arrangement")[
+    all_barcode_count = df_filtered.groupby("barcode_arrangement", observed=False)[
         "sequence_length"
     ].sum()
 
