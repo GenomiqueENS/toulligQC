@@ -36,9 +36,10 @@ dependencies:
       - more-itertools==10.3.0
       - numpy==2.0.0
       - packaging==24.1
-      - pandas==1.26.4
+      - pandas==2.2.3
       - pillow==10.4.0
-      - plotly==5.22.0
+      - ezcharts==0.15.2
+      - plotly==5.15.0
       - pod5==0.3.12
       - polars==0.20.31
       - pyarrow==16.1.0
