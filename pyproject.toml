@@ -61,8 +61,8 @@ include = [
     "/CHANGES.md",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff>=0.4.0",
     "pytest>=8",
 ]
