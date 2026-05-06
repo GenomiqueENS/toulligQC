@@ -20,7 +20,6 @@
 #
 
 import glob
-import os
 
 import numpy as np
 from packaging import version
