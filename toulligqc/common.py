@@ -60,9 +60,8 @@ def find_file_in_directory(source_file, format):
     :return: The path to the first suitable file in the source directory
     """
     for ext in (format, "tar.bz2", "tar.gz"):
-        if glob.glob(source_file + "/*." + ext):
-            files_found = os.listdir(source_file)
-            if len(files_found) > 0:
-                return source_file + files_found[0]
+        files_found = glob.glob(source_file + "/*." + ext)
+        if files_found:
+            return files_found[0]
 
     return None
