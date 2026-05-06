@@ -359,7 +359,11 @@ def _check_conf(config_dictionary):
             or not config_dictionary["result_directory"]
         ):
             current_directory = os.getcwd()
-            config_dictionary["result_directory"] = current_directory + "/"
+            config_dictionary["result_directory"] = current_directory
+
+        # Ensure that the result directory path ends with '/'
+        if config_dictionary["result_directory"][:-1] != "/":
+            config_dictionary["result_directory"] += "/"
 
         # Create the root output directory if not exists
         if not os.path.isdir(config_dictionary["result_directory"]):
