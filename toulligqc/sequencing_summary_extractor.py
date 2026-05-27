@@ -66,6 +66,12 @@ class SequencingSummaryExtractor:
         self.use_alias_for_barcodes = "use_alias_for_barcodes" in config_dictionary
         self.threshold_Qscore = int(config_dictionary.qscore_threshold())
         self.default_threshold = config_dictionary.is_default_qscore_threshold()
+        read_length_dist_bin_width = config_dictionary.get("readlengthdist_binwidth", None)
+        self.read_length_dist_bin_width = (
+            float(read_length_dist_bin_width)
+            if read_length_dist_bin_width is not None
+            else None
+        )
         if (
             "quiet" not in config_dictionary
             or config_dictionary["quiet"].lower() != "true"
@@ -361,7 +367,11 @@ class SequencingSummaryExtractor:
             self.quiet,
             images,
             time.time(),
-            pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory),
+            pgg.read_length_scatterplot(
+                self.dataframe_dict,
+                self.images_directory,
+                self.read_length_dist_bin_width,
+            ),
         )
         add_image_to_result(
             self.quiet,
@@ -452,6 +462,17 @@ class SequencingSummaryExtractor:
                 time.time(),
                 pgg.barcode_length_boxplot(
                     self.dataframe_dict, self.images_directory, barcode_alias
+                ),
+            )
+            add_image_to_result(
+                self.quiet,
+                images,
+                time.time(),
+                pgg.barcode_length_distribution(
+                    self.dataframe_dict,
+                    self.images_directory,
+                    barcode_alias,
+                    self.read_length_dist_bin_width,
                 ),
             )
 

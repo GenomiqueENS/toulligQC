@@ -1028,12 +1028,10 @@ def barcode_length_distribution(
             fig.update_xaxes(range=[min_all_reads, max_x_range], row=row, col=col)
             fig.update_yaxes(range=[0, max_y * 1.10], row=row, col=col)
 
-    graph_layout = dict(default_graph_layout)
-    graph_layout["height"] = max(default_graph_layout["height"], 250 * nrows)
-
     fig.update_layout(
         **_title(graph_name),
-        **graph_layout,
+        **default_graph_layout,
+        height=max(default_graph_layout["height"], 250 * nrows),
         hovermode="x",
     )
 
