@@ -26,6 +26,7 @@ import copy
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 from toulligqc.plotly_graph_common import (
     _barcode_boxplot_graph,
@@ -246,7 +247,7 @@ def read_count_histogram(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def read_length_scatterplot(dataframe_dict, result_directory):
+def read_length_scatterplot(dataframe_dict, result_directory, read_length_dist_bin_width=None):
     graph_name = "Distribution of read lengths"
 
     return _read_length_distribution(
@@ -259,6 +260,7 @@ def read_length_scatterplot(dataframe_dict, result_directory):
         fail_color=toulligqc_colors["fail"],
         xaxis_title="Read length (bp)",
         result_directory=result_directory,
+        bin_width=read_length_dist_bin_width,
     )
 
 
@@ -933,6 +935,111 @@ def barcode_length_boxplot(datafame_dict, result_directory, barcode_alias):
         result_directory=result_directory,
         barcode_alias=barcode_alias,
     )
+
+
+def barcode_length_distribution(
+    dataframe_dict,
+    result_directory,
+    barcode_alias=None,
+    read_length_dist_bin_width=None,
+):
+    graph_name = "Read length distribution for barcodes"
+
+    df = dataframe_dict["barcode_selection_sequence_length_dataframe"]
+    barcode_columns = [c for c in df.columns if c != "passes_filtering"]
+
+    if len(barcode_columns) == 0:
+        return graph_name, None, None, ""
+
+    data = []
+    for barcode in barcode_columns:
+        series = df[barcode].dropna()
+        if len(series) > 0:
+            data.append((barcode, series))
+
+    if len(data) == 0:
+        return graph_name, None, None, ""
+
+    all_lengths = pd.concat([series for _, series in data])
+    min_all_reads = min(all_lengths)
+    max_all_reads = max(all_lengths)
+
+    npoints, sigma = interpolation_points(all_lengths, "read_length_distribution")
+    if read_length_dist_bin_width is not None:
+        read_span = max_all_reads - min_all_reads
+        if read_span > 0:
+            npoints = int(np.ceil(read_span / read_length_dist_bin_width)) + 1
+            npoints = max(2, npoints)
+
+    coef = max(max_all_reads / npoints, 1)
+    max_x_range = np.percentile(all_lengths, 99)
+
+    ncols = 4
+    nrows = int(np.ceil(len(data) / ncols))
+
+    subplot_titles = []
+    for barcode, _ in data:
+        if barcode_alias and barcode in barcode_alias:
+            subplot_titles.append(barcode_alias[barcode])
+        else:
+            subplot_titles.append(barcode)
+
+    fig = make_subplots(
+        rows=nrows,
+        cols=ncols,
+        subplot_titles=subplot_titles,
+        shared_xaxes=True,
+        horizontal_spacing=0.05,
+        vertical_spacing=0.12,
+    )
+
+    max_y = 0
+    for i, (barcode, barcode_reads) in enumerate(data):
+        row = i // ncols + 1
+        col = i % ncols + 1
+
+        count_x, count_y, _ = _smooth_data(
+            npoints=npoints,
+            sigma=sigma,
+            data=barcode_reads,
+            min_arg=min_all_reads,
+            max_arg=max_all_reads,
+        )
+
+        y = count_y / coef
+        max_y = max(max_y, max(y))
+
+        fig.add_trace(
+            go.Scatter(
+                x=count_x,
+                y=y,
+                fill="tozeroy",
+                mode="lines",
+                line=dict(color=toulligqc_colors["all"]),
+                hovertemplate="<b>Length:</b> %{x:.0f} bp<br><b>Reads:</b> %{y:.1f}<extra></extra>",
+                showlegend=False,
+            ),
+            row=row,
+            col=col,
+        )
+
+    for row in range(1, nrows + 1):
+        for col in range(1, ncols + 1):
+            fig.update_xaxes(range=[min_all_reads, max_x_range], row=row, col=col)
+            fig.update_yaxes(range=[0, max_y * 1.10], row=row, col=col)
+
+    graph_layout = dict(default_graph_layout)
+    graph_layout["height"] = max(default_graph_layout["height"], 250 * nrows)
+
+    fig.update_layout(
+        **_title(graph_name),
+        **graph_layout,
+        hovermode="x",
+    )
+
+    table_html = None
+    div, output_file = _create_and_save_div(fig, result_directory, graph_name)
+    return graph_name, output_file, table_html, div
 
 
 def barcoded_phred_score_frequency(dataframe_dict, result_directory, barcode_alias):
