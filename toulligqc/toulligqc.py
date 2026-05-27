@@ -56,13 +56,6 @@ from toulligqc import (
 )
 
 
-def _positive_float(value):
-    value = float(value)
-    if value <= 0:
-        raise argparse.ArgumentTypeError("Value must be > 0")
-    return value
-
-
 def _parse_args(config_dictionary):
     """
     Parsing the command line
@@ -171,14 +164,6 @@ def _parse_args(config_dictionary):
         help="Qscore threshold",
         type=int,
         default=-1,
-    )
-    optional.add_argument(
-        "--readlengthdist-binwidth",
-        action="store",
-        dest="readlengthdist_binwidth",
-        help="Bin width (bp) for read length distribution plots. Default: current ToulligQC behavior.",
-        type=_positive_float,
-        default=None,
     )
 
     optional.add_argument(
@@ -306,7 +291,6 @@ def _parse_args(config_dictionary):
         ("thread", args.thread),
         ("batch_size", args.batch_size),
         ("threshold", args.threshold),
-        ("readlengthdist_binwidth", args.readlengthdist_binwidth),
         ("result_directory", args.output),
         ("html_report_path", args.html_report_path),
         ("data_report_path", args.data_report_path),
@@ -558,8 +542,11 @@ def main():
             config_dictionary["barcodes"] = ",".join(
                 list(samplesheet[column].astype(str))
             )
+            # Build alias lookup: barcode_name -> alias_value
+            # Ensure keys and values are strings for consistent comparison
             config_dictionary["barcode_alias"] = pd.Series(
-                samplesheet.alias.values, index=samplesheet[column]
+                samplesheet.alias.astype(str).values,
+                index=samplesheet[column].astype(str),
             ).to_dict()
 
         if "barcodes" in config_dictionary or "samplesheet" in config_dictionary:
