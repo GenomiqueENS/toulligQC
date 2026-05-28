@@ -951,16 +951,28 @@ def barcode_length_distribution(
     if len(barcode_columns) == 0:
         return graph_name, None, None, ""
 
+    # Separate pass and fail masks using the passes_filtering column
+    has_pf = "passes_filtering" in df.columns
+    if has_pf:
+        pass_mask = df["passes_filtering"].astype(bool)
+        fail_mask = ~pass_mask
+    else:
+        pass_mask = pd.Series(True, index=df.index)
+        fail_mask = pd.Series(False, index=df.index)
+
+    # Collect per-barcode data: (barcode, all_series, pass_series, fail_series)
     data = []
     for barcode in barcode_columns:
-        series = df[barcode].dropna()
-        if len(series) > 0:
-            data.append((barcode, series))
+        all_series = df[barcode].dropna()
+        if len(all_series) > 0:
+            pass_series = df.loc[pass_mask, barcode].dropna()
+            fail_series = df.loc[fail_mask, barcode].dropna()
+            data.append((barcode, all_series, pass_series, fail_series))
 
     if len(data) == 0:
         return graph_name, None, None, ""
 
-    all_lengths = pd.concat([series for _, series in data])
+    all_lengths = pd.concat([s for _, s, _, _ in data])
     min_all_reads = min(all_lengths)
     max_all_reads = max(all_lengths)
 
@@ -978,7 +990,7 @@ def barcode_length_distribution(
     nrows = int(np.ceil(len(data) / ncols))
 
     subplot_titles = []
-    for barcode, _ in data:
+    for barcode, _, _, _ in data:
         if barcode_alias and barcode in barcode_alias:
             subplot_titles.append(barcode_alias[barcode])
         else:
@@ -993,46 +1005,74 @@ def barcode_length_distribution(
         vertical_spacing=0.12,
     )
 
+    # Color definitions matching the main read length distribution
+    all_color = toulligqc_colors["all"]    # Yellow
+    pass_color = toulligqc_colors["pass"]  # Green
+    fail_color = toulligqc_colors["fail"]  # Red
+
     max_y = 0
-    for i, (barcode, barcode_reads) in enumerate(data):
+    legend_added = {"All": False, "Pass": False, "Fail": False}
+
+    for i, (barcode, all_reads, pass_reads, fail_reads) in enumerate(data):
         row = i // ncols + 1
         col = i % ncols + 1
 
-        count_x, count_y, _ = _smooth_data(
-            npoints=npoints,
-            sigma=sigma,
-            data=barcode_reads,
-            min_arg=min_all_reads,
-            max_arg=max_all_reads,
-        )
+        # Plot each read type: All (yellow), Pass (green), Fail (red)
+        for label, series, color in [
+            ("All", all_reads, all_color),
+            ("Pass", pass_reads, pass_color),
+            ("Fail", fail_reads, fail_color),
+        ]:
+            if len(series) == 0:
+                continue
 
-        y = count_y / coef
-        max_y = max(max_y, max(y))
+            count_x, count_y, _ = _smooth_data(
+                npoints=npoints,
+                sigma=sigma,
+                data=series,
+                min_arg=min_all_reads,
+                max_arg=max_all_reads,
+            )
 
-        fig.add_trace(
-            go.Scatter(
-                x=count_x,
-                y=y,
-                fill="tozeroy",
-                mode="lines",
-                line=dict(color=toulligqc_colors["all"]),
-                hovertemplate="<b>Length:</b> %{x:.0f} bp<br><b>Reads:</b> %{y:.1f}<extra></extra>",
-                showlegend=False,
-            ),
-            row=row,
-            col=col,
-        )
+            y = count_y / coef
+            max_y = max(max_y, max(y))
+
+            # Show legend only once per read type
+            show_legend = not legend_added[label]
+            legend_added[label] = True
+
+            fig.add_trace(
+                go.Scatter(
+                    x=count_x,
+                    y=y,
+                    fill="tozeroy",
+                    mode="lines",
+                    line=dict(color=color),
+                    name=label,
+                    legendgroup=label,
+                    showlegend=show_legend,
+                    opacity=0.7,
+                    hovertemplate=f"<b>{label}</b><br>"
+                                  "<b>Length:</b> %{x:.0f} bp<br>"
+                                  "<b>Reads:</b> %{y:.1f}<extra></extra>",
+                ),
+                row=row,
+                col=col,
+            )
 
     for row in range(1, nrows + 1):
         for col in range(1, ncols + 1):
             fig.update_xaxes(range=[min_all_reads, max_x_range], row=row, col=col)
             fig.update_yaxes(range=[0, max_y * 1.10], row=row, col=col)
 
+    graph_layout = dict(default_graph_layout)
+    graph_layout["height"] = max(graph_layout["height"], 250 * nrows)
+
     fig.update_layout(
         **_title(graph_name),
-        **default_graph_layout,
-        height=max(default_graph_layout["height"], 250 * nrows),
+        **graph_layout,
         hovermode="x",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
 
     table_html = None
