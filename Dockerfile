@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG VERSION=2.8.5
 ARG UV_VERSION=0.9.17
@@ -15,7 +15,9 @@ RUN apt update && \
                     python3-numpy\
                     python3-scipy\
                     python3-sklearn \
-                    python3-pysam && \
+                    python3-pysam \
+                    python3-tqdm \
+                    python3-packaging && \
     pip3 install --break-system-packages "pod5==0.3.10" "ezcharts==0.15.2" && \
     curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-installer.sh | sh && \
     cd /tmp && \
