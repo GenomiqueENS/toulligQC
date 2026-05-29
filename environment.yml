@@ -27,31 +27,31 @@ dependencies:
       - contourpy==1.2.1
       - cycler==0.12.1
       - fonttools==4.53.1
-      - h5py==3.11.0
+      - h5py==3.15.1
       - iso8601==2.1.0
       - joblib==1.4.2
       - kiwisolver==1.4.5
       - lib-pod5==0.3.12
-      - matplotlib==3.9.1
+      - matplotlib==3.10.7
       - more-itertools==10.3.0
-      - numpy==2.0.0
-      - packaging==24.1
-      - pandas==2.2.3
+      - numpy==2.3.5
+      - packaging==26.0
+      - pandas==2.3.3
       - pillow==10.4.0
       - ezcharts==0.15.2
-      - plotly==5.15.0
+      - plotly==5.20.0
       - pod5==0.3.12
       - polars==0.20.31
       - pyarrow==16.1.0
       - pyparsing==3.1.2
-      - pysam==0.22.1
+      - pysam==0.23.3
       - python-dateutil==2.9.0.post0
       - pytz==2024.1
-      - scikit-learn==1.5.1
-      - scipy==1.14.0
+      - scikit-learn==1.7.2
+      - scipy==1.16.3
       - six==1.16.0
       - tenacity==8.5.0
       - threadpoolctl==3.5.0
-      - tqdm==4.66.4
+      - tqdm==4.67.3
       - tzdata==2024.1
       - vbz-h5py-plugin==1.0.1
