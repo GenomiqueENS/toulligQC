@@ -261,7 +261,9 @@ def dsqr_read_count_histogram(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, result_directory):
+def dsqr_read_length_scatterplot(
+    dataframe_dict_1dsqr, result_directory, read_length_dist_bin_width=None
+):
     graph_name = "1D² Distribution of read lengths"
 
     return _read_length_distribution(
@@ -274,6 +276,7 @@ def dsqr_read_length_scatterplot(dataframe_dict_1dsqr, result_directory):
         fail_color=toulligqc_colors["fail"],
         xaxis_title="1D² Read length (bp)",
         result_directory=result_directory,
+        bin_width=read_length_dist_bin_width,
     )
 
 

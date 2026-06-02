@@ -63,8 +63,15 @@ class SequencingSummaryExtractor:
         self.images_directory = config_dictionary["images_directory"]
         self.sequencing_summary_files = self.sequencing_summary_source.split("\t")
         self.barcode_colname = "barcode_arrangement"
+        self.use_alias_for_barcodes = "use_alias_for_barcodes" in config_dictionary
         self.threshold_Qscore = int(config_dictionary.qscore_threshold())
         self.default_threshold = config_dictionary.is_default_qscore_threshold()
+        read_length_dist_bin_width = config_dictionary.get("readlengthdist_binwidth", None)
+        self.read_length_dist_bin_width = (
+            float(read_length_dist_bin_width)
+            if read_length_dist_bin_width is not None
+            else None
+        )
         if (
             "quiet" not in config_dictionary
             or config_dictionary["quiet"].lower() != "true"
@@ -130,10 +137,14 @@ class SequencingSummaryExtractor:
             inplace=True,
         )
 
-        # Rename 'barcode_arrangement'
+        # Rename barcode column to 'barcode_arrangement' if needed
         if self.is_barcode and self.barcode_colname == "barcode":
             self.dataframe_1d.rename(
                 columns={"barcode": "barcode_arrangement"}, inplace=True
+            )
+        elif self.is_barcode and self.barcode_colname == "alias":
+            self.dataframe_1d.rename(
+                columns={"alias": "barcode_arrangement"}, inplace=True
             )
 
         # Add missing categories
@@ -356,7 +367,11 @@ class SequencingSummaryExtractor:
             self.quiet,
             images,
             time.time(),
-            pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory),
+            pgg.read_length_scatterplot(
+                self.dataframe_dict,
+                self.images_directory,
+                self.read_length_dist_bin_width,
+            ),
         )
         add_image_to_result(
             self.quiet,
@@ -447,6 +462,17 @@ class SequencingSummaryExtractor:
                 time.time(),
                 pgg.barcode_length_boxplot(
                     self.dataframe_dict, self.images_directory, barcode_alias
+                ),
+            )
+            add_image_to_result(
+                self.quiet,
+                images,
+                time.time(),
+                pgg.barcode_length_distribution(
+                    self.dataframe_dict,
+                    self.images_directory,
+                    barcode_alias,
+                    self.read_length_dist_bin_width,
                 ),
             )
 
@@ -664,11 +690,18 @@ class SequencingSummaryExtractor:
 
     def _get_barcode_colname(self, filename):
         """
-        Check if the barcode colname in sequencing summary is "barcode_arrangement" or "barcode"
+        Check if the barcode colname in sequencing summary is "barcode_arrangement" or "barcode".
+        When use_alias_for_barcodes is enabled and the file has an "alias" column,
+        use the "alias" column instead (it contains the same barcode identifiers
+        as the BAM BC tag, e.g. numeric sample aliases like '373879').
         :param filename: path of the file to test
         """
         header = read_first_line_file(filename)
-        if "barcode_arrangement" in header:
+        # Parse column names from header (handles alias at any position including last)
+        header_columns = set(header.strip().split("\t"))
+        if self.use_alias_for_barcodes and "alias" in header_columns:
+            self.barcode_colname = "alias"
+        elif "barcode_arrangement" in header_columns:
             self.barcode_colname = "barcode_arrangement"
-        else:
+        elif "barcode" in header_columns:
             self.barcode_colname = "barcode"
