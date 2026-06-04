@@ -340,9 +340,7 @@ def _basic_statistics_module_report(
 
     stats_tbody = ""
     for measure, value in run_stats_rows:
-        stats_tbody += (
-            f"              <tr><th>{_escape(str(measure))}</th><td>{_escape(str(value))}</td></tr>\n"
-        )
+        stats_tbody += f"              <tr><th>{_escape(str(measure))}</th><td>{_escape(str(value))}</td></tr>\n"
 
     # Compose the Run statistics section
     result = f"""
