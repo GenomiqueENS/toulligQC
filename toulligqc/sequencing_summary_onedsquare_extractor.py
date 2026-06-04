@@ -356,20 +356,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             self.quiet,
             images,
             time.time(),
-            pgg.read_length_scatterplot(
-                self.dataframe_dict,
-                self.images_directory,
-                self.read_length_dist_bin_width,
-            ),
+            pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory),
         )
         add_image_to_result(
             self.quiet,
             images,
             time.time(),
             pgg2.dsqr_read_length_scatterplot(
-                self.dataframe_dict_1dsqr,
-                self.images_directory,
-                self.read_length_dist_bin_width,
+                self.dataframe_dict_1dsqr, self.images_directory
             ),
         )
         add_image_to_result(

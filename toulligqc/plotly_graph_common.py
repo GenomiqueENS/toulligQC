@@ -795,17 +795,10 @@ def _read_length_distribution(
     fail_color,
     xaxis_title,
     result_directory,
-    bin_width=None,
 ):
     npoints, sigma = interpolation_points(all_reads, "read_length_distribution")
     min_all_reads = min(all_reads)
     max_all_reads = max(all_reads)
-
-    if bin_width is not None:
-        read_span = max_all_reads - min_all_reads
-        if read_span > 0:
-            npoints = int(np.ceil(read_span / bin_width)) + 1
-            npoints = max(2, npoints)
 
     count_x1, count_y1, cum_count_y1 = _smooth_data(
         npoints=npoints,
