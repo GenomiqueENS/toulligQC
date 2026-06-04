@@ -57,6 +57,14 @@ class fastqExtractor:
         self.fastq = config_dictionary["fastq"].split("\t")
         self.images_directory = config_dictionary["images_directory"]
         self.threshold_Qscore = int(config_dictionary.qscore_threshold())
+        read_length_dist_bin_width = config_dictionary.get(
+            "readlengthdist_binwidth", None
+        )
+        self.read_length_dist_bin_width = (
+            float(read_length_dist_bin_width)
+            if read_length_dist_bin_width is not None
+            else None
+        )
         self.batch_size = int(config_dictionary["batch_size"])
         self.thread = int(config_dictionary["thread"])
         self.rich = False
@@ -158,7 +166,11 @@ class fastqExtractor:
             self.quiet,
             images,
             time.time(),
-            pgg.read_length_scatterplot(self.dataframe_dict, self.images_directory),
+            pgg.read_length_scatterplot(
+                self.dataframe_dict,
+                self.images_directory,
+                self.read_length_dist_bin_width,
+            ),
         )
 
         if self.rich:
@@ -251,6 +263,17 @@ class fastqExtractor:
                     time.time(),
                     pgg.barcode_length_boxplot(
                         self.dataframe_dict, self.images_directory, barcode_alias
+                    ),
+                )
+                add_image_to_result(
+                    self.quiet,
+                    images,
+                    time.time(),
+                    pgg.barcode_length_distribution(
+                        self.dataframe_dict,
+                        self.images_directory,
+                        barcode_alias,
+                        self.read_length_dist_bin_width,
                     ),
                 )
 

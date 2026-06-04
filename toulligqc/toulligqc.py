@@ -30,6 +30,7 @@
 
 import argparse
 import datetime
+import math
 import os
 import re
 import shutil
@@ -54,6 +55,13 @@ from toulligqc import (
     toulligqc_info_extractor,
     version,
 )
+
+
+def _positive_float(value: str) -> float:
+    float_value = float(value)
+    if float_value <= 0 or math.isfinite(float_value):
+        raise argparse.ArgumentTypeError("Value must be > 0")
+    return float_value
 
 
 def _parse_args(config_dictionary):
@@ -164,6 +172,23 @@ def _parse_args(config_dictionary):
         help="Qscore threshold",
         type=int,
         default=-1,
+    )
+    optional.add_argument(
+        "--readlengthdist-binwidth",
+        action="store",
+        dest="readlengthdist_binwidth",
+        help="Bin width (bp) for read length distribution plots. Default: current ToulligQC behavior.",
+        type=_positive_float,
+        default=None,
+    )
+    optional.add_argument(
+        "--substitute",
+        action="store",
+        dest="substitute",
+        help="Comma-separated Measure,Value pairs to override in the Run statistics table. "
+        'Example: --substitute "Experiment group,my_group,Sample ID,my_sample"',
+        type=str,
+        default=None,
     )
 
     optional.add_argument(
@@ -291,6 +316,8 @@ def _parse_args(config_dictionary):
         ("thread", args.thread),
         ("batch_size", args.batch_size),
         ("threshold", args.threshold),
+        ("readlengthdist_binwidth", args.readlengthdist_binwidth),
+        ("substitute", args.substitute),
         ("result_directory", args.output),
         ("html_report_path", args.html_report_path),
         ("data_report_path", args.data_report_path),
@@ -523,6 +550,15 @@ def main():
     _parse_args(config_dictionary)
     _check_conf(config_dictionary)
 
+    # Validate --substitute early (fail fast before expensive processing)
+    if "substitute" in config_dictionary and config_dictionary["substitute"]:
+        _sub_fields = [f.strip() for f in config_dictionary["substitute"].split(",")]
+        if len(_sub_fields) % 2 != 0:
+            sys.exit(
+                "ERROR: --substitute requires an even number of comma-separated fields "
+                "(Measure,Value pairs). Got " + str(len(_sub_fields)) + " fields."
+            )
+
     warnings.simplefilter("ignore")
 
     if not config_dictionary:
@@ -542,8 +578,11 @@ def main():
             config_dictionary["barcodes"] = ",".join(
                 list(samplesheet[column].astype(str))
             )
+            # Build alias lookup: barcode_name -> alias_value
+            # Ensure keys and values are strings for consistent comparison
             config_dictionary["barcode_alias"] = pd.Series(
-                samplesheet.alias.values, index=samplesheet[column]
+                samplesheet.alias.astype(str).values,
+                index=samplesheet[column].astype(str),
             ).to_dict()
 
         if "barcodes" in config_dictionary or "samplesheet" in config_dictionary:
@@ -635,9 +674,18 @@ def main():
             f"* End of {extractor.get_name()} extractor (done in {common.format_duration(extract_time)})",
         )
 
+    # Build --substitute pairs for Run statistics table overrides
+    # (field count already validated at startup)
+    substitutions = {}
+    if "substitute" in config_dictionary and config_dictionary["substitute"]:
+        fields = [f.strip() for f in config_dictionary["substitute"].split(",")]
+        substitutions = {fields[i]: fields[i + 1] for i in range(0, len(fields), 2)}
+
     # HTML report and report.data file generation
     _show(config_dictionary, "* Write HTML report")
-    html_report_generator.html_report(config_dictionary, result_dict, graphs)
+    html_report_generator.html_report(
+        config_dictionary, result_dict, graphs, substitutions=substitutions
+    )
 
     qc_end = time.time()
     result_dict["toulligqc.info.execution.duration"] = round((qc_end - qc_start), 2)

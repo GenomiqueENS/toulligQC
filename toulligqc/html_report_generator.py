@@ -35,12 +35,13 @@ from toulligqc.plotly_graph_common import (
 )
 
 
-def html_report(config_dictionary, result_dict, graphs):
+def html_report(config_dictionary, result_dict, graphs, substitutions=None):
     """
     Creation of a html report
     :param config_dictionary: dictionary containing file or directory paths
     :param result_dict: result dictionary containing all statistics
     :param graphs:
+    :param substitutions: optional dict of {Measure: Value} to override in the Run statistics table
     """
 
     report_name = config_dictionary["report_name"]
@@ -138,6 +139,7 @@ def html_report(config_dictionary, result_dict, graphs):
             run_date,
             config_dictionary["app.version"],
             remove_image_files,
+            substitutions=substitutions,
         ),
         app_url=config_dictionary["app.url"],
         app_name=config_dictionary["app.name"],
@@ -184,17 +186,30 @@ def _modules_report(
     run_date,
     toulligqc_version,
     remove_image_files,
+    substitutions=None,
 ):
     result = _basic_statistics_module_report(
-        result_dict, run_id, report_name, run_date, toulligqc_version
+        result_dict,
+        run_id,
+        report_name,
+        run_date,
+        toulligqc_version,
+        substitutions=substitutions,
     )
     result += _other_module_reports(graphs, remove_image_files)
     return result
 
 
 def _basic_statistics_module_report(
-    result_dict, sample_id, report_name, run_date, toulligqc_version
+    result_dict,
+    sample_id,
+    report_name,
+    run_date,
+    toulligqc_version,
+    substitutions=None,
 ):
+    import sys as _sys
+
     minknow_version = _get_result_value(
         result_dict, "sequencing.telemetry.extractor.minknow.version", "Unknown"
     )
@@ -283,55 +298,61 @@ def _basic_statistics_module_report(
         result_dict, "sequencing.telemetry.extractor.basecalling.date", "Unknown"
     )
 
-    # Compose the main of the page
-    result = """
+    # Build ordered list of (Measure, Value) rows for the Run statistics table
+    # Using a list of tuples to preserve order and allow substitution by Measure name
+    run_stats_rows = [
+        ("Report name", report_name),
+        ("Experiment group", experiment_group),
+        ("Sample ID", sample_id),
+        ("Run ID", run_id),
+        ("Run date", run_date),
+        ("Run duration", run_time),
+        ("Flowcell ID", flow_cell_id),
+        ("Flowcell product code", flow_cell_product_code),
+        ("Flowcell version", flowcell_version),
+        ("Kit", kit_version),
+        ("Sequencing kit", sequencing_kit_version),
+        ("Barcode kits", barcode_kits_version),
+        ("Selected speed (bps)", selected_speed_bases_per_second),
+        ("Sample frequency (Hz)", sample_frequency),
+        ("Yield", run_yield),
+        ("Read count", _format_int(read_count)),
+        ("N50 (bp)", _format_int(int(n50))),
+        ("L50", _format_int(int(l50))),
+    ]
+
+    # Apply --substitute overrides
+    if substitutions:
+        valid_measures = {row[0] for row in run_stats_rows}
+        for measure in substitutions:
+            if measure not in valid_measures:
+                _sys.stderr.write(
+                    f"\033[93mWarning:\033[0m --substitute measure '{measure}' "
+                    f"not found in Run statistics table. "
+                    f"Valid measures: {', '.join(sorted(valid_measures))}\n"
+                )
+        run_stats_rows = [
+            (m, substitutions[m]) if m in substitutions else (m, v)
+            for m, v in run_stats_rows
+        ]
+
+    from html import escape as _escape
+
+    stats_tbody = ""
+    for measure, value in run_stats_rows:
+        stats_tbody += f"              <tr><th>{_escape(str(measure))}</th><td>{_escape(str(value))}</td></tr>\n"
+
+    # Compose the Run statistics section
+    result = f"""
       <div class="module" id="run_statistics">
-            <h2>Run statistics {help_link}</h2>
+            <h2>Run statistics {help_html_link("Run Statistics")}</h2>
             <table class="dataframe" border="">
               <thead><tr><th>Measure</th><th>Value</th></tr></thead>
               <tbody>
-              <tr><th>Report name </th><td>{report_name}</td></tr>
-              <tr><th>Experiment group</th><td>{experiment_group}</td></tr>
-              <tr><th>Sample ID</th><td>{sample_id}</td></tr>
-              <tr><th>Run ID</th><td>{run_id}</td></tr>
-              <tr><th>Run date</th><td>{run_date}</td></tr>
-              <tr><th>Run duration </th><td>{run_time}</td></tr>
-              <tr><th>Flowcell ID</th><td>{flow_cell_id}</td></tr>
-              <tr><th>Flowcell product code</th><td>{flow_cell_product_code}</td></tr>
-              <tr><th>Flowcell version</th><td>{flowcell_version}</td></tr>
-              <tr><th>Kit</th><td>{kit_version}</td></tr>
-              <tr><th>Sequencing kit</th><td>{sequencing_kit_version}</td></tr>
-              <tr><th>Barcode kits</th><td>{barcode_kits_version}</td></tr>
-              <tr><th>Selected speed (bps)</th><td>{selected_speed_bases_per_second}</td></tr>
-              <tr><th>Sample frequency (Hz)</th><td>{sample_frequency}</td></tr>
-              <tr><th>Yield</th><td>{run_yield}</td></tr>
-              <tr><th>Read count</th><td>{read_count}</td></tr>
-              <tr><th>N50 (bp)</th><td>{n50}</td></tr>
-              <tr><th>L50</th><td>{l50}</td></tr>
-              </tbody>
+{stats_tbody}              </tbody>
             </table>
       </div> <!-- End of "Run-statistics" module -->
-    """.format(
-        help_link=help_html_link("Run Statistics"),
-        run_id=run_id,
-        experiment_group=experiment_group,
-        sample_id=sample_id,
-        report_name=report_name,
-        run_date=run_date,
-        run_time=run_time,
-        flow_cell_id=flow_cell_id,
-        flow_cell_product_code=flow_cell_product_code,
-        flowcell_version=flowcell_version,
-        kit_version=kit_version,
-        sequencing_kit_version=sequencing_kit_version,
-        barcode_kits_version=barcode_kits_version,
-        selected_speed_bases_per_second=selected_speed_bases_per_second,
-        sample_frequency=sample_frequency,
-        run_yield=run_yield,
-        read_count=_format_int(read_count),
-        n50=_format_int(int(n50)),
-        l50=_format_int(int(l50)),
-    )
+    """
 
     result += """
       <div class="module" id="software_info">
