@@ -184,8 +184,8 @@ def _parse_args(config_dictionary):
         "--substitute",
         action="store",
         dest="substitute",
-        help='Comma-separated Measure,Value pairs to override in the Run statistics table. '
-             'Example: --substitute "Experiment group,my_group,Sample ID,my_sample"',
+        help="Comma-separated Measure,Value pairs to override in the Run statistics table. "
+        'Example: --substitute "Experiment group,my_group,Sample ID,my_sample"',
         type=str,
         default=None,
     )

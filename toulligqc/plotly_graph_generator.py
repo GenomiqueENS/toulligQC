@@ -247,7 +247,9 @@ def read_count_histogram(result_dict, result_directory):
     return graph_name, output_file, table_html, div
 
 
-def read_length_scatterplot(dataframe_dict, result_directory, read_length_dist_bin_width=None):
+def read_length_scatterplot(
+    dataframe_dict, result_directory, read_length_dist_bin_width=None
+):
     graph_name = "Distribution of read lengths"
 
     return _read_length_distribution(
@@ -1006,7 +1008,7 @@ def barcode_length_distribution(
     )
 
     # Color definitions matching the main read length distribution
-    all_color = toulligqc_colors["all"]    # Yellow
+    all_color = toulligqc_colors["all"]  # Yellow
     pass_color = toulligqc_colors["pass"]  # Green
     fail_color = toulligqc_colors["fail"]  # Red
 
@@ -1053,8 +1055,8 @@ def barcode_length_distribution(
                     showlegend=show_legend,
                     opacity=0.7,
                     hovertemplate=f"<b>{label}</b><br>"
-                                  "<b>Length:</b> %{x:.0f} bp<br>"
-                                  "<b>Reads:</b> %{y:.1f}<extra></extra>",
+                    "<b>Length:</b> %{x:.0f} bp<br>"
+                    "<b>Reads:</b> %{y:.1f}<extra></extra>",
                 ),
                 row=row,
                 col=col,

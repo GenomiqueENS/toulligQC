@@ -60,7 +60,9 @@ class uBAM_Extractor:
         self.ubam = config_dictionary["bam"].split("\t")
         self.images_directory = config_dictionary["images_directory"]
         self.threshold_Qscore = int(config_dictionary.qscore_threshold())
-        read_length_dist_bin_width = config_dictionary.get("readlengthdist_binwidth", None)
+        read_length_dist_bin_width = config_dictionary.get(
+            "readlengthdist_binwidth", None
+        )
         self.read_length_dist_bin_width = (
             float(read_length_dist_bin_width)
             if read_length_dist_bin_width is not None

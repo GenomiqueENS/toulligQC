@@ -189,7 +189,11 @@ def _modules_report(
     substitutions=None,
 ):
     result = _basic_statistics_module_report(
-        result_dict, run_id, report_name, run_date, toulligqc_version,
+        result_dict,
+        run_id,
+        report_name,
+        run_date,
+        toulligqc_version,
         substitutions=substitutions,
     )
     result += _other_module_reports(graphs, remove_image_files)
@@ -197,7 +201,11 @@ def _modules_report(
 
 
 def _basic_statistics_module_report(
-    result_dict, sample_id, report_name, run_date, toulligqc_version,
+    result_dict,
+    sample_id,
+    report_name,
+    run_date,
+    toulligqc_version,
     substitutions=None,
 ):
     import sys as _sys
