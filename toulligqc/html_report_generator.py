@@ -336,10 +336,13 @@ def _basic_statistics_module_report(
             for m, v in run_stats_rows
         ]
 
-    # Build Run statistics HTML table rows
+    from html import escape as _escape
+
     stats_tbody = ""
     for measure, value in run_stats_rows:
-        stats_tbody += f"              <tr><th>{measure}</th><td>{value}</td></tr>\n"
+        stats_tbody += (
+            f"              <tr><th>{_escape(str(measure))}</th><td>{_escape(str(value))}</td></tr>\n"
+        )
 
     # Compose the Run statistics section
     result = f"""
