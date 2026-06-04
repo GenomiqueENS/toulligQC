@@ -30,6 +30,7 @@
 
 import argparse
 import datetime
+import math
 import os
 import re
 import shutil
@@ -56,11 +57,11 @@ from toulligqc import (
 )
 
 
-def _positive_float(value):
-    value = float(value)
-    if value <= 0:
+def _positive_float(value: str) -> float:
+    float_value = float(value)
+    if float_value <= 0 or math.isfinite(float_value):
         raise argparse.ArgumentTypeError("Value must be > 0")
-    return value
+    return float_value
 
 
 def _parse_args(config_dictionary):
