@@ -17,8 +17,9 @@ RUN apt update && \
                     python3-sklearn \
                     python3-pysam \
                     python3-tqdm \
+                    python3-setuptools \
                     python3-packaging && \
-    pip3 install --break-system-packages "pod5==0.3.10" "ezcharts==0.15.2" && \
+    pip3 install --break-system-packages "pod5==0.3.35" "ezcharts==0.15.2" && \
     curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-installer.sh | sh && \
     cd /tmp && \
     git clone https://github.com/GenomiqueENS/toulligQC.git && \
