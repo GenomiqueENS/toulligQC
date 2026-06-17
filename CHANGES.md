@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.9.0](https://github.com/GenomiqueENS/toulligQC/compare/v2.8.5...v2.9.0) (2026-06-17)
+
+
+### Features
+
+* Add a release-please.yml GitHub action to publish new ToulligQC version with release please. ([#71](https://github.com/GenomiqueENS/toulligQC/issues/71)) ([7eb2658](https://github.com/GenomiqueENS/toulligQC/commit/7eb2658bdd5b62258f0a7d1c267cc04729971f8f))
+* Binwidth barcode distributions and alias bugfix ([#76](https://github.com/GenomiqueENS/toulligQC/issues/76)) ([3956837](https://github.com/GenomiqueENS/toulligQC/commit/39568376db5f6dc014e9c69e1c38f85e0fabda14))
+* Feature/binwidth barcode distributions and alias bugfix ([#73](https://github.com/GenomiqueENS/toulligQC/issues/73)) ([eefe88b](https://github.com/GenomiqueENS/toulligQC/commit/eefe88b23b402c1dbf28db07e36bd1bb2e3a4d75))
+* Minimal versions for ToulligQC dependencies are available packages version of Ubuntu 26.04. ([#74](https://github.com/GenomiqueENS/toulligQC/issues/74)) ([e4b3452](https://github.com/GenomiqueENS/toulligQC/commit/e4b3452445792457c1804ff22f8c9cf3794fc9d6))
+
+
+### Miscellaneous Chores
+
+* release 2.9.0 ([#77](https://github.com/GenomiqueENS/toulligQC/issues/77)) ([49de93f](https://github.com/GenomiqueENS/toulligQC/commit/49de93fd9fddfa2d67ffb7cca0dc7387f7d50776))
+
 ## 2.8.5 (2026-05-06)
 * fix: Reads pie chart and Bases pie chart are swapped #35 (#54)
 * docs: Update README links to GenomiqueENS github repository (#55) (#56)
