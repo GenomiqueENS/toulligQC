@@ -15,7 +15,7 @@
 
 ### Bug Fixes
 
-* Fixed barcode recognition issue when using --use-aliases-for-barcodes flag with sequencing summary files. With the new summary files of dorado, the alias and barcode recognition was not working properly anymore and I had to switch to bam as input. Now, the sequencing summary extractor correctly identifies and uses the alias column instead of barcode_arrangement when the flag is active, ensuring proper matching with sample sheet aliases. (Pull Request from @phpeters-vbcf) ([#73](https://github.com/GenomiqueENS/toulligQC/issues/73)) ([eefe88b](https://github.com/GenomiqueENS/toulligQC/commit/eefe88b23b402c1dbf28db07e36bd1bb2e3a4d75))
+* Fixed barcode recognition issue when using `--use-aliases-for-barcodes` flag with sequencing summary files. With the new summary files of dorado, the alias and barcode recognition was not working properly anymore and I had to switch to bam as input. Now, the sequencing summary extractor correctly identifies and uses the alias column instead of barcode\_arrangement when the flag is active, ensuring proper matching with sample sheet aliases. (Pull Request from @phpeters-vbcf) ([#73](https://github.com/GenomiqueENS/toulligQC/issues/73)) ([eefe88b](https://github.com/GenomiqueENS/toulligQC/commit/eefe88b23b402c1dbf28db07e36bd1bb2e3a4d75))
 
 
 ### Miscellaneous Chores
