@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.9.1](https://github.com/GenomiqueENS/toulligQC/compare/v2.9.0...v2.9.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* Fix Dockerfile with Ubuntu 26.04 and new dependency versions. ([#78](https://github.com/GenomiqueENS/toulligQC/issues/78)) ([3e83956](https://github.com/GenomiqueENS/toulligQC/commit/3e839565865daa44450dd867257560fe94bac441))
+
+
+### Miscellaneous Chores
+
+* release 2.9.1 ([#81](https://github.com/GenomiqueENS/toulligQC/issues/81)) ([5a92696](https://github.com/GenomiqueENS/toulligQC/commit/5a926966b33975c65482f1af733ffa54362d0c84))
+
 ## [2.9.0](https://github.com/GenomiqueENS/toulligQC/compare/v2.8.5...v2.9.0) (2026-06-17)
 
 
