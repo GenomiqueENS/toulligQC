@@ -47,17 +47,22 @@ from toulligqc.extractor_common import (
 
 
 class SequencingSummaryExtractor:
-    """
-    Extraction of data from sequencing_summary.txt and optional barcoding files.
-    The data is extracted from dataframes and placed in the result_dict in the form of key-value pairs
+    """Extract data from sequencing_summary.txt and optional barcoding files.
+
+    The data is extracted from dataframes and placed in the result_dict in the
+    form of key-value pairs.
     """
 
     def __init__(self, config_dictionary: ToulligqcConf) -> None:
-        """
-        Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in
-        sequencing_summary_source if the path points to a file, the others cases are managed in check_conf
-        and _load_sequencing_summary_data methods
-        :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary.txt and barcoding files
+        """Initialize the extractor from the config dictionary.
+
+        In the case of a single ``sequencing_summary_source`` argument, checks
+        whether the path points to a file; the other cases are managed in the
+        ``check_conf`` and ``_load_sequencing_summary_data`` methods.
+
+        Args:
+            config_dictionary: Dictionary containing all file or directory paths
+                for sequencing_summary.txt and barcoding files.
         """
         self.config_dictionary = config_dictionary
         self.sequencing_summary_source = config_dictionary["sequencing_summary_source"]
@@ -94,9 +99,11 @@ class SequencingSummaryExtractor:
                     break
 
     def check_conf(self) -> tuple[bool, str]:
-        """
-        Check if the sequencing summary source contains a sequencing summary file
-        :return: boolean and a string for error message
+        """Check that the sequencing summary source contains a summary file.
+
+        Returns:
+            A tuple ``(is_valid, message)`` where the message describes the
+            error when the configuration is invalid.
         """
 
         if not self.sequencing_summary_files[0]:
@@ -119,10 +126,7 @@ class SequencingSummaryExtractor:
         return True, ""
 
     def init(self) -> None:
-        """
-        Creation of the dataframe containing all info from sequencing_summary.txt
-        :return: Panda's Dataframe object
-        """
+        """Create the dataframe containing all info from sequencing_summary.txt."""
 
         start_time = time.time()
 
@@ -180,9 +184,10 @@ class SequencingSummaryExtractor:
         )
 
     def clean(self, result_dict: dict) -> None:
-        """
-        Removing dictionary entries that will not be kept in the report.data file
-        :return:
+        """Remove dictionary entries that are not kept in the report.data file.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
 
         # Check values in result_dict (avoid Series and Dataframes)
@@ -196,24 +201,30 @@ class SequencingSummaryExtractor:
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "Basecaller sequencing summary"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor.
-        :return: a string with the name of the ID of the extractor
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "basecaller.sequencing.summary.1d.extractor"
 
     def extract(self, result_dict: dict) -> None:
-        """
-        Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
-        :param result_dict:
+        """Extract Phred score and length details per read type.
+
+        Computes frequencies, ratios, yield and statistics for pass and fail
+        reads.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
 
         start_time = time.time()
@@ -354,9 +365,14 @@ class SequencingSummaryExtractor:
         )
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Generation of the different graphs containing in the plotly_graph_generator module
-        :return: images array containing the title and the path toward the images
+        """Generate the different graphs from the plotly_graph_generator module.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            A list of image tuples containing the title and the path toward
+            the images.
         """
         images = list()
 
@@ -490,9 +506,13 @@ class SequencingSummaryExtractor:
         return images
 
     def _load_sequencing_summary_data(self) -> pd.DataFrame:
-        """
-        Load sequencing summary dataframe with or without barcodes
-        :return: a Pandas Dataframe object
+        """Load the sequencing summary dataframe, with or without barcodes.
+
+        Returns:
+            A pd.DataFrame object holding the sequencing summary data.
+
+        Raises:
+            FileNotFoundError: If the sequencing summary file is not found.
         """
         # Initialization
         files = self.sequencing_summary_files
@@ -639,10 +659,13 @@ class SequencingSummaryExtractor:
 
     @staticmethod
     def _is_sequencing_summary_first_column_header(header: str) -> bool:
-        """
-        Check if the first column of the header is "filename" or similar
-        :param header: header line of the file to test
-        :return: True if the first column is "filename" or similar
+        """Check if the first column of the header is "filename" or similar.
+
+        Args:
+            header: Header line of the file to test.
+
+        Returns:
+            True if the first column is "filename" or a similar column name.
         """
         first_col_name = header.split("\t")[0]
         return first_col_name in (
@@ -656,10 +679,15 @@ class SequencingSummaryExtractor:
 
     @staticmethod
     def _is_barcode_file(filename: str) -> bool:
-        """
-        Check if input is a barcoding summary file i.e. has the column barcode_arrangement
-        :param filename: path of the file to test
-        :return: True if the filename is a barcoding summary file
+        """Check if the input is a barcoding summary file.
+
+        A barcoding summary file has a ``barcode_arrangement`` column.
+
+        Args:
+            filename: Path of the file to test.
+
+        Returns:
+            True if the file is a barcoding summary file.
         """
         header = read_first_line_file(filename)
         return header.startswith("read_id") and any(
@@ -668,10 +696,16 @@ class SequencingSummaryExtractor:
 
     @staticmethod
     def _is_sequencing_summary_file(filename: str) -> bool:
-        """
-        Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
-        :param filename: path of the file to test
-        :return: True if the file is indeed a sequencing summary file
+        """Check if the input is a sequencing summary file.
+
+        A sequencing summary file has "filename" as its first column and no
+        ``barcode_arrangement`` column.
+
+        Args:
+            filename: Path of the file to test.
+
+        Returns:
+            True if the file is a sequencing summary file.
         """
         header = read_first_line_file(filename)
         return SequencingSummaryExtractor._is_sequencing_summary_first_column_header(
@@ -680,11 +714,16 @@ class SequencingSummaryExtractor:
 
     @staticmethod
     def _is_sequencing_summary_with_barcodes(filename: str) -> bool:
-        """
-        Check if the sequencing summary has also barcode information :
-        - check for presence of columns "filename" and "barcode_arrangement"
-        :param filename: path of the file to test
-        :return: True if the filename is a sequencing summary file with barcodes
+        """Check if the sequencing summary also has barcode information.
+
+        Checks for the presence of both the "filename" and
+        ``barcode_arrangement`` columns.
+
+        Args:
+            filename: Path of the file to test.
+
+        Returns:
+            True if the file is a sequencing summary file with barcodes.
         """
         header = read_first_line_file(filename)
         return SequencingSummaryExtractor._is_sequencing_summary_first_column_header(
@@ -692,12 +731,16 @@ class SequencingSummaryExtractor:
         ) and any(col in header for col in ["barcode_arrangement", "barcode"])
 
     def _get_barcode_colname(self, filename: str) -> None:
-        """
-        Check if the barcode colname in sequencing summary is "barcode_arrangement" or "barcode".
-        When use_alias_for_barcodes is enabled and the file has an "alias" column,
-        use the "alias" column instead (it contains the same barcode identifiers
-        as the BAM BC tag, e.g. numeric sample aliases like '373879').
-        :param filename: path of the file to test
+        """Determine the barcode column name in the sequencing summary.
+
+        The barcode column is either "barcode_arrangement" or "barcode". When
+        ``use_alias_for_barcodes`` is enabled and the file has an "alias"
+        column, the "alias" column is used instead (it contains the same
+        barcode identifiers as the BAM BC tag, e.g. numeric sample aliases like
+        '373879').
+
+        Args:
+            filename: Path of the file to test.
         """
         header = read_first_line_file(filename)
         # Parse column names from header (handles alias at any position including last)

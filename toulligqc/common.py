@@ -26,17 +26,22 @@ from packaging import version
 
 
 def is_numpy_1_24() -> bool:
-    """
-    This function checks if Numpy version is later then 1.20
+    """Check if the installed Numpy version is later than 1.20.
+
+    Returns:
+        True if the Numpy version is 1.20 or later.
     """
     return version.parse(np.__version__) >= version.parse("1.20")
 
 
 def format_duration(t: float) -> str:
-    """
-    Format a time duration
-    :param t: time in milliseconds
-    :return: the duration in string
+    """Format a time duration.
+
+    Args:
+        t: Time in milliseconds.
+
+    Returns:
+        The duration as a string.
     """
 
     return f"{int(t // 60):,d}m{t % 60:2.2f}s"
@@ -56,9 +61,15 @@ def set_result_dict_value(
 
 
 def find_file_in_directory(source_file: str, format: str) -> str | None:
-    """
-    Looking for a suitable Fast5 or Pod5 file in the source directory.
-    :return: The path to the first suitable file in the source directory
+    """Look for a suitable Fast5 or Pod5 file in the source directory.
+
+    Args:
+        source_file: Directory to search for a suitable file.
+        format: File extension to look for (e.g. ``fast5`` or ``pod5``).
+
+    Returns:
+        The path to the first suitable file in the source directory, or
+        None if none is found.
     """
     for ext in (format, "tar.bz2", "tar.gz"):
         files_found = glob.glob(source_file + "/*." + ext)

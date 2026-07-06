@@ -29,15 +29,14 @@ from toulligqc.configuration import ToulligqcConf
 
 
 class ToulligqcInfoExtractor:
-    """
-    Extraction of the extractor selected list.
-    param config_dictionary: (configuration.py)
-    param result_dict: dictionary which gathers all the extracted
-    information that will be reported in the report.data file
-    :return: extractors list : list of modules (extractors)
-    that are called by the user from the command line.
-    It depends on the parse_args function (toulligqc.py)
-    that fills the config_dictionary.
+    """Report ToulligQC run info and the list of selected extractors.
+
+    The list of extractors called from the command line depends on the
+    ``parse_args`` function (toulligqc.py) that fills the config_dictionary.
+
+    Attributes:
+        _config_dictionary: The configuration dictionary (configuration.py).
+        _extractors_list: List of extractor modules that will be executed.
     """
 
     def __init__(self, config_dictionary: ToulligqcConf, extractors_list: list) -> None:
@@ -53,40 +52,39 @@ class ToulligqcInfoExtractor:
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "Toulligqc info"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor
-        :return: the report.data id
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "toulligqc.info.extractor"
 
     def check_conf(self) -> tuple[bool, str]:
-        """Configuration checking"""
+        """Check the configuration.
+
+        Returns:
+            A tuple ``(is_valid, message)``; always valid for this extractor.
+        """
         return True, ""
 
     def init(self) -> None:
-        """
-        Initialisation
-        :return:
-        """
+        """Initialize the extractor (no-op)."""
         return
 
     def extract(self, result_dict: dict) -> None:
-        """
-        Extraction of the different details about the config dictionary
-        to create the extractors list that will be stored in the result_dict dictionary
-        :param config_dictionary: configuration.py source
-        :param extractors_list: list of modules that will be executed
-        :param result_dict: result_dict dictionary
-        :return: extractors_list
+        """Extract config details and the list of extractors into result_dict.
 
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
 
         result_dict["unwritten.keys"] = ["unwritten.keys"]
@@ -107,9 +105,13 @@ class ToulligqcInfoExtractor:
             result_dict["toulligqc.info.extractors"].append(e.get_report_data_file_id())
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Graph generation
-        :return: nothing
+        """Generate graphs.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            An empty list (this extractor produces no graph).
         """
         return []
 
@@ -118,12 +120,14 @@ class ToulligqcInfoExtractor:
 
     @staticmethod
     def _system_and_python_info(result_dict: dict) -> dict:
-        """
-        Initialization of the result_dict with the OS parameters and the environment variables
-        :param config_dictionary: details from command user line
-        :param result_dict: Dictionary which gathers all the extracted
-        information that will be reported in the report.data file
-        :return: result_dict dictionary and extractors list
+        """Fill result_dict with the OS parameters and environment variables.
+
+        Args:
+            result_dict: Dictionary which gathers all the extracted information
+                that will be reported in the report.data file.
+
+        Returns:
+            The result_dict dictionary populated with system and Python info.
         """
         result_dict["toulligqc.info.system.hostname"] = os.uname()[1]
         result_dict["toulligqc.info.system.username"] = os.environ.get("USERNAME")

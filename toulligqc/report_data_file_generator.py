@@ -25,19 +25,24 @@
 
 
 def add_values_to_unwritten_key(result_dict: dict, values: list) -> None:
-    """
-    :param result_dict:
-    :param values: must be a list
-    :return:
+    """Register keys that must not be written to the report.data file.
+
+    Args:
+        result_dict: Dictionary gathering the extracted statistics.
+        values: List of keys to add to the unwritten keys list.
     """
     return result_dict["unwritten.keys"].extend(values)
 
 
 def statistics_generator(config_dictionary, result_dict: dict) -> None:
-    """
-    Create a log file where different information and statistics about the minion run are printed
-    :param result_dict:
-    :param config_dictionary:
+    """Write the report.data statistics file.
+
+    Creates a text file where the information and statistics about the MinION
+    run are printed in key-value form.
+
+    Args:
+        config_dictionary: Configuration dictionary holding the output path.
+        result_dict: Dictionary gathering the extracted statistics.
     """
 
     if config_dictionary["data_report_path"] is None:

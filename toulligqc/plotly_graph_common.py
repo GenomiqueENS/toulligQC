@@ -176,9 +176,13 @@ def _yaxis(title: str, args=None) -> dict:
 
 
 def _make_describe_dataframe(value) -> pd.DataFrame:
-    """
-    Creation of a statistics table printed with the graph in report.html
-    :param value: information measured (series)
+    """Create a statistics table printed with the graph in report.html.
+
+    Args:
+        value: Information measured (a pd.Series or pd.DataFrame).
+
+    Returns:
+        A pd.DataFrame with the formatted describe statistics.
     """
 
     desc = value.describe()
@@ -191,13 +195,19 @@ def _make_describe_dataframe(value) -> pd.DataFrame:
 
 
 def _interpolate(x, npoints: int, y=None, interp_type=None, axis=-1):
-    """
-    Function returning an interpolated version of data passed as input
-    :param x: array of data
-    :param npoints: number of desired points after interpolation (int)
-    :param y: second array in case of 2D data
-    :param interp_type: string specifying the type of interpolation (i.e. linear, nearest, cubic, quadratic etc.)
-    :param axis: number specifying the axis of y along which to interpolate. Default = -1
+    """Return an interpolated version of the input data.
+
+    Args:
+        x: Array of data.
+        npoints: Number of desired points after interpolation.
+        y: Second array in case of 2D data.
+        interp_type: Type of interpolation (e.g. linear, nearest, cubic,
+            quadratic).
+        axis: Axis of y along which to interpolate. Defaults to -1.
+
+    Returns:
+        The interpolated data: a single sorted array when ``y`` is None, or a
+        tuple ``(x_int, y_int)`` of pd.Series otherwise.
     """
     # In case of single array of data, use
     if y is None:
@@ -219,12 +229,21 @@ def _smooth_data(
     weights=None,
     density: bool = False,
 ) -> tuple:
-    """
-    Function for smmothing data with numpy histogram function
-    Returns a tuple of smooth data (ndarray)
-    :param data: must be array-like data
-    :param npoints: number of desired points for smoothing
-    :param sigma: sigma value of the gaussian filter
+    """Smooth data with the numpy histogram function.
+
+    Args:
+        npoints: Number of desired points for smoothing.
+        sigma: Sigma value of the gaussian filter.
+        data: Array-like data to smooth.
+        min_arg: Lower bound of the histogram range; computed from ``data`` if
+            None.
+        max_arg: Upper bound of the histogram range; computed from ``data`` if
+            None.
+        weights: Optional weights passed to the histogram.
+        density: Whether to normalize the histogram to a density.
+
+    Returns:
+        A tuple of smoothed data (ndarray).
     """
 
     if min_arg is None:

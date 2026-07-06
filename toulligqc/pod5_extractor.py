@@ -34,14 +34,13 @@ from toulligqc.configuration import ToulligqcConf
 
 
 class Pod5Extractor:
-    """
-    Extraction of different information from a Pod5 file
-    param pod5_source: Pod5 file directory
-    param result_directory: dictionary which gathers all the extracted
-    information that will be reported in the report.data file
-    param pod5_file_extension: extension used for the storage of the set of Pod5 files if there's one
-    param report_name: report name
-    return: a tuple containing the information about a Pod5 file
+    """Extract run information from a Pod5 file.
+
+    Attributes:
+        pod5_source: Pod5 file or directory.
+        report_name: Report name.
+        pod5_file_extension: Extension used for the storage of the set of Pod5
+            files, if any.
     """
 
     def __init__(self, config_dictionary: ToulligqcConf) -> None:
@@ -54,9 +53,11 @@ class Pod5Extractor:
         self.get_report_data_file_id()
 
     def check_conf(self) -> tuple[bool, str]:
-        """
-        Configuration checking
-        :return:
+        """Check the configuration.
+
+        Returns:
+            A tuple ``(is_valid, message)`` where the message describes the
+            error when the configuration is invalid.
         """
 
         if not os.path.exists(self.pod5_source):
@@ -97,33 +98,33 @@ class Pod5Extractor:
         return True, ""
 
     def init(self) -> None:
-        """
-        Determination of the pod5 file extension
-        """
+        """Initialize the extractor (no-op for Pod5)."""
         return
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "Pod5"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor
-        :return: the report.data id
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "pod5.extractor"
 
     def extract(self, result_dict: dict) -> None:
-        """
-        Extraction of the different information about the pod5 files
-        :param result_dict: Dictionary which gathers all the extracted
-        information that will be reported in the report.data file
-        :return: result_dict filled
+        """Extract the different information from the Pod5 files.
+
+        Args:
+            result_dict: Dictionary which gathers all the extracted information
+                that will be reported in the report.data file.
         """
         p5_file = self._read_pod5()
         run_info_dict = self._get_pod5_items(p5_file)
@@ -210,28 +211,34 @@ class Pod5Extractor:
             )
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Graph generation
-        :return: nothing
+        """Generate graphs.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            An empty list (this extractor produces no graph).
         """
         return []
 
     def clean(self, result_dict: dict) -> None:
-        """
-        Deleting the temporary pod5 file extracted from the tar archive if used
-        and removing dictionary entries that will not be kept in the report.data file
-        :param result_dict: dictionary which gathers all the extracted
-        information that will be reported in the report.data file
-        :return:
+        """Delete the temporary Pod5 file extracted from the tar archive.
+
+        Also removes dictionary entries that will not be kept in the
+        report.data file.
+
+        Args:
+            result_dict: Dictionary which gathers all the extracted information
+                that will be reported in the report.data file.
         """
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
 
     def _read_pod5(self) -> p5.Reader:
-        """
-        Extraction of one pod5 file from the archive and stores
-        it in a p5 object for next retrieving information
-        :return: p5_file: pod5file
+        """Extract one Pod5 file and open it as a p5.Reader object.
+
+        Returns:
+            The opened Pod5 file as a p5.Reader object.
         """
         self.temporary_directory = tempfile.mkdtemp()
         if (
@@ -254,13 +261,16 @@ class Pod5Extractor:
     def _pod5_tar_extraction(
         self, tar_file: str, extension: str, output_directory: str
     ) -> str:
-        """
-        Extraction of a Pod5 file stored in a tar file,
-        :param tar_file: tar file containing the set of the raw Pod5 files
-        :param extension of the file
-        :param output_directory: dictionary which gathers all the extracted
-        information that will be reported in the report.data file
-        :return: a Pod5 file
+        """Extract a Pod5 file stored in a tar archive.
+
+        Args:
+            tar_file: Tar file containing the set of raw Pod5 files.
+            extension: Extension of the tar file (``tar``, ``tar.gz`` or
+                ``tar.bz2``).
+            output_directory: Directory where the Pod5 file is extracted.
+
+        Returns:
+            The path to the extracted Pod5 file.
         """
 
         if extension == "tar.gz":
@@ -279,11 +289,14 @@ class Pod5Extractor:
         return output_directory + "/" + member.name
 
     def _get_pod5_items(self, h5py_file):
-        """
-        Global function to extract run information stores in h5py format
-        :param h5py_file: fast5 file store in a h5py object
-        :param key:  required h5py attributes
-        :return: h5py value, for example flow_cell_id : FAE22827
+        """Extract run information from the first read of a Pod5 file.
+
+        Args:
+            h5py_file: Opened Pod5 file (p5.Reader object).
+
+        Returns:
+            The run info of the first read, or an empty dict if the file has
+            no reads.
         """
 
         for read_record in h5py_file.reads():

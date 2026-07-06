@@ -26,16 +26,30 @@ import pandas as pd
 
 
 def occupancy_channel(dataframe: pd.DataFrame) -> pd.Series:
-    """
-    Statistics about the channels of the flowcell
-    :return: pd.Series object containing statistics about the channel occupancy without count value
+    """Compute statistics about the channels of the flowcell.
+
+    Args:
+        dataframe: DataFrame containing a ``channel`` column.
+
+    Returns:
+        A pd.Series object containing statistics about the channel
+        occupancy without the count value.
     """
     total_reads_per_channel = dataframe["channel"].value_counts()
     return pd.DataFrame.describe(total_reads_per_channel)
 
 
 def compute_LXX(dataframe_dict: dict, x: float) -> int | None:
-    """Compute LXX value of total sequence length"""
+    """Compute the LXX value of the total sequence length.
+
+    Args:
+        dataframe_dict: Dictionary holding an ``all.reads.sequence.length`` entry.
+        x: Percentage threshold of the total sequence length.
+
+    Returns:
+        The number of reads needed to reach XX% of the total sequence
+        length, or None if the threshold is never reached.
+    """
     data = dataframe_dict["all.reads.sequence.length"].dropna().values
     data = np.sort(data)
     half_sum = data.sum() * x / 100
@@ -49,7 +63,16 @@ def compute_LXX(dataframe_dict: dict, x: float) -> int | None:
 
 
 def compute_NXX(dataframe_dict: dict, x: float) -> int | None:
-    """Compute NXX value of total sequence length"""
+    """Compute the NXX value of the total sequence length.
+
+    Args:
+        dataframe_dict: Dictionary holding an ``all.reads.sequence.length`` entry.
+        x: Percentage threshold of the total sequence length.
+
+    Returns:
+        The read length at which the cumulative length reaches XX% of the
+        total sequence length, or None if the threshold is never reached.
+    """
     data = dataframe_dict["all.reads.sequence.length"].dropna().values
     data = np.sort(data)
     half_sum = data.sum() * x / 100
@@ -61,9 +84,13 @@ def compute_NXX(dataframe_dict: dict, x: float) -> int | None:
 
 
 def avg_qual(quals: str) -> float | None:
-    """
-    Estimates mean quality Phred score
-    return: float
+    """Estimate the mean quality Phred score.
+
+    Args:
+        quals: String of per-base quality characters.
+
+    Returns:
+        The mean Phred quality score as a float, or None if ``quals`` is empty.
     """
     if quals:
         qscore = -10 * log(

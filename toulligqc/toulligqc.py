@@ -67,9 +67,15 @@ def _positive_float(value: str) -> float:
 def _parse_args(
     config_dictionary: configuration.ToulligqcConf,
 ) -> configuration.ToulligqcConf:
-    """
-    Parsing the command line
-    :return: config_dictionary containing the paths specified by line arguments
+    """Parse the command line.
+
+    Args:
+        config_dictionary: Configuration dictionary to fill from the command
+            line arguments.
+
+    Returns:
+        The config_dictionary containing the paths specified by the command
+        line arguments.
     """
 
     parser = argparse.ArgumentParser(
@@ -355,9 +361,11 @@ def _parse_args(
 
 
 def _check_conf(config_dictionary: configuration.ToulligqcConf) -> None:
-    """
-    Check the configuration
-    :param config_dictionary: configuration dictionary containing the file or directory paths
+    """Check the configuration.
+
+    Args:
+        config_dictionary: Configuration dictionary containing the file or
+            directory paths.
     """
 
     force = True if config_dictionary.get("force", "False").lower() == "true" else False
@@ -461,20 +469,25 @@ def _welcome(config_dictionary: configuration.ToulligqcConf) -> None:
 
 
 def _show(config_dictionary: configuration.ToulligqcConf, msg: str) -> None:
-    """
-    Print a message on the screen
-    :param config_dictionary: configuration dictionary
-    :param msg: message to print
+    """Print a message on the screen.
+
+    Args:
+        config_dictionary: Configuration dictionary.
+        msg: Message to print.
     """
     if "quiet" not in config_dictionary or config_dictionary["quiet"].lower() != "true":
         print(msg)
 
 
 def _join_parameter_arguments(arg: list | None) -> str | None:
-    """
-    Join parameter arguments
-    :param arg: argument to join
-    :return: a string with arguments separated by tab character or None if the input parameter is None
+    """Join parameter arguments with a tab separator.
+
+    Args:
+        arg: List of arguments to join.
+
+    Returns:
+        A string with arguments separated by a tab character, or None if the
+        input is None.
     """
 
     if arg is None:

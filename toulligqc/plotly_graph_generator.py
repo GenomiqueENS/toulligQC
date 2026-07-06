@@ -702,9 +702,14 @@ def _compute_channel_count(df: pd.DataFrame, channel_map: pd.DataFrame) -> tuple
 def plot_performance(
     df: pd.DataFrame, result_directory: str | None
 ) -> tuple[str, str | None, str | None, str]:
-    """
-    Plots the channels occupancy by the reads
-    @:param pore_measure: reads number per pore
+    """Plot the channel occupancy of the flowcell by the reads.
+
+    Args:
+        df: DataFrame holding a ``channel`` column (reads number per pore).
+        result_directory: Directory where the image is written, or None.
+
+    Returns:
+        A graph tuple describing the generated image.
     """
 
     graph_name = "Channel occupancy of the flowcell"

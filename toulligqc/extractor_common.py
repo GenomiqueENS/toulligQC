@@ -33,11 +33,14 @@ from toulligqc import common
 
 
 def set_result_value(extractor, result_dict: dict, key: str, value) -> None:
-    """
-    Set a key, value pair to the result_dict
-    :param result_dict:
-    :param key: string entry to add to result_dict
-    :param value: int, float, list, pd.Series or pd.Dataframe value of the corresponding key
+    """Set a key/value pair in the result_dict.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the key.
+        result_dict: Dictionary gathering the extracted statistics.
+        key: String entry to add to result_dict.
+        value: int, float, list, pd.Series or pd.DataFrame value of the
+            corresponding key.
     """
 
     _check_result_key_value(key, value)
@@ -45,10 +48,18 @@ def set_result_value(extractor, result_dict: dict, key: str, value) -> None:
 
 
 def get_result_value(extractor, result_dict: dict, key: str):
-    """
-    :param result_dict:
-    :param key: string entry to add to result_dict
-    Returns the value associated with the result_dict key
+    """Return the value associated with a result_dict key.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the key.
+        result_dict: Dictionary gathering the extracted statistics.
+        key: String entry to look up in result_dict.
+
+    Returns:
+        The value associated with the namespaced key.
+
+    Raises:
+        KeyError: If the key is not present in result_dict.
     """
     if (extractor.get_report_data_file_id() + "." + key) not in result_dict.keys():
         raise KeyError("Key {key} not found").__format__(key)
@@ -75,11 +86,16 @@ def _check_result_key_value(key, value) -> None:
 
 
 def describe_dict(extractor, result_dict: dict, function, entry: str) -> None:
-    """
-    Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
-    :param result_dict:
-    :param function: function returning the values to describe
-    :param entry: entry to put in result_dict completed with the statistics
+    """Set describe statistics for a key.
+
+    Fills the result_dict with the mean, min, max, median and percentiles
+    (without the count value) computed from the given series.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the key.
+        result_dict: Dictionary gathering the extracted statistics.
+        function: Series returning the values to describe.
+        entry: Entry to put in result_dict completed with the statistics.
     """
     stats = pd.Series.describe(function).drop("count")
     for key, value in stats.items():
@@ -89,10 +105,15 @@ def describe_dict(extractor, result_dict: dict, function, entry: str) -> None:
 def count_boolean_elements(
     dataframe: pd.DataFrame, column_name: str, boolean: bool
 ) -> int:
-    """
-    Returns the number of values of a column filtered by a boolean
-    :param colum_name: name of the dafatrame column
-    :boolean: bool to filter
+    """Return the number of values of a column filtered by a boolean.
+
+    Args:
+        dataframe: DataFrame to filter.
+        column_name: Name of the dataframe column.
+        boolean: Boolean value to filter on.
+
+    Returns:
+        The number of rows whose column value equals the boolean.
     """
     return len(dataframe.loc[dataframe[column_name] == bool(boolean)])
 
@@ -100,12 +121,16 @@ def count_boolean_elements(
 def series_cols_boolean_elements(
     dataframe: pd.DataFrame, column_name1: str, column_name2: str, boolean: bool
 ) -> pd.Series:
-    """
-    Returns a Panda's Series object with the number of values of different columns filtered by a boolean
-    :param dataframe: dataframe_1d
-    :param column_name1: 1st column to filter
-    :param column_name2: 2nd column to filter
-    :param boolean: access columns of dataframe by boolean array
+    """Return the values of a column filtered by a boolean on another column.
+
+    Args:
+        dataframe: The dataframe_1d to filter.
+        column_name1: Column whose values are returned.
+        column_name2: Column used for the boolean filter.
+        boolean: Boolean value used to filter the rows.
+
+    Returns:
+        A pd.Series object with the selected values.
     """
     return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
 
@@ -113,12 +138,16 @@ def series_cols_boolean_elements(
 def df_cols_boolean_elements(
     dataframe: pd.DataFrame, column_name1: list, column_name2: str, boolean: bool
 ) -> pd.Series:
-    """
-    Returns a Panda's Series object with the number of values of different columns filtered by a boolean
-    :param dataframe: dataframe_1d
-    :param column_name1: 1st column to filter
-    :param column_name2: 2nd column to filter
-    :param boolean: access columns of dataframe by boolean array
+    """Return the values of columns filtered by a boolean on another column.
+
+    Args:
+        dataframe: The dataframe_1d to filter.
+        column_name1: Columns whose values are returned.
+        column_name2: Column used for the boolean filter.
+        boolean: Boolean value used to filter the rows.
+
+    Returns:
+        A pd.Series object with the selected values.
     """
     return dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
 
@@ -130,13 +159,17 @@ def sorted_series_boolean_elements_divided(
     boolean: bool,
     denominator: int,
 ) -> pd.Series:
-    """
-    Returns a sorted series of values of different columns filtered by a boolean and divided by the denominator
-    :param dataframe: dataframe_1d
-    :param column_name1: 1st column to filter
-    :param column_name2: 2nd column to filter
-    :param boolean: access columns of dataframe by boolean array
-    :param denominator: number to divide by
+    """Return a sorted series of column values filtered by a boolean and divided.
+
+    Args:
+        dataframe: The dataframe_1d to filter.
+        column_name1: Column whose values are returned.
+        column_name2: Column used for the boolean filter.
+        boolean: Boolean value used to filter the rows.
+        denominator: Number to divide the values by.
+
+    Returns:
+        A sorted pd.Series of the filtered values divided by the denominator.
     """
     return (
         dataframe[column_name1].loc[dataframe[column_name2] == bool(boolean)]
@@ -145,7 +178,12 @@ def sorted_series_boolean_elements_divided(
 
 
 def fill_series_dict(df_dict: dict, df: pd.DataFrame) -> None:
-    """ """
+    """Fill a dict with the read length, qscore, time and duration series.
+
+    Args:
+        df_dict: Dictionary populated with the per-read-type series.
+        df: DataFrame holding the sequencing summary columns.
+    """
     for read_type in ["pass", "fail"]:
         read_type_bool = True if read_type == "pass" else False
 
@@ -181,9 +219,14 @@ def extract_barcode_info(
     dataframe_dict: dict,
     df: pd.DataFrame,
 ) -> None:
-    """
-    :param result_dict:
-    Gather all barcode info for graphs : reads pass/fail and frequency per barcodes
+    """Gather all barcode info for graphs: pass/fail reads and per-barcode frequency.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the keys.
+        result_dict: Dictionary gathering the extracted statistics.
+        barcode_selection: List of selected barcodes.
+        dataframe_dict: Dictionary populated with the barcode dataframes.
+        df: DataFrame holding the sequencing summary columns.
     """
     # Add values unclassified and other to barcode list
     if "unclassified" not in barcode_selection:
@@ -333,13 +376,20 @@ def _barcode_selection_dataframe(
     df_key_name: str,
     melted_column_name: str,
 ) -> None:
-    """
-    Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
-    Reshape the dataframes from wide to long format to display barcode, read type and read length or phred score per read
-    These dataframes are used for sequence length and qscore boxplots
-    :param key: string name to put in dataframe_dict
-    :param df_column_name: name of the dataframe_1d column used for the new barcode_selection_dataframes
-    :param melted_column_name: value (qscore or length) to use for renaming column of melted dataframe
+    """Build a per-barcode, per-read-type dataframe for length or qscore boxplots.
+
+    Groups all reads by barcode and read type (pass/fail) for read length or
+    Phred score info, then reshapes the dataframe from wide to long format so it
+    displays barcode, read type and read length or Phred score per read.
+
+    Args:
+        dataframe_dict: Dictionary populated with the resulting dataframe.
+        df: The dataframe_1d holding the reads.
+        df_column_name: Name of the dataframe_1d column used for the new
+            barcode selection dataframe.
+        df_key_name: String name of the entry to put in dataframe_dict.
+        melted_column_name: Value (qscore or length) used for renaming the
+            melted dataframe column.
     """
     # Count total number of rows
     nrows = df.shape[0]
@@ -376,12 +426,19 @@ def _barcode_stats(
     barcode_selected_read_fail_dataframe: pd.DataFrame,
     barcode_name: str,
 ) -> None:
-    """
-    :param result_dict:
-    :param prefix: report.data id of the extractor (string)
-    :param barcode_selected: barcode filtered dataframes
-    Put statistics (with describe method) about barcode length and qscore in result_dict for each selected dataframe : all.read/read.pass and read.fail
-    N.b. does not include count statistic for qscore
+    """Put per-barcode length and qscore statistics in result_dict.
+
+    Uses the describe method to compute statistics for each selected dataframe
+    (all.read, read.pass and read.fail). The count statistic is not included for
+    qscore.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the keys.
+        result_dict: Dictionary gathering the extracted statistics.
+        barcode_selected_dataframe: All reads for the barcode.
+        barcode_selected_read_pass_dataframe: Passing reads for the barcode.
+        barcode_selected_read_fail_dataframe: Failing reads for the barcode.
+        barcode_name: Name of the barcode.
     """
     df_dict = {
         "all.read.": barcode_selected_dataframe,
@@ -410,14 +467,22 @@ def _barcode_frequency(
     entry: str,
     df_filtered: pd.Series,
 ) -> pd.Series:
-    """
-    Count reads by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
-    Regroup all non used barcodes in index "other"
-    Compute all frequency values for each number of barcoded reads
-    :param result_dict: result dictionary with statistics
-    :param entry: entry about barcoded counts
-    :param prefix: key prefix
-    :return: Series with all barcodes (used, non used, and unclassified) frequencies
+    """Count reads per barcode and compute their frequencies.
+
+    Counts reads by values of barcode_selection, computes the sum of counts by
+    barcode_selection and the sum of unclassified counts, regroups all non-used
+    barcodes under the index "other" and computes all frequency values for each
+    number of barcoded reads.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the keys.
+        barcode_selection: List of selected barcodes.
+        result_dict: Dictionary gathering the extracted statistics.
+        entry: Entry about barcoded counts.
+        df_filtered: Series of barcode arrangements to count.
+
+    Returns:
+        A pd.Series with all barcode (used, non-used and unclassified) counts.
     """
     # Regroup all barcoded read in Series
     all_barcode_count = df_filtered.value_counts()
@@ -478,14 +543,23 @@ def _barcode_bases(
     entry: str,
     df_filtered: pd.DataFrame,
 ) -> pd.Series:
-    """
-    Count bases by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
-    Regroup all non used barcodes in index "other"
-    Compute all frequency values for each number of barcoded bases
-    :param result_dict: result dictionary with statistics
-    :param entry: entry about barcoded counts
-    :param prefix: key prefix
-    :return: Series with all barcodes (used, non used, and unclassified) frequencies
+    """Count bases per barcode and compute their frequencies.
+
+    Counts bases by values of barcode_selection, computes the sum of counts by
+    barcode_selection and the sum of unclassified counts, regroups all non-used
+    barcodes under the index "other" and computes all frequency values for each
+    number of barcoded bases.
+
+    Args:
+        extractor: Extractor whose report data file id namespaces the keys.
+        barcode_selection: List of selected barcodes.
+        result_dict: Dictionary gathering the extracted statistics.
+        entry: Entry about barcoded counts.
+        df_filtered: DataFrame with ``barcode_arrangement`` and
+            ``sequence_length`` columns.
+
+    Returns:
+        A pd.Series with all barcode (used, non-used and unclassified) base counts.
     """
     # Regroup all barcoded and sum all read lengths in df
     all_barcode_count = df_filtered.groupby("barcode_arrangement", observed=False)[
@@ -555,7 +629,16 @@ def add_image_to_result(
 
 
 def timeISO_to_float(iso_datetime: str, format: str) -> float:
-    """ """
+    """Convert an ISO datetime string to a Unix timestamp.
+
+    Args:
+        iso_datetime: Datetime string to parse.
+        format: Primary datetime format to try before falling back to
+            ``%Y-%m-%dT%H:%M:%SZ``.
+
+    Returns:
+        The corresponding Unix timestamp as a float.
+    """
     try:
         dt = datetime.strptime(iso_datetime, format)
     except ValueError:
@@ -566,10 +649,18 @@ def timeISO_to_float(iso_datetime: str, format: str) -> float:
 
 
 def read_first_line_file(filename: str) -> str:
-    """
-    Load the first line of a file.
-    :param filename: name of the file to load.
-    :return: the first line of the file
+    """Load the first line of a file.
+
+    Supports plain, gzip- and bzip2-compressed files.
+
+    Args:
+        filename: Name of the file to load.
+
+    Returns:
+        The first line of the file.
+
+    Raises:
+        FileNotFoundError: If the file cannot be opened.
     """
     try:
         if filename.endswith(".gz"):
@@ -586,7 +677,13 @@ def read_first_line_file(filename: str) -> str:
 
 
 def set_result_dict_telemetry_value(result_dict: dict, key: str, new_value) -> None:
-    """ """
+    """Set a telemetry value in result_dict, keeping any existing value.
+
+    Args:
+        result_dict: Dictionary gathering the extracted statistics.
+        key: Telemetry key (without the extractor prefix).
+        new_value: New value to store; if None, the current value is kept.
+    """
     final_key = "sequencing.telemetry.extractor." + key
     current_value = None
 

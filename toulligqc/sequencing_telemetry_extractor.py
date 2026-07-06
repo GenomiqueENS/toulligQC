@@ -40,9 +40,11 @@ class SequencingTelemetryExtractor:
             self.telemetry_file = self.telemetry_source
 
     def check_conf(self) -> tuple[bool, str]:
-        """
-        Configuration checking
-        :return: nothing
+        """Check the configuration.
+
+        Returns:
+            A tuple ``(is_valid, message)`` where the message describes the
+            error when the configuration is invalid.
         """
 
         if not os.path.isfile(self.telemetry_file):
@@ -51,46 +53,52 @@ class SequencingTelemetryExtractor:
         return True, ""
 
     def init(self) -> None:
-        """
-        Determination of the telemetry file
-        """
+        """Initialize the extractor (no-op for telemetry)."""
         return
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "Sequencing telemetry"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor.
-        :return: the report.data id
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "sequencing.telemetry.extractor"
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Graph generation
-        :return: nothing
+        """Generate graphs.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            An empty list (this extractor produces no graph).
         """
         return []
 
     def clean(self, result_dict: dict) -> None:
-        """
-        :return: nothing
+        """Clean up the extractor (no-op for telemetry).
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
         return
 
     def extract(self, result_dict: dict) -> None:
-        """
-        Extraction of data from the sequencing_telemetry.js file
-        :param result_dict: Dictionary which gathers all the extracted
-        information that will be reported in the report.data file
-        :return: result_dict filled
+        """Extract data from the sequencing_telemetry.js file.
+
+        Args:
+            result_dict: Dictionary which gathers all the extracted information
+                that will be reported in the report.data file.
         """
 
         array = _load_json(self.telemetry_file)
@@ -237,10 +245,13 @@ class SequencingTelemetryExtractor:
 
 
 def _load_json(filename: str):
-    """
-    Load a JSON file. Can handle compressed file.
-    :param filename: name of the file to load
-    :return: a JSON object
+    """Load a JSON file, handling gzip- and bzip2-compressed files.
+
+    Args:
+        filename: Name of the file to load.
+
+    Returns:
+        The parsed JSON object.
     """
     if filename.endswith(".gz"):
         print("Load json gzip")

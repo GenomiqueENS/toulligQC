@@ -47,16 +47,20 @@ from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as
 
 
 class OneDSquareSequencingSummaryExtractor(SSE):
-    """
-    Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
-    """
+    """Extract statistics from a 1dsqr_sequencing_summary.txt file and generate graphs."""
 
     def __init__(self, config_dictionary: ToulligqcConf) -> None:
-        """
-        Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in
-        sequencing_summary_source and seqencing_summary_1dsqr_source if the path points to a file,
-        the others cases are managed in check_conf and _load_sequencing_summary_1dsqr_data
-        :param config_dictionary: dictionary containing all files or directories paths for sequencing_summary, sequencing_1dsq_summary.txt and barcoding files
+        """Initialize the extractor from the config dictionary.
+
+        In the case of a single ``sequencing_summary_source`` and
+        ``sequencing_summary_1dsqr_source`` argument, checks whether the path
+        points to a file; the other cases are managed in the ``check_conf`` and
+        ``_load_sequencing_summary_1dsqr_data`` methods.
+
+        Args:
+            config_dictionary: Dictionary containing all file or directory paths
+                for sequencing_summary, sequencing_1dsq_summary.txt and
+                barcoding files.
         """
         super().__init__(config_dictionary)
         self.sse = SSE(config_dictionary)
@@ -79,9 +83,11 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                     self.is_barcode = True
 
     def check_conf(self) -> tuple[bool, str]:
-        """
-        Check if the sequencing summary 1dsqr source contains a 1dsqr sequencing summary file
-        :return: boolean and a string for error message
+        """Check that the 1dsqr source contains a 1dsqr sequencing summary file.
+
+        Returns:
+            A tuple ``(is_valid, message)`` where the message describes the
+            error when the configuration is invalid.
         """
         # Check the presence of sequencing_summary.txt
         if not self.sse.check_conf()[0]:
@@ -105,10 +111,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         return True, ""
 
     def init(self) -> None:
-        """
-        Initialisation
-        :return:
-        """
+        """Load the 1D and 1D² dataframes and prepare the shared dictionaries."""
         start_time = time.time()
 
         self.sse.init()
@@ -159,24 +162,27 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "Basecaller 1d square sequencing summary"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor.
-        :return: the report.data id
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "basecaller.sequencing.summary.1dsqr.extractor"
 
     def extract(self, result_dict: dict) -> None:
-        """
-        :param result_dict:
-        :return:
+        """Extract 1D and 1D² statistics into the result dictionary.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
         #
         # Extract from 1D summary source
@@ -334,9 +340,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         ]
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Generation of the differents graphs containing in the plotly_graph_generator modules
-        :return: images array containing the title and the path toward the images
+        """Generate the different graphs from the plotly_graph_generator modules.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            A list of image tuples containing the title and the path toward
+            the images.
         """
 
         images = list()
@@ -496,10 +507,10 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         return images
 
     def clean(self, result_dict: dict) -> None:
-        """
-        Removing dictionary entries that will not be kept in the report.data file
-        :param result_dict:
-        :return:
+        """Remove dictionary entries that are not kept in the report.data file.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
 
         # Clean SSE
@@ -515,9 +526,10 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         self.dataframe_1dsqr.iloc[0:0]
 
     def _load_sequencing_summary_1dsqr_data(self) -> pd.DataFrame:
-        """
-        Load sequencing summary dataframe with or without barcodes
-        :return: a Pandas Dataframe object
+        """Load the 1D² sequencing summary dataframe, with or without barcodes.
+
+        Returns:
+            A pd.DataFrame object holding the 1D² sequencing summary data.
         """
         # Initialization
         files = self.sequencing_summary_1dsqr_files
@@ -661,20 +673,31 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
     @staticmethod
     def _is_barcode_file(filename: str) -> bool:
-        """
-        Check if input is a barcoding summary file i.e. has the column barcode_arrangement
-        :param filename: path of the file to test
-        :return: True if the filename is a barcoding summary file
+        """Check if the input is a barcoding summary file.
+
+        A barcoding summary file has a ``barcode_arrangement`` column.
+
+        Args:
+            filename: Path of the file to test.
+
+        Returns:
+            True if the file is a barcoding summary file.
         """
         header = read_first_line_file(filename)
         return header.startswith("read_id") and "barcode_arrangement" in header
 
     @staticmethod
     def _is_sequencing_summary_1dsqr_file(filename: str) -> bool:
-        """
-        Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
-        :param filename: path of the file to test
-        :return: True if the file is indeed a sequencing summary file
+        """Check if the input is a 1D² sequencing summary file.
+
+        A 1D² sequencing summary file starts with "filename1" and has no
+        ``barcode_arrangement`` column.
+
+        Args:
+            filename: Path of the file to test.
+
+        Returns:
+            True if the file is a 1D² sequencing summary file.
         """
         header = read_first_line_file(filename)
         return header.startswith("filename1") and "barcode_arrangement" not in header

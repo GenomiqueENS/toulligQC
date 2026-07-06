@@ -85,9 +85,11 @@ class uBAM_Extractor:
             self.quiet = True
 
     def check_conf(self) -> tuple[bool, str]:
-        """
-        Configuration checking
-        :return: nothing
+        """Check the configuration.
+
+        Returns:
+            A tuple ``(is_valid, message)`` where the message describes the
+            error when the configuration is invalid.
         """
         for uBAM in self.ubam:
             if not os.path.isfile(uBAM):
@@ -95,10 +97,7 @@ class uBAM_Extractor:
             return True, ""
 
     def init(self) -> None:
-        """
-        Creation of the dataframe containing all info from uBAM
-        :return: Panda's Dataframe object
-        """
+        """Create the dataframe containing all info from the uBAM."""
         start_time = time.time()
         self.dataframe = self._load_uBAM_file()
         if self.dataframe.empty:
@@ -124,9 +123,10 @@ class uBAM_Extractor:
         )
 
     def clean(self, result_dict: dict) -> None:
-        """
-        Removing dictionary entries that will not be kept in the report.data file
-        :return:
+        """Remove dictionary entries that are not kept in the report.data file.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
         check_result_values(self, result_dict)
         self.dataframe_dict.clear()
@@ -134,24 +134,31 @@ class uBAM_Extractor:
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "uBAM"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor.
-        :return: the report.data id
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "basecaller.sequencing.summary.1d.extractor"
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Generation of the different graphs containing in the plotly_graph_generator module
-        :return: images array containing the title and the path toward the images
+        """Generate the different graphs from the plotly_graph_generator module.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            A list of image tuples containing the title and the path toward
+            the images.
         """
         images = list()
 
@@ -283,9 +290,13 @@ class uBAM_Extractor:
         return images
 
     def extract(self, result_dict: dict) -> None:
-        """
-        Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
-        :param result_dict:
+        """Extract Phred score and length details per read type.
+
+        Computes frequencies, ratios, yield and statistics for pass and fail
+        reads.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
         start_time = time.time()
         fill_series_dict(self.dataframe_dict, self.dataframe)
@@ -428,9 +439,10 @@ class uBAM_Extractor:
         log_task(self.quiet, "Extract info from uBAM file", start_time, time.time())
 
     def _load_uBAM_file(self) -> pd.DataFrame:
-        """
-        Load uBAM dataframe
-        :return: a Pandas Dataframe object
+        """Load the uBAM dataframe.
+
+        Returns:
+            A pd.DataFrame object holding the parsed uBAM records.
         """
         self._get_header()
         uBAM_chunks = self._uBAM_batch_generator()
@@ -474,9 +486,14 @@ class uBAM_Extractor:
         return uBAM_df
 
     def _uBAM_batch_reader(self, uBAM_chunk) -> list:
-        """
-        parse each line of uBAM quality line:
-        return: [read length, mean Qscore, type of read (pass or fail)]
+        """Parse each record of a uBAM chunk.
+
+        Args:
+            uBAM_chunk: Batch of uBAM records to parse.
+
+        Returns:
+            A list of per-record data ``[read length, mean Qscore, type of
+            read (pass or fail), ...]``.
         """
         # def process_bam_chunk(bam_chunk):
         rec_data = []
@@ -488,9 +505,10 @@ class uBAM_Extractor:
         return rec_data
 
     def _uBAM_batch_generator(self) -> Iterator:
-        """
-        read uBAM file in small chunk
-        yield : list of lines (quality line): batch of n size
+        """Read the uBAM files in small chunks.
+
+        Yields:
+            Batches of ``batch_size`` records.
         """
         for ubam in self.ubam:
             samfile = pysam.AlignmentFile(ubam, "rb", check_sq=False)
@@ -514,9 +532,14 @@ class uBAM_Extractor:
         }
 
     def _process_record(self, rec, record_count: int) -> list:
-        """
-        extract QC info from BAM record
-        return : dict of QC info
+        """Extract QC info from a BAM record.
+
+        Args:
+            rec: Raw BAM record line.
+            record_count: Index of the record, used as a fallback start time.
+
+        Returns:
+            A list of QC info for the record.
         """
         fields = rec.split("\t")
 

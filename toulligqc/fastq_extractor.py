@@ -85,9 +85,11 @@ class fastqExtractor:
             self.quiet = True
 
     def check_conf(self) -> tuple[bool, str]:
-        """
-        Configuration checking
-        :return: nothing
+        """Check the configuration.
+
+        Returns:
+            A tuple ``(is_valid, message)`` where the message describes the
+            error when the configuration is invalid.
         """
         for fastq in self.fastq:
             if not os.path.isfile(fastq):
@@ -95,10 +97,7 @@ class fastqExtractor:
             return True, ""
 
     def init(self) -> None:
-        """
-        Creation of the dataframe containing all info from fastq
-        :return: Panda's Dataframe object
-        """
+        """Create the dataframe containing all info from the FASTQ."""
         start_time = time.time()
         self.dataframe_1d = self._load_fastq_data()
         if self.dataframe_1d.empty:
@@ -121,9 +120,10 @@ class fastqExtractor:
         )
 
     def clean(self, result_dict: dict) -> None:
-        """
-        Removing dictionary entries that will not be kept in the report.data file
-        :return:
+        """Remove dictionary entries that are not kept in the report.data file.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
 
         # Check values in result_dict (avoid Series and Dataframes)
@@ -137,24 +137,31 @@ class fastqExtractor:
 
     @staticmethod
     def get_name() -> str:
-        """
-        Get the name of the extractor.
-        :return: the name of the extractor
+        """Get the name of the extractor.
+
+        Returns:
+            The name of the extractor.
         """
         return "fastq"
 
     @staticmethod
     def get_report_data_file_id() -> str:
-        """
-        Get the report.data id of the extractor.
-        :return: the report.data id
+        """Get the report.data id of the extractor.
+
+        Returns:
+            The report.data id.
         """
         return "basecaller.sequencing.summary.1d.extractor"
 
     def graph_generation(self, result_dict: dict) -> list:
-        """
-        Generation of the different graphs containing in the plotly_graph_generator module
-        :return: images array containing the title and the path toward the images
+        """Generate the different graphs from the plotly_graph_generator module.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
+
+        Returns:
+            A list of image tuples containing the title and the path toward
+            the images.
         """
         images = list()
 
@@ -290,9 +297,13 @@ class fastqExtractor:
         return images
 
     def extract(self, result_dict: dict) -> None:
-        """
-        Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
-        :param result_dict:
+        """Extract Phred score and length details per read type.
+
+        Computes frequencies, ratios, yield and statistics for pass and fail
+        reads.
+
+        Args:
+            result_dict: Dictionary gathering the extracted statistics.
         """
         start_time = time.time()
         fill_series_dict(self.dataframe_dict, self.dataframe_1d)
@@ -420,9 +431,10 @@ class fastqExtractor:
         log_task(self.quiet, "Extract info from FASTQ file", start_time, time.time())
 
     def _load_fastq_data(self) -> pd.DataFrame:
-        """
-        Load FASTQ dataframe
-        :return: a Pandas Dataframe object
+        """Load the FASTQ dataframe.
+
+        Returns:
+            A pd.DataFrame object holding the parsed FASTQ records.
         """
         run_info = self.check_fastq()
 
@@ -474,9 +486,10 @@ class fastqExtractor:
         return fq_df
 
     def _fastq_batch_generator(self) -> Iterator[list]:
-        """
-        read FASTQ file in small batch
-        yield : list of lines (quality line): batch of n size
+        """Read the FASTQ files in small batches.
+
+        Yields:
+            Batches of up to ``batch_size`` reads.
         """
         for fastq in self.fastq:
             open_fn = gzip.open if fastq.endswith(".gz") else open
@@ -505,9 +518,14 @@ class fastqExtractor:
                     yield batch
 
     def _fastq_batch_reader(self, read_batch) -> list:
-        """
-        parse each line of FASTQ quality line:
-        return: [read length, mean Qscore, type of read (pass or fail)]
+        """Parse each read of a FASTQ batch.
+
+        Args:
+            read_batch: Batch of reads to parse.
+
+        Returns:
+            A list of per-read data ``[read length, mean Qscore, type of read
+            (pass or fail), ...]``.
         """
         fastq_lines = []
         if self.rich:
@@ -564,7 +582,12 @@ class fastqExtractor:
             return metadata
 
     def check_fastq(self) -> tuple | None:
-        """ """
+        """Inspect the first FASTQ header for rich run metadata.
+
+        Returns:
+            A tuple ``(run_id, sample_id, model_version_id, flow_cell_id)`` when
+            the FASTQ carries rich metadata, or None otherwise.
+        """
         open_fn = gzip.open if self.fastq[0].endswith(".gz") else open
 
         with open_fn(self.fastq[0], "rt") as fq:
@@ -619,7 +642,15 @@ class fastqExtractor:
             return None
 
     def _extract_info_from_name(self, name: str) -> tuple:
-        """ """
+        """Extract start time, channel and barcode from a read header.
+
+        Args:
+            name: FASTQ read header line.
+
+        Returns:
+            A tuple ``(start_time, channel)`` or ``(start_time, channel,
+            barcode)`` when barcoding is enabled.
+        """
         metadata = self._parse_fastq_entry_header(name)
         start_time = timeISO_to_float(metadata["start_time"], "%Y-%m-%dT%H:%M:%S.%f%z")
         if self.is_barcode:

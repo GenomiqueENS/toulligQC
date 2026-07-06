@@ -42,12 +42,14 @@ def html_report(
     graphs: list,
     substitutions: dict | None = None,
 ) -> None:
-    """
-    Creation of a html report
-    :param config_dictionary: dictionary containing file or directory paths
-    :param result_dict: result dictionary containing all statistics
-    :param graphs:
-    :param substitutions: optional dict of {Measure: Value} to override in the Run statistics table
+    """Create an HTML report.
+
+    Args:
+        config_dictionary: Dictionary containing file or directory paths.
+        result_dict: Result dictionary containing all statistics.
+        graphs: List of graph tuples to embed in the report.
+        substitutions: Optional dict of ``{Measure: Value}`` to override in the
+            Run statistics table.
     """
 
     report_name = config_dictionary["report_name"]
@@ -158,10 +160,13 @@ def html_report(
 
 
 def _summary(graphs: list) -> str:
-    """
-    Compose the summary section of the page
-    :param graphs:
-    :return: a string with HTML code for the module list
+    """Compose the summary section of the page.
+
+    Args:
+        graphs: List of graph tuples to list in the summary.
+
+    Returns:
+        A string with the HTML code for the module list.
     """
     result = '        <ul class="menu-vertical">\n'
     result += (
@@ -457,10 +462,15 @@ def _other_module_reports(graphs: list, remove_image_files: bool) -> str:
 def _embedded_image(
     image_path: str, resource: bool = False, remove: bool = False
 ) -> str:
-    """
-    Embedded an image
-    :param image_path: path of the image
-    :return: a string with the image in base64
+    """Embed an image as a base64 data URI.
+
+    Args:
+        image_path: Path of the image.
+        resource: Whether the image is a packaged resource loaded via pkgutil.
+        remove: Whether to delete the image file after reading it.
+
+    Returns:
+        A string with the image encoded as a base64 ``data:`` URI.
     """
 
     if resource:
@@ -480,12 +490,16 @@ def _embedded_image(
 def _get_result_value(
     result_dict: dict, key: str, default_value="", value_type: str = "str"
 ) -> str:
-    """
-    Get the value of the result dictionary or a default value if the key does not exists.
-    :param result_dict: result dictionary
-    :param key: the key to use
-    :param default_value: the default value
-    :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
+    """Get a value from the result dictionary, or a default if the key is absent.
+
+    Args:
+        result_dict: Result dictionary.
+        key: The key to look up.
+        default_value: The value returned when the key is absent.
+        value_type: When ``"float"``, the value is formatted with two decimals.
+
+    Returns:
+        The value of the key, or the default value if the key is absent.
     """
     if key in result_dict:
         result = result_dict[key]
@@ -499,12 +513,16 @@ def _get_result_value(
 
 
 def _get_result_date_value(result_dict: dict, key: str, default_value="") -> str:
-    """
-    Get a date value of the result dictionary and formot it. A default value is returned if the key does not exists.
-    :param result_dict: result dictionary
-    :param key: the key to use
-    :param default_value: the default value
-    :return: the value of key in the dictionary or the default value if the key does not exists in the dictionary
+    """Get a formatted date value from the result dictionary.
+
+    Args:
+        result_dict: Result dictionary.
+        key: The key to look up.
+        default_value: The value returned when the key is absent.
+
+    Returns:
+        The formatted date for the key, or the default value if the key is
+        absent.
     """
 
     if key in result_dict:
@@ -516,10 +534,13 @@ def _get_result_date_value(result_dict: dict, key: str, default_value="") -> str
 
 
 def _iso8601_to_formatted_date(date_string: str) -> str:
-    """
-    Format an ISO 8601 date.
-    :param date_string: date to format
-    :return: a formatted date
+    """Format an ISO 8601 date.
+
+    Args:
+        date_string: Date to format.
+
+    Returns:
+        A formatted date string.
     """
     try:
         d = datetime.datetime.fromisoformat(date_string.replace("Z", "+00:00"))
