@@ -555,6 +555,80 @@ def parse_samplesheet(sample_sheet: str) -> pd.DataFrame:
     return samplesheet
 
 
+def resolve_barcode_selection(config_dictionary: configuration.ToulligqcConf) -> None:
+    """Resolve the barcode selection from the ``--barcodes``/``--samplesheet`` options.
+
+    Reads ``barcoding``, ``barcodes``, ``samplesheet`` and ``use_alias_for_barcodes``
+    from the configuration and writes back ``barcode_selection`` (a sorted list of
+    normalised ``barcodeNN`` names, or ``""`` when barcoding is disabled) and, when a
+    samplesheet is provided, ``barcode_alias``.
+
+    Shared by the CLI (:func:`main`) and the :class:`toulligqc.api.TOULLIGQC` API so
+    both resolve barcodes identically.
+
+    Raises:
+        ValueError: If barcoding is enabled but no known barcode can be resolved.
+    """
+    allowed_patterns = r"(BC|RB|NB|BP|BARCODE)(\d{2})"
+
+    if config_dictionary["barcoding"].lower() != "true":
+        config_dictionary["barcode_selection"] = ""
+        return
+
+    config_dictionary["barcode_selection"] = []
+
+    if "samplesheet" in config_dictionary:
+        samplesheet = parse_samplesheet(config_dictionary["samplesheet"])
+        column = "alias" if "use_alias_for_barcodes" in config_dictionary else "barcode"
+        config_dictionary["barcodes"] = ",".join(list(samplesheet[column].astype(str)))
+        # Build alias lookup: barcode_name -> alias_value
+        # Ensure keys and values are strings for consistent comparison
+        config_dictionary["barcode_alias"] = pd.Series(
+            samplesheet.alias.astype(str).values,
+            index=samplesheet[column].astype(str),
+        ).to_dict()
+
+    if "barcodes" in config_dictionary or "samplesheet" in config_dictionary:
+        barcode_set = set()
+        if ":" in config_dictionary["barcodes"]:
+            start, end = config_dictionary["barcodes"].strip().split(":")
+            pattern = re.search(allowed_patterns, start.strip().upper())
+            if pattern:
+                start_number = int(pattern.group(2))
+            pattern = re.search(allowed_patterns, end.strip().upper())
+            if pattern:
+                end_number = int(pattern.group(2))
+            for i in range(start_number, end_number + 1):
+                barcode = f"barcode{i:02}"
+                barcode_set.add(barcode)
+
+        else:
+            for b in config_dictionary["barcodes"].strip().split(","):
+                pattern = re.search(allowed_patterns, b.strip().upper())
+                if pattern:
+                    barcode = f"barcode{pattern.group(2)}"
+                    barcode_set.add(barcode)
+                else:
+                    if "use_alias_for_barcodes" not in config_dictionary:
+                        sys.stderr.write(
+                            f"\033[93mWarning:\033[0m Barcode '{b}' is non-standard custom arrangement.\n"
+                        )
+                    barcode_set.add(b)
+                if (
+                    "samplesheet" in config_dictionary
+                    and "use_alias_for_barcodes" not in config_dictionary
+                ):
+                    config_dictionary["barcode_alias"][barcode] = config_dictionary[
+                        "barcode_alias"
+                    ].pop(b)
+
+        barcode_selection = sorted(barcode_set)
+
+        if len(barcode_selection) == 0:
+            raise ValueError("No known barcode found in provided list of barcodes")
+        config_dictionary["barcode_selection"] = barcode_selection
+
+
 def main() -> None:
     """
     Main function creating graphs and statistics
@@ -577,69 +651,11 @@ def main() -> None:
     if not config_dictionary:
         sys.exit("ERROR: dico_path is empty")
 
-    # Get barcode selection
-    allowed_patterns = r"(BC|RB|NB|BP|BARCODE)(\d{2})"
-
-    if config_dictionary["barcoding"].lower() == "true":
-        config_dictionary["barcode_selection"] = []
-
-        if "samplesheet" in config_dictionary:
-            samplesheet = parse_samplesheet(config_dictionary["samplesheet"])
-            column = (
-                "alias" if "use_alias_for_barcodes" in config_dictionary else "barcode"
-            )
-            config_dictionary["barcodes"] = ",".join(
-                list(samplesheet[column].astype(str))
-            )
-            # Build alias lookup: barcode_name -> alias_value
-            # Ensure keys and values are strings for consistent comparison
-            config_dictionary["barcode_alias"] = pd.Series(
-                samplesheet.alias.astype(str).values,
-                index=samplesheet[column].astype(str),
-            ).to_dict()
-
-        if "barcodes" in config_dictionary or "samplesheet" in config_dictionary:
-            barcode_set = set()
-            if ":" in config_dictionary["barcodes"]:
-                start, end = config_dictionary["barcodes"].strip().split(":")
-                pattern = re.search(allowed_patterns, start.strip().upper())
-                if pattern:
-                    start_number = int(pattern.group(2))
-                pattern = re.search(allowed_patterns, end.strip().upper())
-                if pattern:
-                    end_number = int(pattern.group(2))
-                for i in range(start_number, end_number + 1):
-                    barcode = f"barcode{i:02}"
-                    barcode_set.add(barcode)
-
-            else:
-                for b in config_dictionary["barcodes"].strip().split(","):
-                    pattern = re.search(allowed_patterns, b.strip().upper())
-                    if pattern:
-                        barcode = f"barcode{pattern.group(2)}"
-                        barcode_set.add(barcode)
-                    else:
-                        if "use_alias_for_barcodes" not in config_dictionary:
-                            sys.stderr.write(
-                                f"\033[93mWarning:\033[0m Barcode '{b}' is non-standard custom arrangement.\n"
-                            )
-                        barcode_set.add(b)
-                    if (
-                        "samplesheet" in config_dictionary
-                        and "use_alias_for_barcodes" not in config_dictionary
-                    ):
-                        config_dictionary["barcode_alias"][barcode] = config_dictionary[
-                            "barcode_alias"
-                        ].pop(b)
-
-            barcode_selection = sorted(barcode_set)
-
-            if len(barcode_selection) == 0:
-                sys.exit("ERROR: No known barcode found in provided list of barcodes")
-            config_dictionary["barcode_selection"] = barcode_selection
-
-    else:
-        config_dictionary["barcode_selection"] = ""
+    # Resolve the barcode selection from --barcodes / --samplesheet
+    try:
+        resolve_barcode_selection(config_dictionary)
+    except ValueError as e:
+        sys.exit("ERROR: " + str(e))
 
     # Print welcome message
     _welcome(config_dictionary)
