@@ -26,7 +26,7 @@ import gzip
 import json
 import os.path
 
-from toulligqc.configuration import ToulligqcConf
+from toulligqc.core.configuration import ToulligqcConf
 
 
 class SequencingTelemetryExtractor:

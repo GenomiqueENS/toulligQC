@@ -29,7 +29,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from toulligqc import common
+from toulligqc.core import common
 
 
 def set_result_value(extractor, result_dict: dict, key: str, value) -> None:

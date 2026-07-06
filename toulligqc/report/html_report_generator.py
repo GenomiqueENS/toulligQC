@@ -26,8 +26,8 @@ import datetime
 import os
 import pkgutil
 
-from toulligqc.configuration import ToulligqcConf
-from toulligqc.plotly_graph_common import (
+from toulligqc.core.configuration import ToulligqcConf
+from toulligqc.graphs.plotly_graph_common import (
     _format_int,
     figure_image_width,
     graph_font,

@@ -19,7 +19,7 @@
 #      https://github.com/GenomiqueENS/toulligQC
 #
 
-# Extraction of the information about the Pod5 files
+# Extraction of the information about the FAST5 files
 
 import os
 import shutil
@@ -27,29 +27,29 @@ import sys
 import tarfile
 import tempfile
 
-import pod5 as p5
+import h5py
 
-from toulligqc.common import find_file_in_directory, set_result_dict_value
-from toulligqc.configuration import ToulligqcConf
+from toulligqc.core.common import find_file_in_directory, set_result_dict_value
+from toulligqc.core.configuration import ToulligqcConf
 
 
-class Pod5Extractor:
-    """Extract run information from a Pod5 file.
+class Fast5Extractor:
+    """Extract run information from a FAST5 file.
 
     Attributes:
-        pod5_source: Pod5 file or directory.
+        fast5_source: FAST5 file or directory.
         report_name: Report name.
-        pod5_file_extension: Extension used for the storage of the set of Pod5
-            files, if any.
+        fast5_file_extension: Extension used for the storage of the set of
+            FAST5 files, if any.
     """
 
     def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_file_dictionary = config_dictionary
-        self.pod5_source = config_dictionary["pod5_source"]
+        self.fast5_source = config_dictionary["fast5_source"]
         self.file_to_process = None
         self.report_name = config_dictionary["report_name"]
-        self.pod5_file_extension = ""
-        self.pod5_file = ""
+        self.fast5_file_extension = ""
+        self.fast5_file = ""
         self.get_report_data_file_id()
 
     def check_conf(self) -> tuple[bool, str]:
@@ -60,45 +60,45 @@ class Pod5Extractor:
             error when the configuration is invalid.
         """
 
-        if not os.path.exists(self.pod5_source):
+        if not os.path.exists(self.fast5_source):
             return (
                 False,
-                "The input file or directory for Pod5 file does not exists: "
-                + self.pod5_source,
+                "The input file or directory for Fast5 file does not exists: "
+                + self.fast5_source,
             )
 
-        if os.path.isdir(self.pod5_source):
-            file_found = find_file_in_directory(self.pod5_source, "pod5")
+        if os.path.isdir(self.fast5_source):
+            file_found = find_file_in_directory(self.fast5_source, "fast5")
             if file_found is None:
-                return False, "No Pod5 file found in directory: " + self.pod5_source
+                return False, "No Fast5 file found in directory: " + self.fast5_source
             self.file_to_process = file_found
         else:
-            self.file_to_process = self.pod5_source
+            self.file_to_process = self.fast5_source
 
         if self.file_to_process.endswith(".tar"):
-            self.pod5_file_extension = "tar"
+            self.fast5_file_extension = "tar"
 
         elif self.file_to_process.endswith(".tar.gz"):
-            self.pod5_file_extension = "tar.gz"
+            self.fast5_file_extension = "tar.gz"
 
         elif self.file_to_process.endswith(".tar.bz2"):
-            self.pod5_file_extension = "tar.bz2"
+            self.fast5_file_extension = "tar.bz2"
 
-        elif self.file_to_process.endswith(".pod5"):
-            self.pod5_file_extension = "pod5"
+        elif self.file_to_process.endswith(".fast5"):
+            self.fast5_file_extension = "fast5"
 
         else:
             return (
                 False,
-                "The file extension for Pod5 input is not supported "
-                "(only .pod5, .tar, .tar.gz or .tar.bz2 are supported): "
-                + self.pod5_source,
+                "The file extension for FAST5 input is not supported "
+                "(only .fast5, .tar, .tar.gz or .tar.bz2 are supported): "
+                + self.fast5_source,
             )
 
         return True, ""
 
     def init(self) -> None:
-        """Initialize the extractor (no-op for Pod5)."""
+        """Initialize the extractor (no-op for FAST5)."""
         return
 
     @staticmethod
@@ -108,7 +108,7 @@ class Pod5Extractor:
         Returns:
             The name of the extractor.
         """
-        return "Pod5"
+        return "Fast5"
 
     @staticmethod
     def get_report_data_file_id() -> str:
@@ -117,23 +117,23 @@ class Pod5Extractor:
         Returns:
             The report.data id.
         """
-        return "pod5.extractor"
+        return "fast5.extractor"
 
     def extract(self, result_dict: dict) -> None:
-        """Extract the different information from the Pod5 files.
+        """Extract the different information from the FAST5 files.
 
         Args:
             result_dict: Dictionary which gathers all the extracted information
                 that will be reported in the report.data file.
         """
-        p5_file = self._read_pod5()
-        run_info_dict = self._get_pod5_items(p5_file)
-        tracking_id_dict = run_info_dict.tracking_id
+        h5py_file = self._read_fast5()
+        tracking_id_dict = self._get_fast5_items(h5py_file, "tracking_id")
+
         if len(tracking_id_dict) == 0:
             return
 
         prefix = "sequencing.telemetry.extractor"
-        result_dict[prefix + ".source"] = self.pod5_source
+        result_dict[prefix + ".source"] = self.fast5_source
         set_result_dict_value(
             result_dict, prefix + ".flowcell.id", tracking_id_dict, "flow_cell_id"
         )
@@ -189,7 +189,7 @@ class Pod5Extractor:
             "flow_cell_product_code",
         )
 
-        context_tags_dict = run_info_dict.context_tags
+        context_tags_dict = self._get_fast5_items(h5py_file, "context_tags")
         if len(context_tags_dict) != 0:
             set_result_dict_value(
                 result_dict,
@@ -222,7 +222,7 @@ class Pod5Extractor:
         return []
 
     def clean(self, result_dict: dict) -> None:
-        """Delete the temporary Pod5 file extracted from the tar archive.
+        """Delete the temporary FAST5 file extracted from the tar archive.
 
         Also removes dictionary entries that will not be kept in the
         report.data file.
@@ -234,43 +234,19 @@ class Pod5Extractor:
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
 
-    def _read_pod5(self) -> p5.Reader:
-        """Extract one Pod5 file and open it as a p5.Reader object.
-
-        Returns:
-            The opened Pod5 file as a p5.Reader object.
-        """
-        self.temporary_directory = tempfile.mkdtemp()
-        if (
-            self.pod5_file_extension == "tar"
-            or self.pod5_file_extension == "tar.gz"
-            or self.pod5_file_extension == "tar.bz2"
-        ):
-            self.pod5_file = self._pod5_tar_extraction(
-                self.file_to_process, self.pod5_file_extension, self.temporary_directory
-            )
-        elif self.pod5_file_extension == "pod5" or self.pod5_file_extension == ".pod5":
-            self.pod5_file = self.file_to_process
-        else:
-            err_msg = "There is a problem with the pod5 file or the tar file"
-            sys.exit(err_msg)
-        p5_file = p5.Reader(self.pod5_file)
-
-        return p5_file
-
-    def _pod5_tar_extraction(
+    def _fast5_tar_extraction(
         self, tar_file: str, extension: str, output_directory: str
     ) -> str:
-        """Extract a Pod5 file stored in a tar archive.
+        """Extract a FAST5 file stored in a tar archive.
 
         Args:
-            tar_file: Tar file containing the set of raw Pod5 files.
+            tar_file: Tar file containing the set of raw FAST5 files.
             extension: Extension of the tar file (``tar``, ``tar.gz`` or
                 ``tar.bz2``).
-            output_directory: Directory where the Pod5 file is extracted.
+            output_directory: Directory where the FAST5 file is extracted.
 
         Returns:
-            The path to the extracted Pod5 file.
+            The path to the extracted FAST5 file.
         """
 
         if extension == "tar.gz":
@@ -283,22 +259,59 @@ class Pod5Extractor:
         tf = tarfile.open(name=tar_file, mode=tar_mode)
         while True:
             member = tf.next()
-            if member.name.endswith(".pod5"):
+            if member.name.endswith(".fast5"):
                 tf.extract(member, path=output_directory)
                 break
         return output_directory + "/" + member.name
 
-    def _get_pod5_items(self, h5py_file):
-        """Extract run information from the first read of a Pod5 file.
-
-        Args:
-            h5py_file: Opened Pod5 file (p5.Reader object).
+    def _read_fast5(self) -> h5py.File:
+        """Extract one FAST5 file and open it as an h5py object.
 
         Returns:
-            The run info of the first read, or an empty dict if the file has
-            no reads.
+            The opened FAST5 file as an h5py.File object.
+        """
+        self.temporary_directory = tempfile.mkdtemp()
+        if (
+            self.fast5_file_extension == "tar"
+            or self.fast5_file_extension == "tar.gz"
+            or self.fast5_file_extension == "tar.bz2"
+        ):
+            self.fast5_file = self._fast5_tar_extraction(
+                self.file_to_process,
+                self.fast5_file_extension,
+                self.temporary_directory,
+            )
+        elif (
+            self.fast5_file_extension == "fast5"
+            or self.fast5_file_extension == ".fast5"
+        ):
+            self.fast5_file = self.file_to_process
+        else:
+            err_msg = "There is a problem with the fast5 file or the tar file"
+            sys.exit(err_msg)
+        h5py_file = h5py.File(self.fast5_file)
+
+        return h5py_file
+
+    def _get_fast5_items(self, h5py_file, group: str) -> dict:
+        """Extract run information stored in a FAST5 h5py group.
+
+        Args:
+            h5py_file: FAST5 file stored as an h5py object.
+            group: Name of the h5py group holding the required attributes.
+
+        Returns:
+            A dict of the group attributes, for example
+            ``{"flow_cell_id": "FAE22827", ...}``.
         """
 
-        for read_record in h5py_file.reads():
-            return read_record.run_info
+        for k in h5py_file["/"].keys():
+            new_group = "/" + k + "/" + group
+            if new_group in h5py_file:
+                tracking_id_items = list(h5py_file[new_group].attrs.items())
+                tracking_id_dict = {
+                    key: value.decode("utf-8") for key, value in tracking_id_items
+                }
+                return tracking_id_dict
+
         return {}

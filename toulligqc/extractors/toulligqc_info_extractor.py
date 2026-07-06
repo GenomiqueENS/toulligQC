@@ -25,7 +25,7 @@ import platform as pf
 import sys
 import tempfile as tp
 
-from toulligqc.configuration import ToulligqcConf
+from toulligqc.core.configuration import ToulligqcConf
 
 
 class ToulligqcInfoExtractor:

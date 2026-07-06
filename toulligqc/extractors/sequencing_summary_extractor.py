@@ -27,11 +27,10 @@ import time
 import numpy as np
 import pandas as pd
 
-from toulligqc import plotly_graph_generator as pgg
-from toulligqc.common import is_numpy_1_24
-from toulligqc.common_statistics import compute_LXX, compute_NXX, occupancy_channel
-from toulligqc.configuration import ToulligqcConf
-from toulligqc.extractor_common import (
+from toulligqc.core.common import is_numpy_1_24
+from toulligqc.core.common_statistics import compute_LXX, compute_NXX, occupancy_channel
+from toulligqc.core.configuration import ToulligqcConf
+from toulligqc.extractors.extractor_common import (
     add_image_to_result,
     check_result_values,
     count_boolean_elements,
@@ -44,6 +43,7 @@ from toulligqc.extractor_common import (
     read_first_line_file,
     set_result_value,
 )
+from toulligqc.graphs import plotly_graph_generator as pgg
 
 
 class SequencingSummaryExtractor:

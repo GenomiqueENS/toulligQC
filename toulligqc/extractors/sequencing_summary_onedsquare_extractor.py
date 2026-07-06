@@ -27,11 +27,9 @@ import time
 import numpy as np
 import pandas as pd
 
-from toulligqc import plotly_graph_generator as pgg
-from toulligqc import plotly_graph_onedsquare_generator as pgg2
-from toulligqc.common import is_numpy_1_24
-from toulligqc.configuration import ToulligqcConf
-from toulligqc.extractor_common import (
+from toulligqc.core.common import is_numpy_1_24
+from toulligqc.core.configuration import ToulligqcConf
+from toulligqc.extractors.extractor_common import (
     add_image_to_result,
     check_result_values,
     count_boolean_elements,
@@ -43,7 +41,11 @@ from toulligqc.extractor_common import (
     series_cols_boolean_elements,
     set_result_value,
 )
-from toulligqc.sequencing_summary_extractor import SequencingSummaryExtractor as SSE
+from toulligqc.extractors.sequencing_summary_extractor import (
+    SequencingSummaryExtractor as SSE,
+)
+from toulligqc.graphs import plotly_graph_generator as pgg
+from toulligqc.graphs import plotly_graph_onedsquare_generator as pgg2
 
 
 class OneDSquareSequencingSummaryExtractor(SSE):

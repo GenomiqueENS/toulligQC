@@ -40,21 +40,19 @@ import warnings
 
 import pandas as pd
 
-from toulligqc import (
+from toulligqc import version
+from toulligqc.core import common, configuration
+from toulligqc.extractors import (
     bam_extractor,
-    common,
-    configuration,
     fast5_extractor,
     fastq_extractor,
-    html_report_generator,
     pod5_extractor,
-    report_data_file_generator,
     sequencing_summary_extractor,
     sequencing_summary_onedsquare_extractor,
     sequencing_telemetry_extractor,
     toulligqc_info_extractor,
-    version,
 )
+from toulligqc.report import html_report_generator, report_data_file_generator
 
 
 def _positive_float(value: str) -> float:

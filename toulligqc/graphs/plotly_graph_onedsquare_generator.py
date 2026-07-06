@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 
-from toulligqc.plotly_graph_common import (
+from toulligqc.graphs.plotly_graph_common import (
     _barcode_boxplot_graph,
     _create_and_save_div,
     _dataFrame_to_html,
