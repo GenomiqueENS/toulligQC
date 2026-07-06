@@ -674,8 +674,12 @@ def _compute_channel_count(df: pd.DataFrame, channel_map: pd.DataFrame) -> tuple
     # counts = df[df['passes_filtering']] \
     counts = df.groupby("channel").size().to_frame("reads").reset_index()
 
-    # ...and merge with the channel map
-    counts = counts.merge(channel_map, on="channel", how="outer").fillna(0)
+    # ...and merge with the channel map. Opt into the future pandas behaviour so
+    # fillna does not silently downcast object columns, then make the numeric
+    # downcast explicit with infer_objects().
+    counts = counts.merge(channel_map, on="channel", how="outer")
+    with pd.option_context("future.no_silent_downcasting", True):
+        counts = counts.fillna(0).infer_objects(copy=False)
 
     max_row = counts["row"].max()
     max_col = counts["column"].max()

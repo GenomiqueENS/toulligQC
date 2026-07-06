@@ -23,6 +23,7 @@
 
 import pkgutil
 from collections import defaultdict
+from contextlib import contextmanager
 
 import numpy as np
 import pandas as pd
@@ -355,9 +356,43 @@ def _copy_latest_minjs(result_directory: str, js_file: str) -> None:
         f.write(plotly_min_js)
 
 
+# Optional sink used by :func:`capture_figures` to expose the Plotly ``Figure``
+# objects built by the graph generators without changing their return values.
+_figure_sink: list | None = None
+
+
+@contextmanager
+def capture_figures():
+    """Collect every Plotly ``Figure`` produced while the context is active.
+
+    The graph generator functions return HTML ``div`` strings, which is what the
+    HTML report needs but not what an interactive/API caller wants. Wrapping a
+    graph call in this context manager yields a list that is filled with the
+    underlying ``plotly.graph_objs.Figure`` objects instead::
+
+        with capture_figures() as figs:
+            plotly_graph_generator.yield_plot(dataframe_1d, None)
+        fig = figs[-1]
+
+    The sink is process-global and therefore not thread-safe; it is meant for the
+    single-threaded API/notebook use case.
+    """
+    global _figure_sink
+    previous = _figure_sink
+    sink: list = []
+    _figure_sink = sink
+    try:
+        yield sink
+    finally:
+        _figure_sink = previous
+
+
 def _create_and_save_div(
     fig, result_directory: str | None, main: str
 ) -> tuple[str, str | None]:
+    if _figure_sink is not None:
+        _figure_sink.append(fig)
+
     div = py.plot(
         fig, include_plotlyjs=False, output_type="div", auto_open=False, show_link=False
     )
