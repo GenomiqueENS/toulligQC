@@ -26,9 +26,11 @@ import gzip
 import json
 import os.path
 
+from toulligqc.configuration import ToulligqcConf
+
 
 class SequencingTelemetryExtractor:
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_file_dictionary = config_dictionary
         self.telemetry_source = config_dictionary["sequencing_telemetry_source"]
 
@@ -37,7 +39,7 @@ class SequencingTelemetryExtractor:
         else:
             self.telemetry_file = self.telemetry_source
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Configuration checking
         :return: nothing
@@ -48,14 +50,14 @@ class SequencingTelemetryExtractor:
 
         return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Determination of the telemetry file
         """
         return
 
     @staticmethod
-    def get_name():
+    def get_name() -> str:
         """
         Get the name of the extractor.
         :return: the name of the extractor
@@ -63,27 +65,27 @@ class SequencingTelemetryExtractor:
         return "Sequencing telemetry"
 
     @staticmethod
-    def get_report_data_file_id():
+    def get_report_data_file_id() -> str:
         """
         Get the report.data id of the extractor.
         :return: the report.data id
         """
         return "sequencing.telemetry.extractor"
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Graph generation
         :return: nothing
         """
         return []
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         :return: nothing
         """
         return
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Extraction of data from the sequencing_telemetry.js file
         :param result_dict: Dictionary which gathers all the extracted
@@ -209,7 +211,9 @@ class SequencingTelemetryExtractor:
                 "sample_frequency",
             )
 
-    def _set_result_dict_value(self, result_dict, key, array, dict_name, dict_key):
+    def _set_result_dict_value(
+        self, result_dict: dict, key: str, array, dict_name: str, dict_key: str
+    ) -> None:
 
         final_key = self.get_report_data_file_id() + key
         current_value = None
@@ -232,7 +236,7 @@ class SequencingTelemetryExtractor:
         result_dict[final_key] = new_value
 
 
-def _load_json(filename):
+def _load_json(filename: str):
     """
     Load a JSON file. Can handle compressed file.
     :param filename: name of the file to load

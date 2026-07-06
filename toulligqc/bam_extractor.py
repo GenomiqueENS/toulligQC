@@ -21,6 +21,7 @@
 
 import os
 import time
+from collections.abc import Iterator
 
 import numpy as np
 import pandas as pd
@@ -34,6 +35,7 @@ from toulligqc.common_statistics import (
     compute_NXX,
     occupancy_channel,
 )
+from toulligqc.configuration import ToulligqcConf
 from toulligqc.extractor_common import (
     add_image_to_result,
     check_result_values,
@@ -55,7 +57,7 @@ from toulligqc.fastq_bam_common import (
 
 
 class uBAM_Extractor:
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_dictionary = config_dictionary
         self.ubam = config_dictionary["bam"].split("\t")
         self.images_directory = config_dictionary["images_directory"]
@@ -82,7 +84,7 @@ class uBAM_Extractor:
         else:
             self.quiet = True
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Configuration checking
         :return: nothing
@@ -92,7 +94,7 @@ class uBAM_Extractor:
                 return False, "BAM file does not exists: " + uBAM
             return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Creation of the dataframe containing all info from uBAM
         :return: Panda's Dataframe object
@@ -121,7 +123,7 @@ class uBAM_Extractor:
             time.time(),
         )
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         Removing dictionary entries that will not be kept in the report.data file
         :return:
@@ -146,7 +148,7 @@ class uBAM_Extractor:
         """
         return "basecaller.sequencing.summary.1d.extractor"
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Generation of the different graphs containing in the plotly_graph_generator module
         :return: images array containing the title and the path toward the images
@@ -280,7 +282,7 @@ class uBAM_Extractor:
             )
         return images
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
         :param result_dict:
@@ -425,7 +427,7 @@ class uBAM_Extractor:
 
         log_task(self.quiet, "Extract info from uBAM file", start_time, time.time())
 
-    def _load_uBAM_file(self):
+    def _load_uBAM_file(self) -> pd.DataFrame:
         """
         Load uBAM dataframe
         :return: a Pandas Dataframe object
@@ -471,7 +473,7 @@ class uBAM_Extractor:
             )
         return uBAM_df
 
-    def _uBAM_batch_reader(self, uBAM_chunk):
+    def _uBAM_batch_reader(self, uBAM_chunk) -> list:
         """
         parse each line of uBAM quality line:
         return: [read length, mean Qscore, type of read (pass or fail)]
@@ -485,7 +487,7 @@ class uBAM_Extractor:
             rec_data.append(rec_dict)
         return rec_data
 
-    def _uBAM_batch_generator(self):
+    def _uBAM_batch_generator(self) -> Iterator:
         """
         read uBAM file in small chunk
         yield : list of lines (quality line): batch of n size
@@ -495,7 +497,7 @@ class uBAM_Extractor:
             bam_batch = batch_iterator(samfile, batch_size=self.batch_size)
             yield from bam_batch
 
-    def _get_header(self):
+    def _get_header(self) -> None:
         sam_file = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)
         header = sam_file.header.to_dict()
         run_id, model_version_id = extract_headerTag(
@@ -511,7 +513,7 @@ class uBAM_Extractor:
             "flow_cell_id": extract_headerTag(header, "RG", "PU", "Unknown"),
         }
 
-    def _process_record(self, rec, record_count):
+    def _process_record(self, rec, record_count: int) -> list:
         """
         extract QC info from BAM record
         return : dict of QC info

@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 
-def occupancy_channel(dataframe):
+def occupancy_channel(dataframe: pd.DataFrame) -> pd.Series:
     """
     Statistics about the channels of the flowcell
     :return: pd.Series object containing statistics about the channel occupancy without count value
@@ -34,7 +34,7 @@ def occupancy_channel(dataframe):
     return pd.DataFrame.describe(total_reads_per_channel)
 
 
-def compute_LXX(dataframe_dict, x):
+def compute_LXX(dataframe_dict: dict, x: float) -> int | None:
     """Compute LXX value of total sequence length"""
     data = dataframe_dict["all.reads.sequence.length"].dropna().values
     data = np.sort(data)
@@ -48,7 +48,7 @@ def compute_LXX(dataframe_dict, x):
             return count
 
 
-def compute_NXX(dataframe_dict, x):
+def compute_NXX(dataframe_dict: dict, x: float) -> int | None:
     """Compute NXX value of total sequence length"""
     data = dataframe_dict["all.reads.sequence.length"].dropna().values
     data = np.sort(data)
@@ -60,7 +60,7 @@ def compute_NXX(dataframe_dict, x):
             return int(v)
 
 
-def avg_qual(quals):
+def avg_qual(quals: str) -> float | None:
     """
     Estimates mean quality Phred score
     return: float

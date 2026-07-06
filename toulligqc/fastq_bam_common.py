@@ -20,12 +20,13 @@
 #
 
 import multiprocessing as mp
+from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from tqdm import tqdm
 
 
-def extract_headerTag(header, tagGroup, tag, defaultValue=None):
+def extract_headerTag(header: dict, tagGroup: str, tag: str, defaultValue=None):
 
     if tagGroup not in header:
         if defaultValue is not None:
@@ -44,7 +45,7 @@ def extract_headerTag(header, tagGroup, tag, defaultValue=None):
     return first_entry[tag]
 
 
-def batch_iterator(iterator, batch_size):
+def batch_iterator(iterator, batch_size: int) -> Iterator[list[str]]:
     batch = []
     i = 0
     for entry in iterator:
@@ -59,14 +60,14 @@ def batch_iterator(iterator, batch_size):
 
 
 def multiprocessing_submit(
-    func,
+    func: Callable,
     iterator,
-    n_process=mp.cpu_count() - 1,
-    pbar=True,
-    pbar_update=500,
+    n_process: int = mp.cpu_count() - 1,
+    pbar: bool = True,
+    pbar_update: int = 500,
     *arg,
     **kwargs,
-):
+) -> Iterator:
 
     executor = ProcessPoolExecutor(n_process)
 

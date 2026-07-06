@@ -30,6 +30,7 @@ import tempfile
 import pod5 as p5
 
 from toulligqc.common import find_file_in_directory, set_result_dict_value
+from toulligqc.configuration import ToulligqcConf
 
 
 class Pod5Extractor:
@@ -43,7 +44,7 @@ class Pod5Extractor:
     return: a tuple containing the information about a Pod5 file
     """
 
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_file_dictionary = config_dictionary
         self.pod5_source = config_dictionary["pod5_source"]
         self.file_to_process = None
@@ -52,7 +53,7 @@ class Pod5Extractor:
         self.pod5_file = ""
         self.get_report_data_file_id()
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Configuration checking
         :return:
@@ -95,14 +96,14 @@ class Pod5Extractor:
 
         return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Determination of the pod5 file extension
         """
         return
 
     @staticmethod
-    def get_name():
+    def get_name() -> str:
         """
         Get the name of the extractor.
         :return: the name of the extractor
@@ -110,14 +111,14 @@ class Pod5Extractor:
         return "Pod5"
 
     @staticmethod
-    def get_report_data_file_id():
+    def get_report_data_file_id() -> str:
         """
         Get the report.data id of the extractor
         :return: the report.data id
         """
         return "pod5.extractor"
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Extraction of the different information about the pod5 files
         :param result_dict: Dictionary which gathers all the extracted
@@ -208,14 +209,14 @@ class Pod5Extractor:
                 "sequencing_kit",
             )
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Graph generation
         :return: nothing
         """
         return []
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         Deleting the temporary pod5 file extracted from the tar archive if used
         and removing dictionary entries that will not be kept in the report.data file
@@ -226,7 +227,7 @@ class Pod5Extractor:
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
 
-    def _read_pod5(self):
+    def _read_pod5(self) -> p5.Reader:
         """
         Extraction of one pod5 file from the archive and stores
         it in a p5 object for next retrieving information
@@ -250,7 +251,9 @@ class Pod5Extractor:
 
         return p5_file
 
-    def _pod5_tar_extraction(self, tar_file, extension, output_directory):
+    def _pod5_tar_extraction(
+        self, tar_file: str, extension: str, output_directory: str
+    ) -> str:
         """
         Extraction of a Pod5 file stored in a tar file,
         :param tar_file: tar file containing the set of the raw Pod5 files

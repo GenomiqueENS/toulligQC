@@ -87,7 +87,7 @@ interpolation_point_count_dict = {
 help_url = "https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/master/docs/help.html"
 
 
-def help_html_link(title, javascript=True):
+def help_html_link(title: str, javascript: bool = True) -> str:
 
     if javascript:
         return '<a onclick="window.open(\'{}#{}\');" style="cursor: pointer;" id="help_link">ⓘ</a>'.format(
@@ -99,11 +99,11 @@ def help_html_link(title, javascript=True):
     )
 
 
-def _format_int(i):
+def _format_int(i: int) -> str:
     return f"{i:,d}"
 
 
-def _format_float(f):
+def _format_float(f) -> str | int:
     try:
         s = str(f)
         i = int(s.split(".")[0])
@@ -114,11 +114,11 @@ def _format_float(f):
     return f"{i:,d}" + f"{f:.2f}"[1:]
 
 
-def _format_percent(f):
+def _format_percent(f: float) -> str:
     return percent_format_str.format(f)
 
 
-def _title(title):
+def _title(title: str) -> dict:
     return dict(
         title=dict(
             text=f"<b>{title}</b> <b>{help_html_link(title, False)}<b>",
@@ -131,7 +131,7 @@ def _title(title):
     )
 
 
-def _legend(legend_title="Legend", args=None):
+def _legend(legend_title: str = "Legend", args=None) -> dict:
     legend_dict = dict(
         x=1.02,
         y=0.95,
@@ -148,7 +148,7 @@ def _legend(legend_title="Legend", args=None):
     return dict(legend=legend_dict)
 
 
-def _xaxis(title, args=None):
+def _xaxis(title: str, args=None) -> dict:
     axis_dict = dict(
         title="<b>" + title + "</b>",
         titlefont_size=axis_title_font_size,
@@ -161,7 +161,7 @@ def _xaxis(title, args=None):
     return dict(xaxis=axis_dict)
 
 
-def _yaxis(title, args=None):
+def _yaxis(title: str, args=None) -> dict:
     axis_dict = dict(
         title="<b>" + title + "</b>",
         titlefont_size=axis_title_font_size,
@@ -175,7 +175,7 @@ def _yaxis(title, args=None):
     return dict(yaxis=axis_dict)
 
 
-def _make_describe_dataframe(value):
+def _make_describe_dataframe(value) -> pd.DataFrame:
     """
     Creation of a statistics table printed with the graph in report.html
     :param value: information measured (series)
@@ -217,8 +217,8 @@ def _smooth_data(
     min_arg=None,
     max_arg=None,
     weights=None,
-    density=False,
-):
+    density: bool = False,
+) -> tuple:
     """
     Function for smmothing data with numpy histogram function
     Returns a tuple of smooth data (ndarray)
@@ -259,7 +259,7 @@ def _smooth_data(
     return x, y, cum_y
 
 
-def _precompute_boxplot_values(y):
+def _precompute_boxplot_values(y) -> dict:
     """
     Precompute values for boxplot to avoid data storage in boxplot.
     https://github.com/plotly/plotly.js/blob/master/src/traces/box/calc.js
@@ -293,11 +293,11 @@ def _precompute_boxplot_values(y):
     )
 
 
-def _dataFrame_to_html(df):
+def _dataFrame_to_html(df: pd.DataFrame) -> str:
     return pd.DataFrame.to_html(df, border="")
 
 
-def _transparent_colors(colors, background_color, a):
+def _transparent_colors(colors: list, background_color: str, a: float) -> list:
     result = []
 
     br = int(background_color[1:3], 16)
@@ -319,7 +319,7 @@ def _transparent_colors(colors, background_color, a):
     return result
 
 
-def _transparent_component(c, b, a):
+def _transparent_component(c: float, b: float, a: float) -> str:
     v = (1 - a) * c + a * b
     r = hex(int(v))[2:]
 
@@ -328,7 +328,7 @@ def _transparent_component(c, b, a):
     return r
 
 
-def _copy_latest_minjs(result_directory, js_file):
+def _copy_latest_minjs(result_directory: str, js_file: str) -> None:
     with open(result_directory + "/" + js_file, "w+") as f:
         plotly_min_js = pkgutil.get_data(
             __name__, "resources/plotly-latest.min.js"
@@ -336,7 +336,9 @@ def _copy_latest_minjs(result_directory, js_file):
         f.write(plotly_min_js)
 
 
-def _create_and_save_div(fig, result_directory, main):
+def _create_and_save_div(
+    fig, result_directory: str | None, main: str
+) -> tuple[str, str | None]:
     div = py.plot(
         fig, include_plotlyjs=False, output_type="div", auto_open=False, show_link=False
     )
@@ -359,20 +361,20 @@ def _create_and_save_div(fig, result_directory, main):
 
 
 def _over_time_graph(
-    data_series,
-    time_series,
-    result_directory,
-    graph_name,
-    color,
-    yaxis_title,
-    log=False,
-    sigma=1,
-    quartiles=True,
-    min_max=False,
-    yaxis_starts_zero=False,
-    green_zone_starts_at=None,
-    green_zone_color="rgba(0,100,0,.1)",
-):
+    data_series: pd.Series,
+    time_series: pd.Series,
+    result_directory: str | None,
+    graph_name: str,
+    color: str,
+    yaxis_title: str,
+    log: bool = False,
+    sigma: int = 1,
+    quartiles: bool = True,
+    min_max: bool = False,
+    yaxis_starts_zero: bool = False,
+    green_zone_starts_at: float | None = None,
+    green_zone_color: str = "rgba(0,100,0,.1)",
+) -> tuple[str, str | None, str | None, str]:
     time_bins, sigma = interpolation_points(time_series, "over_time_graph")
 
     t = (time_series / 3600).values
@@ -524,16 +526,16 @@ def _over_time_graph(
 
 
 def _barcode_boxplot_graph(
-    graph_name,
-    df,
+    graph_name: str,
+    df: pd.DataFrame,
     barcode_selection,
-    pass_color,
-    fail_color,
-    yaxis_title,
-    legend_title,
-    result_directory,
-    barcode_alias=None,
-):
+    pass_color: str,
+    fail_color: str,
+    yaxis_title: str,
+    legend_title: str,
+    result_directory: str | None,
+    barcode_alias: dict | None = None,
+) -> tuple[str, str | None, str | None, str]:
     # Sort reads by read type and drop read type column
     pass_df = df.loc[df["passes_filtering"]].drop(columns="passes_filtering")
     fail_df = df.loc[~df["passes_filtering"]].drop(columns="passes_filtering")
@@ -599,13 +601,13 @@ def _barcode_boxplot_graph(
 
 
 def _pie_chart_graph(
-    graph_name,
-    count_sorted,
-    color_palette,
-    one_d_square,
-    result_directory,
-    barcode_alias=None,
-):
+    graph_name: str,
+    count_sorted: list,
+    color_palette: list,
+    one_d_square: bool,
+    result_directory: str | None,
+    barcode_alias: dict | None = None,
+) -> tuple[str, str | None, str | None, str]:
     read_count_sorted = count_sorted[0]
     base_count_sorted = count_sorted[1]
     labels = read_count_sorted.index.values.tolist()
@@ -786,17 +788,17 @@ def _pie_chart_graph(
 
 
 def _read_length_distribution(
-    graph_name,
+    graph_name: str,
     all_reads,
     pass_reads,
     fail_reads,
-    all_color,
-    pass_color,
-    fail_color,
-    xaxis_title,
-    result_directory,
-    bin_width=None,
-):
+    all_color: str,
+    pass_color: str,
+    fail_color: str,
+    xaxis_title: str,
+    result_directory: str | None,
+    bin_width: float | None = None,
+) -> tuple[str, str | None, str | None, str]:
     npoints, sigma = interpolation_points(all_reads, "read_length_distribution")
     min_all_reads = min(all_reads)
     max_all_reads = max(all_reads)
@@ -1125,8 +1127,14 @@ def _read_length_distribution(
 
 
 def _phred_score_density(
-    graph_name, dataframe, prefix, all_color, pass_color, fail_color, result_directory
-):
+    graph_name: str,
+    dataframe: pd.DataFrame,
+    prefix: str,
+    all_color: str,
+    pass_color: str,
+    fail_color: str,
+    result_directory: str | None,
+) -> tuple[str, str | None, str | None, str]:
     all_series = dataframe[prefix].dropna()
     pass_series = dataframe[prefix + " pass"].dropna()
     fail_series = dataframe[prefix + " fail"].dropna()
@@ -1214,7 +1222,12 @@ def _phred_score_density(
     return graph_name, output_file, table_html, div
 
 
-def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
+def _quality_multiboxplot(
+    graph_name: str,
+    result_directory: str | None,
+    df: pd.DataFrame,
+    onedsquare: bool = False,
+) -> tuple[str, str | None, str | None, str]:
     if onedsquare:
         prefix = "1D²"
     else:
@@ -1336,7 +1349,12 @@ def _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False):
     return graph_name, output_file, table_html, div
 
 
-def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=False):
+def _twod_density_char(
+    graph_name: str,
+    dataframe_dict: dict,
+    result_directory: str | None,
+    onedsquare: bool = False,
+) -> tuple[str, str | None, str | None, str]:
     read_pass_length = dataframe_dict["pass.reads.sequence.length"]
     read_pass_qscore = dataframe_dict["pass.reads.mean.qscore"]
     read_fail_length = dataframe_dict["fail.reads.sequence.length"]
@@ -1585,7 +1603,7 @@ def _twod_density_char(graph_name, dataframe_dict, result_directory, onedsquare=
     return graph_name, output_file, table_html, div
 
 
-def interpolation_points(series, graph_name):
+def interpolation_points(series, graph_name: str) -> tuple[int, int]:
     count = len(series)
     threshold, npoints, sigma = interpolation_point_count_dict[graph_name]
 

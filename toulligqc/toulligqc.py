@@ -64,7 +64,9 @@ def _positive_float(value: str) -> float:
     return float_value
 
 
-def _parse_args(config_dictionary):
+def _parse_args(
+    config_dictionary: configuration.ToulligqcConf,
+) -> configuration.ToulligqcConf:
     """
     Parsing the command line
     :return: config_dictionary containing the paths specified by line arguments
@@ -352,7 +354,7 @@ def _parse_args(config_dictionary):
     return config_dictionary
 
 
-def _check_conf(config_dictionary):
+def _check_conf(config_dictionary: configuration.ToulligqcConf) -> None:
     """
     Check the configuration
     :param config_dictionary: configuration dictionary containing the file or directory paths
@@ -428,7 +430,7 @@ def _check_conf(config_dictionary):
     _check_if_file_exists(config_dictionary["data_report_path"], force)
 
 
-def _check_if_dir_exists(dir, force):
+def _check_if_dir_exists(dir: str | None, force: bool) -> None:
     if dir is None:
         return
 
@@ -440,7 +442,7 @@ def _check_if_dir_exists(dir, force):
     os.makedirs(dir)
 
 
-def _check_if_file_exists(path, force):
+def _check_if_file_exists(path: str | None, force: bool) -> None:
     if path is None:
         return
 
@@ -451,14 +453,14 @@ def _check_if_file_exists(path, force):
             os.remove(path)
 
 
-def _welcome(config_dictionary):
+def _welcome(config_dictionary: configuration.ToulligqcConf) -> None:
     """
     Print welcome message
     """
     _show(config_dictionary, "ToulligQC version " + config_dictionary["app.version"])
 
 
-def _show(config_dictionary, msg):
+def _show(config_dictionary: configuration.ToulligqcConf, msg: str) -> None:
     """
     Print a message on the screen
     :param config_dictionary: configuration dictionary
@@ -468,7 +470,7 @@ def _show(config_dictionary, msg):
         print(msg)
 
 
-def _join_parameter_arguments(arg):
+def _join_parameter_arguments(arg: list | None) -> str | None:
     """
     Join parameter arguments
     :param arg: argument to join
@@ -480,7 +482,7 @@ def _join_parameter_arguments(arg):
     return "\t".join(arg)
 
 
-def _create_extractor_list(config_dictionary):
+def _create_extractor_list(config_dictionary: configuration.ToulligqcConf) -> list:
     result = []
 
     if (
@@ -525,7 +527,7 @@ def _create_extractor_list(config_dictionary):
     return result
 
 
-def parse_samplesheet(sample_sheet):
+def parse_samplesheet(sample_sheet: str) -> pd.DataFrame:
     columns = [
         "flow_cell_id",
         "experiment_id",
@@ -542,7 +544,7 @@ def parse_samplesheet(sample_sheet):
     return samplesheet
 
 
-def main():
+def main() -> None:
     """
     Main function creating graphs and statistics
     """

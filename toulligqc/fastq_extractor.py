@@ -23,6 +23,7 @@ import gzip
 import os
 import re
 import time
+from collections.abc import Iterator
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,7 @@ from toulligqc.common_statistics import (
     compute_NXX,
     occupancy_channel,
 )
+from toulligqc.configuration import ToulligqcConf
 from toulligqc.extractor_common import (
     add_image_to_result,
     check_result_values,
@@ -52,7 +54,7 @@ from toulligqc.fastq_bam_common import multiprocessing_submit
 
 
 class fastqExtractor:
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_dictionary = config_dictionary
         self.fastq = config_dictionary["fastq"].split("\t")
         self.images_directory = config_dictionary["images_directory"]
@@ -82,7 +84,7 @@ class fastqExtractor:
         else:
             self.quiet = True
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Configuration checking
         :return: nothing
@@ -92,7 +94,7 @@ class fastqExtractor:
                 return False, "FASTQ file does not exists: " + fastq
             return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Creation of the dataframe containing all info from fastq
         :return: Panda's Dataframe object
@@ -118,7 +120,7 @@ class fastqExtractor:
             time.time(),
         )
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         Removing dictionary entries that will not be kept in the report.data file
         :return:
@@ -149,7 +151,7 @@ class fastqExtractor:
         """
         return "basecaller.sequencing.summary.1d.extractor"
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Generation of the different graphs containing in the plotly_graph_generator module
         :return: images array containing the title and the path toward the images
@@ -287,7 +289,7 @@ class fastqExtractor:
                 )
         return images
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
         :param result_dict:
@@ -417,7 +419,7 @@ class fastqExtractor:
 
         log_task(self.quiet, "Extract info from FASTQ file", start_time, time.time())
 
-    def _load_fastq_data(self):
+    def _load_fastq_data(self) -> pd.DataFrame:
         """
         Load FASTQ dataframe
         :return: a Pandas Dataframe object
@@ -471,7 +473,7 @@ class fastqExtractor:
 
         return fq_df
 
-    def _fastq_batch_generator(self):
+    def _fastq_batch_generator(self) -> Iterator[list]:
         """
         read FASTQ file in small batch
         yield : list of lines (quality line): batch of n size
@@ -502,7 +504,7 @@ class fastqExtractor:
                 if len(batch) > 0:
                     yield batch
 
-    def _fastq_batch_reader(self, read_batch):
+    def _fastq_batch_reader(self, read_batch) -> list:
         """
         parse each line of FASTQ quality line:
         return: [read length, mean Qscore, type of read (pass or fail)]
@@ -538,7 +540,7 @@ class fastqExtractor:
                     fastq_lines.append((len(read), qscore, passes_filtering))
         return fastq_lines
 
-    def _parse_fastq_entry_header(self, header):
+    def _parse_fastq_entry_header(self, header: str) -> dict:
 
         if "\t" not in header:
             return dict(x.split("=") for x in header.split(" ")[1:])
@@ -561,7 +563,7 @@ class fastqExtractor:
                 metadata[lower_key] = value
             return metadata
 
-    def check_fastq(self):
+    def check_fastq(self) -> tuple | None:
         """ """
         open_fn = gzip.open if self.fastq[0].endswith(".gz") else open
 
@@ -616,7 +618,7 @@ class fastqExtractor:
         except KeyError:
             return None
 
-    def _extract_info_from_name(self, name):
+    def _extract_info_from_name(self, name: str) -> tuple:
         """ """
         metadata = self._parse_fastq_entry_header(name)
         start_time = timeISO_to_float(metadata["start_time"], "%Y-%m-%dT%H:%M:%S.%f%z")

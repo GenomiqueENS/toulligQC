@@ -25,14 +25,14 @@ import numpy as np
 from packaging import version
 
 
-def is_numpy_1_24():
+def is_numpy_1_24() -> bool:
     """
     This function checks if Numpy version is later then 1.20
     """
     return version.parse(np.__version__) >= version.parse("1.20")
 
 
-def format_duration(t):
+def format_duration(t: float) -> str:
     """
     Format a time duration
     :param t: time in milliseconds
@@ -42,7 +42,9 @@ def format_duration(t):
     return f"{int(t // 60):,d}m{t % 60:2.2f}s"
 
 
-def set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
+def set_result_dict_value(
+    result_dict: dict, key: str, tracking_id_dict: dict, dict_key: str
+) -> None:
     """
     Set metadata values from Fast5 or pod5 dict to result_dict
     """
@@ -53,7 +55,7 @@ def set_result_dict_value(result_dict, key, tracking_id_dict, dict_key):
     result_dict[key] = value
 
 
-def find_file_in_directory(source_file, format):
+def find_file_in_directory(source_file: str, format: str) -> str | None:
     """
     Looking for a suitable Fast5 or Pod5 file in the source directory.
     :return: The path to the first suitable file in the source directory

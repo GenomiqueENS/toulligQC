@@ -30,6 +30,7 @@ import pandas as pd
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc.common import is_numpy_1_24
 from toulligqc.common_statistics import compute_LXX, compute_NXX, occupancy_channel
+from toulligqc.configuration import ToulligqcConf
 from toulligqc.extractor_common import (
     add_image_to_result,
     check_result_values,
@@ -51,7 +52,7 @@ class SequencingSummaryExtractor:
     The data is extracted from dataframes and placed in the result_dict in the form of key-value pairs
     """
 
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         """
         Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in
         sequencing_summary_source if the path points to a file, the others cases are managed in check_conf
@@ -92,7 +93,7 @@ class SequencingSummaryExtractor:
                     self._get_barcode_colname(f)
                     break
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Check if the sequencing summary source contains a sequencing summary file
         :return: boolean and a string for error message
@@ -117,7 +118,7 @@ class SequencingSummaryExtractor:
             return False, "No sequencing summary file has been found"
         return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Creation of the dataframe containing all info from sequencing_summary.txt
         :return: Panda's Dataframe object
@@ -178,7 +179,7 @@ class SequencingSummaryExtractor:
             time.time(),
         )
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         Removing dictionary entries that will not be kept in the report.data file
         :return:
@@ -209,7 +210,7 @@ class SequencingSummaryExtractor:
         """
         return "basecaller.sequencing.summary.1d.extractor"
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Get Phred score (Qscore) and Length details (frequencies, ratios, yield and statistics) per type read (pass or fail)
         :param result_dict:
@@ -352,7 +353,7 @@ class SequencingSummaryExtractor:
             time.time(),
         )
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Generation of the different graphs containing in the plotly_graph_generator module
         :return: images array containing the title and the path toward the images
@@ -488,7 +489,7 @@ class SequencingSummaryExtractor:
             )
         return images
 
-    def _load_sequencing_summary_data(self):
+    def _load_sequencing_summary_data(self) -> pd.DataFrame:
         """
         Load sequencing summary dataframe with or without barcodes
         :return: a Pandas Dataframe object
@@ -654,7 +655,7 @@ class SequencingSummaryExtractor:
         )
 
     @staticmethod
-    def _is_barcode_file(filename):
+    def _is_barcode_file(filename: str) -> bool:
         """
         Check if input is a barcoding summary file i.e. has the column barcode_arrangement
         :param filename: path of the file to test
@@ -666,7 +667,7 @@ class SequencingSummaryExtractor:
         )
 
     @staticmethod
-    def _is_sequencing_summary_file(filename):
+    def _is_sequencing_summary_file(filename: str) -> bool:
         """
         Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
         :param filename: path of the file to test
@@ -678,7 +679,7 @@ class SequencingSummaryExtractor:
         ) and not any(col in header for col in ["barcode_arrangement", "barcode"])
 
     @staticmethod
-    def _is_sequencing_summary_with_barcodes(filename):
+    def _is_sequencing_summary_with_barcodes(filename: str) -> bool:
         """
         Check if the sequencing summary has also barcode information :
         - check for presence of columns "filename" and "barcode_arrangement"
@@ -690,7 +691,7 @@ class SequencingSummaryExtractor:
             header
         ) and any(col in header for col in ["barcode_arrangement", "barcode"])
 
-    def _get_barcode_colname(self, filename):
+    def _get_barcode_colname(self, filename: str) -> None:
         """
         Check if the barcode colname in sequencing summary is "barcode_arrangement" or "barcode".
         When use_alias_for_barcodes is enabled and the file has an "alias" column,

@@ -30,6 +30,7 @@ import tempfile
 import h5py
 
 from toulligqc.common import find_file_in_directory, set_result_dict_value
+from toulligqc.configuration import ToulligqcConf
 
 
 class Fast5Extractor:
@@ -43,7 +44,7 @@ class Fast5Extractor:
     return: a tuple containing the information about a FAST5 file
     """
 
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_file_dictionary = config_dictionary
         self.fast5_source = config_dictionary["fast5_source"]
         self.file_to_process = None
@@ -52,7 +53,7 @@ class Fast5Extractor:
         self.fast5_file = ""
         self.get_report_data_file_id()
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Configuration checking
         :return:
@@ -95,14 +96,14 @@ class Fast5Extractor:
 
         return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Determination of the fast5 file extension
         """
         return
 
     @staticmethod
-    def get_name():
+    def get_name() -> str:
         """
         Get the name of the extractor.
         :return: the name of the extractor
@@ -110,14 +111,14 @@ class Fast5Extractor:
         return "Fast5"
 
     @staticmethod
-    def get_report_data_file_id():
+    def get_report_data_file_id() -> str:
         """
         Get the report.data id of the extractor
         :return: the report.data id
         """
         return "fast5.extractor"
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Extraction of the different information about the fast5 files
         :param result_dict: Dictionary which gathers all the extracted
@@ -208,14 +209,14 @@ class Fast5Extractor:
                 "sequencing_kit",
             )
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Graph generation
         :return: nothing
         """
         return []
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         Deleting the temporary fast5 file extracted from the tar archive if used
         and removing dictionary entries that will not be kept in the report.data file
@@ -226,7 +227,9 @@ class Fast5Extractor:
         if self.temporary_directory:
             shutil.rmtree(self.temporary_directory, ignore_errors=True)
 
-    def _fast5_tar_extraction(self, tar_file, extension, output_directory):
+    def _fast5_tar_extraction(
+        self, tar_file: str, extension: str, output_directory: str
+    ) -> str:
         """
         Extraction of a FAST5 file stored in a tar file,
         :param tar_file: tar file containing the set of the raw FAST5 files
@@ -251,7 +254,7 @@ class Fast5Extractor:
                 break
         return output_directory + "/" + member.name
 
-    def _read_fast5(self):
+    def _read_fast5(self) -> h5py.File:
         """
         Extraction of one fast5 file from the archive and stores
         it in a h5py object for next retrieving information
@@ -280,7 +283,7 @@ class Fast5Extractor:
 
         return h5py_file
 
-    def _get_fast5_items(self, h5py_file, group):
+    def _get_fast5_items(self, h5py_file, group: str) -> dict:
         """
         Global function to extract run information stores in h5py format
         :param h5py_file: fast5 file store in a h5py object

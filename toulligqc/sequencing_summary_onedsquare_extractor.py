@@ -30,6 +30,7 @@ import pandas as pd
 from toulligqc import plotly_graph_generator as pgg
 from toulligqc import plotly_graph_onedsquare_generator as pgg2
 from toulligqc.common import is_numpy_1_24
+from toulligqc.configuration import ToulligqcConf
 from toulligqc.extractor_common import (
     add_image_to_result,
     check_result_values,
@@ -50,7 +51,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
     Extraction of statistics from 1dsqr_sequencing_summary.txt file and graph generation
     """
 
-    def __init__(self, config_dictionary):
+    def __init__(self, config_dictionary: ToulligqcConf) -> None:
         """
         Constructor that initialize the values of the config_dictionary and check in the case of 1 argument in
         sequencing_summary_source and seqencing_summary_1dsqr_source if the path points to a file,
@@ -77,7 +78,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 ):
                     self.is_barcode = True
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """
         Check if the sequencing summary 1dsqr source contains a 1dsqr sequencing summary file
         :return: boolean and a string for error message
@@ -103,7 +104,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
 
         return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Initialisation
         :return:
@@ -157,7 +158,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         )
 
     @staticmethod
-    def get_name():
+    def get_name() -> str:
         """
         Get the name of the extractor.
         :return: the name of the extractor
@@ -165,14 +166,14 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         return "Basecaller 1d square sequencing summary"
 
     @staticmethod
-    def get_report_data_file_id():
+    def get_report_data_file_id() -> str:
         """
         Get the report.data id of the extractor.
         :return: the report.data id
         """
         return "basecaller.sequencing.summary.1dsqr.extractor"
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         :param result_dict:
         :return:
@@ -291,7 +292,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
                 self.dataframe_1dsqr,
             )
 
-    def _fill_series_dict(self, df_dict, df):
+    def _fill_series_dict(self, df_dict: dict, df: pd.DataFrame) -> None:
 
         for read_type in ["pass", "fail"]:
             read_type_bool = True if read_type == "pass" else False
@@ -332,7 +333,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             "duration"
         ]
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Generation of the differents graphs containing in the plotly_graph_generator modules
         :return: images array containing the title and the path toward the images
@@ -494,7 +495,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             )
         return images
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         """
         Removing dictionary entries that will not be kept in the report.data file
         :param result_dict:
@@ -513,7 +514,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         # Clear DataFrame
         self.dataframe_1dsqr.iloc[0:0]
 
-    def _load_sequencing_summary_1dsqr_data(self):
+    def _load_sequencing_summary_1dsqr_data(self) -> pd.DataFrame:
         """
         Load sequencing summary dataframe with or without barcodes
         :return: a Pandas Dataframe object
@@ -659,7 +660,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
             raise FileNotFoundError("Sequencing summary file not found")
 
     @staticmethod
-    def _is_barcode_file(filename):
+    def _is_barcode_file(filename: str) -> bool:
         """
         Check if input is a barcoding summary file i.e. has the column barcode_arrangement
         :param filename: path of the file to test
@@ -669,7 +670,7 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         return header.startswith("read_id") and "barcode_arrangement" in header
 
     @staticmethod
-    def _is_sequencing_summary_1dsqr_file(filename):
+    def _is_sequencing_summary_1dsqr_file(filename: str) -> bool:
         """
         Check if input is a sequencing summary file i.e. first word is "filename" and does not have column 'barcode_arrangement'
         :param filename: path of the file to test
@@ -679,5 +680,5 @@ class OneDSquareSequencingSummaryExtractor(SSE):
         return header.startswith("filename1") and "barcode_arrangement" not in header
 
     @staticmethod
-    def _is_sequencing_summary_1dsqr_with_barcodes(filename):
+    def _is_sequencing_summary_1dsqr_with_barcodes(filename: str):
         pass

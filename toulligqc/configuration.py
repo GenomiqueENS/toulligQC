@@ -29,7 +29,7 @@ class ToulligqcConf:
     Dictionary for the storage of configuration file
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._config_dictionary = {
             "app.name": "ToulligQC",
             "app.url": "https://github.com/GenomiqueENS/toulligQC",
@@ -40,31 +40,31 @@ class ToulligqcConf:
             "report_only": "False",
         }
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> str:
         return self._config_dictionary[item]
 
-    def get(self, item, default):
+    def get(self, item: str, default):
         return self._config_dictionary.get(item, default)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value) -> None:
         self._config_dictionary.__setitem__(key, value)
 
     def items(self):
         return self._config_dictionary.items()
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self.keys()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._config_dictionary.__str__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._config_dictionary)
 
-    def __missing__(self, key):
+    def __missing__(self, key: str):
         raise KeyError(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self._config_dictionary[key]
 
     def __iter__(self):
@@ -73,11 +73,11 @@ class ToulligqcConf:
     def keys(self):
         return self._config_dictionary.keys()
 
-    def qscore_threshold(self):
+    def qscore_threshold(self) -> str:
         default_threshold = "9"
         result = self._config_dictionary.get("threshold", default_threshold)
 
         return default_threshold if result == "-1" else result
 
-    def is_default_qscore_threshold(self):
+    def is_default_qscore_threshold(self) -> bool:
         return self._config_dictionary.get("threshold") == "-1"

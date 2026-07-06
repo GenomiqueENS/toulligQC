@@ -58,7 +58,9 @@ from toulligqc.plotly_graph_common import (
 #
 
 
-def read_count_histogram(result_dict, result_directory):
+def read_count_histogram(
+    result_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Plots the histogram of count of the different types of reads:
     1D read return by Guppy
@@ -248,8 +250,10 @@ def read_count_histogram(result_dict, result_directory):
 
 
 def read_length_scatterplot(
-    dataframe_dict, result_directory, read_length_dist_bin_width=None
-):
+    dataframe_dict: dict,
+    result_directory: str | None,
+    read_length_dist_bin_width: float | None = None,
+) -> tuple[str, str | None, str | None, str]:
     graph_name = "Distribution of read lengths"
 
     return _read_length_distribution(
@@ -266,7 +270,9 @@ def read_length_scatterplot(
     )
 
 
-def yield_plot(df, result_directory, oneDsquare=False):
+def yield_plot(
+    df: pd.DataFrame, result_directory: str | None, oneDsquare: bool = False
+) -> tuple[str, str | None, str | None, str]:
     """
     Plots the different reads (1D, 1D pass, 1D fail) produced along the run against the time(in hour)
     """
@@ -549,7 +555,9 @@ def yield_plot(df, result_directory, oneDsquare=False):
     return graph_name, output_file, table_html, div
 
 
-def read_quality_multiboxplot(dataframe_dict, result_directory):
+def read_quality_multiboxplot(
+    dataframe_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Boxplot of PHRED score between read pass and read fail
     Violin plot of PHRED score between read pass and read fail
@@ -568,7 +576,9 @@ def read_quality_multiboxplot(dataframe_dict, result_directory):
     return _quality_multiboxplot(graph_name, result_directory, df, onedsquare=False)
 
 
-def allphred_score_frequency(dataframe_dict, result_directory):
+def allphred_score_frequency(
+    dataframe_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Plot the distribution of the phred score per read type (1D , 1D pass, 1D fail)
     """
@@ -594,7 +604,9 @@ def allphred_score_frequency(dataframe_dict, result_directory):
     )
 
 
-def twod_density(dataframe_dict, result_directory):
+def twod_density(
+    dataframe_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Plot the scatter plot representing the relation between the phred score and the sequence length in log
     """
@@ -604,7 +616,7 @@ def twod_density(dataframe_dict, result_directory):
     return _twod_density_char(graph_name, dataframe_dict, result_directory)
 
 
-def _compute_channel_map(df):
+def _compute_channel_map(df: pd.DataFrame) -> pd.DataFrame:
 
     max_channel = df["channel"].max()
     if max_channel > 512:
@@ -656,7 +668,7 @@ def _compute_channel_map(df):
     return ca
 
 
-def _compute_channel_count(df, channel_map):
+def _compute_channel_count(df: pd.DataFrame, channel_map: pd.DataFrame) -> tuple:
 
     # count pass reads per channel...
     # counts = df[df['passes_filtering']] \
@@ -687,7 +699,9 @@ def _compute_channel_count(df, channel_map):
     return max_row, max_col, int(max_value), counts, z, ids
 
 
-def plot_performance(df, result_directory):
+def plot_performance(
+    df: pd.DataFrame, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Plots the channels occupancy by the reads
     @:param pore_measure: reads number per pore
@@ -873,8 +887,11 @@ def plot_performance(df, result_directory):
 
 
 def barcode_percentage_pie_chart_pass(
-    dataframe_dict, barcode_selection, result_directory, barcode_alias
-):
+    dataframe_dict: dict,
+    barcode_selection: list,
+    result_directory: str | None,
+    barcode_alias: dict | None,
+) -> tuple[str, str | None, str | None, str]:
     """
     Plots a pie chart of 1D read pass percentage per barcode of a run.
     """
@@ -895,8 +912,11 @@ def barcode_percentage_pie_chart_pass(
 
 
 def barcode_percentage_pie_chart_fail(
-    dataframe_dict, barcode_selection, result_directory, barcode_alias
-):
+    dataframe_dict: dict,
+    barcode_selection: list,
+    result_directory: str | None,
+    barcode_alias: dict | None,
+) -> tuple[str, str | None, str | None, str]:
     """
     Plots a pie chart of 1D read fail percentage per barcode of a run.
     Needs the samplesheet file describing the barcodes to run
@@ -917,7 +937,9 @@ def barcode_percentage_pie_chart_fail(
     )
 
 
-def barcode_length_boxplot(datafame_dict, result_directory, barcode_alias):
+def barcode_length_boxplot(
+    datafame_dict: dict, result_directory: str | None, barcode_alias: dict | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Boxplots all the 1D pass and fail read length for each barcode indicated in the sample sheet
     """
@@ -940,11 +962,11 @@ def barcode_length_boxplot(datafame_dict, result_directory, barcode_alias):
 
 
 def barcode_length_distribution(
-    dataframe_dict,
-    result_directory,
-    barcode_alias=None,
-    read_length_dist_bin_width=None,
-):
+    dataframe_dict: dict,
+    result_directory: str | None,
+    barcode_alias: dict | None = None,
+    read_length_dist_bin_width: float | None = None,
+) -> tuple[str, str | None, str | None, str]:
     graph_name = "Read length distribution for barcodes"
 
     df = dataframe_dict["barcode_selection_sequence_length_dataframe"]
@@ -1082,7 +1104,9 @@ def barcode_length_distribution(
     return graph_name, output_file, table_html, div
 
 
-def barcoded_phred_score_frequency(dataframe_dict, result_directory, barcode_alias):
+def barcoded_phred_score_frequency(
+    dataframe_dict: dict, result_directory: str | None, barcode_alias: dict | None
+) -> tuple[str, str | None, str | None, str]:
     """
     Plot boxplot of the 1D pass and fail read qscore for each barcode indicated in the sample sheet
     """
@@ -1104,7 +1128,9 @@ def barcoded_phred_score_frequency(dataframe_dict, result_directory, barcode_ali
     )
 
 
-def sequence_length_over_time(dataframe_dict, result_directory):
+def sequence_length_over_time(
+    dataframe_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     graph_name = "Read length over time"
 
     return _over_time_graph(
@@ -1117,7 +1143,9 @@ def sequence_length_over_time(dataframe_dict, result_directory):
     )
 
 
-def phred_score_over_time(dataframe_dict, result_dict, result_directory):
+def phred_score_over_time(
+    dataframe_dict: dict, result_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     graph_name = "PHRED score over time"
 
     pass_min_qscore = 7
@@ -1142,7 +1170,9 @@ def phred_score_over_time(dataframe_dict, result_dict, result_directory):
     )
 
 
-def speed_over_time(dataframe_dict, result_directory):
+def speed_over_time(
+    dataframe_dict: dict, result_directory: str | None
+) -> tuple[str, str | None, str | None, str]:
     graph_name = "Translocation speed"
 
     sequence_length_series = dataframe_dict["all.reads.sequence.length"]

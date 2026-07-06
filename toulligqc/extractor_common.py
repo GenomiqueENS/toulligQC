@@ -32,7 +32,7 @@ import pandas as pd
 from toulligqc import common
 
 
-def set_result_value(extractor, result_dict, key: str, value):
+def set_result_value(extractor, result_dict: dict, key: str, value) -> None:
     """
     Set a key, value pair to the result_dict
     :param result_dict:
@@ -44,7 +44,7 @@ def set_result_value(extractor, result_dict, key: str, value):
     result_dict[extractor.get_report_data_file_id() + "." + key] = value
 
 
-def get_result_value(extractor, result_dict, key: str):
+def get_result_value(extractor, result_dict: dict, key: str):
     """
     :param result_dict:
     :param key: string entry to add to result_dict
@@ -55,14 +55,14 @@ def get_result_value(extractor, result_dict, key: str):
     return result_dict.get(extractor.get_report_data_file_id() + "." + key)
 
 
-def check_result_values(extractor, result_dict):
+def check_result_values(extractor, result_dict: dict) -> None:
     prefix = extractor.get_report_data_file_id() + "."
     for key, value in result_dict.items():
         if key.startswith(prefix):
             _check_result_key_value(key, value)
 
 
-def _check_result_key_value(key, value):
+def _check_result_key_value(key, value) -> None:
     if not isinstance(key, str):
         raise TypeError(f"Invalid type for key: {type(key)}")
 
@@ -74,7 +74,7 @@ def _check_result_key_value(key, value):
         raise TypeError(f"Invalid type for the value of the key {key}: {type(value)} ")
 
 
-def describe_dict(extractor, result_dict: dict, function, entry: str):
+def describe_dict(extractor, result_dict: dict, function, entry: str) -> None:
     """
     Set statistics for a key like mean, min, max, median and percentiles (without the count value) filled in the _set_result_value dictionary
     :param result_dict:
@@ -86,7 +86,9 @@ def describe_dict(extractor, result_dict: dict, function, entry: str):
         set_result_value(extractor, result_dict, entry + "." + key, value)
 
 
-def count_boolean_elements(dataframe, column_name, boolean: bool) -> int:
+def count_boolean_elements(
+    dataframe: pd.DataFrame, column_name: str, boolean: bool
+) -> int:
     """
     Returns the number of values of a column filtered by a boolean
     :param colum_name: name of the dafatrame column
@@ -96,7 +98,7 @@ def count_boolean_elements(dataframe, column_name, boolean: bool) -> int:
 
 
 def series_cols_boolean_elements(
-    dataframe, column_name1: str, column_name2: str, boolean: bool
+    dataframe: pd.DataFrame, column_name1: str, column_name2: str, boolean: bool
 ) -> pd.Series:
     """
     Returns a Panda's Series object with the number of values of different columns filtered by a boolean
@@ -109,7 +111,7 @@ def series_cols_boolean_elements(
 
 
 def df_cols_boolean_elements(
-    dataframe, column_name1: list, column_name2: str, boolean: bool
+    dataframe: pd.DataFrame, column_name1: list, column_name2: str, boolean: bool
 ) -> pd.Series:
     """
     Returns a Panda's Series object with the number of values of different columns filtered by a boolean
@@ -122,8 +124,12 @@ def df_cols_boolean_elements(
 
 
 def sorted_series_boolean_elements_divided(
-    dataframe, column_name1: str, column_name2: str, boolean: bool, denominator: int
-):
+    dataframe: pd.DataFrame,
+    column_name1: str,
+    column_name2: str,
+    boolean: bool,
+    denominator: int,
+) -> pd.Series:
     """
     Returns a sorted series of values of different columns filtered by a boolean and divided by the denominator
     :param dataframe: dataframe_1d
@@ -138,7 +144,7 @@ def sorted_series_boolean_elements_divided(
     ).sort_values()
 
 
-def fill_series_dict(df_dict, df):
+def fill_series_dict(df_dict: dict, df: pd.DataFrame) -> None:
     """ """
     for read_type in ["pass", "fail"]:
         read_type_bool = True if read_type == "pass" else False
@@ -168,7 +174,13 @@ def fill_series_dict(df_dict, df):
         df_dict["all.reads.duration"] = df["duration"]
 
 
-def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_dict, df):
+def extract_barcode_info(
+    extractor,
+    result_dict: dict,
+    barcode_selection: list,
+    dataframe_dict: dict,
+    df: pd.DataFrame,
+) -> None:
     """
     :param result_dict:
     Gather all barcode info for graphs : reads pass/fail and frequency per barcodes
@@ -315,8 +327,12 @@ def extract_barcode_info(extractor, result_dict, barcode_selection, dataframe_di
 
 
 def _barcode_selection_dataframe(
-    dataframe_dict, df, df_column_name: str, df_key_name: str, melted_column_name: str
-):
+    dataframe_dict: dict,
+    df: pd.DataFrame,
+    df_column_name: str,
+    df_key_name: str,
+    melted_column_name: str,
+) -> None:
     """
     Create custom dataframes by grouping all reads per barcodes and per read type (pass/fail) for read length or phred score info
     Reshape the dataframes from wide to long format to display barcode, read type and read length or phred score per read
@@ -354,12 +370,12 @@ def _barcode_selection_dataframe(
 
 def _barcode_stats(
     extractor,
-    result_dict,
-    barcode_selected_dataframe,
-    barcode_selected_read_pass_dataframe,
-    barcode_selected_read_fail_dataframe,
-    barcode_name,
-):
+    result_dict: dict,
+    barcode_selected_dataframe: pd.DataFrame,
+    barcode_selected_read_pass_dataframe: pd.DataFrame,
+    barcode_selected_read_fail_dataframe: pd.DataFrame,
+    barcode_name: str,
+) -> None:
     """
     :param result_dict:
     :param prefix: report.data id of the extractor (string)
@@ -388,7 +404,11 @@ def _barcode_stats(
 
 
 def _barcode_frequency(
-    extractor, barcode_selection, result_dict, entry: str, df_filtered
+    extractor,
+    barcode_selection: list,
+    result_dict: dict,
+    entry: str,
+    df_filtered: pd.Series,
 ) -> pd.Series:
     """
     Count reads by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
@@ -452,7 +472,11 @@ def _barcode_frequency(
 
 
 def _barcode_bases(
-    extractor, barcode_selection, result_dict, entry: str, df_filtered
+    extractor,
+    barcode_selection: list,
+    result_dict: dict,
+    entry: str,
+    df_filtered: pd.DataFrame,
 ) -> pd.Series:
     """
     Count bases by values of barcode_selection, computes sum of counts by barcode_selection, and sum of unclassified counts.
@@ -516,19 +540,21 @@ def _barcode_bases(
     return count_sorted
 
 
-def log_task(quiet, msg, start_time, end_time):
+def log_task(quiet: bool, msg: str, start_time: float, end_time: float) -> None:
     if not quiet:
         delta = end_time - start_time
         print(f"  - {msg} in {common.format_duration(delta)}")
 
 
-def add_image_to_result(quiet, image_list, start_time, image):
+def add_image_to_result(
+    quiet: bool, image_list: list, start_time: float, image: tuple
+) -> None:
     end_time = time.time()
     log_task(quiet, f'Creation of image "{image[0]}"', start_time, end_time)
     image_list.append(image)
 
 
-def timeISO_to_float(iso_datetime, format):
+def timeISO_to_float(iso_datetime: str, format: str) -> float:
     """ """
     try:
         dt = datetime.strptime(iso_datetime, format)
@@ -539,7 +565,7 @@ def timeISO_to_float(iso_datetime, format):
     return unix_timestamp
 
 
-def read_first_line_file(filename):
+def read_first_line_file(filename: str) -> str:
     """
     Load the first line of a file.
     :param filename: name of the file to load.
@@ -559,7 +585,7 @@ def read_first_line_file(filename):
         raise FileNotFoundError
 
 
-def set_result_dict_telemetry_value(result_dict, key, new_value):
+def set_result_dict_telemetry_value(result_dict: dict, key: str, new_value) -> None:
     """ """
     final_key = "sequencing.telemetry.extractor." + key
     current_value = None
@@ -575,7 +601,7 @@ def set_result_dict_telemetry_value(result_dict, key, new_value):
     result_dict[final_key] = new_value
 
 
-def pd_read_sequencing_summary(file, cols, data_type):
+def pd_read_sequencing_summary(file: str, cols: list, data_type: dict) -> pd.DataFrame:
     try:
         return pd.read_csv(file, sep="\t", usecols=cols, dtype=data_type)
     except (ValueError, KeyError):

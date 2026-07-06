@@ -25,6 +25,8 @@ import platform as pf
 import sys
 import tempfile as tp
 
+from toulligqc.configuration import ToulligqcConf
+
 
 class ToulligqcInfoExtractor:
     """
@@ -38,7 +40,7 @@ class ToulligqcInfoExtractor:
     that fills the config_dictionary.
     """
 
-    def __init__(self, config_dictionary, extractors_list):
+    def __init__(self, config_dictionary: ToulligqcConf, extractors_list: list) -> None:
         self._config_dictionary = config_dictionary
         self._extractors_list = extractors_list
         self._debug = False
@@ -58,25 +60,25 @@ class ToulligqcInfoExtractor:
         return "Toulligqc info"
 
     @staticmethod
-    def get_report_data_file_id():
+    def get_report_data_file_id() -> str:
         """
         Get the report.data id of the extractor
         :return: the report.data id
         """
         return "toulligqc.info.extractor"
 
-    def check_conf(self):
+    def check_conf(self) -> tuple[bool, str]:
         """Configuration checking"""
         return True, ""
 
-    def init(self):
+    def init(self) -> None:
         """
         Initialisation
         :return:
         """
         return
 
-    def extract(self, result_dict):
+    def extract(self, result_dict: dict) -> None:
         """
         Extraction of the different details about the config dictionary
         to create the extractors list that will be stored in the result_dict dictionary
@@ -104,18 +106,18 @@ class ToulligqcInfoExtractor:
         for e in self._extractors_list:
             result_dict["toulligqc.info.extractors"].append(e.get_report_data_file_id())
 
-    def graph_generation(self, result_dict):
+    def graph_generation(self, result_dict: dict) -> list:
         """
         Graph generation
         :return: nothing
         """
         return []
 
-    def clean(self, result_dict):
+    def clean(self, result_dict: dict) -> None:
         return
 
     @staticmethod
-    def _system_and_python_info(result_dict):
+    def _system_and_python_info(result_dict: dict) -> dict:
         """
         Initialization of the result_dict with the OS parameters and the environment variables
         :param config_dictionary: details from command user line
@@ -150,7 +152,7 @@ class ToulligqcInfoExtractor:
 
         return result_dict
 
-    def _toulligqc_info(self, result_dict):
+    def _toulligqc_info(self, result_dict: dict) -> None:
 
         result_dict["toulligqc.info.version"] = self._config_dictionary["app.version"]
         result_dict["toulligqc.info.start.time"] = (
@@ -162,7 +164,7 @@ class ToulligqcInfoExtractor:
         result_dict["toulligqc.info.executable.path"] = sys.argv[0]
         result_dict["toulligqc.info.command.line"] = sys.argv
 
-    def _qc_info(self, result_dict):
+    def _qc_info(self, result_dict: dict) -> None:
 
         result_dict["toulligqc.info.html.report.path"] = self._config_dictionary.get(
             "html_report_path", "Undefined"

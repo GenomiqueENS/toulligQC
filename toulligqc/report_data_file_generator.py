@@ -24,7 +24,7 @@
 # The prefix of a key being the report data file id of the module.
 
 
-def add_values_to_unwritten_key(result_dict, values):
+def add_values_to_unwritten_key(result_dict: dict, values: list) -> None:
     """
     :param result_dict:
     :param values: must be a list
@@ -33,7 +33,7 @@ def add_values_to_unwritten_key(result_dict, values):
     return result_dict["unwritten.keys"].extend(values)
 
 
-def statistics_generator(config_dictionary, result_dict):
+def statistics_generator(config_dictionary, result_dict: dict) -> None:
     """
     Create a log file where different information and statistics about the minion run are printed
     :param result_dict:

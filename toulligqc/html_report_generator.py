@@ -26,6 +26,7 @@ import datetime
 import os
 import pkgutil
 
+from toulligqc.configuration import ToulligqcConf
 from toulligqc.plotly_graph_common import (
     _format_int,
     figure_image_width,
@@ -35,7 +36,12 @@ from toulligqc.plotly_graph_common import (
 )
 
 
-def html_report(config_dictionary, result_dict, graphs, substitutions=None):
+def html_report(
+    config_dictionary: ToulligqcConf,
+    result_dict: dict,
+    graphs: list,
+    substitutions: dict | None = None,
+) -> None:
     """
     Creation of a html report
     :param config_dictionary: dictionary containing file or directory paths
@@ -151,7 +157,7 @@ def html_report(config_dictionary, result_dict, graphs, substitutions=None):
     f.close()
 
 
-def _summary(graphs):
+def _summary(graphs: list) -> str:
     """
     Compose the summary section of the page
     :param graphs:
@@ -179,15 +185,15 @@ def _summary(graphs):
 
 
 def _modules_report(
-    graphs,
-    result_dict,
-    run_id,
-    report_name,
-    run_date,
-    toulligqc_version,
-    remove_image_files,
-    substitutions=None,
-):
+    graphs: list,
+    result_dict: dict,
+    run_id: str,
+    report_name: str,
+    run_date: str,
+    toulligqc_version: str,
+    remove_image_files: bool,
+    substitutions: dict | None = None,
+) -> str:
     result = _basic_statistics_module_report(
         result_dict,
         run_id,
@@ -201,13 +207,13 @@ def _modules_report(
 
 
 def _basic_statistics_module_report(
-    result_dict,
-    sample_id,
-    report_name,
-    run_date,
-    toulligqc_version,
-    substitutions=None,
-):
+    result_dict: dict,
+    sample_id: str,
+    report_name: str,
+    run_date: str,
+    toulligqc_version: str,
+    substitutions: dict | None = None,
+) -> str:
     import sys as _sys
 
     minknow_version = _get_result_value(
@@ -396,7 +402,7 @@ def _basic_statistics_module_report(
     return result
 
 
-def _other_module_reports(graphs, remove_image_files):
+def _other_module_reports(graphs: list, remove_image_files: bool) -> str:
     result = ""
 
     for i, t in enumerate(graphs):
@@ -448,7 +454,9 @@ def _other_module_reports(graphs, remove_image_files):
     return result
 
 
-def _embedded_image(image_path, resource=False, remove=False):
+def _embedded_image(
+    image_path: str, resource: bool = False, remove: bool = False
+) -> str:
     """
     Embedded an image
     :param image_path: path of the image
@@ -469,7 +477,9 @@ def _embedded_image(image_path, resource=False, remove=False):
     return result
 
 
-def _get_result_value(result_dict, key, default_value="", value_type="str"):
+def _get_result_value(
+    result_dict: dict, key: str, default_value="", value_type: str = "str"
+) -> str:
     """
     Get the value of the result dictionary or a default value if the key does not exists.
     :param result_dict: result dictionary
@@ -488,7 +498,7 @@ def _get_result_value(result_dict, key, default_value="", value_type="str"):
     return default_value
 
 
-def _get_result_date_value(result_dict, key, default_value=""):
+def _get_result_date_value(result_dict: dict, key: str, default_value="") -> str:
     """
     Get a date value of the result dictionary and formot it. A default value is returned if the key does not exists.
     :param result_dict: result dictionary
@@ -505,7 +515,7 @@ def _get_result_date_value(result_dict, key, default_value=""):
     return default_value
 
 
-def _iso8601_to_formatted_date(date_string):
+def _iso8601_to_formatted_date(date_string: str) -> str:
     """
     Format an ISO 8601 date.
     :param date_string: date to format
@@ -519,7 +529,7 @@ def _iso8601_to_formatted_date(date_string):
     return d.strftime("%a %b %d %H:%M:%S %Z %Y")
 
 
-def _format_int_with_prefix(i):
+def _format_int_with_prefix(i) -> str | int:
     for x in ((12, "T"), (9, "G"), (6, "M"), (3, "K")):
         if i / 10 ** x[0] > 1:
             return f"{float(i) / float(10 ** x[0]):.2f}{x[1]}"
