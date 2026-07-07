@@ -72,7 +72,7 @@ def html_report(
     )
 
     # Read CSS file resource
-    css = pkgutil.get_data(__name__, "resources/toulligqc.css").decode("utf8")
+    css = pkgutil.get_data("toulligqc", "resources/toulligqc.css").decode("utf8")
 
     # Set CSS module class width to the width of the figures
     css = (
@@ -82,9 +82,9 @@ def html_report(
     )
 
     # Read Plotly JavaScript code
-    plotly_min_js = pkgutil.get_data(__name__, "resources/plotly-latest.min.js").decode(
-        "utf8"
-    )
+    plotly_min_js = pkgutil.get_data(
+        "toulligqc", "resources/plotly-latest.min.js"
+    ).decode("utf8")
 
     f = open(config_dictionary["html_report_path"], "w")
 
@@ -474,7 +474,7 @@ def _embedded_image(
     """
 
     if resource:
-        data = pkgutil.get_data(__name__, image_path)
+        data = pkgutil.get_data("toulligqc", image_path)
     else:
         with open(image_path, "rb") as image_file:
             data = image_file.read()

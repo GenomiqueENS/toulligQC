@@ -351,7 +351,7 @@ def _transparent_component(c: float, b: float, a: float) -> str:
 def _copy_latest_minjs(result_directory: str, js_file: str) -> None:
     with open(result_directory + "/" + js_file, "w+") as f:
         plotly_min_js = pkgutil.get_data(
-            __name__, "resources/plotly-latest.min.js"
+            "toulligqc", "resources/plotly-latest.min.js"
         ).decode("utf8")
         f.write(plotly_min_js)
 
