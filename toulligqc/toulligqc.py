@@ -605,22 +605,24 @@ def resolve_barcode_selection(config_dictionary: configuration.ToulligqcConf) ->
         else:
             for b in config_dictionary["barcodes"].strip().split(","):
                 pattern = re.search(allowed_patterns, b.strip().upper())
+                resolved = None
                 if pattern:
-                    barcode = f"barcode{pattern.group(2)}"
-                    barcode_set.add(barcode)
+                    resolved = f"barcode{pattern.group(2)}"
+                    barcode_set.add(resolved)
+                    if (
+                        "samplesheet" in config_dictionary
+                        and "use_alias_for_barcodes" not in config_dictionary
+                        and b in config_dictionary.get("barcode_alias", {})
+                    ):
+                        config_dictionary["barcode_alias"][resolved] = config_dictionary[
+                            "barcode_alias"
+                        ].pop(b)
                 else:
                     if "use_alias_for_barcodes" not in config_dictionary:
                         sys.stderr.write(
                             f"\033[93mWarning:\033[0m Barcode '{b}' is non-standard custom arrangement.\n"
                         )
                     barcode_set.add(b)
-                if (
-                    "samplesheet" in config_dictionary
-                    and "use_alias_for_barcodes" not in config_dictionary
-                ):
-                    config_dictionary["barcode_alias"][barcode] = config_dictionary[
-                        "barcode_alias"
-                    ].pop(b)
 
         barcode_selection = sorted(barcode_set)
 
