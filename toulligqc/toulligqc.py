@@ -592,16 +592,20 @@ def resolve_barcode_selection(config_dictionary: configuration.ToulligqcConf) ->
         barcode_set = set()
         if ":" in config_dictionary["barcodes"]:
             start, end = config_dictionary["barcodes"].strip().split(":")
-            pattern = re.search(allowed_patterns, start.strip().upper())
-            if pattern:
-                start_number = int(pattern.group(2))
-            pattern = re.search(allowed_patterns, end.strip().upper())
-            if pattern:
-                end_number = int(pattern.group(2))
+            start_match = re.search(allowed_patterns, start.strip().upper())
+            end_match = re.search(allowed_patterns, end.strip().upper())
+            if not start_match or not end_match:
+                raise ValueError(
+                    f"Invalid barcode range '{config_dictionary['barcodes']}' (expected e.g. BC01:BC12)"
+                )
+            start_number = int(start_match.group(2))
+            end_number = int(end_match.group(2))
+            if start_number > end_number:
+                raise ValueError(
+                    f"Invalid barcode range '{config_dictionary['barcodes']}' (start > end)"
+                )
             for i in range(start_number, end_number + 1):
-                barcode = f"barcode{i:02}"
-                barcode_set.add(barcode)
-
+                barcode_set.add(f"barcode{i:02}")
         else:
             for b in config_dictionary["barcodes"].strip().split(","):
                 pattern = re.search(allowed_patterns, b.strip().upper())
