@@ -51,6 +51,7 @@ from toulligqc.extractors.extractor_common import (
 from toulligqc.extractors.fastq_bam_common import (
     batch_iterator,
     extract_headerTag,
+    extract_headerTag_to_dict,
     multiprocessing_submit,
 )
 from toulligqc.graphs import plotly_graph_generator as pgg
@@ -59,6 +60,7 @@ from toulligqc.graphs import plotly_graph_generator as pgg
 class uBAM_Extractor:
     def __init__(self, config_dictionary: ToulligqcConf) -> None:
         self.config_dictionary = config_dictionary
+        self.read_header_only = False
         self.ubam = config_dictionary["bam"].split("\t")
         self.images_directory = config_dictionary["images_directory"]
         self.threshold_Qscore = int(config_dictionary.qscore_threshold())
@@ -84,6 +86,11 @@ class uBAM_Extractor:
         else:
             self.quiet = True
 
+        # If sequencing summary extractor enabled then read the BAM header only
+        if ("sequencing_summary_source" in config_dictionary
+        and config_dictionary["sequencing_summary_source"]):
+            self.read_header_only = True
+
     def check_conf(self) -> tuple[bool, str]:
         """Check the configuration.
 
@@ -99,28 +106,37 @@ class uBAM_Extractor:
     def init(self) -> None:
         """Create the dataframe containing all info from the uBAM."""
         start_time = time.time()
-        self.dataframe = self._load_uBAM_file()
-        if self.dataframe.empty:
-            raise pd.errors.EmptyDataError("Dataframe is empty")
-        self.dataframe_dict = {}
+        self._get_header()
+        if not self.read_header_only:
+            self.dataframe = self._load_uBAM_file()
+            if self.dataframe.empty:
+                raise pd.errors.EmptyDataError("Dataframe is empty")
+            self.dataframe_dict = {}
 
-        # Add missing categories
-        if "barcode_arrangement" in self.dataframe.columns:
-            self.dataframe["barcode_arrangement"] = self.dataframe[
-                "barcode_arrangement"
-            ].cat.add_categories([0, "other barcodes", "passes_filtering"])
+            # Add missing categories
+            if "barcode_arrangement" in self.dataframe.columns:
+                self.dataframe["barcode_arrangement"] = self.dataframe[
+                    "barcode_arrangement"
+                ].cat.add_categories([0, "other barcodes", "passes_filtering"])
 
-        # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
-        self.dataframe = self.dataframe.fillna(0)
+            # Replace all NaN values by 0 to avoid data manipulation errors when columns are not the same length
+            self.dataframe = self.dataframe.fillna(0)
 
-        self.barcode_selection = self.config_dictionary["barcode_selection"]
+            self.barcode_selection = self.config_dictionary["barcode_selection"]
 
-        log_task(
-            self.quiet,
-            f"Load BAM file ({self.dataframe.memory_usage(deep=True).sum() / 1024 / 1024:,.2f} MB used)",
-            start_time,
-            time.time(),
-        )
+            log_task(
+                self.quiet,
+                f"Load BAM file ({self.dataframe.memory_usage(deep=True).sum() / 1024 / 1024:,.2f} MB used)",
+                start_time,
+                time.time(),
+            )
+        else:
+            log_task(
+                self.quiet,
+                "Read BAM header",
+                start_time,
+                time.time(),
+            )
 
     def clean(self, result_dict: dict) -> None:
         """Remove dictionary entries that are not kept in the report.data file.
@@ -129,8 +145,9 @@ class uBAM_Extractor:
             result_dict: Dictionary gathering the extracted statistics.
         """
         check_result_values(self, result_dict)
-        self.dataframe_dict.clear()
-        self.dataframe.iloc[0:0]
+        if not self.read_header_only:
+            self.dataframe_dict.clear()
+            self.dataframe.iloc[0:0]
 
     @staticmethod
     def get_name() -> str:
@@ -161,6 +178,8 @@ class uBAM_Extractor:
             the images.
         """
         images = list()
+        if self.read_header_only:
+            return images
 
         add_image_to_result(
             self.quiet,
@@ -299,12 +318,7 @@ class uBAM_Extractor:
             result_dict: Dictionary gathering the extracted statistics.
         """
         start_time = time.time()
-        fill_series_dict(self.dataframe_dict, self.dataframe)
-
         set_result_dict_telemetry_value(result_dict, "run.id", self.header["run_id"])
-        set_result_dict_telemetry_value(
-            result_dict, "sample.id", self.header["sample_id"]
-        )
         set_result_dict_telemetry_value(
             result_dict, "model.file", self.header["model_version_id"]
         )
@@ -318,123 +332,129 @@ class uBAM_Extractor:
             result_dict, "flowcell.id", self.header["flow_cell_id"]
         )
         set_result_dict_telemetry_value(
-            result_dict, "basecalling.date", self.header["run_date"]
+            result_dict, "barcode.kits.version", self.header["barcode_kits"]
         )
         set_result_dict_telemetry_value(
-            result_dict, "pass.threshold.qscore", str(self.threshold_Qscore)
+            result_dict, "protocol.group.id", self.header["experiment_id"]
         )
 
-        set_result_value(self, result_dict, "read.count", len(self.dataframe))
-        set_result_value(
-            self,
-            result_dict,
-            "read.pass.count",
-            count_boolean_elements(self.dataframe, "passes_filtering", True),
-        )
-        set_result_value(
-            self,
-            result_dict,
-            "read.fail.count",
-            count_boolean_elements(self.dataframe, "passes_filtering", False),
-        )
-        total_reads = get_result_value(self, result_dict, "read.count")
-
-        # Ratios
-        set_result_value(
-            self,
-            result_dict,
-            "read.pass.ratio",
-            (get_result_value(self, result_dict, "read.pass.count") / total_reads),
-        )
-        set_result_value(
-            self,
-            result_dict,
-            "read.fail.ratio",
-            (get_result_value(self, result_dict, "read.fail.count") / total_reads),
-        )
-
-        # Frequencies
-        set_result_value(self, result_dict, "read.count.frequency", 100)
-
-        read_pass_frequency = (
-            get_result_value(self, result_dict, "read.pass.count") / total_reads
-        ) * 100
-        set_result_value(self, result_dict, "read.pass.frequency", read_pass_frequency)
-
-        read_fail_frequency = (
-            get_result_value(self, result_dict, "read.fail.count") / total_reads
-        ) * 100
-        set_result_value(self, result_dict, "read.fail.frequency", read_fail_frequency)
-
-        # Yield, n50, run time
-        set_result_value(
-            self,
-            result_dict,
-            "yield",
-            sum(self.dataframe_dict["all.reads.sequence.length"]),
-        )
-
-        set_result_value(self, result_dict, "n50", compute_NXX(self.dataframe_dict, 50))
-        set_result_value(self, result_dict, "l50", compute_LXX(self.dataframe_dict, 50))
-
-        set_result_value(
-            self, result_dict, "run.time", max(self.dataframe["start_time"])
-        )
-        # Get channel occupancy statistics and store each value into result_dict
-        for index, value in occupancy_channel(self.dataframe).items():
-            set_result_value(
-                self, result_dict, "channel.occupancy.statistics." + index, value
+        if not self.read_header_only:
+            fill_series_dict(self.dataframe_dict, self.dataframe)
+            set_result_dict_telemetry_value(
+                result_dict, "pass.threshold.qscore", str(self.threshold_Qscore)
             )
 
-        # Get statistics about all reads length and store each value into result_dict
-        sequence_length_statistics = self.dataframe_dict[
-            "all.reads.sequence.length"
-        ].describe()
-
-        for index, value in sequence_length_statistics.items():
-            set_result_value(self, result_dict, "all.read.length." + index, value)
-
-        # Add statistics (without count) about read pass/fail length in the result_dict
-        describe_dict(
-            self,
-            result_dict,
-            self.dataframe_dict["pass.reads.sequence.length"],
-            "pass.reads.sequence.length",
-        )
-        describe_dict(
-            self,
-            result_dict,
-            self.dataframe_dict["fail.reads.sequence.length"],
-            "fail.reads.sequence.length",
-        )
-
-        # Get Qscore statistics without count value and store them into result_dict
-        qscore_statistics = self.dataframe["mean_qscore"].describe().drop("count")
-
-        for index, value in qscore_statistics.items():
-            set_result_value(self, result_dict, "all.read.qscore." + index, value)
-
-        # Add statistics (without count) about read pass/fail qscore in the result_dict
-        describe_dict(
-            self,
-            result_dict,
-            self.dataframe_dict["pass.reads.mean.qscore"],
-            "pass.reads.mean.qscore",
-        )
-        describe_dict(
-            self,
-            result_dict,
-            self.dataframe_dict["fail.reads.mean.qscore"],
-            "fail.reads.mean.qscore",
-        )
-        if self.is_barcode:
-            extract_barcode_info(
+            set_result_value(self, result_dict, "read.count", len(self.dataframe))
+            set_result_value(
                 self,
                 result_dict,
-                self.barcode_selection,
-                self.dataframe_dict,
-                self.dataframe,
+                "read.pass.count",
+                count_boolean_elements(self.dataframe, "passes_filtering", True),
             )
+            set_result_value(
+                self,
+                result_dict,
+                "read.fail.count",
+                count_boolean_elements(self.dataframe, "passes_filtering", False),
+            )
+            total_reads = get_result_value(self, result_dict, "read.count")
+
+            # Ratios
+            set_result_value(
+                self,
+                result_dict,
+                "read.pass.ratio",
+                (get_result_value(self, result_dict, "read.pass.count") / total_reads),
+            )
+            set_result_value(
+                self,
+                result_dict,
+                "read.fail.ratio",
+                (get_result_value(self, result_dict, "read.fail.count") / total_reads),
+            )
+
+            # Frequencies
+            set_result_value(self, result_dict, "read.count.frequency", 100)
+
+            read_pass_frequency = (
+                get_result_value(self, result_dict, "read.pass.count") / total_reads
+            ) * 100
+            set_result_value(self, result_dict, "read.pass.frequency", read_pass_frequency)
+
+            read_fail_frequency = (
+                get_result_value(self, result_dict, "read.fail.count") / total_reads
+            ) * 100
+            set_result_value(self, result_dict, "read.fail.frequency", read_fail_frequency)
+
+            # Yield, n50, run time
+            set_result_value(
+                self,
+                result_dict,
+                "yield",
+                sum(self.dataframe_dict["all.reads.sequence.length"]),
+            )
+
+            set_result_value(self, result_dict, "n50", compute_NXX(self.dataframe_dict, 50))
+            set_result_value(self, result_dict, "l50", compute_LXX(self.dataframe_dict, 50))
+
+            set_result_value(
+                self, result_dict, "run.time", max(self.dataframe["start_time"])
+            )
+            # Get channel occupancy statistics and store each value into result_dict
+            for index, value in occupancy_channel(self.dataframe).items():
+                set_result_value(
+                    self, result_dict, "channel.occupancy.statistics." + index, value
+                )
+
+            # Get statistics about all reads length and store each value into result_dict
+            sequence_length_statistics = self.dataframe_dict[
+                "all.reads.sequence.length"
+            ].describe()
+
+            for index, value in sequence_length_statistics.items():
+                set_result_value(self, result_dict, "all.read.length." + index, value)
+
+            # Add statistics (without count) about read pass/fail length in the result_dict
+            describe_dict(
+                self,
+                result_dict,
+                self.dataframe_dict["pass.reads.sequence.length"],
+                "pass.reads.sequence.length",
+            )
+            describe_dict(
+                self,
+                result_dict,
+                self.dataframe_dict["fail.reads.sequence.length"],
+                "fail.reads.sequence.length",
+            )
+
+            # Get Qscore statistics without count value and store them into result_dict
+            qscore_statistics = self.dataframe["mean_qscore"].describe().drop("count")
+
+            for index, value in qscore_statistics.items():
+                set_result_value(self, result_dict, "all.read.qscore." + index, value)
+
+            # Add statistics (without count) about read pass/fail qscore in the result_dict
+            describe_dict(
+                self,
+                result_dict,
+                self.dataframe_dict["pass.reads.mean.qscore"],
+                "pass.reads.mean.qscore",
+            )
+            describe_dict(
+                self,
+                result_dict,
+                self.dataframe_dict["fail.reads.mean.qscore"],
+                "fail.reads.mean.qscore",
+            )
+            if self.is_barcode:
+                extract_barcode_info(
+                    self,
+                    result_dict,
+                    self.barcode_selection,
+                    self.dataframe_dict,
+                    self.dataframe,
+                )
 
         log_task(self.quiet, "Extract info from uBAM file", start_time, time.time())
 
@@ -444,7 +464,6 @@ class uBAM_Extractor:
         Returns:
             A pd.DataFrame object holding the parsed uBAM records.
         """
-        self._get_header()
         uBAM_chunks = self._uBAM_batch_generator()
         rst_futures = multiprocessing_submit(
             self._uBAM_batch_reader,
@@ -519,17 +538,22 @@ class uBAM_Extractor:
         sam_file = pysam.AlignmentFile(self.ubam[0], "rb", check_sq=False)
         header = sam_file.header.to_dict()
         run_id, model_version_id = extract_headerTag(
-            header, "RG", "ID", "Unknown_Unknown"
+            header, "RG", "ID", first_only=True
         ).split("_", 1)
         self.header = {
             "run_id": run_id,
-            "run_date": extract_headerTag(header, "RG", "DT", "Unknown"),
-            "sample_id": extract_headerTag(header, "RG", "SM", "Unknown"),
-            "basecaller": extract_headerTag(header, "PG", "PN", "Unknown"),
-            "basecaller_version": extract_headerTag(header, "PG", "VN", "Unknown"),
+            "basecaller": extract_headerTag(header, "PG", "PN"),
+            "basecaller_version": extract_headerTag(header, "PG", "VN"),
+            "basecaller_command_line": extract_headerTag(header, "PG", "CL"),
+            "basecaller_gpus": extract_headerTag(header, "PG", "DS"),
+            "run_date": extract_headerTag(header, "RG", "DT", first_only=True),
+            "sample_id": extract_headerTag(header, "RG", "SM", first_only=True),
+            "hostname": extract_headerTag(header, "RG", "PM",  first_only=True),
             "model_version_id": model_version_id,
-            "flow_cell_id": extract_headerTag(header, "RG", "PU", "Unknown"),
+            "flow_cell_id": extract_headerTag(header, "RG", "PU"),
+            "barcode_kits": extract_headerTag(header, "RG", "bk"),
         }
+        self.header.update(extract_headerTag_to_dict(header, "RG", "DS"))
 
     def _process_record(self, rec, record_count: int) -> list:
         """Extract QC info from a BAM record.

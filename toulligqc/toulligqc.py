@@ -521,15 +521,15 @@ def _create_extractor_list(config_dictionary: configuration.ToulligqcConf) -> li
                 config_dictionary
             )
         )
+
     if "fastq" in config_dictionary and config_dictionary["fastq"]:
         result.append(fastq_extractor.fastqExtractor(config_dictionary))
-    elif "bam" in config_dictionary and config_dictionary["bam"]:
-        result.append(bam_extractor.uBAM_Extractor(config_dictionary))
-
     else:
         result.append(
             sequencing_summary_extractor.SequencingSummaryExtractor(config_dictionary)
         )
+    if "bam" in config_dictionary and config_dictionary["bam"]:
+        result.append(bam_extractor.uBAM_Extractor(config_dictionary))
 
     result.insert(
         0, toulligqc_info_extractor.ToulligqcInfoExtractor(config_dictionary, result)

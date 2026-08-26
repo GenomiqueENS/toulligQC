@@ -26,23 +26,41 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 
 
-def extract_headerTag(header: dict, tagGroup: str, tag: str, defaultValue=None):
+def extract_headerTag(header: dict, tagGroup: str, tag: str, first_only=False):
 
     if tagGroup not in header:
-        if defaultValue is not None:
-            return defaultValue
-        else:
-            raise KeyError(tagGroup)
+        return None
 
-    first_entry = header[tagGroup][0]
+    result_list = []
+    for v in header[tagGroup]:
+        if tag in v and v[tag] not in result_list:
+            result_list.append(v[tag])
 
-    if tag not in first_entry:
-        if defaultValue is not None:
-            return defaultValue
-        else:
-            raise KeyError(tag)
+    if len(result_list) == 0:
+        return None
 
-    return first_entry[tag]
+    if first_only:
+        return result_list[0]
+    return ", ".join(result_list)
+
+
+def extract_headerTag_to_dict(header: dict, tagGroup: str, tag: str) -> dict:
+
+    result = {}
+
+    if tagGroup not in header:
+        return result
+
+    tag_group_dict = header[tagGroup][0]
+    if tag not in tag_group_dict:
+        return result
+
+    value = tag_group_dict[tag]
+    for v in value.split(" "):
+        k, v = v.split("=", 1)
+        result[k] = v
+
+    return result
 
 
 def batch_iterator(iterator, batch_size: int) -> Iterator[list[str]]:
