@@ -131,7 +131,6 @@ class Pod5Extractor:
         tracking_id_dict = run_info_dict.tracking_id
         if len(tracking_id_dict) == 0:
             return
-
         prefix = "sequencing.telemetry.extractor"
         result_dict[prefix + ".source"] = self.pod5_source
         set_result_dict_value(
@@ -150,7 +149,7 @@ class Pod5Extractor:
             "operating_system",
         )
         set_result_dict_value(
-            result_dict, prefix + ".run.id", tracking_id_dict, "run_id"
+            result_dict, prefix + ".run.id", tracking_id_dict, "protocol_run_id"
         )
         set_result_dict_value(
             result_dict,
