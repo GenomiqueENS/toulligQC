@@ -1,0 +1,18 @@
+/* ToulligQC documentation — small theme tweaks. */
+
+:root {
+  --md-primary-fg-color: #3f51b5;
+  --md-accent-fg-color: #536dfe;
+}
+
+/* Slightly roomier tables for the CLI options reference. */
+.md-typeset table:not([class]) td,
+.md-typeset table:not([class]) th {
+  padding: 0.5rem 0.9rem;
+}
+
+/* Centre the logo/preview images used on the home page. */
+.md-typeset img[src$="Toulligqc.png"] {
+  display: block;
+  margin: 0 auto;
+}

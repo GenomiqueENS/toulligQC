@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pandas.testing as testing
 
-from toulligqc import sequencing_summary_extractor as sse
+from toulligqc.extractors import sequencing_summary_extractor as sse
 
 ####################################################################################
 # Tests of the SequencingSummaryExtractor class with several configuration cases : #

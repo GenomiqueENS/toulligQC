@@ -67,6 +67,19 @@ dev = [
     "ruff>=0.4.0",
     "pytest>=8",
 ]
+# Extras for running the API example notebook (example_api.ipynb).
+# Plotly needs nbformat to render figures inline in Jupyter.
+notebook = [
+    "nbformat>=4.2.0",
+    "ipykernel",
+]
+# Extras for building the documentation site (mkdocs build / serve).
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.25",
+    "mkdocs-jupyter>=0.24",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
