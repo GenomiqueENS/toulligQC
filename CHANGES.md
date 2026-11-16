@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.9.2](https://github.com/GenomiqueENS/toulligQC/compare/v2.9.1...v2.9.2) (2026-11-16)
+
+
+### Bug Fixes
+
+* In Dockerfile, now force usage of GNU coreutils instead of uutils coreutils that breaks Nextflow task wrappers. ([#85](https://github.com/GenomiqueENS/toulligQC/issues/85)) ([f58e5a0](https://github.com/GenomiqueENS/toulligQC/commit/f58e5a0f5889dd60b811927b6c0daa7d196b5e77))
+
+
+### Miscellaneous Chores
+
+* release 2.9.2 ([#87](https://github.com/GenomiqueENS/toulligQC/issues/87)) ([6237a71](https://github.com/GenomiqueENS/toulligQC/commit/6237a71b09c883efb150f64e139bef2b3e3628b9))
+
 ## [2.9.1](https://github.com/GenomiqueENS/toulligQC/compare/v2.9.0...v2.9.1) (2026-06-17)
 
 
