@@ -4,6 +4,8 @@ ARG VERSION=2.9.1
 ARG UV_VERSION=0.9.17
 ARG INSTALL_PACKAGES="curl git"
 RUN apt update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-remove-essential \
+        coreutils-from-gnu coreutils-from-uutils-  && \
     DEBIAN_FRONTEND=noninteractive apt install --yes \
                     $INSTALL_PACKAGES \
                     python3 \
