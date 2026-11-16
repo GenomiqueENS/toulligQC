@@ -1,12 +1,12 @@
-<a href="https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/docs/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/docs/Toulligqc.png" align="middle" height="50" width="190" > </a>
+<a href="https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/help/Toulligqc.png"><img src="https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/help/Toulligqc.png" align="middle" height="50" width="190" > </a>
 [![PyPI version](https://badge.fury.io/py/toulligqc.svg)](https://badge.fury.io/py/toulligqc) [![Downloads](https://pepy.tech/badge/toulligqc)](https://pepy.tech/project/toulligqc) [![Python 3.11](https://img.shields.io/badge/python-3.11-orange.svg)](https://www.python.org/downloads/release/python-360/)  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
 ToulligQC is dedicated to the QC analyses of Oxford Nanopore runs. This software is written in Python and developped by the [GenomiqueENS core facility](https://genomique.biologie.ens.fr/) of the [Institute of Biology of the Ecole Normale Superieure (IBENS)](http://www.ibens.bio.ens.psl.eu/).
 
-Click on [following image](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/report.html) to see an report example. An [online help](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/help.html) is available to better understand graphics generated with ToulligQC when clicking on the [ⓘ](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/help.html) icon.
+Click on [following image](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/help/report.html) to see an report example. An [online help](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/help/help.html) is available to better understand graphics generated with ToulligQC when clicking on the [ⓘ](https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/help/help.html) icon.
 
-<a href="https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/docs/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/docs/images.png)</a>
+<a href="https://htmlpreview.github.io/?https://github.com/GenomiqueENS/toulligQC/blob/master/help/report.html" rel="some text">![Report preview](https://raw.githubusercontent.com/GenomiqueENS/toulligQC/master/help/images.png)</a>
 
 
 
@@ -355,8 +355,8 @@ Data acquisition was performed using MinKNOW 1.11.5 and basecalling/demultiplexi
 
 * First download the demo scripts:
 ```bash
-$ wget https://raw.githubusercontent.com/GenomiqueENS/toulligQC/refs/heads/master/docs/demo/run-toulligqc-demo-with-docker.sh
-$ wget https://raw.githubusercontent.com/GenomiqueENS/toulligQC/refs/heads/master/docs/demo/run-toulligqc-demo.sh
+$ wget https://raw.githubusercontent.com/GenomiqueENS/toulligQC/refs/heads/master/help/demo/run-toulligqc-demo-with-docker.sh
+$ wget https://raw.githubusercontent.com/GenomiqueENS/toulligQC/refs/heads/master/help/demo/run-toulligqc-demo.sh
 $ chmod +x run-toulligqc-demo*.sh
 ```
 * Then, you can launch the ToulligQC analysis of the demo data with the `run-toulligqc-demo-with-docker.sh` script if you want to use a Docker container:

@@ -1,0 +1,8 @@
+# Exclude non-source files from GitHub language statistics
+*.ipynb -linguist-detectable
+*.html -linguist-detectable
+*.js   -linguist-detectable
+*.css  -linguist-detectable
+
+# Mark bundled third-party assets as vendored
+toulligqc/resources/plotly-latest.min.js linguist-vendored

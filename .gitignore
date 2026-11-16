@@ -4,3 +4,7 @@ uv.lock
 dist/
 .ruff_cache
 .idea/
+
+# mkdocs build output
+site/
+.cache/

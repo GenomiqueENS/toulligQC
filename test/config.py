@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from toulligqc.configuration import ToulligqcConf
+from toulligqc.core.configuration import ToulligqcConf
 
 # assign path to all sequencing_summary and barcode data files
 path = Path(__file__).parents[1] / "test_data/sequencing_summary/"

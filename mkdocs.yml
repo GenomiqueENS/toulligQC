@@ -1,0 +1,58 @@
+site_name: toulligQC
+repo_name: GenomiqueENS/toulligqc
+repo_url: https://github.com/GenomiqueENS/toulligqc
+copyright: Copyright © 2026 GenomiqueENS
+theme:
+  name: material
+  logo: assets/Toulligqc_mini.png
+  favicon: assets/Toulligqc_mini.png
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.top
+  palette:
+    scheme: default
+    primary: indigo
+nav:
+  - Home: index.md
+  - Getting started: getting_started.md
+  - Command Line Interface: tutorials/cli_usage.md
+  - Python API: api/api.md
+  - Tutorials:
+    - API usage: tutorials/api_usage.ipynb
+  - Online help: online_help.md
+  - Example report: example_report.html
+  - Cite us: cite_us.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            heading_level: 4
+  - mkdocs-jupyter:
+      include_source: True
+      execute: True
+      allow_errors: False
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+extra_css:
+  - css/custom.css
+extra_javascript:
+  - js/custom.js
